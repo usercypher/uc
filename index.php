@@ -17,8 +17,6 @@ App::setEnv(array(
     'SHOW_ERRORS' => 1,  // Enable or disable detailed error messages (1: Show, 0: Hide)
 
     'CONFIG_FILE' => 'app.config',
-    
-    'BASE_URL' => 'http://127.0.0.1:8002',  // Base URL of the application, used to generate links/paths.
 
     // Routing Configuration
     'ROUTE_REWRITE' => 0,  // Enable or disable URL rewriting (1: Yes, 0: No).

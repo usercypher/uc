@@ -23,7 +23,7 @@ class ExtController {
 
     protected function json($data) {
         $this->response->contentType = 'application/json';
-        $this->response->content = $data;
+        $this->response->content = json_encode($data);
 
         return $this->response;
     }

@@ -44,7 +44,17 @@ class App {
         self::$ENV_ROUTE_PARAM = (getenv('ROUTE_PARAM') ? getenv('ROUTE_PARAM') : 'route');
         self::$ENV_DIR = getenv('DIR');
         self::$ENV_DIR_RELATIVE = getenv('DIR_RELATIVE');
-        self::$ENV_BASE_URL = getenv('BASE_URL');
+        
+        $protocol = 'http';
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+            $protocol = 'https';
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $protocol = 'https';
+        }
+        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1';
+
+        self::$ENV_BASE_URL = $protocol . '://' . $host;
+
         self::$ENV_SHOW_ERRORS = getenv('SHOW_ERRORS');
         self::$ENV_CONFIG_FILE = (getenv('CONFIG_FILE') && getenv('CONFIG_FILE') !== '') ? getenv('CONFIG_FILE') : 'app.config';
 
