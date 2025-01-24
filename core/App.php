@@ -9,6 +9,8 @@ class App {
     private static $ENV_BASE_URL;
     private static $ENV_SHOW_ERRORS;
     private static $ENV_CONFIG_FILE;
+    private static $ENV_ERROR_LOG_FILE;
+    private static $ENV_ERROR_LOG_SIZE_LIMIT_MB;
 
     private static $CLASS_ARGS = 0;
     private static $CLASS_PATH = 1;
@@ -39,11 +41,11 @@ class App {
     // Application Setup
 
     public function __construct($request, $response) {
-        self::$ENV_ROUTE_REWRITE = getenv('ROUTE_REWRITE');
-        self::$ENV_ROUTE_MAIN_FILE = (getenv('ROUTE_MAIN_FILE') ? getenv('ROUTE_MAIN_FILE') : 'index.php');
-        self::$ENV_ROUTE_PARAM = (getenv('ROUTE_PARAM') ? getenv('ROUTE_PARAM') : 'route');
-        self::$ENV_DIR = getenv('DIR');
-        self::$ENV_DIR_RELATIVE = getenv('DIR_RELATIVE');
+        self::$ENV_ROUTE_REWRITE = $GLOBALS['ENV']['ROUTE_REWRITE'];
+        self::$ENV_ROUTE_MAIN_FILE = (isset($GLOBALS['ENV']['ROUTE_MAIN_FILE']) ? $GLOBALS['ENV']['ROUTE_MAIN_FILE'] : 'index.php');
+        self::$ENV_ROUTE_PARAM = (isset($GLOBALS['ENV']['ROUTE_PARAM']) ? $GLOBALS['ENV']['ROUTE_PARAM'] : 'route');
+        self::$ENV_DIR = $GLOBALS['ENV']['DIR'];
+        self::$ENV_DIR_RELATIVE = $GLOBALS['ENV']['DIR_RELATIVE'];
         
         $protocol = 'http';
         if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
@@ -55,8 +57,10 @@ class App {
 
         self::$ENV_BASE_URL = $protocol . '://' . $host;
 
-        self::$ENV_SHOW_ERRORS = getenv('SHOW_ERRORS');
-        self::$ENV_CONFIG_FILE = (getenv('CONFIG_FILE') && getenv('CONFIG_FILE') !== '') ? getenv('CONFIG_FILE') : 'app.config';
+        self::$ENV_SHOW_ERRORS = $GLOBALS['ENV']['SHOW_ERRORS'];
+        self::$ENV_CONFIG_FILE = (isset($GLOBALS['ENV']['CONFIG_FILE']) && $GLOBALS['ENV']['CONFIG_FILE'] !== '') ? $GLOBALS['ENV']['CONFIG_FILE'] : 'core/runtime/var/app.config';
+        self::$ENV_ERROR_LOG_FILE = (isset($GLOBALS['ENV']['ERROR_LOG_FILE']) && $GLOBALS['ENV']['ERROR_LOG_FILE'] !== '') ? $GLOBALS['ENV']['ERROR_LOG_FILE'] : 'core/runtime/log/app.error';
+        self::$ENV_ERROR_LOG_SIZE_LIMIT_MB = (isset($GLOBALS['ENV']['ERROR_LOG_SIZE_LIMIT_MB']) && (int)$GLOBALS['ENV']['ERROR_LOG_SIZE_LIMIT_MB'] >= 5) ? (int)$GLOBALS['ENV']['ERROR_LOG_SIZE_LIMIT_MB'] : 5;
 
         set_error_handler(array('App', 'errorHandler'));
         set_exception_handler(array('App', 'exceptionHandler'));
@@ -79,9 +83,7 @@ class App {
 
     public static function setEnv($variables) {
         foreach ($variables as $var => $value) {
-            if (putenv($var . '=' . $value) === false) {
-                self::logError('Failed to set environment variable: ' . $var);
-            }
+            $GLOBALS['ENV'][$var] = $value;
         }
     }
 
@@ -99,7 +101,7 @@ class App {
         if (!isset($this->class[$option['controller']])) {
             $this->class[$option['controller']] = array(null, null, $this->classListIndex, false);
             $this->classList[$this->classListIndex] = $option['controller'];
-            $this->classListIndex++;
+            ++$this->classListIndex;
         }
 
         $middleware = array();
@@ -108,7 +110,7 @@ class App {
                 if (!isset($this->class[$class])) {
                     $this->class[$class] = array(null, null, $this->classListIndex, false);
                     $this->classList[$this->classListIndex] = $class;
-                    $this->classListIndex++;
+                    ++$this->classListIndex;
                 }
                 $middleware[] = $this->class[$class][self::$CLASS_CLASS_LIST_INDEX];
             }
@@ -120,7 +122,7 @@ class App {
                 if (!isset($this->class[$class])) {
                     $this->class[$class] = array(null, null, $this->classListIndex, false);
                     $this->classList[$this->classListIndex] = $class;
-                    $this->classListIndex++;
+                    ++$this->classListIndex;
                 }
                 $ignore[] = $this->class[$class][self::$CLASS_CLASS_LIST_INDEX];
             }
@@ -149,7 +151,7 @@ class App {
             if (!isset($this->class[$class])) {
                 $this->class[$class] = array(null, null, $this->classListIndex, false);
                 $this->classList[$this->classListIndex] = $class;
-                $this->classListIndex++;
+                ++$this->classListIndex;
             }
             $this->middlewares[] = $this->class[$class][self::$CLASS_CLASS_LIST_INDEX];
         }
@@ -283,7 +285,7 @@ class App {
 
     public function process($request, $response, $app) {
         if (isset($this->finalMiddlewares[$this->finalMiddlewaresIndex])) {
-            $this->finalMiddlewaresIndex++;
+            ++$this->finalMiddlewaresIndex;
             $middleware = $this->resolveClass($this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]], array(), $this->class[$this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]]][self::$CLASS_CACHE]);
             return $middleware->process($request, $response, $app);
         }
@@ -301,7 +303,7 @@ class App {
         if (!isset($this->class[$class])) {
             $this->class[$class] = array(null, null, $this->classListIndex, false);
             $this->classList[$this->classListIndex] = $class;
-            $this->classListIndex++;
+            ++$this->classListIndex;
         }
 
         $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
@@ -309,7 +311,7 @@ class App {
         if ($pathListIndex === false) {
             $pathListIndex = $this->pathListIndex;
             $this->pathList[$this->pathListIndex] = $path;
-            $this->pathListIndex++;
+            ++$this->pathListIndex;
         }
 
         $this->pathListCache[$path] = $pathListIndex;
@@ -340,9 +342,9 @@ class App {
                 if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(self::$ENV_DIR . $path . $file)) {
                     $previousNamespace = $option['namespaceStack'];
                     $option['namespaceStack'] = $option['namespaceStack'] . $file . '\\';
-                    $option['depth']++;
+                    ++$option['depth'];
                     $this->autoSetFiles($path . $file . '/', $option);
-                    $option['depth']--;
+                    --$option['depth'];
                     $option['namespaceStack'] = $previousNamespace;
                 } else if (substr($file, -4) === '.php') {
                     $class = ($option['namespace'] ? $option['namespaceStack'] : '')  . substr($file, 0, -4);
@@ -360,7 +362,7 @@ class App {
         if (!isset($this->class[$class])) {
             $this->class[$class] = array(null, null, $this->classListIndex, false);
             $this->classList[$this->classListIndex] = $class;
-            $this->classListIndex++;
+            ++$this->classListIndex;
         }
         $this->class[$class][self::$CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->class[$class][self::$CLASS_CACHE]);
         if (isset($option['args'])) {
@@ -368,7 +370,7 @@ class App {
                 if (!isset($this->class[$arg])) {
                     $this->class[$arg] = array(null, null, $this->classListIndex, false);
                     $this->classList[$this->classListIndex] = $arg;
-                    $this->classListIndex++;
+                    ++$this->classListIndex;
                 }
                 $this->class[$class][self::$CLASS_ARGS][] = $this->class[$arg][self::$CLASS_CLASS_LIST_INDEX];
             }
@@ -431,10 +433,57 @@ class App {
             if (self::$ENV_SHOW_ERRORS) {
                 exit(nl2br($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL . PHP_EOL . $e->getTraceAsString()));
             } else {
-                error_log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+                self::logError($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
                 $file = self::$ENV_DIR . 'core/view/' . $e->getCode() . '.php';
                 exit(include(file_exists($file) ? $file : self::$ENV_DIR . 'core/view/default.php'));
             }
+        }
+    }
+
+    private static function logError($logMessage) {
+        $logFile = self::$ENV_DIR . self::$ENV_ERROR_LOG_FILE . '.log';
+        $maxLogSize = self::$ENV_ERROR_LOG_SIZE_LIMIT_MB * 1048576;
+        $logMessage = '[' . date('Y-m-d H:i:s') . '] ' . $logMessage . PHP_EOL;
+
+        if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
+            $newLogFile = self::$ENV_DIR . self::$ENV_ERROR_LOG_FILE . '_' . date('Y-m-d_H-i-s') . '.log';
+            rename($logFile, $newLogFile);
+        }
+
+        file_put_contents($logFile, $logMessage, FILE_APPEND);
+
+        $cleanupIntervalDays = 1;
+        $logRetentionDays = 7;
+        $maxLogFiles = 10;
+    
+        $timestampFile = self::$ENV_DIR . 'core/runtime/var/last_log_cleanup_timestamp.txt';
+        $now = time();
+        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
+
+        if (($now - $lastCleanup) >= $cleanupIntervalDays * 86400) {
+            $logFiles = glob(self::$ENV_DIR . self::$ENV_ERROR_LOG_FILE . '_*.log');
+            $modTimes = array();
+            foreach ($logFiles as $file) {
+                $modTimes[] = filemtime($file);
+            }
+
+            array_multisort($modTimes, SORT_ASC, $logFiles);
+
+            if (count($logFiles) > $maxLogFiles) {
+                $filesToDelete = array_slice($logFiles, 0, count($logFiles) - $maxLogFiles);
+                foreach ($filesToDelete as $file) {
+                    unlink($file);
+                }
+                $logFiles = glob(self::$ENV_DIR . self::$ENV_ERROR_LOG_FILE . '_*.log');
+            }
+
+            foreach ($logFiles as $file) {
+                if (($now - filemtime($file)) > ($logRetentionDays * 86400)) {
+                    unlink($file);
+                }
+            }
+
+            file_put_contents($timestampFile, $now);
         }
     }
 

@@ -4,10 +4,10 @@ class Database {
     private $host, $name, $user, $pass, $pdo;
 
     public function __construct() {
-        $this->host = getenv('DB_HOST');
-        $this->name = getenv('DB_NAME');
-        $this->user = getenv('DB_USER');
-        $this->pass = getenv('DB_PASS');
+        $this->host = $GLOBALS['ENV']['DB_HOST'];
+        $this->name = $GLOBALS['ENV']['DB_NAME'];
+        $this->user = $GLOBALS['ENV']['DB_USER'];
+        $this->pass = $GLOBALS['ENV']['DB_PASS'];
     }
 
     public function getConnection() {
