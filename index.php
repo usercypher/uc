@@ -9,7 +9,7 @@ include($dir . 'core/Request.php');
 include($dir . 'core/Response.php');
 
 // Load environment and config
-App::setEnv(array(
+App::setEnvs(array(
     // Environment Settings
     'DIR' => $dir,   // Set directory path
     'DIR_RELATIVE' => '/public/',  // Ensures static resources are always relative to index.php

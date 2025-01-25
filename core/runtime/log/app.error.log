@@ -1,2 +1,4 @@
 [2025-01-25 00:10:03] Route not found: /j in /storage/emulated/0/htdocs/test_fm/core/App.php on line 256
 [2025-01-25 00:15:11] Route not found: /j in /storage/emulated/0/htdocs/test_fm/core/App.php on line 256
+[2025-01-25 11:32:52] Undefined constant App::getEnv in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 7
+[2025-01-25 11:33:16] Undefined constant App::getEnv in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 7
