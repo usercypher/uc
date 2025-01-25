@@ -2,6 +2,7 @@
 
 class App {
     private static $ENV;
+    private static $FLASH = array();
 
     private static $CLASS_ARGS = 0;
     private static $CLASS_PATH = 1;
@@ -89,7 +90,7 @@ class App {
     public static function setIni($variables) {
         foreach ($variables as $var => $value) {
             if (ini_set($var, $value) === false) {
-                self::logError('Failed to set ini setting: ' . $var);
+                self::log('Failed to set ini setting: ' . $var, array('file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
             }
         }
     }
@@ -436,24 +437,27 @@ class App {
             if (self::$ENV['SHOW_ERRORS']) {
                 exit(nl2br($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL . PHP_EOL . $e->getTraceAsString()));
             } else {
-                self::logError($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+                self::log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine(), array('file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
                 $file = self::$ENV['DIR'] . 'core/view/' . $e->getCode() . '.php';
                 exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
             }
         }
     }
 
-    private static function logError($logMessage) {
-        $logFile = self::$ENV['DIR'] . self::$ENV['ERROR_LOG_FILE'] . '.log';
-        $maxLogSize = self::$ENV['ERROR_LOG_SIZE_LIMIT_MB'] * 1048576;
-        $logMessage = '[' . date('Y-m-d H:i:s') . '] ' . $logMessage . PHP_EOL;
+    public static function log($message, $option) {
+        $file = isset($option['file']) ? $option['file'] : 'app.default';
+        $maxSize = isset($option['max_size']) ? $option['max_size'] : 5;
+
+        $logFile = self::$ENV['DIR'] . $file . '.log';
+        $maxLogSize = $maxSize * 1048576;
+        $message = '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
 
         if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
-            $newLogFile = self::$ENV['DIR'] . self::$ENV['ERROR_LOG_FILE'] . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = self::$ENV['DIR'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
-        file_put_contents($logFile, $logMessage, FILE_APPEND);
+        file_put_contents($logFile, $message, FILE_APPEND);
 
         $cleanupIntervalDays = 1;
         $logRetentionDays = 7;
@@ -464,7 +468,7 @@ class App {
         $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
 
         if (($now - $lastCleanup) >= $cleanupIntervalDays * 86400) {
-            $logFiles = glob(self::$ENV['DIR'] . self::$ENV['ERROR_LOG_FILE'] . '_*.log');
+            $logFiles = glob(self::$ENV['DIR'] . $file . '_*.log');
             $modTimes = array();
             foreach ($logFiles as $file) {
                 $modTimes[] = filemtime($file);
@@ -477,7 +481,7 @@ class App {
                 foreach ($filesToDelete as $file) {
                     unlink($file);
                 }
-                $logFiles = glob(self::$ENV['DIR'] . self::$ENV['ERROR_LOG_FILE'] . '_*.log');
+                $logFiles = glob(self::$ENV['DIR'] . $file . '_*.log');
             }
 
             foreach ($logFiles as $file) {
@@ -570,6 +574,17 @@ class App {
             default:
                 return $link;
         }
+    }
+
+    public static function addFlash($type, $message) {
+        self::$FLASH[] = array(
+            'type' => $type,
+            'message' => $message
+        );
+    }
+
+    public static function getFlash() {
+        return self::$FLASH;
     }
 
     public static function validateArray($message, $keys, $requiredKeys) {

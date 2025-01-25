@@ -1,8 +1,1 @@
-[2025-01-25 00:10:03] Route not found: /j in /storage/emulated/0/htdocs/test_fm/core/App.php on line 256
-[2025-01-25 00:15:11] Route not found: /j in /storage/emulated/0/htdocs/test_fm/core/App.php on line 256
-[2025-01-25 11:32:52] Undefined constant App::getEnv in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 7
-[2025-01-25 11:33:16] Undefined constant App::getEnv in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 7
-[2025-01-25 12:34:45] SQLSTATE[HY000] [1045] Access denied for user 'ysyfgxkn'@'localhost' (using password: YES) in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 15
-[2025-01-25 19:02:38] syntax error, unexpected token "}" in /storage/emulated/0/htdocs/test_fm/core/extension/ExtController.php on line 16
-[2025-01-25 23:32:08] Trying to access array offset on false in /storage/emulated/0/htdocs/test_fm/src/view/edit.php on line 21
-[2025-01-25 23:32:16] Trying to access array offset on false in /storage/emulated/0/htdocs/test_fm/src/view/edit.php on line 21
+[2025-01-26 00:54:17] Route not found: /d in /storage/emulated/0/htdocs/test_fm/core/App.php on line 256
