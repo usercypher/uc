@@ -134,7 +134,7 @@ input[type="submit"]:hover {
     100% { transform: rotate(360deg); }
 }
 
-#loadingScreen, .confirm-dialog  {
+#loadingScreen, .pop-up-bg-alert, .pop-up-bg-confirm{
     position: fixed;
     top: 0;
     left: 0;
@@ -148,21 +148,30 @@ input[type="submit"]:hover {
     z-index: 1000;
 }
 
-.confirm-dialog {
+.pop-up-bg-alert, .pop-up-bg-confirm {
     display: flex;
+    flex-direction: column;
+}
+
+.confirm-dialog, .alert-dialog, .pop-up-bg-alert, .pop-up-bg-confirm {
     opacity: 0;
     visibility: hidden;
     transform: scale(0.9);
+    gap: 10px;
     transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
 }
 
-.confirm-dialog.show {
+.pop-up-bg-alert, .pop-up-bg-confirm {
+    transform: scale(1);
+}
+
+.confirm-dialog.show, .alert-dialog.show, .pop-up-bg-alert.show, .pop-up-bg-confirm.show {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
 }
 
-.confirm-dialog-content {
+.confirm-dialog-content, .alert-dialog-content {
     background-color: #34495e;
     padding: 20px;
     border-radius: 8px;
@@ -171,13 +180,12 @@ input[type="submit"]:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.confirm-dialog p {
+.confirm-dialog p, .alert-dialog p {
     color: #ecf0f1;
     font-size: 18px;
     margin-bottom: 20px;
 }
 
-/* Confirm Button Styles */
 .confirm-button {
     margin: 10px;
     padding: 10px 20px;
@@ -200,4 +208,32 @@ input[type="submit"]:hover {
 
 .confirm-button.action:hover {
     background-color: #c0392b;
+}
+
+.alert-dialog-content.success {
+    background-color: #27ae60;
+    color: #ecf0f1;
+}
+
+.alert-dialog-content.error {
+    background-color: #e74c3c;
+    color: #ecf0f1;
+}
+
+.alert-dialog-content.info {
+    background-color: #2980b9;
+    color: #ecf0f1;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.close-btn:hover {
+    opacity: 0.7;
 }

@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/common.css')); ?>">
-    <script src="<?php echo(App::buildLink('relative', 'asset/js/confirm.js')); ?>"></script>
+    <script src="<?php echo(App::buildLink('relative', 'asset/js/common.js')); ?>"></script>
 </head>
 <body>
-    <?php include(App::buildPath('src/view/loading-and-confirm.php'));?>
+    <?php include(App::buildPath('src/view/flash-and-loading-and-confirm.php'));?>
 
     <h1>Edit Book</h1>
     <ul>
@@ -36,14 +36,5 @@
             <input type="submit" value="Update">
         </form>
     </div>
-
-    <?php
-    if (isset($_SESSION['errors'])) {
-        foreach ($_SESSION['errors'] as $error) {
-            echo('<p class="error">' . htmlspecialchars($error, ENT_QUOTES, 'UTF-8') . '</p>');
-        }
-        unset($_SESSION['errors']);
-    }
-    ?>
 </body>
 </html>

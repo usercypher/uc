@@ -14,7 +14,7 @@ App::setEnvs(array(
     'DIR' => $dir,   // Set directory path
     'DIR_RELATIVE' => '/public/',  // Ensures static resources are always relative to index.php
 
-    'SHOW_ERRORS' => 0,  // Enable or disable detailed error messages (1: Show, 0: Hide)
+    'SHOW_ERRORS' => 1,  // Enable or disable detailed error messages (1: Show, 0: Hide)
 
     'ROUTE_MAIN_FILE' => 'index.php',
     // Routing Configuration

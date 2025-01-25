@@ -2,14 +2,17 @@
 
 class ExtController {
     protected $request, $response;
-    protected $errors = array();
+    protected $flash = array();
 
-    public function getErrors() {
-        return $this->errors;
+    public function getFlash() {
+        return $this->flash;
     }
 
-    public function addError($field, $message) {
-        $this->errors[$field] = $message;
+    public function addFlash($type, $message) {
+        $this->flash[] = array(
+            'type' => $type,
+            'message' => $message
+        );
     }
 
     protected function view($view, $data) {
