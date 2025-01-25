@@ -425,6 +425,10 @@ class App {
     public static function exceptionHandler($e) {
         header('HTTP/1.1 ' . $e->getCode());
 
+        if (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json');
             exit(json_encode(array('error' => true, 'message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine())));
