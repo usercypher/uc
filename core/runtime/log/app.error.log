@@ -1,1 +1,13 @@
 [2025-01-26 00:54:17] Route not found: /d in /storage/emulated/0/htdocs/test_fm/core/App.php on line 256
+[2025-01-26 06:45:46] SQLSTATE[HY000] [2002] Connection refused in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 15
+[2025-01-26 06:45:48] SQLSTATE[HY000] [2002] Connection refused in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 15
+[2025-01-26 06:45:49] SQLSTATE[HY000] [2002] Connection refused in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 15
+[2025-01-26 06:45:50] SQLSTATE[HY000] [2002] Connection refused in /storage/emulated/0/htdocs/test_fm/src/database/Database.php on line 15
+[2025-01-26 07:16:02] Cannot access private property Stat::$totalTime in /storage/emulated/0/htdocs/test_fm/index.php on line 101
+[2025-01-26 07:16:05] Cannot access private property Stat::$totalTime in /storage/emulated/0/htdocs/test_fm/index.php on line 101
+[2025-01-26 07:23:52] Call to undefined function n2lbr() in /storage/emulated/0/htdocs/test_fm/index.php on line 107
+[2025-01-26 07:25:15] syntax error, unexpected token "," in /storage/emulated/0/htdocs/test_fm/src/view/flash-and-loading-and-confirm.php on line 11
+[2025-01-26 07:25:17] syntax error, unexpected token "," in /storage/emulated/0/htdocs/test_fm/src/view/flash-and-loading-and-confirm.php on line 11
+[2025-01-26 07:25:57] Call to undefined function n2lbr() in /storage/emulated/0/htdocs/test_fm/index.php on line 107
+[2025-01-26 19:18:56] Route not found: /edit/34k in /storage/emulated/0/htdocs/test_fm/core/App.php on line 255
+[2025-01-26 19:59:26] Route not found: /home2 in /storage/emulated/0/htdocs/test_fm/core/App.php on line 255

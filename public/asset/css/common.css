@@ -148,17 +148,25 @@ input[type="submit"]:hover {
     z-index: 1000;
 }
 
-.pop-up-bg-alert, .pop-up-bg-confirm {
+.pop-up-bg-alert, .pop-up-bg-confirm, .dialog-container {
     display: flex;
     flex-direction: column;
 }
 
+.dialog-container {
+    overflow-y: auto; 
+    margin: 10px;
+    margin-bottom: 0;
+}
 .confirm-dialog, .alert-dialog, .pop-up-bg-alert, .pop-up-bg-confirm {
     opacity: 0;
     visibility: hidden;
     transform: scale(0.9);
-    gap: 10px;
     transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+}
+
+.confirm-dialog, .alert-dialog {
+    margin-bottom: 10px;
 }
 
 .pop-up-bg-alert, .pop-up-bg-confirm {
@@ -176,7 +184,7 @@ input[type="submit"]:hover {
     padding: 20px;
     border-radius: 8px;
     text-align: center;
-    width: 300px;
+    max-width: 290px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 

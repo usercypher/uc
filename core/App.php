@@ -2,7 +2,6 @@
 
 class App {
     private static $ENV;
-    private static $FLASH = array();
 
     private static $CLASS_ARGS = 0;
     private static $CLASS_PATH = 1;
@@ -38,7 +37,7 @@ class App {
         self::$ENV['ROUTE_PARAM'] = (isset(self::$ENV['ROUTE_PARAM']) ? self::$ENV['ROUTE_PARAM'] : 'route');
         self::$ENV['DIR'] = self::$ENV['DIR'];
         self::$ENV['DIR_RELATIVE'] = self::$ENV['DIR_RELATIVE'];
-        
+
         self::$ENV['HTTP_PROTOCOL'] = isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http';
         if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
             self::$ENV['HTTP_PROTOCOL'] = 'https';
@@ -46,13 +45,17 @@ class App {
             self::$ENV['HTTP_PROTOCOL'] = 'https';
         }
         self::$ENV['HTTP_HOST'] = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : '127.0.0.1');
-
-        self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'];
+        self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
 
         self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
+
         self::$ENV['CONFIG_FILE'] = (isset(self::$ENV['CONFIG_FILE']) && self::$ENV['CONFIG_FILE'] !== '') ? self::$ENV['CONFIG_FILE'] : 'core/runtime/var/app.config';
+
         self::$ENV['ERROR_LOG_FILE'] = (isset(self::$ENV['ERROR_LOG_FILE']) && self::$ENV['ERROR_LOG_FILE'] !== '') ? self::$ENV['ERROR_LOG_FILE'] : 'core/runtime/log/app.error';
         self::$ENV['ERROR_LOG_SIZE_LIMIT_MB'] = (isset(self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']) && (int)self::$ENV['ERROR_LOG_SIZE_LIMIT_MB'] >= 5) ? (int)self::$ENV['ERROR_LOG_SIZE_LIMIT_MB'] : 5;
+        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = (isset(self::$ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int)self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] >= 1) ? (int)self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
+        self::$ENV['LOG_RETENTION_DAYS'] = (isset(self::$ENV['LOG_RETENTION_DAYS']) && (int)self::$ENV['LOG_RETENTION_DAYS'] >= 1) ? (int)self::$ENV['LOG_RETENTION_DAYS'] : 7;
+        self::$ENV['MAX_LOG_FILES'] = (isset(self::$ENV['MAX_LOG_FILES']) && (int)self::$ENV['MAX_LOG_FILES'] >= 1) ? (int)self::$ENV['MAX_LOG_FILES'] : 10;
 
         set_error_handler(array('App', 'errorHandler'));
         set_exception_handler(array('App', 'exceptionHandler'));
@@ -84,13 +87,13 @@ class App {
     }
 
     public static function getEnv($variable) {
-        return isset(self::$ENV[$variable]) ? self::$ENV[$variable] : null ;
+        return isset(self::$ENV[$variable]) ? self::$ENV[$variable] : null;
     }
 
     public static function setIni($variables) {
         foreach ($variables as $var => $value) {
             if (ini_set($var, $value) === false) {
-                self::log('Failed to set ini setting: ' . $var, array('file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
+                self::log('Failed to set ini setting: ' . $var, array('id' => 'error', 'file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
             }
         }
     }
@@ -246,7 +249,7 @@ class App {
         $request = $this->cache['Request'][self::$CACHE_CLASS];
         $response = $this->cache['Response'][self::$CACHE_CLASS];
         $parseUrl = parse_url($request->uri);
-        $path = self::$ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get[self::$ENV['ROUTE_PARAM']]) ? $request->get[self::$ENV['ROUTE_PARAM']] : '/');
+        $path = self::$ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get[self::$ENV['ROUTE_PARAM']]) ? $request->get[self::$ENV['ROUTE_PARAM']] : '');
 
         $route = $this->resolveRoute($request->method, $path);
 
@@ -292,9 +295,7 @@ class App {
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Request'][self::$CLASS_CLASS_LIST_INDEX];
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Response'][self::$CLASS_CLASS_LIST_INDEX];
         $controller = $this->resolveClass($this->classList[$this->controller], array(), $this->class[$this->classList[$this->controller]][self::$CLASS_CACHE]);
-        return $controller-> {
-            $this->action
-        }($this->params);
+        return $controller-> {$this->action} ($this->params);
     }
 
     // Dependency Management
@@ -435,9 +436,10 @@ class App {
             exit(json_encode(array('error' => true, 'message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine())));
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
-                exit(nl2br($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL . PHP_EOL . $e->getTraceAsString()));
+                header('Content-Type: text/plain');
+                exit('Error Code: ' . $e->getCode() . PHP_EOL . 'Message: ' . $e->getMessage() . PHP_EOL . 'File: ' . $e->getFile() . PHP_EOL . 'Line: ' . $e->getLine() . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $e->getTraceAsString());
             } else {
-                self::log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine(), array('file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
+                self::log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine(), array('id' => 'error', 'file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
                 $file = self::$ENV['DIR'] . 'core/view/' . $e->getCode() . '.php';
                 exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
             }
@@ -445,7 +447,8 @@ class App {
     }
 
     public static function log($message, $option) {
-        $file = isset($option['file']) ? $option['file'] : 'app.default';
+        $id = isset($option['id']) ? $option['id'] : 'default';
+        $file = isset($option['file']) ? $option['file'] : 'core/runtime/log/app.default';
         $maxSize = isset($option['max_size']) ? $option['max_size'] : 5;
 
         $logFile = self::$ENV['DIR'] . $file . '.log';
@@ -459,15 +462,11 @@ class App {
 
         file_put_contents($logFile, $message, FILE_APPEND);
 
-        $cleanupIntervalDays = 1;
-        $logRetentionDays = 7;
-        $maxLogFiles = 10;
-    
-        $timestampFile = self::$ENV['DIR'] . 'core/runtime/var/last_log_cleanup_timestamp.txt';
+        $timestampFile = self::$ENV['DIR'] . 'core/runtime/var/last_log_cleanup_timestamp_' . $id . '.txt';
         $now = time();
         $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
 
-        if (($now - $lastCleanup) >= $cleanupIntervalDays * 86400) {
+        if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob(self::$ENV['DIR'] . $file . '_*.log');
             $modTimes = array();
             foreach ($logFiles as $file) {
@@ -476,8 +475,8 @@ class App {
 
             array_multisort($modTimes, SORT_ASC, $logFiles);
 
-            if (count($logFiles) > $maxLogFiles) {
-                $filesToDelete = array_slice($logFiles, 0, count($logFiles) - $maxLogFiles);
+            if (count($logFiles) > self::$ENV['MAX_LOG_FILES']) {
+                $filesToDelete = array_slice($logFiles, 0, count($logFiles) - self::$ENV['MAX_LOG_FILES']);
                 foreach ($filesToDelete as $file) {
                     unlink($file);
                 }
@@ -485,7 +484,7 @@ class App {
             }
 
             foreach ($logFiles as $file) {
-                if (($now - filemtime($file)) > ($logRetentionDays * 86400)) {
+                if (($now - filemtime($file)) > (self::$ENV['LOG_RETENTION_DAYS'] * 86400)) {
                     unlink($file);
                 }
             }
@@ -566,7 +565,7 @@ class App {
     public static function buildLink($option, $link) {
         switch ($option) {
             case 'route':
-                return self::$ENV['BASE_URL'] . (self::$ENV['ROUTE_REWRITE'] ? $link : ('/' . self::$ENV['ROUTE_MAIN_FILE'] . '?' . self::$ENV['ROUTE_PARAM'] . '=' . $link));
+                return self::$ENV['BASE_URL'] . (self::$ENV['ROUTE_REWRITE'] ? $link : (self::$ENV['ROUTE_MAIN_FILE'] . '?' . self::$ENV['ROUTE_PARAM'] . '=/' . $link));
             case 'relative':
                 return self::$ENV['DIR_RELATIVE'] . $link;
             case 'absolute':
@@ -574,17 +573,6 @@ class App {
             default:
                 return $link;
         }
-    }
-
-    public static function addFlash($type, $message) {
-        self::$FLASH[] = array(
-            'type' => $type,
-            'message' => $message
-        );
-    }
-
-    public static function getFlash() {
-        return self::$FLASH;
     }
 
     public static function validateArray($message, $keys, $requiredKeys) {

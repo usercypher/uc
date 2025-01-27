@@ -23,6 +23,6 @@ class Response {
             header('Content-Type: ' . $this->contentType);
         }
 
-        exit($this->content);
+        echo($this->content);
     }
 }

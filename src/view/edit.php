@@ -7,16 +7,16 @@
     <script src="<?php echo(App::buildLink('relative', 'asset/js/common.js')); ?>"></script>
 </head>
 <body>
-    <?php include(App::buildPath('src/view/flash-and-loading-and-confirm.php'));?>
+    <?php include(App::buildPath('src/view/flash-and-loading-and-confirm.php')); ?>
 
     <h1>Edit Book</h1>
     <ul>
-        <li><a href="<?php echo(App::buildLink('route', '/home')); ?>">Home</a></li>
+        <li><a href="<?php echo(App::buildLink('route', 'home')); ?>">Home</a></li>
     </ul>
     <br>
 
     <div class='container-form'>
-        <form action="<?php echo(App::buildLink('route', '/book/update')); ?>" method="post" onsubmit="return confirm(event, 'Are you sure you want to update this information? Changes will overwrite the current data');">
+        <form action="<?php echo(App::buildLink('route', 'book/update')); ?>" method="post" onsubmit="return confirm(event, 'Are you sure you want to update this information? Changes will overwrite the current data');">
             <input type="hidden" name="_token" value="<?php echo(isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null); ?>">
             <input type="hidden" name="book[id]" value="<?php echo($data['book']['id']); ?>">
             <input type="hidden" name="book[title][current]" value="<?php echo($data['book']['title']); ?>">

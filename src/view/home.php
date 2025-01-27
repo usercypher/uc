@@ -7,15 +7,15 @@
     <script src="<?php echo(App::buildLink('relative', 'asset/js/common.js')); ?>"></script>
 </head>
 <body>
-    <?php include(App::buildPath('src/view/flash-and-loading-and-confirm.php'));?>
+    <?php include(App::buildPath('src/view/flash-and-loading-and-confirm.php')); ?>
 
     <h1>Books</h1>
     <ul>
-        <li><a href="<?php echo(App::buildLink('route', '/home')); ?>">Refresh</a></li>
+        <li><a href="<?php echo(App::buildLink('route', 'home')); ?>">Refresh</a></li>
     </ul>
     <br>
 
-    <a href="<?php echo(App::buildLink('route', '/create')); ?>">
+    <a href="<?php echo(App::buildLink('route', 'create')); ?>">
         <button class="add">Add Book</button>
     </a>
     <br><br>
@@ -31,8 +31,8 @@
             echo('    <p><strong>Year:</strong> ' . htmlspecialchars($book['year'], ENT_QUOTES, 'UTF-8') . '</p>');
             // Actions (Edit & Delete)
             echo('    <div class="actions">');
-            echo('        <a href="' . App::buildLink('route', '/edit/' . $book['id']) . '"><button>Edit</button></a>');
-            echo('<form action="' . App::buildLink('route', '/book/delete') . '" method="post" style="display:inline;" onsubmit="return confirm(event, \'Are you sure you want to delete this book?\');">');
+            echo('        <a href="' . App::buildLink('route', 'edit/' . $book['id']) . '"><button>Edit</button></a>');
+            echo('<form action="' . App::buildLink('route', 'book/delete') . '" method="post" style="display:inline;" onsubmit="return confirm(event, \'Are you sure you want to delete this book?\');">');
             echo('            <input type="hidden" name="_token" value="' . (isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null) . '">');
             echo('            <input type="hidden" name="book[id]" value="' . $book['id'] . '">');
             echo('            <input type="submit" value="Delete">');

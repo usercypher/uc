@@ -12,7 +12,7 @@
         Something went wrong on our side. We're working to fix it.
     </p>
     <p>
-        <a href="<?php echo App::buildLink('route', '/'); ?>">Go back to the homepage</a>
+        <a href="<?php echo App::buildLink('route', ''); ?>">Go back to the homepage</a>
     </p>
 </body>
 </html>

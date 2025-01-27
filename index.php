@@ -11,15 +11,15 @@ include($dir . 'core/Response.php');
 // Load environment and config
 App::setEnvs(array(
     // Environment Settings
-    'DIR' => $dir,   // Set directory path
-    'DIR_RELATIVE' => '/public/',  // Ensures static resources are always relative to index.php
+    'DIR' => $dir, // Set directory path
+    'DIR_RELATIVE' => '/public/', // Ensures static resources are always relative to index.php
 
-    'SHOW_ERRORS' => 0,  // Enable or disable detailed error messages (1: Show, 0: Hide)
+    'SHOW_ERRORS' => 0, // Enable or disable detailed error messages (1: Show, 0: Hide)
 
     'ROUTE_MAIN_FILE' => 'index.php',
     // Routing Configuration
-    'ROUTE_REWRITE' => 0,  // Enable or disable URL rewriting (1: Yes, 0: No).
-                           // If enabled, routing is handled via clean URLs (e.g., /home), 
+    'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
+    // If enabled, routing is handled via clean URLs (e.g., /home),
 
     /*
      * Web Server Configuration for URL Rewriting:
@@ -38,10 +38,10 @@ App::setEnvs(array(
      */
 
     // Database Configuration
-    'DB_HOST' => '127.0.0.1',  // Database host, usually 'localhost' or an IP address.
-    'DB_NAME' => 'library',    // Name of the database to connect to.
-    'DB_USER' => 'root',       // Username for database authentication.
-    'DB_PASS' => '',           // Password for the database user. Leave empty for no password.
+    'DB_HOST' => '127.0.0.1', // Database host, usually 'localhost' or an IP address.
+    'DB_NAME' => 'library', // Name of the database to connect to.
+    'DB_USER' => 'root', // Username for database authentication.
+    'DB_PASS' => '', // Password for the database user. Leave empty for no password.
 ));
 
 $app = new App(new Request, new Response);
@@ -58,23 +58,23 @@ $app->setClass('BookController', array('args' => array('BookModel')));
 $app->setMiddlewares(array('SessionMiddleware', 'CsrfGenerateMiddleware', 'SanitizeMiddleware'));
 
 // Define routes
-$app->setRoute('GET', '/', 'index', array('controller' => 'BookController'));
+$app->setRoute('GET', '', 'index', array('controller' => 'BookController'));
 $app->setRoutes(array(), array(
-    array('GET', '/home', 'index', array('controller' => 'BookController')),
-    array('GET', '/create', 'create', array('controller' => 'BookController'))
+    array('GET', 'home', 'index', array('controller' => 'BookController')),
+    array('GET', 'create', 'create', array('controller' => 'BookController'))
 ));
 $app->setRoutes(array('controller' => 'BookController'), array(
-    array('GET', '/edit/{id:^\d+$}', 'edit')
+    array('GET', 'edit/{id:^\d+$}', 'edit')
 ));
 $app->setRoutes(array(
-    'prefix' => '/book',
+    'prefix' => 'book/',
     'controller' => 'BookController',
     'middleware' => array('CsrfValidateMiddleware'),
     'ignore' => array('CsrfGenerateMiddleware')
 ), array(
-    array('POST', '/create', 'store'),
-    array('POST', '/update', 'update'),
-    array('POST', '/delete', 'delete')
+    array('POST', 'create', 'store'),
+    array('POST', 'update', 'update'),
+    array('POST', 'delete', 'delete')
 ));
 
 // Load extensions

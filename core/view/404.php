@@ -12,7 +12,7 @@
         The page you are looking for could not be found.
     </p>
     <p>
-        <a href="<?php echo App::buildLink('route', '/'); ?>">Go back to the homepage</a>
+        <a href="<?php echo App::buildLink('route', ''); ?>">Go back to the homepage</a>
     </p>
 </body>
 </html>
