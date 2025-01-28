@@ -453,7 +453,7 @@ class App {
 
         $logFile = self::$ENV['DIR'] . $file . '.log';
         $maxLogSize = $maxSize * 1048576;
-        $message = '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
 
         if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
             $newLogFile = self::$ENV['DIR'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
@@ -468,23 +468,25 @@ class App {
 
         if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob(self::$ENV['DIR'] . $file . '_*.log');
-            $modTimes = array();
+            $logFilesWithTime = array();
             foreach ($logFiles as $file) {
-                $modTimes[] = filemtime($file);
+                $logFilesWithTime[$file] = filemtime($file);
             }
 
-            array_multisort($modTimes, SORT_ASC, $logFiles);
+            asort($logFilesWithTime);
+            $logFiles = array_keys($logFilesWithTime);
 
             if (count($logFiles) > self::$ENV['MAX_LOG_FILES']) {
                 $filesToDelete = array_slice($logFiles, 0, count($logFiles) - self::$ENV['MAX_LOG_FILES']);
                 foreach ($filesToDelete as $file) {
                     unlink($file);
+                    unset($logFilesWithTime[$file]);
                 }
-                $logFiles = glob(self::$ENV['DIR'] . $file . '_*.log');
+                $logFiles = array_keys($logFilesWithTime);
             }
 
             foreach ($logFiles as $file) {
-                if (($now - filemtime($file)) > (self::$ENV['LOG_RETENTION_DAYS'] * 86400)) {
+                if (($now - $logFilesWithTime[$file]) > (self::$ENV['LOG_RETENTION_DAYS'] * 86400)) {
                     unlink($file);
                 }
             }

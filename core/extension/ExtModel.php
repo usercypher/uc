@@ -1,7 +1,24 @@
 <?php
 
 class ExtModel {
-    protected $conn, $table;
+    private $flash = array();
+    private $table, $conn;
+
+    public function __construct($table, $conn) {
+        $this->table = $table;
+        $this->conn = $conn;
+    }
+
+    public function addFlash($type, $message) {
+        $this->flash[] = array(
+            'type' => $type,
+            'message' => $message
+        );
+    }
+
+    public function getFlash() {
+        return $this->flash;
+    }
 
     public function lastInsertId() {
         return $this->conn->lastInsertId();

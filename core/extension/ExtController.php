@@ -2,18 +2,6 @@
 
 class ExtController {
     protected $request, $response;
-    protected $flash = array();
-
-    public function addFlash($type, $message) {
-        $this->flash[] = array(
-            'type' => $type,
-            'message' => $message
-        );
-    }
-
-    public function getFlash() {
-        return $this->flash;
-    }
 
     protected function view($view, $data) {
         ob_start();
