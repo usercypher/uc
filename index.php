@@ -46,7 +46,7 @@ App::setEnvs(array(
 
 $app = new App(new Request, new Response);
 // Define files and extensions
-$app->setFiles('core/extension/', array('ExtController', 'ExtService', 'ExtModel'));
+$app->setFiles('core/extension/', array('ExtController', 'ExtModel'));
 $app->autoSetFiles('src/', array('max' => 1, 'ignore' => array('view')));
 
 // Define classes and dependencies
@@ -78,7 +78,7 @@ $app->setRoutes(array(
 ));
 
 // Load extensions
-$app->loadClasses(array('ExtController', 'ExtService', 'ExtModel'));
+$app->loadClasses(array('ExtController', 'ExtModel'));
 
 // Execute the app
 $app->run();
