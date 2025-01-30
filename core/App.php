@@ -14,13 +14,13 @@ class App {
     private $routes = array();
     private $middlewares = array();
 
+    private $cache = array();
     private $class = array();
     private $classList = array();
     private $classListIndex = 0;
     private $pathList = array();
     private $pathListIndex = 0;
     private $pathListCache = array();
-    private $cache = array();
 
     private $controller = '';
     private $action = '';
@@ -76,24 +76,30 @@ class App {
         $this->classListIndex = 3;
     }
 
-    public static function setEnv($variable, $value) {
-        self::$ENV[$variable] = $value;
+    public static function setEnv($key, $value) {
+        self::$ENV[$key] = $value;
     }
 
-    public static function setEnvs($variables) {
-        foreach ($variables as $var => $value) {
-            self::$ENV[$var] = $value;
+    public static function setEnvs($keys) {
+        foreach ($keys as $key => $value) {
+            self::$ENV[$key] = $value;
         }
     }
 
-    public static function getEnv($variable) {
-        return isset(self::$ENV[$variable]) ? self::$ENV[$variable] : null;
+    public static function getEnv($key) {
+        return isset(self::$ENV[$key]) ? self::$ENV[$key] : null;
     }
 
-    public static function setIni($variables) {
-        foreach ($variables as $var => $value) {
-            if (ini_set($var, $value) === false) {
-                self::log('Failed to set ini setting: ' . $var, array('id' => 'error', 'file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
+    public static function setIni($key, $value) {
+        if (ini_set($key, $value) === false) {
+            self::log('Failed to set ini setting: ' . $key, array('id' => 'error', 'file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
+        }
+    }
+
+    public static function setInis($keys) {
+        foreach ($keys as $key => $value) {
+            if (ini_set($key, $value) === false) {
+                self::log('Failed to set ini setting: ' . $key, array('id' => 'error', 'file' => self::$ENV['ERROR_LOG_FILE'], 'max_size' => self::$ENV['ERROR_LOG_SIZE_LIMIT_MB']));
             }
         }
     }
@@ -295,7 +301,9 @@ class App {
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Request'][self::$CLASS_CLASS_LIST_INDEX];
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Response'][self::$CLASS_CLASS_LIST_INDEX];
         $controller = $this->resolveClass($this->classList[$this->controller], array(), $this->class[$this->classList[$this->controller]][self::$CLASS_CACHE]);
-        return $controller-> {$this->action} ($this->params);
+        return $controller-> {
+            $this->action
+        } ($this->params);
     }
 
     // Dependency Management

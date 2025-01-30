@@ -3,38 +3,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/common.css')); ?>">
-    <script src="<?php echo(App::buildLink('relative', 'asset/js/common.js')); ?>"></script>
+    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/confirm-dialog.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/message-dialog.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/loading-screen.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/general-button.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/general.css')); ?>">
+    <script src="<?php echo(App::buildLink('relative', 'asset/js/confirm-dialog.js')); ?>"></script>
+    <script src="<?php echo(App::buildLink('relative', 'asset/js/message-dialog.js')); ?>"></script>
+    <script src="<?php echo(App::buildLink('relative', 'asset/js/loading-screen.js')); ?>"></script>
 </head>
 <body>
-    <?php include(App::buildPath('src/view/flash-and-loading-and-confirm.php')); ?>
+    <div class="container">
+        <h1>Edit Book</h1>
+        <ul>
+            <li><a href="<?php echo(App::buildLink('route', 'home')); ?>">Home</a></li>
+        </ul>
+        <br>
+        <div class='container-form'>
+            <form action="<?php echo(App::buildLink('route', 'book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
+                <input type="hidden" name="_token" value="<?php echo(isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null); ?>">
+                <input type="hidden" name="book[id]" value="<?php echo($data['book']['id']); ?>">
+                <input type="hidden" name="book[title][current]" value="<?php echo($data['book']['title']); ?>">
 
-    <h1>Edit Book</h1>
-    <ul>
-        <li><a href="<?php echo(App::buildLink('route', 'home')); ?>">Home</a></li>
-    </ul>
-    <br>
+                <label>Title:</label>
+                <input type="text" name="book[title][new]" value="<?php echo($data['book']['title']); ?>" required>
 
-    <div class='container-form'>
-        <form action="<?php echo(App::buildLink('route', 'book/update')); ?>" method="post" onsubmit="return confirm(event, 'Are you sure you want to update this information? Changes will overwrite the current data');">
-            <input type="hidden" name="_token" value="<?php echo(isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null); ?>">
-            <input type="hidden" name="book[id]" value="<?php echo($data['book']['id']); ?>">
-            <input type="hidden" name="book[title][current]" value="<?php echo($data['book']['title']); ?>">
+                <label>Author:</label>
+                <input type="text" name="book[author]" value="<?php echo($data['book']['author']); ?>">
 
-            <label>Title:</label>
-            <input type="text" name="book[title][new]" value="<?php echo($data['book']['title']); ?>" required>
+                <label>Publisher:</label>
+                <input type="text" name="book[publisher]" value="<?php echo($data['book']['publisher']); ?>">
 
-            <label>Author:</label>
-            <input type="text" name="book[author]" value="<?php echo($data['book']['author']); ?>">
+                <label>Year:</label>
+                <input type="date" name="book[year]" value="<?php echo($data['book']['year']); ?>">
 
-            <label>Publisher:</label>
-            <input type="text" name="book[publisher]" value="<?php echo($data['book']['publisher']); ?>">
-
-            <label>Year:</label>
-            <input type="date" name="book[year]" value="<?php echo($data['book']['year']); ?>">
-
-            <input type="submit" value="Update">
-        </form>
+                <input type="submit" value="Update">
+            </form>
+        </div>
     </div>
+    <?php include(App::buildPath('src/view/script.php')); ?>
 </body>
 </html>

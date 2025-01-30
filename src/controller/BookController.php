@@ -56,5 +56,5 @@ class BookController extends ExtController {
         $_SESSION['flash'] = $this->bookModel->getFlash();
 
         return $this->redirect('home');
-    } 
+    }
 }

@@ -9,16 +9,13 @@
 
 return array(
     // Environment Settings
-    'DIR_RELATIVE' => '/public/',  // Ensures static resources are always relative to index.php
+    'DIR_RELATIVE' => 'public/',  // Ensures static resources are always relative to index.php
 
     'SHOW_ERRORS' => 1,  // Enable or disable detailed error messages (1: Show, 0: Hide)
 
-    'CONFIG_FILE' => 'app.config',
-
-    'BASE_URL' => 'http://127.0.0.1:8002',  // Base URL of the application, used to generate links/paths.
+    'ROUTE_MAIN_FILE' => 'index.php',
 
     // Routing Configuration
-    'ROUTE_PARAM' => 'route',  // URL parameter used for routing (e.g., 'route=home'). Becomes irrelevant if URL rewriting is enabled.
     'ROUTE_REWRITE' => 0,  // Enable or disable URL rewriting (1: Yes, 0: No).
                            // If enabled, routing is handled via clean URLs (e.g., /home), 
                            // and the ROUTE_PARAM is not needed.
