@@ -8,7 +8,7 @@ include($dir . 'core/Request.php');
 include($dir . 'core/Response.php');
 
 // Load environment and config
-App::setEnvs(include($dir . 'core/config/env.dev.php'));
+App::setEnvs(include($dir . 'core/config/env.prod.php'));
 App::setEnv('DIR', $dir);
 
 $app = new App(new Request, new Response);

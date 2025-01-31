@@ -142,7 +142,27 @@ body {
     margin: 10px 0;
 }
 
-.custom-confirm-dialog {
+.custom-confirm-dialog, .custom-progress-dialog {
     background-color: #34495e;
     color: #ecf0f1;
+}
+
+.custom-message-dialog-success {
+    background-color: #27ae60;
+}
+
+.custom-message-dialog-error {
+    background-color: #e74c3c;
+}
+
+.custom-message-dialog-info {
+    background-color: #2980b9;
+}
+
+.custom-message-dialog-text {
+    color: #ffffff;
+}
+
+.custom-progress-spinner {
+    border-top: 6px solid #ecf0f1;
 }

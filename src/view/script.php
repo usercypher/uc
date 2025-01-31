@@ -8,39 +8,41 @@ if (isset($_SESSION['flash'])) {
 
     <script>
         var jsonData = <?php echo json_encode($flash); ?>;
-    
+
         if (jsonData && Array.isArray(jsonData)) {
             jsonData.forEach(function(item) {
-                var messageDialog = new MessageDialog();
-    
+                var messageDialog = MessageDialog();
+                
+                messageDialog.setDialogClass('custom-message-dialog-' + item['type']); // Dynamic class based on type
                 messageDialog.setTitleText(item['type']);
-                messageDialog.setDialogClass('message-dialog-' + item['type']); // Dynamic class based on type
+                messageDialog.setTitleClass('custom-message-dialog-text');
+                messageDialog.setCancelClass('custom-message-dialog-text');
                 messageDialog.setMessageText(item['message']);
-    
-                messageDialog.show();
+                messageDialog.setMessageClass('custom-message-dialog-text');
+                window.onload = function() {
+                    setTimeout(function() {
+                        messageDialog.show();
+                    }, 125);
+                };
             });
         }
-    
+
         function submitWithConfirm(event, message) {
             event.preventDefault();
-            var confirmDialog = new ConfirmDialog();
-    
-            // Set title, message, and button text to long strings
-            confirmDialog.setDialogClass('custom-confirm-dialog');
-            confirmDialog.setMessageText(message);
-            confirmDialog.setConfirmClass('btn-red');
-            confirmDialog.setCancelClass('btn-grey');
-    
-            // Show the dialog with the custom long content
-            confirmDialog.show(function() {
-                var loadingScreen = new LoadingScreen();
+            var confirmDialog = ConfirmDialog(function() {
+                var loadingScreen = ProgressDialog();
+                loadingScreen.setDialogClass('custom-progress-dialog');
+                loadingScreen.setSpinnerClass('custom-progress-spinner');
                 loadingScreen.show();
-    
-    
-                // Simulate form submission after a short delay
+
                 setTimeout(function() {
                     event.target.submit();
                 }, 300);
             });
+
+            confirmDialog.setDialogClass('custom-confirm-dialog');
+            confirmDialog.setMessageText(message || 'Are you sure?');
+    
+            confirmDialog.show();
         }
     </script>
