@@ -4,7 +4,12 @@ class ExtController {
     protected $request, $response;
 
     protected function view($view, $data) {
-        ob_start();
+        if (isset($this->request->server['HTTP_ACCEPT_ENCODING']) && strpos($this->request->server['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
+            ob_start("ob_gzhandler");
+        } else {
+            ob_start();
+        }
+
         include(App::buildPath('src/view/' . $view));
         $this->response->content = ob_get_contents();
         ob_end_clean();
