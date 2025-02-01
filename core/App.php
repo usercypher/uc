@@ -1,7 +1,7 @@
 <?php
 
 class App {
-    private static $ENV;
+    private static $ENV = array();
 
     private static $CLASS_ARGS = 0;
     private static $CLASS_PATH = 1;
@@ -14,12 +14,13 @@ class App {
     private $routes = array();
     private $middlewares = array();
 
-    private $cache = array();
     private $class = array();
     private $classList = array();
     private $classListIndex = 0;
     private $pathList = array();
     private $pathListIndex = 0;
+
+    private $cache = array();
     private $pathListCache = array();
 
     private $controller = '';
@@ -39,12 +40,12 @@ class App {
         self::$ENV['DIR_RELATIVE'] = self::$ENV['DIR_RELATIVE'];
 
         self::$ENV['HTTP_PROTOCOL'] = isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http';
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        if (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') {
             self::$ENV['HTTP_PROTOCOL'] = 'https';
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        } else if (isset($request->server['HTTP_X_FORWARDED_PROTO']) && $request->server['HTTP_X_FORWARDED_PROTO'] === 'https') {
             self::$ENV['HTTP_PROTOCOL'] = 'https';
         }
-        self::$ENV['HTTP_HOST'] = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : '127.0.0.1');
+        self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : (isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : '127.0.0.1');
         self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
 
         self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
@@ -57,14 +58,14 @@ class App {
         self::$ENV['LOG_RETENTION_DAYS'] = (isset(self::$ENV['LOG_RETENTION_DAYS']) && (int)self::$ENV['LOG_RETENTION_DAYS'] >= 1) ? (int)self::$ENV['LOG_RETENTION_DAYS'] : 7;
         self::$ENV['MAX_LOG_FILES'] = (isset(self::$ENV['MAX_LOG_FILES']) && (int)self::$ENV['MAX_LOG_FILES'] >= 1) ? (int)self::$ENV['MAX_LOG_FILES'] : 10;
 
-        set_error_handler(array('App', 'errorHandler'));
-        set_exception_handler(array('App', 'exceptionHandler'));
-
         $this->class = array(
             'App' => array(null, null, 0, true),
             'Request' => array(null, null, 1, true),
             'Response' => array(null, null, 2, true),
         );
+
+        $this->classList = array('App', 'Request', 'Response');
+        $this->classListIndex = 3;
 
         $this->cache = array(
             'App' => array($this, true),
@@ -72,8 +73,8 @@ class App {
             'Response' => array($response, true),
         );
 
-        $this->classList = array('App', 'Request', 'Response');
-        $this->classListIndex = 3;
+        set_error_handler(array('App', 'errorHandler'));
+        set_exception_handler(array('App', 'exceptionHandler'));
     }
 
     public static function setEnv($key, $value) {
@@ -253,13 +254,10 @@ class App {
 
         $this->isRunning = true;
         $request = $this->cache['Request'][self::$CACHE_CLASS];
-        $response = $this->cache['Response'][self::$CACHE_CLASS];
         $parseUrl = parse_url($request->uri);
         $path = self::$ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get[self::$ENV['ROUTE_PARAM']]) ? $request->get[self::$ENV['ROUTE_PARAM']] : '');
 
         $route = $this->resolveRoute($request->method, $path);
-
-        $this->routes = null;
 
         if (!isset($route)) {
             throw new Exception('Route not found: ' . $path, 404);
@@ -288,6 +286,7 @@ class App {
         $this->action = $route['handler']['_a'];
         $this->params = $route['params'];
 
+        $response = $this->cache['Response'][self::$CACHE_CLASS];
         $response = $this->process($request, $response, $this);
         $response->send();
     }
@@ -582,20 +581,6 @@ class App {
                 return self::$ENV['BASE_URL'] . $link;
             default:
                 return $link;
-        }
-    }
-
-    public static function validateArray($message, $keys, $requiredKeys) {
-        $missingKeys = array();
-
-        foreach ($requiredKeys as $key) {
-            if (!isset($keys[$key]) || $keys[$key] === null) {
-                $missingKeys[] = $key;
-            }
-        }
-
-        if (!empty($missingKeys)) {
-            throw new Exception($message . implode(', ', $missingKeys), 500);
         }
     }
 }
