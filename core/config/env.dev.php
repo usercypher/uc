@@ -38,6 +38,7 @@ return array(
 
     // Database Configuration
     'DB_HOST' => '127.0.0.1', // Database host, usually 'localhost' or an IP address.
+    'DB_PORT' => '3306', // Port of the database to connect to.
     'DB_NAME' => 'library', // Name of the database to connect to.
     'DB_USER' => 'root', // Username for database authentication.
     'DB_PASS' => '', // Password for the database user. Leave empty for no password.
