@@ -337,7 +337,7 @@ class App {
             'depth' => isset($option['depth']) ? $option['depth'] : 0,
             'max' => isset($option['max']) ? $option['max'] : 0,
             'ignore' => isset($option['ignore']) ? $option['ignore'] : array(),
-            'include' => isset($option['include']) ? $option['include'] : false,
+            'load' => isset($option['load']) ? $option['load'] : false,
             'namespace' => isset($option['namespace']) ? $option['namespace'] : false,
             'namespaceStack' => isset($option['namespaceStack']) ? $option['namespaceStack'] : '',
         );
@@ -357,7 +357,7 @@ class App {
                 } else if (substr($file, -4) === '.php') {
                     $class = ($option['namespace'] ? $option['namespaceStack'] : '')  . substr($file, 0, -4);
                     $this->setFile($class, $path);
-                    if ($option['include']) {
+                    if ($option['load']) {
                         $this->loadClass($class);
                     }
                 }
