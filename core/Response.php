@@ -1,10 +1,7 @@
 <?php
 
 class Response {
-    public $headers;
-    public $code;
-    public $contentType;
-    public $content;
+    public $headers, $code, $contentType, $content;
 
     public function __construct() {
         $this->headers = array();

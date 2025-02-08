@@ -5,15 +5,14 @@ class App {
 
     private static $CLASS_ARGS = 0;
     private static $CLASS_PATH = 1;
-    private static $CLASS_CLASS_LIST_INDEX = 2;
-    private static $CLASS_CACHE = 3;
+    private static $CLASS_CACHE = 2;
+    private static $CLASS_CLASS_LIST_INDEX = 3;
 
     private static $CACHE_CLASS = 0;
-    private static $CACHE_FILE = 1;
+    private static $CACHE_PATH = 1;
 
     private $routes = array();
     private $middlewares = array();
-
     private $class = array();
     private $classList = array();
     private $classListIndex = 0;
@@ -28,6 +27,7 @@ class App {
     private $params = array();
     private $finalMiddlewares = array();
     private $finalMiddlewaresIndex = 0;
+
     private $isRunning = false;
 
     // Application Setup
@@ -39,12 +39,7 @@ class App {
         self::$ENV['DIR'] = self::$ENV['DIR'];
         self::$ENV['DIR_RELATIVE'] = self::$ENV['DIR_RELATIVE'];
 
-        self::$ENV['HTTP_PROTOCOL'] = isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http';
-        if (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') {
-            self::$ENV['HTTP_PROTOCOL'] = 'https';
-        } else if (isset($request->server['HTTP_X_FORWARDED_PROTO']) && $request->server['HTTP_X_FORWARDED_PROTO'] === 'https') {
-            self::$ENV['HTTP_PROTOCOL'] = 'https';
-        }
+        self::$ENV['HTTP_PROTOCOL'] = (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : (isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http');
         self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : (isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : '127.0.0.1');
         self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
 
@@ -59,9 +54,9 @@ class App {
         self::$ENV['MAX_LOG_FILES'] = (isset(self::$ENV['MAX_LOG_FILES']) && (int)self::$ENV['MAX_LOG_FILES'] >= 1) ? (int)self::$ENV['MAX_LOG_FILES'] : 10;
 
         $this->class = array(
-            'App' => array(null, null, 0, true),
-            'Request' => array(null, null, 1, true),
-            'Response' => array(null, null, 2, true),
+            'App' => array(null, null, true, 0),
+            'Request' => array(null, null, true, 1),
+            'Response' => array(null, null, true, 2),
         );
 
         $this->classList = array('App', 'Request', 'Response');
@@ -109,7 +104,7 @@ class App {
 
     public function setRoute($method, $route, $action, $option) {
         if (!isset($this->class[$option['controller']])) {
-            $this->class[$option['controller']] = array(null, null, $this->classListIndex, false);
+            $this->class[$option['controller']] = array(null, null, false, $this->classListIndex);
             $this->classList[$this->classListIndex] = $option['controller'];
             ++$this->classListIndex;
         }
@@ -118,7 +113,7 @@ class App {
         if (isset($option['middleware'])) {
             foreach ($option['middleware'] as $class) {
                 if (!isset($this->class[$class])) {
-                    $this->class[$class] = array(null, null, $this->classListIndex, false);
+                    $this->class[$class] = array(null, null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
                     ++$this->classListIndex;
                 }
@@ -130,7 +125,7 @@ class App {
         if (isset($option['ignore'])) {
             foreach ($option['ignore'] as $class) {
                 if (!isset($this->class[$class])) {
-                    $this->class[$class] = array(null, null, $this->classListIndex, false);
+                    $this->class[$class] = array(null, null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
                     ++$this->classListIndex;
                 }
@@ -159,7 +154,7 @@ class App {
     public function setMiddlewares($middlewares) {
         foreach ($middlewares as $class) {
             if (!isset($this->class[$class])) {
-                $this->class[$class] = array(null, null, $this->classListIndex, false);
+                $this->class[$class] = array(null, null, false, $this->classListIndex);
                 $this->classList[$this->classListIndex] = $class;
                 ++$this->classListIndex;
             }
@@ -168,6 +163,10 @@ class App {
     }
 
     private function resolveRoute($method, $path) {
+        if (!isset($this->routes[$method])) {
+            return null;
+        }
+
         $current = $this->routes[$method];
         $params = array();
         $pathSegments = explode('/', trim($path, '/'));
@@ -256,11 +255,10 @@ class App {
         $request = $this->cache['Request'][self::$CACHE_CLASS];
         $parseUrl = parse_url($request->uri);
         $path = self::$ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get[self::$ENV['ROUTE_PARAM']]) ? $request->get[self::$ENV['ROUTE_PARAM']] : '');
-
         $route = $this->resolveRoute($request->method, $path);
 
         if (!isset($route)) {
-            throw new Exception('Route not found: ' . $path, 404);
+            throw new Exception('Route not found: ' . $request->method . ' ' . $path, 404);
         }
 
         if ($route['handler']['_i'] !== array(true)) {
@@ -300,46 +298,17 @@ class App {
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Request'][self::$CLASS_CLASS_LIST_INDEX];
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Response'][self::$CLASS_CLASS_LIST_INDEX];
         $controller = $this->resolveClass($this->classList[$this->controller], array(), $this->class[$this->classList[$this->controller]][self::$CLASS_CACHE]);
-        return $controller-> {
-            $this->action
-        } ($this->params);
+        return $controller-> { $this->action } ($this->params);
     }
 
     // Dependency Management
 
-    public function setFile($class, $path) {
-        if (!isset($this->class[$class])) {
-            $this->class[$class] = array(null, null, $this->classListIndex, false);
-            $this->classList[$this->classListIndex] = $class;
-            ++$this->classListIndex;
-        }
-
-        $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
-
-        if ($pathListIndex === false) {
-            $pathListIndex = $this->pathListIndex;
-            $this->pathList[$this->pathListIndex] = $path;
-            ++$this->pathListIndex;
-        }
-
-        $this->pathListCache[$path] = $pathListIndex;
-        $this->class[$class][self::$CLASS_PATH] = $pathListIndex;
-    }
-
-    public function setFiles($path, $classes) {
-        foreach ($classes as $class) {
-            $this->setFile($class, $path);
-        }
-    }
-
-    public function autoSetFiles($path, $option) {
+    public function autoSetClass($path, $option) {
         $option = array(
             'depth' => isset($option['depth']) ? $option['depth'] : 0,
             'max' => isset($option['max']) ? $option['max'] : 0,
             'ignore' => isset($option['ignore']) ? $option['ignore'] : array(),
-            'load' => isset($option['load']) ? $option['load'] : false,
-            'namespace' => isset($option['namespace']) ? $option['namespace'] : false,
-            'namespaceStack' => isset($option['namespaceStack']) ? $option['namespaceStack'] : '',
+            'namespace' => isset($option['namespace']) ? $option['namespace'] : '',
         );
 
         if ($dirHandle = opendir(self::$ENV['DIR'] . $path)) {
@@ -348,18 +317,11 @@ class App {
                     continue;
                 }
                 if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(self::$ENV['DIR'] . $path . $file)) {
-                    $previousNamespace = $option['namespaceStack'];
-                    $option['namespaceStack'] = $option['namespaceStack'] . $file . '\\';
                     ++$option['depth'];
-                    $this->autoSetFiles($path . $file . '/', $option);
+                    $this->autoSetClass($path . $file . '/', $option);
                     --$option['depth'];
-                    $option['namespaceStack'] = $previousNamespace;
                 } else if (substr($file, -4) === '.php') {
-                    $class = ($option['namespace'] ? $option['namespaceStack'] : '')  . substr($file, 0, -4);
-                    $this->setFile($class, $path);
-                    if ($option['load']) {
-                        $this->loadClass($class);
-                    }
+                    $this->setClass(substr($file, 0, -4), array('path' => $path, 'namespace' => $option['namespace']));
                 }
             }
             closedir($dirHandle);
@@ -367,27 +329,38 @@ class App {
     }
 
     public function setClass($class, $option) {
+        $class = (isset($option['namespace']) ? $option['namespace'] : '') . $class;
         if (!isset($this->class[$class])) {
-            $this->class[$class] = array(null, null, $this->classListIndex, false);
+            $this->class[$class] = array(null, null, false, $this->classListIndex);
             $this->classList[$this->classListIndex] = $class;
             ++$this->classListIndex;
         }
-        $this->class[$class][self::$CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->class[$class][self::$CLASS_CACHE]);
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
                 if (!isset($this->class[$arg])) {
-                    $this->class[$arg] = array(null, null, $this->classListIndex, false);
+                    $this->class[$arg] = array(null, null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $arg;
                     ++$this->classListIndex;
                 }
                 $this->class[$class][self::$CLASS_ARGS][] = $this->class[$arg][self::$CLASS_CLASS_LIST_INDEX];
             }
         }
+        if (isset($option['path'])) {
+            $pathListIndex = isset($this->pathListCache[$option['path']]) ? $this->pathListCache[$option['path']] : array_search($option['path'], $this->pathList);
+            if ($pathListIndex === false) {
+                $pathListIndex = $this->pathListIndex;
+                $this->pathList[$this->pathListIndex] = $option['path'];
+                ++$this->pathListIndex;
+            }
+            $this->pathListCache[$option['path']] = $pathListIndex;
+            $this->class[$class][self::$CLASS_PATH] = $pathListIndex;
+        }
+        $this->class[$class][self::$CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->class[$class][self::$CLASS_CACHE]);
     }
 
     public function setClasses($option, $classes) {
         foreach ($classes as $class) {
-            $this->setClass($class, (isset($class[1]) && is_array($class[1])) ? $class[1] : $option);
+            $this->setClass($class[0], isset($class[1]) ? array_merge($option, $class[1]) : $option);
         }
     }
 
@@ -409,20 +382,17 @@ class App {
         }
         unset($resolvedStack[$class]);
 
-        $this->loadClass($class);
+        if (!isset($this->cache[$class][self::$CACHE_PATH])) {
+            require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+            $this->cache[$class][self::$CACHE_PATH] = true;
+        }
+
         $resolvedClass = new $class($resolved);
         if ($cache) {
             $this->cache[$class][self::$CACHE_CLASS] = $resolvedClass;
         }
 
         return $resolvedClass;
-    }
-
-    private function loadClass($class) {
-        if (!isset($this->cache[$class][self::$CACHE_FILE])) {
-            require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-            $this->cache[$class][self::$CACHE_FILE] = true;
-        }
     }
 
     // Error Handling
@@ -505,11 +475,8 @@ class App {
     // Config Management
 
     public function saveConfig() {
-        if (!is_dir(dirname($this->configFile()))) {
-            mkdir(dirname($this->configFile()), 0777, true);
-        }
-
-        file_put_contents($this->configFile(), json_encode(array(
+        $configFile = self::$ENV['DIR'] . self::$ENV['CONFIG_FILE'] . '.json';
+        file_put_contents($configFile, json_encode(array(
             'routes' => $this->routes,
             'middlewares' => $this->middlewares,
             'class' => $this->class,
@@ -519,12 +486,13 @@ class App {
             'path_list_index' => $this->pathListIndex
         )));
 
-        exit('File created: ' . $this->configFile());
+        exit('File created: ' . $configFile);
     }
 
     public function loadConfig() {
-        if (file_exists($this->configFile())) {
-            $data = json_decode(file_get_contents($this->configFile()), true);
+        $configFile = self::$ENV['DIR'] . self::$ENV['CONFIG_FILE'] . '.json';
+        if (file_exists($configFile)) {
+            $data = json_decode(file_get_contents($configFile), true);
             $this->routes = $data['routes'];
             $this->middlewares = $data['middlewares'];
             $this->class = $data['class'];
@@ -533,37 +501,30 @@ class App {
             $this->pathList = $data['path_list'];
             $this->pathListIndex = $data['path_list_index'];
         } else {
-            throw new Exception('File not found: ' . $this->configFile(), 404);
+            throw new Exception('File not found: ' . $configFile, 404);
         }
-    }
-
-    public function configFile() {
-        return self::$ENV['DIR'] . self::$ENV['CONFIG_FILE'] . '.json';
     }
 
     // Utility Functions
 
     public function newClass($class) {
-        if (isset($this->class[$class])) {
-            return $this->resolveClass($class, array(), false);
-        }
+        return $this->resolveClass($class, array(), false);
     }
 
     public function cacheClass($class) {
-        if (isset($this->class[$class])) {
-            return $this->resolveClass($class, array(), true);
-        }
+        return $this->resolveClass($class, array(), true);
     }
 
     public function resetClass($class) {
-        if (isset($this->class[$class])) {
-            unset($this->cache[$class][self::$CACHE_CLASS]);
-        }
+        unset($this->cache[$class][self::$CACHE_CLASS]);
     }
 
     public function loadClasses($classes) {
         foreach ($classes as $class) {
-            $this->loadClass($class);
+            if (!isset($this->cache[$class][self::$CACHE_PATH])) {
+                require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+                $this->cache[$class][self::$CACHE_PATH] = true;
+            }
         }
     }
 
