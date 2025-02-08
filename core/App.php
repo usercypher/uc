@@ -369,6 +369,10 @@ class App {
             return $this->cache[$class][self::$CACHE_CLASS];
         }
 
+        if ($cache && !isset($this->cache[$class])) {
+            $this->cache[$class] = array(null, null);
+        }
+
         if (isset($resolvedStack[$class])) {
             throw new Exception('Circular dependency detected: ' . implode(' -> ', array_keys($resolvedStack)) . ' -> ' . $class, 500);
         }
