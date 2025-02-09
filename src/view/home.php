@@ -3,10 +3,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo(App::buildLink('relative', 'asset/css/general.css')); ?>">
-    <script src="<?php echo(App::buildLink('relative', 'asset/js/dialog.js')); ?>"></script>
+    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/dialog.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/general-button.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/general.css')); ?>">
+    <script src="<?php echo(App::buildLink('resource', 'asset/js/dialog.js')); ?>"></script>
 </head>
 <body>
     <div class="container">

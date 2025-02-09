@@ -9,7 +9,7 @@
 
 return array(
     // Environment Settings
-    'DIR_RELATIVE' => 'public/', // Ensures static resources are always relative to index.php
+    'DIR_RESOURCE' => 'public/', // Ensures resources are always relative to index.php
 
     'SHOW_ERRORS' => 1, // Enable or disable detailed error messages (1: Show, 0: Hide)
 
@@ -18,7 +18,6 @@ return array(
     // Routing Configuration
     'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
     // If enabled, routing is handled via clean URLs (e.g., /home),
-    // and the ROUTE_PARAM is not needed.
 
     /*
      * Web Server Configuration for URL Rewriting:

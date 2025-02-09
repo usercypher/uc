@@ -11,11 +11,14 @@ include($dir . 'core/Response.php');
 
 // Load environment variables and configuration settings
 App::setInis(include($dir . 'core/config/ini.dev.php'));
-App::setEnvs(include($dir . 'core/config/env.dev.php'));
+App::setEnvs(include($dir . 'core/config/env.prod.php'));
 App::setEnv('DIR', $dir);
 
 // Initialize the app with Request and Response objects
-$app = new App(new Request, new Response);
+$app = new App(array(
+    'Request' => new Request, 
+    'Response' => new Response
+));
 
 // Auto-load classes from the 'src/' directory (max 1 class, ignore 'view' folder)
 $app->autoSetClass('src/', array('max' => 1, 'ignore' => array('view')));
