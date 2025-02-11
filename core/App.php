@@ -376,19 +376,19 @@ class App {
             $class = array_pop($stack);
             $classParent = end($stack);
             $stackSet[$classParent] = true;
+
             if (isset($stackSet[$class])) {
                 throw new Exception('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
             }
 
             $cache = $this->class[$class][self::$CLASS_CACHE];
             if ($cache && isset($this->cache[$class][self::$CACHE_CLASS])) {
-                if (!empty($stack)) {
-                    unset($stackSet[$classParent]);
-                    $resolved[$classParent][$class] = $this->cache[$class][self::$CACHE_CLASS];
-                    continue;
-                } else {
+                unset($stackSet[$classParent]);
+                if (empty($stack)) {
                     return $this->cache[$class][self::$CACHE_CLASS];
                 }
+                $resolved[$classParent][$class] = $this->cache[$class][self::$CACHE_CLASS];
+                continue;
             }
 
             if (isset($this->class[$class][self::$CLASS_ARGS])) {
@@ -402,6 +402,7 @@ class App {
                     ++$md[$class][$INDEX];
                     continue;
                 }
+
                 unset($md[$class]);
             }
 
@@ -418,9 +419,7 @@ class App {
                 $this->cache[$class][self::$CACHE_CLASS] = $resolvedClass;
             }
 
-            if (!empty($stack)) {
-                $resolved[$classParent][$class] = $resolvedClass;
-            }
+            $resolved[$classParent][$class] = $resolvedClass;
         }
 
         return $resolvedClass;
