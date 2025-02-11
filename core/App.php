@@ -291,12 +291,12 @@ class App {
     public function process($request, $response, $app) {
         if (isset($this->finalMiddlewares[$this->finalMiddlewaresIndex])) {
             ++$this->finalMiddlewaresIndex;
-            $middleware = $this->resolveClass($this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]], array(), $this->class[$this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]]][self::$CLASS_CACHE]);
+            $middleware = $this->resolveClass($this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]]);
             return $middleware->process($request, $response, $app);
         }
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Request'][self::$CLASS_CLASS_LIST_INDEX];
         $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Response'][self::$CLASS_CLASS_LIST_INDEX];
-        $controller = $this->resolveClass($this->classList[$this->controller], array(), $this->class[$this->classList[$this->controller]][self::$CLASS_CACHE]);
+        $controller = $this->resolveClass($this->classList[$this->controller]);
         return $controller-> {$this->action} ($this->params);
     }
 
@@ -535,11 +535,13 @@ class App {
     // Utility Functions
 
     public function newClass($class) {
-        return $this->resolveClass($class, array(), false);
+        $this->class[$class][self::$CLASS_CACHE] = false;
+        return $this->resolveClass($class);
     }
 
     public function cacheClass($class) {
-        return $this->resolveClass($class, array(), true);
+        $this->class[$class][self::$CLASS_CACHE] = true;
+        return $this->resolveClass($class);
     }
 
     public function resetClass($class) {
