@@ -363,36 +363,64 @@ class App {
         }
     }
 
-    private function resolveClass($class, $resolvedStack, $cache) {
-        if ($cache && isset($this->cache[$class][self::$CACHE_CLASS])) {
-            return $this->cache[$class][self::$CACHE_CLASS];
-        }
+    private function resolveClass($class) {
+        $INDEX = 0;
+        $COUNT = 1;
 
-        if (!isset($this->cache[$class])) {
-            $this->cache[$class] = array(null, null);
-        }
-
-        if (isset($resolvedStack[$class])) {
-            throw new Exception('Circular dependency detected: ' . implode(' -> ', array_keys($resolvedStack)) . ' -> ' . $class, 500);
-        }
-
-        $resolvedStack[$class] = true;
+        $stack = array($class);
+        $md = array();
         $resolved = array();
-        if (isset($this->class[$class][self::$CLASS_ARGS])) {
-            foreach ($this->class[$class][self::$CLASS_ARGS] as $argsIndex) {
-                $resolved[$this->classList[$argsIndex]] = $this->resolveClass($this->classList[$argsIndex], $resolvedStack, $this->class[$this->classList[$argsIndex]][self::$CLASS_CACHE]);
+        $resolveClass = null;
+
+        while (!empty($stack)) {
+            $class = array_pop($stack);
+            $classParent = end($stack);
+            $stackSet[$classParent] = true;
+            if (isset($stackSet[$class])) {
+                throw new Exception('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
             }
-        }
-        unset($resolvedStack[$class]);
 
-        if (!isset($this->cache[$class][self::$CACHE_PATH])) {
-            require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-            $this->cache[$class][self::$CACHE_PATH] = true;
-        }
+            $cache = $this->class[$class][self::$CLASS_CACHE];
+            if ($cache && isset($this->cache[$class][self::$CACHE_CLASS])) {
+                if (!empty($stack)) {
+                    unset($stackSet[$classParent]);
+                    $resolved[$classParent][$class] = $this->cache[$class][self::$CACHE_CLASS];
+                    continue;
+                } else {
+                    return $this->cache[$class][self::$CACHE_CLASS];
+                }
+            }
 
-        $resolvedClass = new $class($resolved);
-        if ($cache) {
-            $this->cache[$class][self::$CACHE_CLASS] = $resolvedClass;
+            if (isset($this->class[$class][self::$CLASS_ARGS])) {
+                if (!isset($md[$class])) {
+                    $md[$class] = array(0, count($this->class[$class][self::$CLASS_ARGS]));
+                }
+
+                if ($md[$class][$COUNT] > $md[$class][$INDEX]) {
+                    $stack[] = $class;
+                    $stack[] = $this->classList[$this->class[$class][self::$CLASS_ARGS][$md[$class][$INDEX]]];
+                    ++$md[$class][$INDEX];
+                    continue;
+                }
+                unset($md[$class]);
+            }
+
+            unset($stackSet[$classParent]);
+
+            if (!isset($this->cache[$class][self::$CACHE_PATH])) {
+                require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+                $this->cache[$class][self::$CACHE_PATH] = true;
+            }
+
+            $resolvedClass = new $class(isset($resolved[$class]) ? $resolved[$class] : array());
+            unset($resolved[$class]);
+            if ($cache) {
+                $this->cache[$class][self::$CACHE_CLASS] = $resolvedClass;
+            }
+
+            if (!empty($stack)) {
+                $resolved[$classParent][$class] = $resolvedClass;
+            }
         }
 
         return $resolvedClass;
