@@ -440,15 +440,15 @@ class App {
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json');
-            exit(json_encode(array('error' => true, 'message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine())));
+            echo(json_encode(array('error' => true, 'message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine())));
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
                 header('Content-Type: text/plain');
-                exit('Error Code: ' . $e->getCode() . PHP_EOL . 'Message: ' . $e->getMessage() . PHP_EOL . 'File: ' . $e->getFile() . PHP_EOL . 'Line: ' . $e->getLine() . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $e->getTraceAsString());
+                echo('Error Code: ' . $e->getCode() . PHP_EOL . 'Message: ' . $e->getMessage() . PHP_EOL . 'File: ' . $e->getFile() . PHP_EOL . 'Line: ' . $e->getLine() . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $e->getTraceAsString());
             } else {
                 self::log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine(), 'app.error');
                 $file = self::$ENV['DIR'] . 'core/view/' . $e->getCode() . '.php';
-                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
+                echo(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
             }
         }
     }
