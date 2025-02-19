@@ -449,12 +449,15 @@ class App {
                 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                 $traceOutput = '';
                 foreach ($trace as $key => $frame) {
-                    $traceOutput .= '#' . $key . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . ') : ';
-                    $traceOutput .= isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]';
+                    $traceOutput .= '#' . $key . ' ';
+                    $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
+                    $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . ') : ';
+                    $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
+                    $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
                     $traceOutput .= PHP_EOL;
                 }
                 header('Content-Type: text/plain');
-                exit('Error Code: ' . $errno . PHP_EOL . 'Message: ' . $errstr . PHP_EOL . 'File: ' . $errfile . PHP_EOL . 'Line: ' . $errline . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $traceOutput);
+                exit('ERROR [' . $errno . '] : ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $traceOutput);
             } else {
                 self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
                 $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';

@@ -13,8 +13,13 @@ class Database {
 
     public function getConnection() {
         if (!$this->pdo) {
-            $dsn = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name;
-            $this->pdo = new PDO($dsn, $this->user, $this->pass);
+            try {
+                $this->pdo = new PDO('mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name, $this->user, $this->pass, array(
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING
+                ));
+            } catch (PDOException $e) {
+                trigger_error('500|' . $e->getMessage());
+            }
         }
         return $this->pdo;
     }
