@@ -97,7 +97,7 @@ class ExtModel {
     protected function prepare($query) {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
-            throw new Exception('Prepare failed: ' . $this->conn->errorInfo()[2], 500);
+            trigger_error('500|Prepare failed: ' . $this->conn->errorInfo()[2]);
         }
         return $stmt;
     }
@@ -122,7 +122,7 @@ class ExtModel {
         }
 
         if (!$stmt->execute()) {
-            throw new Exception('Execute failed: ' . implode(', ', $stmt->errorInfo()), 500);
+            trigger_error('500|Execute failed: ' . implode(', ', $stmt->errorInfo()));
         }
 
         return $stmt;

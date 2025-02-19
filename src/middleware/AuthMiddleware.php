@@ -3,7 +3,7 @@
 class AuthMiddleware {
     public function process($request, $response, $next) {
         if (empty($_SESSION['user'])) {
-            $response->headers['Location'] = App::buildLink('route', '/');
+            $response->headers['Location'] = App::url('route', '/');
             return $response;
         }
 

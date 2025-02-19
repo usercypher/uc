@@ -10,7 +10,7 @@ class ExtController {
             ob_start();
         }
 
-        include(App::buildPath('src/view/' . $view));
+        include(App::path('src/view/' . $view));
         $this->response->content = ob_get_contents();
         ob_end_clean();
 
@@ -24,8 +24,8 @@ class ExtController {
         return $this->response;
     }
 
-    protected function redirect($link) {
-        $this->response->headers['Location'] = App::buildLink('route', $link);
+    protected function redirect($url) {
+        $this->response->headers['Location'] = App::url('route', $url);
 
         return $this->response;
     }

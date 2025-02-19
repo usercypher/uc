@@ -3,20 +3,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/general.css')); ?>">
-    <script src="<?php echo(App::buildLink('resource', 'asset/js/dialog.js')); ?>"></script>
+    <link rel="stylesheet" href="<?php echo(App::url('resource', 'asset/css/dialog.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::url('resource', 'asset/css/general-button.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::url('resource', 'asset/css/general.css')); ?>">
+    <script src="<?php echo(App::url('resource', 'asset/js/dialog.js')); ?>"></script>
 </head>
 <body>
     <div class="container">
         <h1>Books</h1>
         <ul>
-            <li><a href="<?php echo(App::buildLink('route', 'home')); ?>">Refresh</a></li>
+            <li><a href="<?php echo(App::url('route', 'home')); ?>">Refresh</a></li>
         </ul>
         <br>
 
-        <a href="<?php echo(App::buildLink('route', 'create')); ?>">
+        <a href="<?php echo(App::url('route', 'create')); ?>">
             <button class="add">Add Book</button>
         </a>
         <br><br>
@@ -32,8 +32,8 @@
                 echo('    <p><strong>Year:</strong> ' . htmlspecialchars($book['year'], ENT_QUOTES, 'UTF-8') . '</p>');
                 // Actions (Edit & Delete)
                 echo('    <div class="actions">');
-                echo('        <a href="' . App::buildLink('route', 'edit/' . $book['id']) . '"><button>Edit</button></a>');
-                echo('<form action="' . App::buildLink('route', 'book/delete') . '" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, \'Delete book ' . $book['title'] . '?\');">');
+                echo('        <a href="' . App::url('route', 'edit/' . $book['id']) . '"><button>Edit</button></a>');
+                echo('<form action="' . App::url('route', 'book/delete') . '" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, \'Delete book ' . $book['title'] . '?\');">');
                 echo('            <input type="hidden" name="_token" value="' . (isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null) . '">');
                 echo('            <input type="hidden" name="book[id]" value="' . $book['id'] . '">');
                 echo('            <input type="submit" value="Delete">');
@@ -44,6 +44,6 @@
             ?>
         </div>
     </div>
-    <?php include(App::buildPath('src/view/script.php')); ?>
+    <?php include(App::path('src/view/script.php')); ?>
 </body>
 </html>

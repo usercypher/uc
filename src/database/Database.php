@@ -15,7 +15,6 @@ class Database {
         if (!$this->pdo) {
             $dsn = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name;
             $this->pdo = new PDO($dsn, $this->user, $this->pass);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
         return $this->pdo;
     }

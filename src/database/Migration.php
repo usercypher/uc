@@ -16,7 +16,7 @@ class Migration {
 
     private function execute($sql, $message) {
         if ($this->conn->exec($sql) === false) {
-            throw new Exception($message . $pdo->errorInfo()[2], 500);
+            trigger_error('500|' . $message . $pdo->errorInfo()[2]);
         }
     }
 

@@ -11,6 +11,8 @@ class App {
     private static $CACHE_CLASS = 0;
     private static $CACHE_PATH = 1;
 
+    private static $ERROR_HANDLED = false;
+
     private $routes = array();
     private $middlewares = array();
     private $class = array();
@@ -68,7 +70,7 @@ class App {
         );
 
         set_error_handler(array('App', 'errorHandler'));
-        set_exception_handler(array('App', 'exceptionHandler'));
+        register_shutdown_function(array('App', 'shutdown'));
     }
 
     public static function setEnv($key, $value) {
@@ -183,7 +185,7 @@ class App {
                     $param = trim($key, '{}');
                     $paramParts = explode(':', $param);
                     $paramName = $paramParts[0];
-                    $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '';
+                    $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '.+';
                     $paramModifier = substr($paramName, -1);
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
@@ -193,14 +195,14 @@ class App {
                         $current = $value;
                         break 2;
                     }
-                    if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment)) {
-                        $params[rtrim($paramName, '?')] = $pathSegment;
+                    if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                        $params[rtrim($paramName, '?')] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
                     }
-                    if (preg_match('/' . $paramRegex . '/', $pathSegment)) {
-                        $params[$paramName] = $pathSegment;
+                    if (preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                        $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
@@ -257,7 +259,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if (!isset($route)) {
-            throw new Exception('Route not found: ' . $request->method . ' ' . $path, 404);
+            trigger_error('404|Route not found: ' . $request->method . ' ' . $path);
         }
 
         if ($route['handler']['_i'] !== array(true)) {
@@ -378,7 +380,7 @@ class App {
             $stackSet[$classParent] = true;
 
             if (isset($stackSet[$class])) {
-                throw new Exception('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
+                trigger_error('500|Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class);
             }
 
             $cache = $this->class[$class][self::$CLASS_CACHE];
@@ -426,30 +428,45 @@ class App {
     }
 
     // Error Handling
-
     public static function errorHandler($errno, $errstr, $errfile, $errline) {
-        throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-    }
-
-    public static function exceptionHandler($e) {
-        header('HTTP/1.1 ' . $e->getCode());
-
         if (ob_get_level() > 0) {
             ob_end_clean();
         }
 
+        self::$ERROR_HANDLED = true;
+
+        $parts = explode('|', $errstr);
+        $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : $errno;
+        $errstr = isset($parts[1]) ? $parts[1] : $errstr;
+
+        header('HTTP/1.1 ' . $errno);
+
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json');
-            echo(json_encode(array('error' => true, 'message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine())));
+            exit('{"error":true,"message":"' . $errstr . '","code":' . $errno . ',"file":"' . $errfile . '","line":' . $errline . '}');
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
+                $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                $traceOutput = '';
+                foreach ($trace as $key => $frame) {
+                    $traceOutput .= '#' . $key . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . ') : ';
+                    $traceOutput .= isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]';
+                    $traceOutput .= PHP_EOL;
+                }
                 header('Content-Type: text/plain');
-                echo('Error Code: ' . $e->getCode() . PHP_EOL . 'Message: ' . $e->getMessage() . PHP_EOL . 'File: ' . $e->getFile() . PHP_EOL . 'Line: ' . $e->getLine() . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $e->getTraceAsString());
+                exit('Error Code: ' . $errno . PHP_EOL . 'Message: ' . $errstr . PHP_EOL . 'File: ' . $errfile . PHP_EOL . 'Line: ' . $errline . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $traceOutput);
             } else {
-                self::log($e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine(), 'app.error');
-                $file = self::$ENV['DIR'] . 'core/view/' . $e->getCode() . '.php';
-                echo(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
+                self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
+                $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
+                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
             }
+        }
+    }
+
+    public static function shutdown() {
+        $error = error_get_last();
+        if ($error !== null && !self::$ERROR_HANDLED) {
+            self::errorHandler($error['type'], $error['message'], $error['file'], $error['line']);
         }
     }
 
@@ -527,7 +544,7 @@ class App {
             $this->pathList = $data['path_list'];
             $this->pathListIndex = $data['path_list_index'];
         } else {
-            throw new Exception('File not found: ' . $configFile, 404);
+            trigger_error('404|File not found: ' . $configFile);
         }
     }
 
@@ -556,18 +573,22 @@ class App {
         }
     }
 
-    public static function buildPath($path) {
+    public static function path($path) {
         return self::$ENV['DIR'] . $path;
     }
 
-    public static function buildLink($option, $link) {
+    public static function url($option, $url) {
         switch ($option) {
             case 'route':
-                return self::$ENV['BASE_URL'] . (self::$ENV['ROUTE_REWRITE'] ? $link : (self::$ENV['ROUTE_MAIN_FILE'] . '?route=/' . $link));
+                return self::$ENV['BASE_URL'] . (self::$ENV['ROUTE_REWRITE'] ? $url : (self::$ENV['ROUTE_MAIN_FILE'] . '?route=/' . $url));
             case 'resource':
-                return self::$ENV['BASE_URL'] . self::$ENV['DIR_RESOURCE'] . $link;
+                return self::$ENV['BASE_URL'] . self::$ENV['DIR_RESOURCE'] . $url;
             default:
-                return $link;
+                trigger_error('1001|Invalid option: ' . $option);
         }
+    }
+
+    public static function urlEncode($url) {
+        return urlencode(preg_replace('/\s+/', '-', strtolower($url)));
     }
 }

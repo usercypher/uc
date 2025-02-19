@@ -3,20 +3,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo(App::buildLink('resource', 'asset/css/general.css')); ?>">
-    <script src="<?php echo(App::buildLink('resource', 'asset/js/dialog.js')); ?>"></script>
+    <link rel="stylesheet" href="<?php echo(App::url('resource', 'asset/css/dialog.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::url('resource', 'asset/css/general-button.css')); ?>">
+    <link rel="stylesheet" href="<?php echo(App::url('resource', 'asset/css/general.css')); ?>">
+    <script src="<?php echo(App::url('resource', 'asset/js/dialog.js')); ?>"></script>
 </head>
 <body>
     <div class="container">
         <h1>Edit Book</h1>
         <ul>
-            <li><a href="<?php echo(App::buildLink('route', 'home')); ?>">Home</a></li>
+            <li><a href="<?php echo(App::url('route', 'home')); ?>">Home</a></li>
         </ul>
         <br>
         <div class='container-form'>
-            <form action="<?php echo(App::buildLink('route', 'book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
+            <form action="<?php echo(App::url('route', 'book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
                 <input type="hidden" name="_token" value="<?php echo(isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null); ?>">
                 <input type="hidden" name="book[id]" value="<?php echo($data['book']['id']); ?>">
                 <input type="hidden" name="book[title][current]" value="<?php echo($data['book']['title']); ?>">
@@ -37,6 +37,6 @@
             </form>
         </div>
     </div>
-    <?php include(App::buildPath('src/view/script.php')); ?>
+    <?php include(App::path('src/view/script.php')); ?>
 </body>
 </html>
