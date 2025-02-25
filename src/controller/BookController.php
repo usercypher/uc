@@ -1,6 +1,6 @@
 <?php
 
-class BookController extends ExtController {
+class BookController extends Controller {
     protected $request, $response;
     private $bookModel;
 

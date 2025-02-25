@@ -25,10 +25,10 @@ $app->autoSetClass('src/', array('max' => 1, 'ignore' => array('view')));
 
 // Define extensions from the 'core/extension/' directory
 $app->setClasses(array(
-    'path' => 'core/extension/'
+    'path' => 'core/base/'
 ), array(
-    array('ExtController'), 
-    array('ExtModel')
+    array('Controller'), 
+    array('Model')
 ));
 
 // Set up the 'Database' class with caching enabled
@@ -77,8 +77,8 @@ $app->setRoutes(array(
     array('POST', 'delete', 'delete')
 ));
 
-// Load extension classes (ExtController, ExtModel)
-$app->loadClasses(array('ExtController', 'ExtModel'));
+// Load base classes (Controller, Model)
+$app->loadClasses(array('Controller', 'Model'));
 
 // Run the application
 $app->run();

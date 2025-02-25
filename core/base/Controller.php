@@ -1,7 +1,7 @@
 <?php
 
-class ExtController {
-    protected $request, $response;
+class Controller {
+    protected $asset = array();
 
     protected function view($view, $data) {
         if (isset($this->request->server['HTTP_ACCEPT_ENCODING']) && strpos($this->request->server['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
@@ -28,5 +28,19 @@ class ExtController {
         $this->response->headers['Location'] = App::url('route', $url);
 
         return $this->response;
+    }
+
+    protected function addAsset($type, $link) {
+        $this->asset[$type][] = $link;
+    }
+
+    protected function printAsset($type) {
+        foreach ($this->asset[$type] as $link) {
+            if ($type === 'css') {
+                echo '<link rel="stylesheet" type="text/css" href="' . $link . '">';
+            } else if ($type === 'js') {
+                echo '<script src="' . $link . '"></script>' . PHP_EOL;
+            }
+        }
     }
 }

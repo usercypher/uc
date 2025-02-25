@@ -1,6 +1,6 @@
 <?php
 
-class BookModel extends ExtModel {
+class BookModel extends Model {
     public function __construct($dependencies) {
         parent::__construct('books', $dependencies['Database']->getConnection());
     }

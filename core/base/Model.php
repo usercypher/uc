@@ -1,6 +1,6 @@
 <?php
 
-class ExtModel {
+class Model {
     private $flash = array();
     private $table, $conn;
 

@@ -12,6 +12,7 @@ class App {
     private static $CACHE_PATH = 1;
 
     private static $ERROR_HANDLED = false;
+    private static $SHOW_TRACE = true;
 
     private $routes = array();
     private $middlewares = array();
@@ -446,18 +447,21 @@ class App {
             exit('{"error":true,"message":"' . $errstr . '","code":' . $errno . ',"file":"' . $errfile . '","line":' . $errline . '}');
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
-                $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                 $traceOutput = '';
-                foreach ($trace as $key => $frame) {
-                    $traceOutput .= '#' . $key . ' ';
-                    $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
-                    $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . ') : ';
-                    $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
-                    $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
-                    $traceOutput .= PHP_EOL;
+                if (self::$SHOW_TRACE) {
+                    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                    $traceOutput = 'Stack trace: ' . PHP_EOL;
+                    foreach ($trace as $key => $frame) {
+                        $traceOutput .= '#' . $key . ' ';
+                        $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
+                        $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
+                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
+                        $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
+                        $traceOutput .= PHP_EOL;
+                    }
                 }
                 header('Content-Type: text/plain');
-                exit('ERROR [' . $errno . '] : ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . 'Stack trace: ' . PHP_EOL . $traceOutput);
+                exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
                 self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
                 $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
@@ -469,6 +473,7 @@ class App {
     public static function shutdown() {
         $error = error_get_last();
         if ($error !== null && !self::$ERROR_HANDLED) {
+            self::$SHOW_TRACE = false;
             self::errorHandler($error['type'], $error['message'], $error['file'], $error['line']);
         }
     }
