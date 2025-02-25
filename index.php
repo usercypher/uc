@@ -23,7 +23,7 @@ $app = new App(array(
 // Auto-load classes from the 'src/' directory (max 1 class, ignore 'view' folder)
 $app->autoSetClass('src/', array('max' => 1, 'ignore' => array('view')));
 
-// Define extensions from the 'core/extension/' directory
+// Define base from the 'core/base/' directory
 $app->setClasses(array(
     'path' => 'core/base/'
 ), array(
