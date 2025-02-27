@@ -40,9 +40,9 @@ class App {
         $response = $dependencies['Response'];
 
         self::$ENV['ROUTE_REWRITE'] = self::$ENV['ROUTE_REWRITE'];
-        self::$ENV['ROUTE_MAIN_FILE'] = (isset(self::$ENV['ROUTE_MAIN_FILE']) ? self::$ENV['ROUTE_MAIN_FILE'] : 'index.php');
         self::$ENV['DIR'] = self::$ENV['DIR'];
         self::$ENV['DIR_RESOURCE'] = self::$ENV['DIR_RESOURCE'];
+        self::$ENV['DIR_INDEX'] = self::$ENV['DIR_INDEX'];
 
         self::$ENV['HTTP_PROTOCOL'] = (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : (isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http');
         self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : (isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : '127.0.0.1');
@@ -588,9 +588,9 @@ class App {
     public static function url($option, $url) {
         switch ($option) {
             case 'route':
-                return self::$ENV['BASE_URL'] . (self::$ENV['ROUTE_REWRITE'] ? $url : (self::$ENV['ROUTE_MAIN_FILE'] . '?route=/' . $url));
+                return self::$ENV['BASE_URL'] . self::$ENV['DIR_INDEX'] . (self::$ENV['ROUTE_REWRITE'] ? $url : ('index.php?route=/' . $url));
             case 'resource':
-                return self::$ENV['BASE_URL'] . self::$ENV['DIR_RESOURCE'] . $url;
+                return self::$ENV['DIR_RESOURCE'] . $url;
             default:
                 trigger_error('1001|Invalid option: ' . $option);
         }

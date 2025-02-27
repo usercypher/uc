@@ -1,13 +1,6 @@
-<?php
-$flash = array();
-if (isset($_SESSION['flash'])) {
-    $flash = $_SESSION['flash'];
-    unset($_SESSION['flash']);
-}
-?>
 
     <script>
-        var jsonData = <?php echo json_encode($flash); ?>;
+        var jsonData = <?php echo json_encode($data['flash']); ?>;
 
         if (jsonData && Array.isArray(jsonData)) {
             jsonData.forEach(function(item) {

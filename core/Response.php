@@ -12,6 +12,7 @@ class Response {
 
     public function send() {
         header('HTTP/1.1 ' . $this->code);
+
         foreach ($this->headers as $key => $value) {
             header($key . ': ' . $value);
         }
@@ -20,6 +21,6 @@ class Response {
             header('Content-Type: ' . $this->contentType);
         }
 
-        exit($this->content);
+        exit(isset($this->headers['Location']) ? '' : $this->content);
     }
 }

@@ -11,6 +11,8 @@ return array(
     // Environment Settings
     'DIR_RESOURCE' => 'public/', // Ensures resources are always relative to index.php
 
+    'DIR_INDEX' => '',
+
     'SHOW_ERRORS' => 1, // Enable or disable detailed error messages (1: Show, 0: Hide)
 
     'ROUTE_MAIN_FILE' => 'index.php',
