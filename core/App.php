@@ -525,8 +525,8 @@ class App {
 
     // Config Management
 
-    public function saveConfig() {
-        $configFile = self::$ENV['DIR'] . 'core/storage/data/app.config.json';
+    public function saveConfig($file) {
+        $configFile = self::$ENV['DIR'] . 'core/storage/data/' . $file . '.json';
         file_put_contents($configFile, json_encode(array(
             'routes' => $this->routes,
             'middlewares' => $this->middlewares,
@@ -540,8 +540,8 @@ class App {
         exit('File created: ' . $configFile);
     }
 
-    public function loadConfig() {
-        $configFile = self::$ENV['DIR'] . 'core/storage/data/app.config.json';
+    public function loadConfig($file) {
+        $configFile = self::$ENV['DIR'] . 'core/storage/data/' . $file . '.json';
         if (file_exists($configFile)) {
             $data = json_decode(file_get_contents($configFile), true);
             $this->routes = $data['routes'];
@@ -590,7 +590,7 @@ class App {
             case 'route':
                 return self::$ENV['BASE_URL'] . self::$ENV['DIR_INDEX'] . (self::$ENV['ROUTE_REWRITE'] ? $url : ('index.php?route=/' . $url));
             case 'resource':
-                return self::$ENV['DIR_RESOURCE'] . $url;
+                return self::$ENV['BASE_URL'] . self::$ENV['DIR_RESOURCE'] . $url;
             default:
                 trigger_error('1001|Invalid option: ' . $option);
         }
