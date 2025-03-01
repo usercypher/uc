@@ -1,0 +1,2 @@
+[2025-02-15 13:43:40.766613] Failed to set ini setting: max_input_time
+[2025-03-01 11:36:43.602515] Cannot modify header information - headers already sent by (output started at /storage/emulated/0/htdocs/main/core/Response.php:24) in /storage/emulated/0/htdocs/main/core/App.php on line 446
