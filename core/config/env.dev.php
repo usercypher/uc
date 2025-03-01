@@ -10,14 +10,12 @@
 return array(
     // Environment Settings
     'DIR_WEB' => 'public/',
+    'DIR_SRC' => 'src/',
 
     'URL_DIR_WEB' => 'public/',
-
     'URL_DIR_INDEX' => '',
 
     'SHOW_ERRORS' => 1, // Enable or disable detailed error messages (1: Show, 0: Hide)
-
-    'ROUTE_MAIN_FILE' => 'index.php',
 
     // Routing Configuration
     'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
@@ -38,6 +36,11 @@ return array(
      *         try_files $uri $uri/ /index.php?$query_string;
      *     }
      */
+
+    'LOG_SIZE_LIMIT_MB' => 5,
+    'LOG_CLEANUP_INTERVAL_DAYS' => 1,
+    'LOG_RETENTION_DAYS' => 7,
+    'MAX_LOG_FILES' => 10,
 
     // Database Configuration
     'DB_HOST' => '127.0.0.1', // Database host, usually 'localhost' or an IP address.

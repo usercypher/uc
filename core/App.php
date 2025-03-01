@@ -43,20 +43,21 @@ class App {
         self::$ENV['DIR'] = self::$ENV['DIR'];
 
         self::$ENV['DIR_WEB'] = self::$ENV['DIR_WEB'];
+        self::$ENV['DIR_SRC'] = self::$ENV['DIR_SRC'];
 
         self::$ENV['URL_DIR_WEB'] = self::$ENV['URL_DIR_WEB'];
         self::$ENV['URL_DIR_INDEX'] = self::$ENV['URL_DIR_INDEX'];
 
         self::$ENV['HTTP_PROTOCOL'] = (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : (isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http');
-        self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : (isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : '127.0.0.1');
+        self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1';
         self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
 
         self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
 
-        self::$ENV['LOG_SIZE_LIMIT_MB'] = (isset(self::$ENV['LOG_SIZE_LIMIT_MB']) && (int)self::$ENV['LOG_SIZE_LIMIT_MB'] >= 5) ? (int)self::$ENV['LOG_SIZE_LIMIT_MB'] : 5;
-        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = (isset(self::$ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int)self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] >= 1) ? (int)self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
-        self::$ENV['LOG_RETENTION_DAYS'] = (isset(self::$ENV['LOG_RETENTION_DAYS']) && (int)self::$ENV['LOG_RETENTION_DAYS'] >= 1) ? (int)self::$ENV['LOG_RETENTION_DAYS'] : 7;
-        self::$ENV['MAX_LOG_FILES'] = (isset(self::$ENV['MAX_LOG_FILES']) && (int)self::$ENV['MAX_LOG_FILES'] >= 1) ? (int)self::$ENV['MAX_LOG_FILES'] : 10;
+        self::$ENV['LOG_SIZE_LIMIT_MB'] = (int) self::$ENV['LOG_SIZE_LIMIT_MB'];
+        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'];
+        self::$ENV['LOG_RETENTION_DAYS'] = (int) self::$ENV['LOG_RETENTION_DAYS'];
+        self::$ENV['MAX_LOG_FILES'] = (int) self::$ENV['MAX_LOG_FILES'];
 
         $this->class = array(
             'App' => array(array(1, 2), null, true, 0),
@@ -590,6 +591,10 @@ class App {
 
     public static function web($path) {
         return self::$ENV['DIR'] . self::$ENV['DIR_WEB'] . $path;
+    }
+
+    public static function src($path) {
+        return self::$ENV['DIR'] . self::$ENV['DIR_SRC'] . $path;
     }
 
     public static function url($option, $url) {
