@@ -48,4 +48,14 @@ return array(
     'DB_NAME' => 'library', // Name of the database to connect to.
     'DB_USER' => 'root', // Username for database authentication.
     'DB_PASS' => '', // Password for the database user. Leave empty for no password.
+
+    'DB_TIME' => '+08:00',
+
+    /*  
+     * Timezones
+     *
+     * -05:00 = Eastern Standard Time (EST)
+     * +08:00 = Philippine Standard Time (PST)
+     * +09:00 = Japan Standard Time (JST)
+     */
 );
