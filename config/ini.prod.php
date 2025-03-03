@@ -11,6 +11,7 @@ return array(
 
     // Error Reporting
     'display_errors' => 'Off', // Hide errors (production only)
+    'display_startup_errors' => 'Off',
     'error_reporting' => E_ALL & ~E_NOTICE & ~E_DEPRECATED, // Log only critical errors
     'log_errors' => 1, // Log errors
     'error_log' => 'error_log', // Log file path

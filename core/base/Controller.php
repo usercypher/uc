@@ -15,7 +15,7 @@ class Controller {
             ob_start();
         }
 
-        include(App::src('view/' . $view));
+        include(App::path('src', 'view/' . $view));
         $this->response->content = ob_get_contents();
         ob_end_clean();
 

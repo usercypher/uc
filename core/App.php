@@ -483,23 +483,23 @@ class App {
     }
 
     public static function log($message, $file) {
-        $logFile = self::$ENV['DIR'] . 'core/storage/log/' . $file . '.log';
+        $logFile = self::$ENV['DIR'] . 'storage/log/' . $file . '.log';
         $maxLogSize = self::$ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
         $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
 
         if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
-            $newLogFile = self::$ENV['DIR'] . 'core/storage/log/' . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = self::$ENV['DIR'] . 'storage/log/' . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
         file_put_contents($logFile, $message, FILE_APPEND);
 
-        $timestampFile = self::$ENV['DIR'] . 'core/storage/data/' . $file . '_last-log-cleanup-timestamp.txt';
+        $timestampFile = self::$ENV['DIR'] . 'storage/data/' . $file . '_last-log-cleanup-timestamp.txt';
         $now = time();
         $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
 
         if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
-            $logFiles = glob(self::$ENV['DIR'] . 'core/storage/log/' . $file . '_*.log');
+            $logFiles = glob(self::$ENV['DIR'] . 'storage/log/' . $file . '_*.log');
             $logFilesWithTime = array();
             foreach ($logFiles as $file) {
                 $logFilesWithTime[$file] = filemtime($file);
@@ -530,7 +530,7 @@ class App {
     // Config Management
 
     public function saveConfig($file) {
-        $configFile = self::$ENV['DIR'] . 'core/storage/data/' . $file . '.json';
+        $configFile = self::$ENV['DIR'] . 'storage/data/' . $file . '.json';
         file_put_contents($configFile, json_encode(array(
             'routes' => $this->routes,
             'middlewares' => $this->middlewares,
@@ -545,7 +545,7 @@ class App {
     }
 
     public function loadConfig($file) {
-        $configFile = self::$ENV['DIR'] . 'core/storage/data/' . $file . '.json';
+        $configFile = self::$ENV['DIR'] . 'storage/data/' . $file . '.json';
         if (file_exists($configFile)) {
             $data = json_decode(file_get_contents($configFile), true);
             $this->routes = $data['routes'];
@@ -585,19 +585,20 @@ class App {
         }
     }
 
-    public static function path($path) {
-        return self::$ENV['DIR'] . $path;
+    public static function path($option, $path = '') {
+        switch ($option) {
+            case 'root':
+                return self::$ENV['DIR'] . $path;
+            case 'web':
+                return self::$ENV['DIR'] . self::$ENV['DIR_WEB'] . $path;
+            case 'src':
+                return self::$ENV['DIR'] . self::$ENV['DIR_SRC'] . $path;
+            default:
+                trigger_error('1001|Invalid option: ' . $option);
+        }
     }
 
-    public static function web($path) {
-        return self::$ENV['DIR'] . self::$ENV['DIR_WEB'] . $path;
-    }
-
-    public static function src($path) {
-        return self::$ENV['DIR'] . self::$ENV['DIR_SRC'] . $path;
-    }
-
-    public static function url($option, $url) {
+    public static function url($option, $url = '') {
         switch ($option) {
             case 'route':
                 return self::$ENV['BASE_URL'] . self::$ENV['URL_DIR_INDEX'] . (self::$ENV['ROUTE_REWRITE'] ? $url : ('index.php?route=/' . $url));

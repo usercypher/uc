@@ -35,6 +35,6 @@
             </form>
         </div>
     </div>
-    <?php include(App::path('src/view/script.php')); ?>
+    <?php require(App::path('src', 'view/script.php')); ?>
 </body>
 </html>

@@ -5,13 +5,14 @@
 $dir = __DIR__ . '/';
 
 // Include core classes for application functionality
-include($dir . 'core/App.php');
-include($dir . 'core/Request.php');
-include($dir . 'core/Response.php');
+require($dir . 'core/App.php');
+require($dir . 'core/Request.php');
+require($dir . 'core/Response.php');
 
 // Load environment variables and configuration settings
-App::setInis(include($dir . 'core/config/ini.dev.php'));
-App::setEnvs(include($dir . 'core/config/env.prod.php'));
+App::setInis(require($dir . 'config/ini.dev.php'));
+App::setEnvs(require($dir . 'config/env.dev.php'));
+
 App::setEnv('DIR', $dir);
 
 // Initialize the app with Request and Response objects
@@ -20,6 +21,7 @@ $app = new App(array(
     'Response' => new Response
 ));
 
+// [CONFIG] start
 // Auto-load classes from the 'src/' directory (max 1 class, ignore 'view' folder)
 $app->autoSetClass('src/', array('max' => 1, 'ignore' => array('view')));
 
@@ -76,6 +78,14 @@ $app->setRoutes(array(
     array('POST', 'update', 'update'),
     array('POST', 'delete', 'delete')
 ));
+// [CONFIG] end
+
+// Uncomment to save the configuration once, then load it on subsequent runs.
+// The configuration is saved using 'saveConfig' and loaded with 'loadConfig'.
+// After the initial run, you can comment out 'saveConfig' and just use 'loadConfig'.
+// When using 'loadConfig', remove or comment out the [CONFIG] body to avoid redundant config setting.
+//$app->saveConfig('app.config'); // Save the configuration once
+//$app->loadConfig('app.config'); // Load the saved configuration on subsequent runs
 
 // Load base classes (Controller, Model)
 $app->loadClasses(array('Controller', 'Model'));

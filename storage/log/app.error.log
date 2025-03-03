@@ -1,0 +1,11 @@
+[2025-03-03 08:29:16.509964] Uncaught Exception: Invalid CSRF token in /storage/emulated/0/htdocs/main/src/middleware/CsrfValidateMiddleware.php:15
+Stack trace:
+#0 /storage/emulated/0/htdocs/main/core/App.php(302): CsrfValidateMiddleware->process(Object(Request), Object(Response), Object(App))
+#1 /storage/emulated/0/htdocs/main/src/middleware/SanitizeMiddleware.php(19): App->process(Object(Request), Object(Response), Object(App))
+#2 /storage/emulated/0/htdocs/main/core/App.php(302): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
+#3 /storage/emulated/0/htdocs/main/src/middleware/SessionMiddleware.php(15): App->process(Object(Request), Object(Response), Object(App))
+#4 /storage/emulated/0/htdocs/main/core/App.php(302): SessionMiddleware->process(Object(Request), Object(Response), Object(App))
+#5 /storage/emulated/0/htdocs/main/core/App.php(294): App->process(Object(Request), Object(Response), Object(App))
+#6 /storage/emulated/0/htdocs/main/index.php(94): App->run()
+#7 {main}
+  thrown in /storage/emulated/0/htdocs/main/src/middleware/CsrfValidateMiddleware.php on line 15

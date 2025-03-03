@@ -9,13 +9,13 @@
 
 return array(
     // Environment Settings
-    'DIR_WEB' => 'public/',
-    'DIR_SRC' => 'src/',
+    'DIR_WEB' => 'public/', // Directory for web access (e.g., public folder)
+    'DIR_SRC' => 'src/',    // Source directory for application code
 
-    'URL_DIR_WEB' => 'public/',
-    'URL_DIR_INDEX' => '',
+    'URL_DIR_WEB' => 'public/', // URL path for web access
+    'URL_DIR_INDEX' => '',      // URL path for the index (usually root)
 
-    'SHOW_ERRORS' => 0, // Enable or disable detailed error messages (1: Show, 0: Hide)
+    'SHOW_ERRORS' => 1, // Enable or disable detailed error messages (1: Show, 0: Hide)
 
     // Routing Configuration
     'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
@@ -36,7 +36,7 @@ return array(
      *         try_files $uri $uri/ /index.php?$query_string;
      *     }
      */
-     
+
     'LOG_SIZE_LIMIT_MB' => 5,
     'LOG_CLEANUP_INTERVAL_DAYS' => 1,
     'LOG_RETENTION_DAYS' => 7,
