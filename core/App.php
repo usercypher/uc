@@ -45,9 +45,9 @@ class App {
         self::$ENV['DIR_SRC'] = self::$ENV['DIR_SRC'];
 
         self::$ENV['ROUTE_REWRITE'] = self::$ENV['ROUTE_REWRITE'];
+        self::$ENV['ROUTE_FILE_PATH'] = self::$ENV['ROUTE_REWRITE'] ? '' : (self::$ENV['URL_DIR_INDEX'] . 'index.php?route=/');
 
         self::$ENV['URL_DIR_WEB'] = self::$ENV['URL_DIR_WEB'];
-        self::$ENV['URL_DIR_INDEX'] = self::$ENV['ROUTE_REWRITE'] ? '' : (self::$ENV['URL_DIR_INDEX'] . 'index.php?route=/');
 
         self::$ENV['HTTP_PROTOCOL'] = (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : (isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http');
         self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1';
@@ -602,7 +602,7 @@ class App {
     public static function url($option, $url = '') {
         switch ($option) {
             case 'route':
-                return self::$ENV['BASE_URL'] . self::$ENV['URL_DIR_INDEX'] . $url;
+                return self::$ENV['BASE_URL'] . self::$ENV['ROUTE_FILE_PATH'] . $url;
             case 'web':
                 return self::$ENV['BASE_URL'] . self::$ENV['URL_DIR_WEB'] . $url;
             default:
