@@ -13,7 +13,7 @@ return array(
     'DIR_SRC' => 'src/',    // Source directory for application code
 
     'URL_DIR_WEB' => 'public/', // URL path for web access
-    'URL_DIR_INDEX' => '',      // URL path for the index (usually root)
+    'URL_DIR_INDEX' => '',      // URL path for the index (usually root), become useless when route rewrite is enable
 
     'SHOW_ERRORS' => 0, // Enable or disable detailed error messages (1: Show, 0: Hide)
 
