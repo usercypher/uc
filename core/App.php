@@ -11,9 +11,6 @@ class App {
     private static $CACHE_CLASS = 0;
     private static $CACHE_PATH = 1;
 
-    private static $ERROR_HANDLED = false;
-    private static $SHOW_TRACE = true;
-
     private $routes = array();
     private $middlewares = array();
     private $class = array();
@@ -435,11 +432,22 @@ class App {
 
     // Error Handling
     public static function errorHandler($errno, $errstr, $errfile, $errline) {
+        self::error($errno, $errstr, $errfile, $errline, $enableStackTrace);
+    }
+
+    public static function shutdown() {
+        $error = error_get_last();
+        if ($error !== null) {
+            if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
+                self::error($error['type'], $error['message'], $error['file'], $error['line'], false);
+            }
+        }
+    }
+
+    public static function error($errno, $errstr, $errfile, $errline, $enableStackTrace) {
         if (ob_get_level() > 0) {
             ob_end_clean();
         }
-
-        self::$ERROR_HANDLED = true;
 
         $parts = explode('|', $errstr);
         $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : $errno;
@@ -453,7 +461,7 @@ class App {
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
-                if (self::$SHOW_TRACE) {
+                if ($enableStackTrace) {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . PHP_EOL;
                     foreach ($trace as $key => $frame) {
@@ -472,14 +480,6 @@ class App {
                 $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
                 exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
             }
-        }
-    }
-
-    public static function shutdown() {
-        $error = error_get_last();
-        if ($error !== null && !self::$ERROR_HANDLED) {
-            self::$SHOW_TRACE = false;
-            self::errorHandler($error['type'], $error['message'], $error['file'], $error['line']);
         }
     }
 
@@ -564,12 +564,14 @@ class App {
     // Utility Functions
 
     public function newClass($class) {
+        $mode = $this->class[$class][self::$CLASS_CACHE];
         $this->class[$class][self::$CLASS_CACHE] = false;
-        return $this->resolveClass($class);
+        $classInstance = $this->resolveClass($class);
+        $this->class[$class][self::$CLASS_CACHE] = $mode;
+        return $classInstance;
     }
 
-    public function cacheClass($class) {
-        $this->class[$class][self::$CLASS_CACHE] = true;
+    public function getClass($class) {
         return $this->resolveClass($class);
     }
 
