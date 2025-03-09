@@ -46,8 +46,8 @@ class App {
 
         self::$ENV['URL_DIR_WEB'] = self::$ENV['URL_DIR_WEB'];
 
-        self::$ENV['HTTP_PROTOCOL'] = (isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : (isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : 'http');
-        self::$ENV['HTTP_HOST'] = isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1';
+        self::$ENV['HTTP_PROTOCOL'] = isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http');
+        self::$ENV['HTTP_HOST'] = isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : (isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1');
         self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
 
         self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
