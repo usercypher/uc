@@ -431,8 +431,9 @@ class App {
     }
 
     // Error Handling
+
     public static function errorHandler($errno, $errstr, $errfile, $errline) {
-        self::error($errno, $errstr, $errfile, $errline, $enableStackTrace);
+        self::error($errno, $errstr, $errfile, $errline, true);
     }
 
     public static function shutdown() {
@@ -465,12 +466,14 @@ class App {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . PHP_EOL;
                     foreach ($trace as $key => $frame) {
-                        $traceOutput .= '#' . $key . ' ';
-                        $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
-                        $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
-                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
-                        $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
-                        $traceOutput .= PHP_EOL;
+                        if ($key >= 2) {
+                            $traceOutput .= '#' . $key - 2 . ' ';
+                            $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
+                            $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
+                            $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
+                            $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
+                            $traceOutput .= PHP_EOL;
+                        }
                     }
                 }
                 header('Content-Type: text/plain');
@@ -480,51 +483,6 @@ class App {
                 $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
                 exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
             }
-        }
-    }
-
-    public static function log($message, $file) {
-        $logFile = self::$ENV['DIR'] . 'storage/log/' . $file . '.log';
-        $maxLogSize = self::$ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
-        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
-
-        if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
-            $newLogFile = self::$ENV['DIR'] . 'storage/log/' . $file . '_' . date('Y-m-d_H-i-s') . '.log';
-            rename($logFile, $newLogFile);
-        }
-
-        file_put_contents($logFile, $message, FILE_APPEND);
-
-        $timestampFile = self::$ENV['DIR'] . 'storage/data/' . $file . '_last-log-cleanup-timestamp.txt';
-        $now = time();
-        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
-
-        if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
-            $logFiles = glob(self::$ENV['DIR'] . 'storage/log/' . $file . '_*.log');
-            $logFilesWithTime = array();
-            foreach ($logFiles as $file) {
-                $logFilesWithTime[$file] = filemtime($file);
-            }
-
-            asort($logFilesWithTime);
-            $logFiles = array_keys($logFilesWithTime);
-
-            if (count($logFiles) > self::$ENV['MAX_LOG_FILES']) {
-                $filesToDelete = array_slice($logFiles, 0, count($logFiles) - self::$ENV['MAX_LOG_FILES']);
-                foreach ($filesToDelete as $file) {
-                    unlink($file);
-                    unset($logFilesWithTime[$file]);
-                }
-                $logFiles = array_keys($logFilesWithTime);
-            }
-
-            foreach ($logFiles as $file) {
-                if (($now - $logFilesWithTime[$file]) > (self::$ENV['LOG_RETENTION_DAYS'] * 86400)) {
-                    unlink($file);
-                }
-            }
-
-            file_put_contents($timestampFile, $now);
         }
     }
 
@@ -614,5 +572,50 @@ class App {
 
     public static function urlEncode($url) {
         return urlencode(preg_replace('/\s+/', '-', strtolower($url)));
+    }
+
+    public static function log($message, $file) {
+        $logFile = self::$ENV['DIR'] . 'storage/log/' . $file . '.log';
+        $maxLogSize = self::$ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
+        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
+
+        if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
+            $newLogFile = self::$ENV['DIR'] . 'storage/log/' . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            rename($logFile, $newLogFile);
+        }
+
+        file_put_contents($logFile, $message, FILE_APPEND);
+
+        $timestampFile = self::$ENV['DIR'] . 'storage/data/' . $file . '_last-log-cleanup-timestamp.txt';
+        $now = time();
+        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
+
+        if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
+            $logFiles = glob(self::$ENV['DIR'] . 'storage/log/' . $file . '_*.log');
+            $logFilesWithTime = array();
+            foreach ($logFiles as $file) {
+                $logFilesWithTime[$file] = filemtime($file);
+            }
+
+            asort($logFilesWithTime);
+            $logFiles = array_keys($logFilesWithTime);
+
+            if (count($logFiles) > self::$ENV['MAX_LOG_FILES']) {
+                $filesToDelete = array_slice($logFiles, 0, count($logFiles) - self::$ENV['MAX_LOG_FILES']);
+                foreach ($filesToDelete as $file) {
+                    unlink($file);
+                    unset($logFilesWithTime[$file]);
+                }
+                $logFiles = array_keys($logFilesWithTime);
+            }
+
+            foreach ($logFiles as $file) {
+                if (($now - $logFilesWithTime[$file]) > (self::$ENV['LOG_RETENTION_DAYS'] * 86400)) {
+                    unlink($file);
+                }
+            }
+
+            file_put_contents($timestampFile, $now);
+        }
     }
 }
