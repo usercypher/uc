@@ -451,14 +451,14 @@ class App {
         }
 
         $parts = explode('|', $errstr);
-        $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : $errno;
+        $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : 500;
         $errstr = isset($parts[1]) ? $parts[1] : $errstr;
 
         header('HTTP/1.1 ' . $errno);
-
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json');
-            exit('{"error":true,"message":"' . $errstr . '","code":' . $errno . ',"file":"' . $errfile . '","line":' . $errline . '}');
+            exit(self::$ENV['SHOW_ERRORS'] ? '{"error":true,"message":"' . 'ERROR ' . $errno . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -466,14 +466,12 @@ class App {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . PHP_EOL;
                     foreach ($trace as $key => $frame) {
-                        if ($key >= 2) {
-                            $traceOutput .= '#' . $key - 2 . ' ';
-                            $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
-                            $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
-                            $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
-                            $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
-                            $traceOutput .= PHP_EOL;
-                        }
+                        $traceOutput .= '#' . $key . ' ';
+                        $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
+                        $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
+                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
+                        $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
+                        $traceOutput .= PHP_EOL;
                     }
                 }
                 header('Content-Type: text/plain');
