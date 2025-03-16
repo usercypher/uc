@@ -44,6 +44,21 @@ class Model {
         return $this->execute($stmt, array_values($data), null);
     }
 
+    public function createBatch($data) {
+        $columns = implode(', ', array_keys($data[0]));
+        $placeholders = implode(', ', array_fill(0, count($data[0]), '?'));
+        $values = array();
+        foreach ($data as $row) {
+            $rowValues = array_values($row);
+            foreach ($rowValues as $value) {
+                $values[] = $value;
+            }
+        }
+        $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES ' . implode(', ', array_fill(0, count($data), '(' . $placeholders . ')'));
+        $stmt = $this->prepare($query);
+        return $this->execute($stmt, $values, null);
+    }
+
     public function update($id, $data) {
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
 
@@ -51,9 +66,36 @@ class Model {
         return $this->execute($stmt, array_values($data), $id);
     }
 
+    public function updateBatch($ids, $data) {
+        if (count($ids) !== count($data)) {
+            trigger_error('500|Execute failed: The number of IDs and data elements must match.');
+        }
+        $setClauses = array();
+        $values = array();
+        foreach ($data as $column => $valuesArray) {
+            $caseClause = array();
+            foreach ($ids as $key => $id) {
+                $caseClause[] = 'WHEN ? THEN ?';
+                $values[] = $id;
+                $values[] = $valuesArray[$key];
+            }
+            $setClauses[] = $column . ' = CASE id ' . implode(' ', $caseClause) . ' ELSE ' . $column . ' END';
+        }
+        $setClause = implode(', ', $setClauses);
+        $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')');
+        $values = array_merge($values, $ids);
+        return $this->execute($stmt, $values, null);
+    }
+
     public function delete($id) {
         $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE id = ?');
         return $this->execute($stmt, array(), $id);
+    }
+
+    public function deleteBatch($ids) {
+        $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+        $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE id IN (' . $placeholders . ')');
+        return $this->execute($stmt, $ids, null);
     }
 
     public function save($data) {
@@ -97,7 +139,7 @@ class Model {
     protected function prepare($query) {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
-            trigger_error('500|Prepare failed: ' . $this->conn->errorInfo()[2]);
+            trigger_error('500|Prepare failed: ' . $this->conn->errorInfo());
         }
         return $stmt;
     }

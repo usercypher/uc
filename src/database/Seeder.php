@@ -12,7 +12,7 @@ class Seeder {
 
     private function execute($sql, $message) {
         if ($this->conn->exec($sql) === false) {
-            trigger_error('500|' . $message . $pdo->errorInfo()[2]);
+            trigger_error('500|' . $message . $pdo->errorInfo());
         }
     }
 

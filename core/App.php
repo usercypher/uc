@@ -520,7 +520,7 @@ class App {
     // Utility Functions
 
     public function unsetProperty($name) {
-        unset($this->{$name});
+        unset($this-> {$name});
     }
 
     public function newClass($class) {
@@ -563,12 +563,12 @@ class App {
 
     public static function url($option, $url = '') {
         switch ($option) {
-            case 'route':
-                return self::$ENV['BASE_URL'] . self::$ENV['ROUTE_FILE_PATH'] . $url;
-            case 'web':
-                return self::$ENV['BASE_URL'] . self::$ENV['URL_DIR_WEB'] . $url;
-            default:
-                trigger_error('1001|Invalid option: ' . $option);
+        case 'route':
+            return self::$ENV['BASE_URL'] . self::$ENV['ROUTE_FILE_PATH'] . $url;
+        case 'web':
+            return self::$ENV['BASE_URL'] . self::$ENV['URL_DIR_WEB'] . $url;
+        default:
+            trigger_error('1001|Invalid option: ' . $option);
         }
     }
 
