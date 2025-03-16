@@ -48,6 +48,7 @@ $app->setClass('BookController', array('args' => array('BookModel')));
 
 // Define middlewares to handle session, CSRF generation, and data sanitization
 $app->setMiddlewares(array(
+    'AppCleanerMiddleware', 
     'SessionMiddleware', 
     'CsrfGenerateMiddleware', 
     'SanitizeMiddleware'

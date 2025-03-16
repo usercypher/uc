@@ -519,6 +519,10 @@ class App {
 
     // Utility Functions
 
+    public function unsetProperty($name) {
+        unset($this->{$name});
+    }
+
     public function newClass($class) {
         $mode = $this->class[$class][self::$CLASS_CACHE];
         $this->class[$class][self::$CLASS_CACHE] = false;
