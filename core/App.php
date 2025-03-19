@@ -72,7 +72,7 @@ class App {
             'Response' => array($response, true),
         );
 
-        set_error_handler(array('App', 'errorHandler'));
+        set_error_handler(array('App', 'error'));
         register_shutdown_function(array('App', 'shutdown'));
     }
 
@@ -245,7 +245,31 @@ class App {
             }
         }
 
-        return (isset($current['_h'])) ? array('handler' => $current['_h'], 'params' => $params) : null;
+        if (!isset($current['_h'])) {
+            return null;
+        }
+
+        $finalMiddlewares = array();
+        if ($current['_h']['_i'] !== array(true)) {
+            $seen = array();
+            $ignore = array_flip($current['_h']['_i']);
+
+            foreach ($this->middlewares as $middleware) {
+                if (!isset($ignore[$middleware]) && !isset($seen[$middleware])) {
+                    $finalMiddlewares[] = $middleware;
+                    $seen[$middleware] = true;
+                }
+            }
+
+            foreach ($current['_h']['_m'] as $middleware) {
+                if (!isset($ignore[$middleware]) && !isset($seen[$middleware])) {
+                    $finalMiddlewares[] = $middleware;
+                    $seen[$middleware] = true;
+                }
+            }
+        }
+
+        return array('handler' => array('controller' => $current['_h']['_c'], 'action' => $current['_h']['_a'], 'middleware' => $finalMiddlewares), 'params' => $params);
     }
 
     // Request Handling
@@ -265,27 +289,9 @@ class App {
             trigger_error('404|Route not found: ' . $request->method . ' ' . $path);
         }
 
-        if ($route['handler']['_i'] !== array(true)) {
-            $seen = array();
-            $ignore = array_flip($route['handler']['_i']);
-
-            foreach ($this->middlewares as $middleware) {
-                if (!isset($ignore[$middleware]) && !isset($seen[$middleware])) {
-                    $this->finalMiddlewares[] = $middleware;
-                    $seen[$middleware] = true;
-                }
-            }
-
-            foreach ($route['handler']['_m'] as $middleware) {
-                if (!isset($ignore[$middleware]) && !isset($seen[$middleware])) {
-                    $this->finalMiddlewares[] = $middleware;
-                    $seen[$middleware] = true;
-                }
-            }
-        }
-
-        $this->controller = $route['handler']['_c'];
-        $this->action = $route['handler']['_a'];
+        $this->finalMiddlewares = $route['handler']['middleware'];
+        $this->controller = $route['handler']['controller'];
+        $this->action = $route['handler']['action'];
         $this->params = $route['params'];
 
         $response = $this->cache['Response'][self::$CACHE_CLASS];
@@ -432,20 +438,20 @@ class App {
 
     // Error Handling
 
-    public static function errorHandler($errno, $errstr, $errfile, $errline) {
-        self::error($errno, $errstr, $errfile, $errline, true);
+    public static function error($errno, $errstr, $errfile, $errline) {
+        self::handleError($errno, $errstr, $errfile, $errline, true);
     }
 
     public static function shutdown() {
         $error = error_get_last();
         if ($error !== null) {
             if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
-                self::error($error['type'], $error['message'], $error['file'], $error['line'], false);
+                self::handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
             }
         }
     }
 
-    public static function error($errno, $errstr, $errfile, $errline, $enableStackTrace) {
+    public static function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
         if (ob_get_level() > 0) {
             ob_end_clean();
         }
@@ -466,7 +472,8 @@ class App {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . PHP_EOL;
                     foreach ($trace as $key => $frame) {
-                        $traceOutput .= '#' . $key . ' ';
+                        if ($key === 0) { continue; }
+                        $traceOutput .= '#' . ($key - 1) . ' ';
                         $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
                         $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
                         $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
