@@ -42,17 +42,6 @@ return array(
     'LOG_RETENTION_DAYS' => 7,
     'MAX_LOG_FILES' => 10,
 
-
-    // Mysql
-    'MYSQL_TIME_ZONE' => '+08:00',
-    /*  
-     * Timezones
-     *
-     * -05:00 = Eastern Standard Time (EST)
-     * +08:00 = Philippine Standard Time (PST)
-     * +09:00 = Japan Standard Time (JST)
-     */
-
     // Database Configuration
     'DB_HOST' => '127.0.0.1', // Database host, usually 'localhost' or an IP address.
     'DB_PORT' => '3306', // Port of the database to connect to.

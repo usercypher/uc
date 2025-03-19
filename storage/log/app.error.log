@@ -9,3 +9,4 @@ Stack trace:
 #6 /storage/emulated/0/htdocs/main/index.php(94): App->run()
 #7 {main}
   thrown in /storage/emulated/0/htdocs/main/src/middleware/CsrfValidateMiddleware.php on line 15
+[2025-03-19 19:45:49.591485] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core/App.php on line 389

@@ -104,6 +104,94 @@ class App {
         }
     }
 
+    // Config Management
+
+    public function saveConfig($file) {
+        $configFile = self::$ENV['DIR'] . 'storage/data/' . $file . '.json';
+        file_put_contents($configFile, json_encode(array(
+            'routes' => $this->routes,
+            'middlewares' => $this->middlewares,
+            'class' => $this->class,
+            'class_list' => $this->classList,
+            'class_list_index' => $this->classListIndex,
+            'path_list' => $this->pathList,
+            'path_list_index' => $this->pathListIndex
+        )));
+
+        exit('File created: ' . $configFile);
+    }
+
+    public function loadConfig($file) {
+        $configFile = self::$ENV['DIR'] . 'storage/data/' . $file . '.json';
+        if (file_exists($configFile)) {
+            $data = json_decode(file_get_contents($configFile), true);
+            $this->routes = $data['routes'];
+            $this->middlewares = $data['middlewares'];
+            $this->class = $data['class'];
+            $this->classList = $data['class_list'];
+            $this->classListIndex = $data['class_list_index'];
+            $this->pathList = $data['path_list'];
+            $this->pathListIndex = $data['path_list_index'];
+        } else {
+            trigger_error('404|File not found: ' . $configFile);
+        }
+    }
+
+    // Error Management
+
+    public static function error($errno, $errstr, $errfile, $errline) {
+        self::handleError($errno, $errstr, $errfile, $errline, true);
+    }
+
+    public static function shutdown() {
+        $error = error_get_last();
+        if ($error !== null) {
+            if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
+                self::handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
+            }
+        }
+    }
+
+    public static function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
+        if (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $parts = explode('|', $errstr);
+        $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : 500;
+        $errstr = isset($parts[1]) ? $parts[1] : $errstr;
+
+        header('HTTP/1.1 ' . $errno);
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            exit(self::$ENV['SHOW_ERRORS'] ? '{"error":true,"message":"' . 'ERROR ' . $errno . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
+        } else {
+            if (self::$ENV['SHOW_ERRORS']) {
+                $traceOutput = '';
+                if ($enableStackTrace) {
+                    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                    $traceOutput = 'Stack trace: ' . PHP_EOL;
+                    foreach ($trace as $key => $frame) {
+                        if ($key === 0) { continue; }
+                        $traceOutput .= '#' . ($key - 1) . ' ';
+                        $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
+                        $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
+                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
+                        $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
+                        $traceOutput .= PHP_EOL;
+                    }
+                }
+                header('Content-Type: text/plain');
+                exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
+            } else {
+                self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
+                $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
+                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
+            }
+        }
+    }
+
     // Route Management
 
     public function setRoute($method, $route, $action, $option) {
@@ -128,6 +216,10 @@ class App {
         $ignore = array();
         if (isset($option['ignore'])) {
             foreach ($option['ignore'] as $class) {
+                if ($class === true) {
+                    $ignore = array(true);
+                    break;
+                }
                 if (!isset($this->class[$class])) {
                     $this->class[$class] = array(null, null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
@@ -151,6 +243,14 @@ class App {
 
     public function setRoutes($option, $params) {
         foreach ($params as $p) {
+            if (isset($p[3])) {
+                $option['middleware'] = isset($option['middleware']) ? $option['middleware'] : array();
+                $p[3]['middleware'] = isset($p[3]['middleware']) ? array_merge($option['middleware'], $p[3]['middleware']) : $option['middleware'];
+                if (!((isset($p[3]['ignore']) && $p[3]['ignore'] === array(true)) || (isset($option['ignore']) && $option['ignore'] === array(true))) ) {
+                    $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
+                    $p[3]['ignore'] = isset($p[3]['ignore']) ? array_merge($option['ignore'], $p[3]['ignore']) : $option['ignore'];
+                }
+            }
             $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], $p[2], isset($p[3]) ? array_merge($option, $p[3]) : $option);
         }
     }
@@ -305,13 +405,11 @@ class App {
             $middleware = $this->resolveClass($this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]]);
             return $middleware->process($request, $response, $app);
         }
-        $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Request'][self::$CLASS_CLASS_LIST_INDEX];
-        $this->class[$this->classList[$this->controller]][self::$CLASS_ARGS][] = $this->class['Response'][self::$CLASS_CLASS_LIST_INDEX];
         $controller = $this->resolveClass($this->classList[$this->controller]);
         return $controller-> {$this->action} ($this->params);
     }
 
-    // Dependency Management
+    // Class Management
 
     public function autoSetClass($path, $option) {
         $option = array(
@@ -319,6 +417,7 @@ class App {
             'max' => isset($option['max']) ? $option['max'] : 0,
             'ignore' => isset($option['ignore']) ? $option['ignore'] : array(),
             'namespace' => isset($option['namespace']) ? $option['namespace'] : '',
+            'args' => isset($option['args']) ? $option['args'] : array(),
         );
 
         if ($dirHandle = opendir(self::$ENV['DIR'] . $path)) {
@@ -331,7 +430,7 @@ class App {
                     $this->autoSetClass($path . $file . '/', $option);
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
-                    $this->setClass(substr($file, 0, -4), array('path' => $path, 'namespace' => $option['namespace']));
+                    $this->setClass(substr($file, 0, -4), array('path' => $path, 'namespace' => $option['namespace'], 'args' => $option['args']));
                 }
             }
             closedir($dirHandle);
@@ -370,7 +469,36 @@ class App {
 
     public function setClasses($option, $classes) {
         foreach ($classes as $class) {
+            if (isset($class[1])) {
+                $option['args'] = isset($option['args']) ? $option['args'] : array();
+                $class[1]['args'] = isset($class[1]['args']) ? array_merge($option['args'], $class[1]['args']) : $option['args'];
+            }
             $this->setClass($class[0], isset($class[1]) ? array_merge($option, $class[1]) : $option);
+        }
+    }
+
+    public function newClass($class) {
+        $mode = $this->class[$class][self::$CLASS_CACHE];
+        $this->class[$class][self::$CLASS_CACHE] = false;
+        $classInstance = $this->resolveClass($class);
+        $this->class[$class][self::$CLASS_CACHE] = $mode;
+        return $classInstance;
+    }
+
+    public function getClass($class) {
+        return $this->resolveClass($class);
+    }
+
+    public function resetClass($class) {
+        $this->cache[$class][self::$CACHE_CLASS] = null;
+    }
+
+    public function loadClasses($classes) {
+        foreach ($classes as $class) {
+            if (!isset($this->cache[$class][self::$CACHE_PATH])) {
+                require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+                $this->cache[$class][self::$CACHE_PATH] = true;
+            }
         }
     }
 
@@ -436,123 +564,10 @@ class App {
         return $resolvedClass;
     }
 
-    // Error Handling
-
-    public static function error($errno, $errstr, $errfile, $errline) {
-        self::handleError($errno, $errstr, $errfile, $errline, true);
-    }
-
-    public static function shutdown() {
-        $error = error_get_last();
-        if ($error !== null) {
-            if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
-                self::handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
-            }
-        }
-    }
-
-    public static function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
-        if (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
-        $parts = explode('|', $errstr);
-        $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : 500;
-        $errstr = isset($parts[1]) ? $parts[1] : $errstr;
-
-        header('HTTP/1.1 ' . $errno);
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-            header('Content-Type: application/json');
-            exit(self::$ENV['SHOW_ERRORS'] ? '{"error":true,"message":"' . 'ERROR ' . $errno . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
-            self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-        } else {
-            if (self::$ENV['SHOW_ERRORS']) {
-                $traceOutput = '';
-                if ($enableStackTrace) {
-                    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-                    $traceOutput = 'Stack trace: ' . PHP_EOL;
-                    foreach ($trace as $key => $frame) {
-                        if ($key === 0) { continue; }
-                        $traceOutput .= '#' . ($key - 1) . ' ';
-                        $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
-                        $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
-                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
-                        $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
-                        $traceOutput .= PHP_EOL;
-                    }
-                }
-                header('Content-Type: text/plain');
-                exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
-            } else {
-                self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-                $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
-                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
-            }
-        }
-    }
-
-    // Config Management
-
-    public function saveConfig($file) {
-        $configFile = self::$ENV['DIR'] . 'storage/data/' . $file . '.json';
-        file_put_contents($configFile, json_encode(array(
-            'routes' => $this->routes,
-            'middlewares' => $this->middlewares,
-            'class' => $this->class,
-            'class_list' => $this->classList,
-            'class_list_index' => $this->classListIndex,
-            'path_list' => $this->pathList,
-            'path_list_index' => $this->pathListIndex
-        )));
-
-        exit('File created: ' . $configFile);
-    }
-
-    public function loadConfig($file) {
-        $configFile = self::$ENV['DIR'] . 'storage/data/' . $file . '.json';
-        if (file_exists($configFile)) {
-            $data = json_decode(file_get_contents($configFile), true);
-            $this->routes = $data['routes'];
-            $this->middlewares = $data['middlewares'];
-            $this->class = $data['class'];
-            $this->classList = $data['class_list'];
-            $this->classListIndex = $data['class_list_index'];
-            $this->pathList = $data['path_list'];
-            $this->pathListIndex = $data['path_list_index'];
-        } else {
-            trigger_error('404|File not found: ' . $configFile);
-        }
-    }
-
     // Utility Functions
 
     public function unsetProperty($name) {
         unset($this-> {$name});
-    }
-
-    public function newClass($class) {
-        $mode = $this->class[$class][self::$CLASS_CACHE];
-        $this->class[$class][self::$CLASS_CACHE] = false;
-        $classInstance = $this->resolveClass($class);
-        $this->class[$class][self::$CLASS_CACHE] = $mode;
-        return $classInstance;
-    }
-
-    public function getClass($class) {
-        return $this->resolveClass($class);
-    }
-
-    public function resetClass($class) {
-        $this->cache[$class][self::$CACHE_CLASS] = null;
-    }
-
-    public function loadClasses($classes) {
-        foreach ($classes as $class) {
-            if (!isset($this->cache[$class][self::$CACHE_PATH])) {
-                require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-                $this->cache[$class][self::$CACHE_PATH] = true;
-            }
-        }
     }
 
     public static function path($option, $path = '') {

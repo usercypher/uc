@@ -1,54 +1,38 @@
 <?php
 // index.php
 
-// Set the base directory path
-$dir = __DIR__ . '/';
-
-// Include core classes for application functionality
-require($dir . 'core/App.php');
-require($dir . 'core/Request.php');
-require($dir . 'core/Response.php');
-
-// Load environment variables and configuration settings
-App::setInis(require($dir . 'config/ini.dev.php'));
-App::setEnvs(require($dir . 'config/env.dev.php'));
-
-App::setEnv('DIR', $dir);
-
-// Initialize the app with Request and Response objects
-$app = new App(array(
-    'Request' => new Request, 
-    'Response' => new Response
-));
+require('init.php');
 
 // [CONFIG] start
-// Auto-load classes from the 'src/' directory (max 1 class, ignore 'view' folder)
+
+// Auto-load classes from 'src/' directory and set path metadata (max depth 1, ignore 'view' folder)
 $app->autoSetClass('src/', array('max' => 1, 'ignore' => array('view')));
 
 // Define base from the 'core/base/' directory
-$app->setClasses(array(
-    'path' => 'core/base/'
-), array(
+$app->setClasses(array('path' => 'core/base/'), array(
     array('Controller'), 
     array('Model')
 ));
 
-// Set up the 'Database' class with caching enabled
+// Set up the 'Database' class with caching enabled, ensuring a single instance is used.
 $app->setClass('Database', array('cache' => true));
 
-// Define classes and inject dependencies (e.g., 'BookModel' depends on 'Database')
+// Define and inject dependencies: 'BookModel' depends on 'Database', 'BookController' depends on 'BookModel', 'Request', and 'Response'.
 $app->setClasses(array(
     'args' => array('Database')
 ), array(
     array('BookModel')
 ));
 
-// Define the 'BookController' class, which depends on 'BookModel'
-$app->setClass('BookController', array('args' => array('BookModel')));
+$app->setClasses(array(
+    'args' => array('Request', 'Response')
+), array(
+    array('BookController', array('args' => array('BookModel'))) // Class-specific options merged with group options
+));
+
 
 // Define middlewares to handle session, CSRF generation, and data sanitization
 $app->setMiddlewares(array(
-    'AppCleanerMiddleware', 
     'SessionMiddleware', 
     'CsrfGenerateMiddleware', 
     'SanitizeMiddleware'
@@ -88,7 +72,7 @@ $app->setRoutes(array(
 //$app->saveConfig('app.config'); // Save the configuration once
 //$app->loadConfig('app.config'); // Load the saved configuration on subsequent runs
 
-// Load base classes (Controller, Model)
+// Load base classes (Controller, Model), it included files base on class name
 $app->loadClasses(array('Controller', 'Model'));
 
 // Run the application
