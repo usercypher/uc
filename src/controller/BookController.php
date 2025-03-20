@@ -1,12 +1,10 @@
 <?php
 
 class BookController extends Controller {
-    protected $request, $response;
     private $bookModel;
 
     public function __construct($dependencies) {
-        $this->request = $dependencies['Request'];
-        $this->response = $dependencies['Response'];
+        parent::__construct($dependencies['Request'], $dependencies['Response']);
         $this->bookModel = $dependencies['BookModel'];
     }
 
