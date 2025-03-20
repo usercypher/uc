@@ -1,0 +1,9 @@
+[2025-03-20 19:03:47.065248] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core/App.php on line 389
+[2025-03-20 19:08:30.741163] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core-v8/App.php on line 389
+[2025-03-20 19:11:29.648840] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core-v8/App.php on line 390
+[2025-03-20 19:15:16.668020] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core-v8/App.php on line 390
+[2025-03-20 19:15:43.850102] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core-v8/App.php on line 390
+[2025-03-20 19:39:39.120685] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core/App.php on line 390
+[2025-03-21 06:26:24.819391] include(home.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/core/lib/Controller.php on line 26
+[2025-03-21 06:27:59.000426] require(/storage/emulated/0/htdocs/main/src/view/script.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/templates/home.php on line 47
+[2025-03-21 06:28:00.476536] require(/storage/emulated/0/htdocs/main/src/view/script.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/templates/home.php on line 47

@@ -44,6 +44,6 @@
             ?>
         </div>
     </div>
-    <?php require(App::path('src', 'view/script.php')); ?>
+    <?php require(App::path('view', 'script.php')); ?>
 </body>
 </html>

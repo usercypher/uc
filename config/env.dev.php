@@ -9,10 +9,11 @@
 
 return array(
     // Environment Settings
-    'DIR_WEB' => 'public/', // Directory for web access (e.g., public folder)
-    'DIR_SRC' => 'src/',    // Source directory for application code
+    'DIR_WEB' => 'web/',  // Directory for web access (e.g., public folder)
+    'DIR_SRC' => 'src/',     // Source directory for application code
+    'DIR_VIEW'=> 'view/', // View Directory
 
-    'URL_DIR_WEB' => 'public/', // URL path for web access
+    'URL_DIR_WEB' => 'web/', // URL path for web access
     'URL_DIR_INDEX' => '',      // URL path for the index (usually root), become useless when route rewrite is enable
 
     'SHOW_ERRORS' => 1, // Enable or disable detailed error messages (1: Show, 0: Hide)

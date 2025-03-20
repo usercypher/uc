@@ -5,12 +5,12 @@ require('init.php');
 
 // [CONFIG] start
 
-// Auto-load classes from 'src/' directory and set path metadata (max depth 1, ignore 'view' folder)
-$app->autoSetClass('src/', array('max' => 1, 'ignore' => array('view')));
+// Auto-load classes from 'src/' directory and set path metadata (max depth 1)
+$app->autoSetClass('src/', array('max' => 1));
 
 // Define base from the 'lib/' directory
 $app->setClasses(array(
-    'path' => 'lib/')
+    'path' => 'core/lib/')
 , array(
     array('Controller'), 
     array('Model')
