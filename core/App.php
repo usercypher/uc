@@ -38,8 +38,9 @@ class App {
 
         self::$ENV['DIR'] = self::$ENV['DIR'];
 
-        self::$ENV['DIR_WEB'] = self::$ENV['DIR_WEB'];
-        self::$ENV['DIR_SRC'] = self::$ENV['DIR_SRC'];
+        self::$ENV['DIR_CORE'] = isset(self::$ENV['DIR_CORE']) ? self::$ENV['DIR_CORE'] : 'core/';
+        self::$ENV['DIR_WEB'] = isset(self::$ENV['DIR_WEB']) ? self::$ENV['DIR_WEB'] : 'public/';
+        self::$ENV['DIR_SRC'] = isset(self::$ENV['DIR_SRC']) ? self::$ENV['DIR_SRC'] : 'src/';
 
         self::$ENV['ROUTE_REWRITE'] = self::$ENV['ROUTE_REWRITE'];
         self::$ENV['ROUTE_FILE_PATH'] = self::$ENV['ROUTE_REWRITE'] ? '' : (self::$ENV['URL_DIR_INDEX'] . 'index.php?route=/');
@@ -52,10 +53,10 @@ class App {
 
         self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
 
-        self::$ENV['LOG_SIZE_LIMIT_MB'] = (int) self::$ENV['LOG_SIZE_LIMIT_MB'];
-        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'];
-        self::$ENV['LOG_RETENTION_DAYS'] = (int) self::$ENV['LOG_RETENTION_DAYS'];
-        self::$ENV['MAX_LOG_FILES'] = (int) self::$ENV['MAX_LOG_FILES'];
+        self::$ENV['LOG_SIZE_LIMIT_MB'] = isset(self::$ENV['LOG_SIZE_LIMIT_MB']) && (int) self::$ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) self::$ENV['LOG_SIZE_LIMIT_MB'] : 5;
+        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset(self::$ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
+        self::$ENV['LOG_RETENTION_DAYS'] = isset(self::$ENV['LOG_RETENTION_DAYS']) && (int) self::$ENV['LOG_RETENTION_DAYS'] > 0 ? (int) self::$ENV['LOG_RETENTION_DAYS'] : 7;
+        self::$ENV['MAX_LOG_FILES'] =  isset(self::$ENV['MAX_LOG_FILES']) && (int) self::$ENV['MAX_LOG_FILES'] > 0 ? (int) self::$ENV['MAX_LOG_FILES'] : 10;
 
         $this->class = array(
             'App' => array(array(1, 2), null, true, 0),
@@ -186,8 +187,8 @@ class App {
                 exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
                 self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-                $file = self::$ENV['DIR'] . 'core/view/' . $errno . '.php';
-                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . 'core/view/default.php'));
+                $file = self::$ENV['DIR'] . self::$ENV['DIR_CORE'] . '/view/' . $errno . '.php';
+                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . self::$ENV['DIR_CORE'] . '/view/default.php'));
             }
         }
     }
@@ -574,6 +575,8 @@ class App {
         switch ($option) {
             case 'root':
                 return self::$ENV['DIR'] . $path;
+            case 'core':
+                return self::$ENV['DIR'] . self::$ENV['DIR_CORE'] . $path;
             case 'web':
                 return self::$ENV['DIR'] . self::$ENV['DIR_WEB'] . $path;
             case 'src':
@@ -612,7 +615,7 @@ class App {
 
         $timestampFile = self::$ENV['DIR'] . 'storage/data/' . $file . '_last-log-cleanup-timestamp.txt';
         $now = time();
-        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
+        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : $now;
 
         if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob(self::$ENV['DIR'] . 'storage/log/' . $file . '_*.log');
