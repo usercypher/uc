@@ -1,7 +1,7 @@
 <?php
 // index.php
 
-require('init.php');
+require('app.init.php');
 
 // [CONFIG] start
 
