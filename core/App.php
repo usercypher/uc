@@ -159,9 +159,12 @@ class App {
             ob_end_clean();
         }
 
-        $parts = explode('|', $errstr);
-        $errno = (isset($parts[0]) && is_numeric($parts[0])) ? (int)$parts[0] : 500;
-        $errstr = isset($parts[1]) ? $parts[1] : $errstr;
+        $parts = explode('|', $errstr, 2);
+
+        if (isset($parts[0]) && is_numeric($parts[0])) {
+            $errno = (int) $parts[0];
+            $errstr = $parts[1];
+        }
 
         header('HTTP/1.1 ' . $errno);
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
