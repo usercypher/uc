@@ -1,5 +1,44 @@
 <?php
 
+class Request {
+    public $uri, $method, $get, $post, $files, $cookies, $server;
+
+    public function __construct() {
+        $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '';
+        $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : '';
+        $this->get = $_GET;
+        $this->post = $_POST;
+        $this->files = $_FILES;
+        $this->cookies = $_COOKIE;
+        $this->server = $_SERVER;
+    }
+}
+
+class Response {
+    public $headers, $code, $contentType, $content;
+
+    public function __construct() {
+        $this->headers = array();
+        $this->code = 200;
+        $this->contentType = 'text/html';
+        $this->content = '';
+    }
+
+    public function send() {
+        header('HTTP/1.1 ' . $this->code);
+
+        foreach ($this->headers as $key => $value) {
+            header($key . ': ' . $value);
+        }
+
+        if (!isset($this->headers['Content-Type'])) {
+            header('Content-Type: ' . $this->contentType);
+        }
+
+        exit(isset($this->headers['Location']) ? '' : $this->content);
+    }
+}
+
 class App {
     private static $ENV = array();
 
@@ -36,9 +75,11 @@ class App {
         $request = $dependencies['Request'];
         $response = $dependencies['Response'];
 
-        self::$ENV['DIR'] = self::$ENV['DIR'];
+        self::$ENV['DIR'] = isset(self::$ENV['DIR']) ? self::$ENV['DIR'] : __DIR__ . '/';
 
-        self::$ENV['DIR_CORE'] = isset(self::$ENV['DIR_CORE']) ? self::$ENV['DIR_CORE'] : 'core/';
+        self::$ENV['DIR_VIEW_ERROR'] = isset(self::$ENV['DIR_VIEW_ERROR']) ? self::$ENV['DIR_VIEW_ERROR'] : 'view/error/';
+        self::$ENV['DIR_LOG'] = isset(self::$ENV['DIR_LOG']) ? self::$ENV['DIR_LOG'] : 'var/log/';
+        self::$ENV['DIR_LOG_TIMESTAMP'] = isset(self::$ENV['DIR_LOG_TIMESTAMP']) ? self::$ENV['DIR_LOG_TIMESTAMP'] : 'var/data/';
         self::$ENV['DIR_VIEW'] = isset(self::$ENV['DIR_VIEW']) ? self::$ENV['DIR_VIEW'] : 'view/';
         self::$ENV['DIR_WEB'] = isset(self::$ENV['DIR_WEB']) ? self::$ENV['DIR_WEB'] : 'web/';
         self::$ENV['DIR_SRC'] = isset(self::$ENV['DIR_SRC']) ? self::$ENV['DIR_SRC'] : 'src/';
@@ -109,7 +150,7 @@ class App {
     // Config Management
 
     public function saveConfig($file) {
-        $configFile = self::$ENV['DIR'] . 'var/data/' . $file . '.json';
+        $configFile = self::$ENV['DIR'] . $file . '.json';
         file_put_contents($configFile, json_encode(array(
             'routes' => $this->routes,
             'middlewares' => $this->middlewares,
@@ -124,7 +165,7 @@ class App {
     }
 
     public function loadConfig($file) {
-        $configFile = self::$ENV['DIR'] . 'var/data/' . $file . '.json';
+        $configFile = self::$ENV['DIR'] . $file . '.json';
         if (file_exists($configFile)) {
             $data = json_decode(file_get_contents($configFile), true);
             $this->routes = $data['routes'];
@@ -160,6 +201,7 @@ class App {
         }
 
         $parts = explode('|', $errstr, 2);
+        $errno = 500;
 
         if (isset($parts[0]) && is_numeric($parts[0])) {
             $errno = (int) $parts[0];
@@ -191,8 +233,8 @@ class App {
                 exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
                 self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-                $file = self::$ENV['DIR'] . self::$ENV['DIR_CORE'] . '/view/' . $errno . '.php';
-                exit(include(file_exists($file) ? $file : self::$ENV['DIR'] . self::$ENV['DIR_CORE'] . '/view/default.php'));
+                $file = self::$ENV['DIR'] . self::$ENV['DIR_VIEW_ERROR'] . $errno . '.php';
+                exit(file_exists($file) ? include($file) : 'Something went wrong on our end. Please try again later.');
             }
         }
     }
@@ -579,8 +621,6 @@ class App {
         switch ($option) {
             case 'root':
                 return self::$ENV['DIR'] . $path;
-            case 'core':
-                return self::$ENV['DIR'] . self::$ENV['DIR_CORE'] . $path;
             case 'view':
                 return self::$ENV['DIR'] . self::$ENV['DIR_VIEW'] . $path;
             case 'web':
@@ -608,23 +648,23 @@ class App {
     }
 
     public static function log($message, $file) {
-        $logFile = self::$ENV['DIR'] . 'var/log/' . $file . '.log';
+        $logFile = self::$ENV['DIR'] . self::$ENV['DIR_LOG'] . $file . '.log';
         $maxLogSize = self::$ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
         $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
 
         if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
-            $newLogFile = self::$ENV['DIR'] . 'var/log/' . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = self::$ENV['DIR'] . self::$ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
         file_put_contents($logFile, $message, FILE_APPEND);
 
-        $timestampFile = self::$ENV['DIR'] . 'var/data/' . $file . '_last-log-cleanup-timestamp.txt';
+        $timestampFile = self::$ENV['DIR'] . self::$ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
         $now = time();
-        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : $now;
+        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
 
         if (($now - $lastCleanup) >= self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
-            $logFiles = glob(self::$ENV['DIR'] . 'var/log/' . $file . '_*.log');
+            $logFiles = glob(self::$ENV['DIR'] . self::$ENV['DIR_LOG'] . $file . '_*.log');
             $logFilesWithTime = array();
             foreach ($logFiles as $file) {
                 $logFilesWithTime[$file] = filemtime($file);

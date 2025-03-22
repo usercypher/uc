@@ -1,20 +1,31 @@
 <?php
 // index.php
 
-require('app.init.php');
+function init($mode, $dir) {
+    $dir = realpath($dir) . '/';
+
+    // Include core classes for application functionality
+    require($dir . 'package.php');
+
+    $settings = require($dir . 'config/settings.php');
+
+    // Load environment variables and configuration settings
+    App::setInis($settings['ini'][$mode]);
+    App::setEnvs($settings['env'][$mode]);
+
+    // Initialize the app with Request and Response objects
+    return new App(array(
+        'Request' => new Request, 
+        'Response' => new Response
+    ));
+}
+
+$app = init('prod', __DIR__);
 
 // [CONFIG] start
 
 // Auto-load classes from 'src/' directory and set path metadata (max depth 1)
 $app->autoSetClass('src/', array('max' => 1));
-
-// Define base from the 'lib/' directory
-$app->setClasses(array(
-    'path' => 'core/lib/')
-, array(
-    array('Controller'), 
-    array('Model')
-));
 
 // Set up the 'Database' class with caching enabled, ensuring a single instance is used.
 $app->setClass('Database', array('cache' => true));
@@ -71,8 +82,8 @@ $app->setRoutes(array(
 // The configuration is saved using 'saveConfig' and loaded with 'loadConfig'.
 // After the initial run, you can comment out 'saveConfig' and just use 'loadConfig'.
 // When using 'loadConfig', remove or comment out the [CONFIG] body to avoid redundant config setting.
-//$app->saveConfig('app.config'); // Save the configuration once
-//$app->loadConfig('app.config'); // Load the saved configuration on subsequent runs
+//$app->saveConfig('var/data/app.config'); // Save the configuration once
+//$app->loadConfig('var/data/app.config'); // Load the saved configuration on subsequent runs
 
 // Load base classes (Controller, Model), it included files base on class name
 $app->loadClasses(array('Controller', 'Model'));

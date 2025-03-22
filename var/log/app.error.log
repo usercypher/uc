@@ -7,3 +7,24 @@
 [2025-03-21 06:26:24.819391] include(home.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/core/lib/Controller.php on line 26
 [2025-03-21 06:27:59.000426] require(/storage/emulated/0/htdocs/main/src/view/script.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/templates/home.php on line 47
 [2025-03-21 06:28:00.476536] require(/storage/emulated/0/htdocs/main/src/view/script.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/templates/home.php on line 47
+[2025-03-22 07:58:42.065315] Route not found: GET /hom in /storage/emulated/0/htdocs/main/core/package.php on line 433
+[2025-03-22 08:22:24.521354] Route not found: GET /ome in /storage/emulated/0/htdocs/main/core/package.php on line 433
+[2025-03-22 08:22:32.585396] Route not found: GET /ome in /storage/emulated/0/htdocs/main/core/package.php on line 433
+[2025-03-22 08:22:34.098104] Route not found: GET /ome in /storage/emulated/0/htdocs/main/core/package.php on line 433
+[2025-03-22 08:22:47.049043] Route not found: GET /ome in /storage/emulated/0/htdocs/main/core/package.php on line 433
+[2025-03-22 08:22:51.296413] Route not found: GET /f in /storage/emulated/0/htdocs/main/core/package.php on line 433
+[2025-03-22 09:22:48.975629] Route not found: GET /hoe in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:25:07.937294] Route not found: GET /hoe in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:25:13.034446] Route not found: GET /k in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:27:48.025187] Route not found: GET /g in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:28:02.010768] Route not found: GET /g in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:28:12.965472] Route not found: GET /g in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:31:52.208344] Route not found: GET /g in /storage/emulated/0/htdocs/main/package.php on line 434
+[2025-03-22 09:42:35.996843] require(/storage/emulated/0/htdocs/main/core/lib/Controller.php): Failed to open stream: No such file or directory in /storage/emulated/0/htdocs/main/package.php on line 546
+[2025-03-22 09:43:32.249114] Route not found: GET /hltest in /storage/emulated/0/htdocs/main/package.php on line 436
+[2025-03-22 09:51:25.049602] Route not found: GET /d in /storage/emulated/0/htdocs/main/package.php on line 436
+[2025-03-22 09:53:05.872030] Route not found: GET /d in /storage/emulated/0/htdocs/main/package.php on line 436
+[2025-03-22 09:53:40.897892] Route not found: GET /d in /storage/emulated/0/htdocs/main/package.php on line 436
+[2025-03-22 09:54:02.764605] Route not found: GET /d in /storage/emulated/0/htdocs/main/package.php on line 436
+[2025-03-22 10:38:00.353863] Route not found: GET /index.php in /storage/emulated/0/htdocs/main/package.php on line 436
+[2025-03-22 10:38:02.147571] SQLSTATE[HY000] [1045] Access denied for user 'ysyfgxkn_default'@'localhost' (using password: YES) in /storage/emulated/0/htdocs/main/src/database/Database.php on line 23
