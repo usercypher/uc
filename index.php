@@ -2,18 +2,20 @@
 // index.php
 
 function init($mode, $dir) {
+    // Get the absolute path of the directory
     $dir = realpath($dir) . '/';
 
-    // Include core classes for application functionality
-    require($dir . 'package.php');
+    // Include core class for application functionality
+    require($dir . 'uc.package.php');
 
-    $settings = require($dir . 'config/settings.php');
+    // Load settings for the given mode (e.g., 'dev', 'prod')
+    $settings = require($dir . 'uc.settings.php');
 
-    // Load environment variables and configuration settings
+    // Set application INI and environment variables based on mode
     App::setInis($settings['ini'][$mode]);
     App::setEnvs($settings['env'][$mode]);
 
-    // Initialize the app with Request and Response objects
+    // Initialize and return the App with Request and Response objects
     return new App(array(
         'Request' => new Request, 
         'Response' => new Response

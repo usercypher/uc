@@ -91,7 +91,6 @@ return array(
             'display_startup_errors' => 'On', // Display startup errors
             'error_reporting' => E_ALL, // Report all errors
             'log_errors' => 1, // Log errors
-            'error_log' => 'error_log', // Log file path
             // General Settings
             'default_charset' => 'UTF-8', // Charset UTF-8
             // Performance Settings
@@ -106,7 +105,6 @@ return array(
             'display_startup_errors' => 'Off',
             'error_reporting' => E_ALL & ~E_NOTICE & ~E_DEPRECATED,
             'log_errors' => 1,
-            'error_log' => 'error_log',
             // General Settings
             'default_charset' => 'UTF-8',
             // Performance Settings
