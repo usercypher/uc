@@ -4,7 +4,7 @@ class BookController extends Controller {
     private $bookModel;
 
     public function __construct($dependencies) {
-        parent::__construct($dependencies['Request'], $dependencies['Response']);
+        parent::__construct($dependencies['App'], $dependencies['Request'], $dependencies['Response']);
         $this->bookModel = $dependencies['BookModel'];
     }
 

@@ -3,13 +3,14 @@
 class Database {
     private $host, $port, $name, $user, $pass, $pdo, $time;
 
-    public function __construct() {
-        $this->host = App::getEnv('DB_HOST');
-        $this->port = App::getEnv('DB_PORT');
-        $this->name = App::getEnv('DB_NAME');
-        $this->user = App::getEnv('DB_USER');
-        $this->pass = App::getEnv('DB_PASS');
-        $this->time = App::getEnv('DB_TIME');
+    public function __construct($dependency) {
+        $app = $dependency['App'];
+        $this->host = $app->getEnv('DB_HOST');
+        $this->port = $app->getEnv('DB_PORT');
+        $this->name = $app->getEnv('DB_NAME');
+        $this->user = $app->getEnv('DB_USER');
+        $this->pass = $app->getEnv('DB_PASS');
+        $this->time = $app->getEnv('DB_TIME');
     }
 
     public function getConnection() {

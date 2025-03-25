@@ -2,11 +2,12 @@
 
 class Model {
     private $flash = array();
-    private $table, $conn;
+    private $table, $conn, $primaryColumn;
 
-    public function __construct($table, $conn) {
+    public function __construct($table, $conn, $primaryColumn = 'id') {
         $this->table = $table;
         $this->conn = $conn;
+        $this->primaryColumn = $primaryColumn;
     }
 
     public function addFlash($type, $message) {
@@ -25,7 +26,7 @@ class Model {
     }
 
     public function find($id) {
-        $stmt = $this->prepare('SELECT * FROM ' . $this->table . ' WHERE id = ?');
+        $stmt = $this->prepare('SELECT * FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
         $stmt = $this->execute($stmt, array(), $id);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -62,7 +63,7 @@ class Model {
     public function update($id, $data) {
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
 
-        $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE id = ?');
+        $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' = ?');
         return $this->execute($stmt, array_values($data), $id);
     }
 
@@ -82,19 +83,19 @@ class Model {
             $setClauses[] = $column . ' = CASE id ' . implode(' ', $caseClause) . ' ELSE ' . $column . ' END';
         }
         $setClause = implode(', ', $setClauses);
-        $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')');
+        $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' IN (' . implode(',', array_fill(0, count($ids), '?')) . ')');
         $values = array_merge($values, $ids);
         return $this->execute($stmt, $values, null);
     }
 
     public function delete($id) {
-        $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE id = ?');
+        $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
         return $this->execute($stmt, array(), $id);
     }
 
     public function deleteBatch($ids) {
         $placeholders = implode(', ', array_fill(0, count($ids), '?'));
-        $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE id IN (' . $placeholders . ')');
+        $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' IN (' . $placeholders . ')');
         return $this->execute($stmt, $ids, null);
     }
 

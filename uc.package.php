@@ -1,5 +1,23 @@
 <?php
 
+function init($mode) {
+    define('DS', '/');
+
+    $app = new App(array(
+        'Request' => new Request, 
+        'Response' => new Response
+    ));
+
+    $settings = require('uc.settings.php');
+
+    $app->setInis($settings['ini'][$mode]);
+    $app->setEnvs($settings['env'][$mode]);
+    
+    $app->init();
+
+    return $app;
+}
+
 class Request {
     public $uri, $method, $get, $post, $files, $cookies, $server;
 
@@ -40,6 +58,7 @@ class Response {
 }
 
 class App {
+    private static $SELF = null;
     private static $ENV = array();
 
     private static $CLASS_ARGS = 0;
@@ -72,34 +91,6 @@ class App {
     // Application Setup
 
     public function __construct($dependencies) {
-        $request = $dependencies['Request'];
-        $response = $dependencies['Response'];
-
-        self::$ENV['DIR'] = isset(self::$ENV['DIR']) ? self::$ENV['DIR'] : __DIR__ . '/';
-
-        self::$ENV['DIR_VIEW_ERROR'] = isset(self::$ENV['DIR_VIEW_ERROR']) ? self::$ENV['DIR_VIEW_ERROR'] : 'view/error/';
-        self::$ENV['DIR_LOG'] = isset(self::$ENV['DIR_LOG']) ? self::$ENV['DIR_LOG'] : 'var/log/';
-        self::$ENV['DIR_LOG_TIMESTAMP'] = isset(self::$ENV['DIR_LOG_TIMESTAMP']) ? self::$ENV['DIR_LOG_TIMESTAMP'] : 'var/data/';
-        self::$ENV['DIR_VIEW'] = isset(self::$ENV['DIR_VIEW']) ? self::$ENV['DIR_VIEW'] : 'view/';
-        self::$ENV['DIR_WEB'] = isset(self::$ENV['DIR_WEB']) ? self::$ENV['DIR_WEB'] : 'web/';
-        self::$ENV['DIR_SRC'] = isset(self::$ENV['DIR_SRC']) ? self::$ENV['DIR_SRC'] : 'src/';
-
-        self::$ENV['ROUTE_REWRITE'] = self::$ENV['ROUTE_REWRITE'];
-        self::$ENV['ROUTE_FILE_PATH'] = self::$ENV['ROUTE_REWRITE'] ? '' : (self::$ENV['URL_DIR_INDEX'] . 'index.php?route=/');
-
-        self::$ENV['URL_DIR_WEB'] = self::$ENV['URL_DIR_WEB'];
-
-        self::$ENV['HTTP_PROTOCOL'] = isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http');
-        self::$ENV['HTTP_HOST'] = isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : (isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1');
-        self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
-
-        self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
-
-        self::$ENV['LOG_SIZE_LIMIT_MB'] = isset(self::$ENV['LOG_SIZE_LIMIT_MB']) && (int) self::$ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) self::$ENV['LOG_SIZE_LIMIT_MB'] : 5;
-        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset(self::$ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
-        self::$ENV['LOG_RETENTION_DAYS'] = isset(self::$ENV['LOG_RETENTION_DAYS']) && (int) self::$ENV['LOG_RETENTION_DAYS'] > 0 ? (int) self::$ENV['LOG_RETENTION_DAYS'] : 7;
-        self::$ENV['MAX_LOG_FILES'] =  isset(self::$ENV['MAX_LOG_FILES']) && (int) self::$ENV['MAX_LOG_FILES'] > 0 ? (int) self::$ENV['MAX_LOG_FILES'] : 10;
-
         $this->class = array(
             'App' => array(array(1, 2), null, true, 0),
             'Request' => array(array(), null, true, 1),
@@ -111,38 +102,74 @@ class App {
 
         $this->cache = array(
             'App' => array($this, true),
-            'Request' => array($request, true),
-            'Response' => array($response, true),
+            'Request' => array($dependencies['Request'], true),
+            'Response' => array($dependencies['Response'], true),
         );
+    }
+
+    public function init() {
+        self::$ENV['DIR'] = realpath(__DIR__) . DS;
+
+        self::$ENV['DIR_LOG'] = isset(self::$ENV['DIR_LOG']) ? self::$ENV['DIR_LOG'] : 'var' . DS . 'log' . DS;
+        self::$ENV['DIR_LOG_TIMESTAMP'] = isset(self::$ENV['DIR_LOG_TIMESTAMP']) ? self::$ENV['DIR_LOG_TIMESTAMP'] : 'var' . DS . 'data' . DS;
+        self::$ENV['DIR_VIEW'] = isset(self::$ENV['DIR_VIEW']) ? self::$ENV['DIR_VIEW'] : 'view' . DS;
+        self::$ENV['DIR_WEB'] = isset(self::$ENV['DIR_WEB']) ? self::$ENV['DIR_WEB'] : 'web' . DS;
+        self::$ENV['DIR_SRC'] = isset(self::$ENV['DIR_SRC']) ? self::$ENV['DIR_SRC'] : 'src' . DS;
+
+        self::$ENV['ROUTE_REWRITE'] = self::$ENV['ROUTE_REWRITE'];
+        self::$ENV['ROUTE_FILE_PATH'] = self::$ENV['ROUTE_REWRITE'] ? '' : (self::$ENV['URL_DIR_INDEX'] . 'index.php?route=/');
+
+        self::$ENV['URL_DIR_WEB'] = self::$ENV['URL_DIR_WEB'];
+
+        $request = $this->cache['Request'][self::$CACHE_CLASS];
+        self::$ENV['HTTP_PROTOCOL'] = isset(self::$ENV['HTTP_PROTOCOL']) ? self::$ENV['HTTP_PROTOCOL'] : ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http');
+        self::$ENV['HTTP_HOST'] = isset(self::$ENV['HTTP_HOST']) ? self::$ENV['HTTP_HOST'] : (isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1');
+        self::$ENV['BASE_URL'] = self::$ENV['HTTP_PROTOCOL'] . '://' . self::$ENV['HTTP_HOST'] . '/';
+
+        self::$ENV['ERROR_VIEW_FILE'] = isset(self::$ENV['ERROR_VIEW_FILE']) ? self::$ENV['ERROR_VIEW_FILE'] : 'uc.error.php';
+        self::$ENV['SHOW_ERRORS'] = self::$ENV['SHOW_ERRORS'];
+
+        self::$ENV['LOG_SIZE_LIMIT_MB'] = isset(self::$ENV['LOG_SIZE_LIMIT_MB']) && (int) self::$ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) self::$ENV['LOG_SIZE_LIMIT_MB'] : 5;
+        self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset(self::$ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) self::$ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
+        self::$ENV['LOG_RETENTION_DAYS'] = isset(self::$ENV['LOG_RETENTION_DAYS']) && (int) self::$ENV['LOG_RETENTION_DAYS'] > 0 ? (int) self::$ENV['LOG_RETENTION_DAYS'] : 7;
+        self::$ENV['MAX_LOG_FILES'] =  isset(self::$ENV['MAX_LOG_FILES']) && (int) self::$ENV['MAX_LOG_FILES'] > 0 ? (int) self::$ENV['MAX_LOG_FILES'] : 10;
+
+        if (self::$SELF === null) {
+            self::$SELF = $this;
+        }
 
         set_error_handler(array('App', 'error'));
         register_shutdown_function(array('App', 'shutdown'));
     }
 
-    public static function setEnv($key, $value) {
+    public static function getSelf() {
+        return self::$SELF;
+    }
+
+    public function setEnv($key, $value) {
         self::$ENV[$key] = $value;
     }
 
-    public static function setEnvs($keys) {
+    public function setEnvs($keys) {
         foreach ($keys as $key => $value) {
             self::$ENV[$key] = $value;
         }
     }
 
-    public static function getEnv($key) {
+    public function getEnv($key) {
         return isset(self::$ENV[$key]) ? self::$ENV[$key] : null;
     }
 
-    public static function setIni($key, $value) {
+    public function setIni($key, $value) {
         if (ini_set($key, $value) === false) {
-            self::log('Failed to set ini setting: ' . $key, 'app.error');
+            $this->log('Failed to set ini setting: ' . $key, 'app.error');
         }
     }
 
-    public static function setInis($keys) {
+    public function setInis($keys) {
         foreach ($keys as $key => $value) {
             if (ini_set($key, $value) === false) {
-                self::log('Failed to set ini setting: ' . $key, 'app.error');
+                $this->log('Failed to set ini setting: ' . $key, 'app.error');
             }
         }
     }
@@ -183,19 +210,19 @@ class App {
     // Error Management
 
     public static function error($errno, $errstr, $errfile, $errline) {
-        self::handleError($errno, $errstr, $errfile, $errline, true);
+        self::$SELF->handleError($errno, $errstr, $errfile, $errline, true);
     }
 
     public static function shutdown() {
         $error = error_get_last();
         if ($error !== null) {
             if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
-                self::handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
+                self::$SELF->handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
             }
         }
     }
 
-    public static function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
+    public function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
         if (ob_get_level() > 0) {
             ob_end_clean();
         }
@@ -210,9 +237,9 @@ class App {
 
         header('HTTP/1.1 ' . $errno);
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
             header('Content-Type: application/json');
             exit(self::$ENV['SHOW_ERRORS'] ? '{"error":true,"message":"' . 'ERROR ' . $errno . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
-            self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
         } else {
             if (self::$ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -232,8 +259,9 @@ class App {
                 header('Content-Type: text/plain');
                 exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
-                self::log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-                $file = self::$ENV['DIR'] . self::$ENV['DIR_VIEW_ERROR'] . $errno . '.php';
+                $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
+                $data = array('app' => $this, 'error_code' => $errno);
+                $file = self::$ENV['DIR'] . self::$ENV['ERROR_VIEW_FILE'];
                 exit(file_exists($file) ? include($file) : 'Something went wrong on our end. Please try again later.');
             }
         }
@@ -464,6 +492,7 @@ class App {
             'max' => isset($option['max']) ? $option['max'] : 0,
             'ignore' => isset($option['ignore']) ? $option['ignore'] : array(),
             'namespace' => isset($option['namespace']) ? $option['namespace'] : '',
+            'dir_as_namespace' => isset($option['dir_as_namespace']) ? $option['dir_as_namespace'] : false,
             'args' => isset($option['args']) ? $option['args'] : array(),
         );
 
@@ -474,7 +503,14 @@ class App {
                 }
                 if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(self::$ENV['DIR'] . $path . $file)) {
                     ++$option['depth'];
-                    $this->autoSetClass($path . $file . '/', $option);
+                    if ($option['dir_as_namespace']) {
+                        $namespace = $option['namespace'];
+                        $option['namespace'] .= ($file . '\\');
+                        $this->autoSetClass($path . $file . DS, $option);
+                        $option['namespace'] = $namespace;
+                    } else {
+                        $this->autoSetClass($path . $file . DS, $option);
+                    }
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
                     $this->setClass(substr($file, 0, -4), array('path' => $path, 'namespace' => $option['namespace'], 'args' => $option['args']));
@@ -617,7 +653,7 @@ class App {
         unset($this-> {$name});
     }
 
-    public static function path($option, $path = '') {
+    public function path($option, $path = '') {
         switch ($option) {
             case 'root':
                 return self::$ENV['DIR'] . $path;
@@ -632,7 +668,7 @@ class App {
         }
     }
 
-    public static function url($option, $url = '') {
+    public function url($option, $url = '') {
         switch ($option) {
         case 'route':
             return self::$ENV['BASE_URL'] . self::$ENV['ROUTE_FILE_PATH'] . $url;
@@ -643,11 +679,11 @@ class App {
         }
     }
 
-    public static function urlEncode($url) {
+    public function urlEncode($url) {
         return urlencode(preg_replace('/\s+/', '-', strtolower($url)));
     }
 
-    public static function log($message, $file) {
+    public function log($message, $file) {
         $logFile = self::$ENV['DIR'] . self::$ENV['DIR_LOG'] . $file . '.log';
         $maxLogSize = self::$ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
         $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;

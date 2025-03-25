@@ -4,15 +4,13 @@ return array(
     'env' => array(
         'dev' => array(
             // Environment Settings
-            'DIR_WEB' => 'web/',  // Directory for web access (e.g., public folder)
-            'DIR_SRC' => 'src/',  // Source directory for application code
-            'DIR_VIEW'=> 'view/', // View Directory
-            'URL_DIR_WEB' => 'web/', // URL path for web access
-            'URL_DIR_INDEX' => '',      // URL path for the index (usually root), become useless when route rewrite is enable
+            'DIR_WEB' => 'web' . DS,  // Directory for web access (e.g., public folder)
+            'DIR_SRC' => 'src' . DS,  // Source directory for application code
+            'DIR_VIEW'=> 'view' . DS, // View Directory
+            'URL_DIR_WEB' => 'web/',  // URL path for web access
+            'URL_DIR_INDEX' => '',    // URL path for the index (usually root), become useless when route rewrite is enable
             // Error Settings
-            // The view name format is '{error code}.php'. Default is '500.php'.
-            // Custom error numbers can be used with 'trigger_error(404|Not found)'.
-            'DIR_VIEW_ERROR' => 'view/error/', // Directory for error views
+            'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
             // Routing Configuration
             'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
@@ -33,8 +31,8 @@ return array(
              *     }
              */
             // Logging Configuration
-            'DIR_LOG' => 'var/log/',
-            'DIR_LOG_TIMESTAMP' => 'var/data/',
+            'DIR_LOG' => 'var' . DS . 'log' . DS,
+            'DIR_LOG_TIMESTAMP' => 'var' . DS . 'data' . DS,
             'LOG_SIZE_LIMIT_MB' => 5,
             'LOG_CLEANUP_INTERVAL_DAYS' => 1,
             'LOG_RETENTION_DAYS' => 7,
@@ -56,19 +54,19 @@ return array(
         ),
         'prod' => array(
             // Environment Settings
-            'DIR_WEB' => 'web/', 
-            'DIR_SRC' => 'src/',
-            'DIR_VIEW'=> 'view/',
+            'DIR_WEB' => 'web' . DS, 
+            'DIR_SRC' => 'src' . DS,
+            'DIR_VIEW'=> 'view' . DS,
             'URL_DIR_WEB' => 'web/',
             'URL_DIR_INDEX' => '', 
             // Error Settings
-            'DIR_VIEW_ERROR' => 'view/error/',
+            'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
             'SHOW_ERRORS' => 0, 
             // Routing Configuration
             'ROUTE_REWRITE' => 0,
             // Logging Configuration
-            'DIR_LOG' => 'var/log/',
-            'DIR_LOG_TIMESTAMP' => 'var/data/',
+            'DIR_LOG' => 'var' . DS . 'log' . DS,
+            'DIR_LOG_TIMESTAMP' => 'var' . DS . 'data' . DS,
             'LOG_SIZE_LIMIT_MB' => 5,
             'LOG_CLEANUP_INTERVAL_DAYS' => 1,
             'LOG_RETENTION_DAYS' => 7,
@@ -87,15 +85,15 @@ return array(
             // Timezone
             'date.timezone' => 'Asia/Manila', // Set to your timezone
             // Error Reporting
-            'display_errors' => 'On', // Display errors (dev only)
+            'display_errors' => 'On', // Display errors
             'display_startup_errors' => 'On', // Display startup errors
             'error_reporting' => E_ALL, // Report all errors
             'log_errors' => 1, // Log errors
             // General Settings
             'default_charset' => 'UTF-8', // Charset UTF-8
             // Performance Settings
-            'memory_limit' => '128M', // Increase memory limit for dev
-            'max_execution_time' => 7200, // Max execution time for dev
+            'memory_limit' => '128M', // Increase memory limit
+            'max_execution_time' => 7200, // Max execution time
          ),
          'prod' => array(
              // Timezone

@@ -1,15 +1,18 @@
 <?php
 
 class Controller {
+    protected $app;
     protected $request;
     protected $response;
 
-    public function __construct($request, $response) {
+    public function __construct($app, $request, $response) {
+        $this->app = $app;
         $this->request = $request;
         $this->response = $response;
     }
 
     protected function view($view, $data) {
+        $data['app'] = $this->app;
         $data['flash'] = array();
 
         if (session_id() !== '' && isset($_SESSION['flash'])) {
@@ -23,7 +26,7 @@ class Controller {
             ob_start();
         }
 
-        include(App::path('view', $view));
+        include($this->app->path('view', $view));
         $this->response->content = ob_get_contents();
         ob_end_clean();
 
@@ -45,7 +48,7 @@ class Controller {
 
 
     protected function redirect($url) {
-        $this->response->headers['Location'] = App::url('route', $url);
+        $this->response->headers['Location'] = $this->app->url('route', $url);
 
         return $this->response;
     }
