@@ -72,4 +72,5 @@ $app->setRoutes(array(
 $app->loadClasses(array('Controller', 'Model'));
 
 // Run the application
-$app->run();
+$response = $app->dispatch();
+$response->send();
