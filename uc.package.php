@@ -449,7 +449,7 @@ class App {
 
     // Request Handling
 
-    public function run() {
+    public function dispatch() {
         if ($this->isRunning) {
             return;
         }
@@ -469,9 +469,7 @@ class App {
         $this->action = $route['handler']['action'];
         $this->params = $route['params'];
 
-        $response = $this->cache['Response'][self::$CACHE_CLASS];
-        $response = $this->process($request, $response, $this);
-        $response->send();
+        return $this->process($request, $this->cache['Response'][self::$CACHE_CLASS], $this);
     }
 
     public function process($request, $response, $app) {
