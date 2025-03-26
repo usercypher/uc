@@ -7,22 +7,44 @@ class Seeder {
     }
 
     public function run() {
-        $this->insertBooks();
+        $this->insertBooks(true);
     }
 
     private function execute($sql, $message) {
-        if ($this->conn->exec($sql) === false) {
-            trigger_error('500|' . $message . $pdo->errorInfo());
+        if (stripos(trim($sql), "SELECT") === 0) {
+            $stmt = $this->conn->query($sql);
+            if ($stmt === false) {
+                trigger_error('500|' . $message . $this->conn->errorInfo()[2]);
+                return false;
+            }
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            if ($this->conn->exec($sql) === false) {
+                trigger_error('500|' . $message . $this->conn->errorInfo()[2]);
+                return false;
+            }
+            return true;
         }
     }
 
-    private function insertTable($data) {
-        $sql = ("INSERT INTO " . $data['table'] . " " . $data['columns'] . " VALUES " . $data['rows']);
-        $this->execute($sql, 'Error during database seeding: ');
+    private function insertTable($shouldCheckForData, $data) {
+        if ($shouldCheckForData) {
+            $sqlCheck = "SELECT COUNT(*) FROM " . $data['table'];
+            $result = $this->execute($sqlCheck, '');
+
+            if ($result && $result[0]['COUNT(*)'] == 0) {
+                $sqlInsert = "INSERT INTO " . $data['table'] . " " . $data['columns'] . " VALUES " . $data['rows'];
+                $this->execute($sqlInsert, 'Error during database seeding: ');
+            }
+        } else {
+            $sqlInsert = "INSERT INTO " . $data['table'] . " " . $data['columns'] . " VALUES " . $data['rows'];
+            $this->execute($sqlInsert, 'Error during database seeding: ');
+        }
     }
 
-    private function insertBooks() {
-        $this->insertTable(array(
+
+    private function insertBooks($shouldCheckForData) {
+        $this->insertTable($shouldCheckForData, array(
             'table' => 'books',
             'columns' => '(title, author, publisher, year)',
             'rows' => ("

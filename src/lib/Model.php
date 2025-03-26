@@ -140,7 +140,7 @@ class Model {
     protected function prepare($query) {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
-            trigger_error('500|Prepare failed: ' . $this->conn->errorInfo());
+            trigger_error('500|Prepare failed: ' . $this->conn->errorInfo()[2]);
         }
         return $stmt;
     }
@@ -165,7 +165,7 @@ class Model {
         }
 
         if (!$stmt->execute()) {
-            trigger_error('500|Execute failed: ' . implode(', ', $stmt->errorInfo()));
+            trigger_error('500|Execute failed: ' . implode(', ', $stmt->errorInfo()[2]));
         }
 
         return $stmt;
