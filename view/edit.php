@@ -22,7 +22,7 @@ $app = $data['app'];
         <br>
         <div class='container-form'>
             <form action="<?php echo($app->url('route', 'book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
-                <input type="hidden" name="_token" value="<?php echo(isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo $data['csrf_token']; ?>">
                 <input type="hidden" name="book[id]" value="<?php echo($data['book']['id']); ?>">
                 <input type="hidden" name="book[title][current]" value="<?php echo($data['book']['title']); ?>">
 

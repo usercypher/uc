@@ -20,18 +20,25 @@ $app->setClasses(array(
     array('BookModel')
 ));
 
+$app->setClass('Session', array('cache' => true));
+
 $app->setClasses(array(
-    'args' => array('App', 'Request', 'Response')
+    'args' => array('App', 'Request', 'Response', 'Session')
 ), array(
     array('BookController', array('args' => array('BookModel'))) // Class-specific options merged with group options
 ));
 
+$app->setClasses(array(
+    'args' => array('Session')
+), array(
+    array('CsrfGenerateMiddleware'),
+    array('CsrfValidateMiddleware'),
+));
 
-// Define middlewares to handle session, CSRF generation, and data sanitization
+// Define middlewares to handle data sanitization, CSRF generation
 $app->setMiddlewares(array(
-    'SessionMiddleware', 
+    'SanitizeMiddleware',
     'CsrfGenerateMiddleware', 
-    'SanitizeMiddleware'
 ));
 
 // Define routes

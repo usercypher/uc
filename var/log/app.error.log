@@ -8,3 +8,15 @@
 [2025-03-26 11:03:45.753571] PDOStatement::execute(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'library.books' doesn't exist in /storage/emulated/0/lamp/_htdocs_1/src/lib/Model.php on line 167
 [2025-03-26 11:19:36.760509] PDOStatement::execute(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'library.books' doesn't exist in /storage/emulated/0/lamp/_htdocs_1/src/lib/Model.php on line 167
 [2025-03-26 11:45:26.556433] PDOStatement::execute(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'library.books' doesn't exist in /storage/emulated/0/lamp/_htdocs_1/src/lib/Model.php on line 167
+[2025-03-28 11:47:02.752432] Uncaught Error: Call to a member function unset() on null in /storage/emulated/0/lamp/_htdocs_1/src/controller/BookController.php:15
+Stack trace:
+#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(482): BookController->index(Array)
+#1 /storage/emulated/0/lamp/_htdocs_1/src/middleware/CsrfGenerateMiddleware.php(13): App->process(Object(Request), Object(Response), Object(App))
+#2 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(479): CsrfGenerateMiddleware->process(Object(Request), Object(Response), Object(App))
+#3 /storage/emulated/0/lamp/_htdocs_1/src/middleware/SanitizeMiddleware.php(26): App->process(Object(Request), Object(Response), Object(App))
+#4 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(479): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
+#5 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(472): App->process(Object(Request), Object(Response), Object(App))
+#6 /storage/emulated/0/lamp/_htdocs_1/index.php(81): App->dispatch()
+#7 {main}
+  thrown in /storage/emulated/0/lamp/_htdocs_1/src/controller/BookController.php on line 15
+[2025-03-28 11:50:36.922684] Trying to access array offset on false in /storage/emulated/0/lamp/_htdocs_1/view/edit.php on line 26

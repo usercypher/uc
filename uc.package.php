@@ -19,16 +19,17 @@ function init($mode) {
 }
 
 class Request {
-    public $uri, $method, $get, $post, $files, $cookies, $server;
+    public $uri, $method, $get, $post, $files, $cookies, $server, $params;
 
     public function __construct() {
-        $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '';
-        $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : '';
+        $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : null;
+        $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null;
         $this->get = $_GET;
         $this->post = $_POST;
         $this->files = $_FILES;
         $this->cookies = $_COOKIE;
         $this->server = $_SERVER;
+        $this->params = array();
     }
 }
 
@@ -82,7 +83,6 @@ class App {
 
     private $controller = '';
     private $action = '';
-    private $params = array();
     private $finalMiddlewares = array();
     private $finalMiddlewaresIndex = 0;
 
@@ -467,7 +467,7 @@ class App {
         $this->finalMiddlewares = $route['handler']['middleware'];
         $this->controller = $route['handler']['controller'];
         $this->action = $route['handler']['action'];
-        $this->params = $route['params'];
+        $request->params = $route['params'];
 
         return $this->process($request, $this->cache['Response'][self::$CACHE_CLASS], $this);
     }
@@ -479,7 +479,7 @@ class App {
             return $middleware->process($request, $response, $app);
         }
         $controller = $this->resolveClass($this->classList[$this->controller]);
-        return $controller-> {$this->action} ($this->params);
+        return $controller-> {$this->action} ($request->params);
     }
 
     // Class Management

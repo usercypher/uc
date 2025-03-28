@@ -1,21 +1,30 @@
 <?php
 
 class BookController extends Controller {
+    private $session;
     private $bookModel;
 
-    public function __construct($dependencies) {
-        parent::__construct($dependencies['App'], $dependencies['Request'], $dependencies['Response']);
-        $this->bookModel = $dependencies['BookModel'];
+    public function __construct($d) {
+        parent::__construct($d);
+        $this->session = $d['Session'];
+        $this->bookModel = $d['BookModel'];
     }
 
     public function index() {
         return $this->view('home.php', array(
+            'app' => $this->app,
+            'flash' => $this->session->unset('flash'),
+            'csrf_token' => $this->session->get('csrf_token'),
             'books' => $this->bookModel->all()
         ));
     }
 
     public function create() {
-        return $this->view('create.php', array());
+        return $this->view('create.php', array(
+            'app' => $this->app,
+            'flash' => $this->session->unset('flash'),
+            'csrf_token' => $this->session->get('csrf_token'),
+        ));
     }
 
     public function store() {
@@ -23,7 +32,7 @@ class BookController extends Controller {
 
         $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
 
-        $_SESSION['flash'] = $this->bookModel->getFlash();
+        $this->session->set('flash', $this->bookModel->getFlash());
 
         return $this->redirect($route);
     }
@@ -32,6 +41,9 @@ class BookController extends Controller {
         $data = $param;
 
         return $this->view('edit.php', array(
+            'app' => $this->app,
+            'flash' => $this->session->unset('flash'),
+            'csrf_token' => $this->session->get('csrf_token'),
             'book' => $this->bookModel->first('id = ?', array($data['id']))
         ));
     }
@@ -41,7 +53,7 @@ class BookController extends Controller {
 
         $this->bookModel->validateAndUpdate($data);
 
-        $_SESSION['flash'] = $this->bookModel->getFlash();
+        $this->session->set('flash', $this->bookModel->getFlash());
 
         return $this->redirect('edit/' . $data['book']['id']);
     }
@@ -51,7 +63,7 @@ class BookController extends Controller {
 
         $this->bookModel->validateAndDelete($data);
 
-        $_SESSION['flash'] = $this->bookModel->getFlash();
+        $this->session->set('flash', $this->bookModel->getFlash());
 
         return $this->redirect('home');
     }

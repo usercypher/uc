@@ -1,25 +1,15 @@
 <?php
 
 class Controller {
-    protected $app;
-    protected $request;
-    protected $response;
+    protected $app, $request, $response;
 
-    public function __construct($app, $request, $response) {
-        $this->app = $app;
-        $this->request = $request;
-        $this->response = $response;
+    public function __construct($d) {
+        $this->app = $d['App'];
+        $this->request = $d['Request'];
+        $this->response = $d['Response'];
     }
 
     protected function view($view, $data) {
-        $data['app'] = $this->app;
-        $data['flash'] = array();
-
-        if (session_id() !== '' && isset($_SESSION['flash'])) {
-            $data['flash'] = $_SESSION['flash'];
-            unset($_SESSION['flash']);
-        }
-
         if (isset($this->request->server['HTTP_ACCEPT_ENCODING']) && strpos($this->request->server['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
             ob_start("ob_gzhandler");
         } else {

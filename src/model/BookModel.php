@@ -2,7 +2,8 @@
 
 class BookModel extends Model {
     public function __construct($dependencies) {
-        parent::__construct('books', $dependencies['Database']->getConnection());
+        parent::setConn($dependencies['Database']->getConnection());
+        parent::setTable('books');
     }
 
     public function validateAndCreate($data) {

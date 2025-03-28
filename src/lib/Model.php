@@ -2,11 +2,17 @@
 
 class Model {
     private $flash = array();
-    private $table, $conn, $primaryColumn;
+    private $table, $conn, $primaryColumn = 'id';
 
-    public function __construct($table, $conn, $primaryColumn = 'id') {
-        $this->table = $table;
+    public function setConn($conn) {
         $this->conn = $conn;
+    }
+
+    public function setTable($table) {
+        $this->table = $table;
+    }
+
+    public function setPrimaryColumn($primaryColumn) {
         $this->primaryColumn = $primaryColumn;
     }
 

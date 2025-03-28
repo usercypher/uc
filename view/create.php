@@ -22,7 +22,7 @@ $app = $data['app'];
         <br>
         <div class='container-form'>
             <form class="submit-form" action="<?php echo($app->url('route', 'book/create')); ?>" method="post">
-                <input type="hidden" name="_token" value="<?php echo(isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : null); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo $data['csrf_token']; ?>">
 
                 <label>Title:</label>
                 <input type="text" name="book[title]" required>

@@ -1,18 +1,25 @@
 <?php
 
 class CsrfValidateMiddleware {
+    public $session;
+
+    public function __construct($dependency) {
+        $this->session = $dependency['Session'];
+    }
+
     public function process($request, $response, $next) {
         // Validate CSRF Token
-        if (!isset($request->post['_token'])) {
-            throw new Exception('Invalid CSRF token', 403);
+        if (!isset($request->post['csrf_token'])) {
+            trigger_error('403|Invalid CSRF token');
         }
 
-        if (!isset($_SESSION['csrf_token'])) {
-            throw new Exception('Invalid CSRF token', 403);
+        $csrfToken = $this->session->get('csrf_token');
+        if (!$csrfToken) {
+            trigger_error('403|Invalid CSRF token');
         }
 
-        if ($request->post['_token'] !== $_SESSION['csrf_token']) {
-            throw new Exception('Invalid CSRF token', 403);
+        if ($request->post['csrf_token'] !== $csrfToken) {
+            trigger_error('403|Invalid CSRF token');
         }
 
         return $next->process($request, $response, $next);
