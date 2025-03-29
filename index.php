@@ -3,7 +3,7 @@
 
 require('uc.package.php');
 
-$app = init('prod');
+$app = init('dev');
 
 // [CONFIG] start
 

@@ -31,18 +31,6 @@ class Model {
         return $this->conn->lastInsertId();
     }
 
-    public function find($id) {
-        $stmt = $this->prepare('SELECT * FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
-        $stmt = $this->execute($stmt, array(), $id);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function all() {
-        $stmt = $this->prepare('SELECT * FROM ' . $this->table);
-        $stmt = $this->execute($stmt, array(), null);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function create($data) {
         $columns = implode(', ', array_keys($data));
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
@@ -113,8 +101,26 @@ class Model {
         }
     }
 
-    public function where($conditions, $params) {
-        $stmt = $this->prepare('SELECT * FROM ' . $this->table . ' WHERE ' . $conditions);
+    public function find($id, $columns = '*') {
+        $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
+        $stmt = $this->execute($stmt, array(), $id);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function all($columns = '*') {
+        $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table);
+        $stmt = $this->execute($stmt, array(), null);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function first($conditions, $params, $columns = '*') {
+        $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1');
+        $stmt = $this->execute($stmt, $params, null);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function where($conditions, $params, $columns = '*') {
+        $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions);
         $stmt = $this->execute($stmt, $params, null);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -123,12 +129,6 @@ class Model {
         $stmt = $this->prepare($query);
         $stmt = $this->execute($stmt, $params, null);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function first($conditions, $params) {
-        $stmt = $this->prepare('SELECT * FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1');
-        $stmt = $this->execute($stmt, $params, null);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function count($conditions, $params) {

@@ -251,8 +251,8 @@ class App {
                         $traceOutput .= '#' . ($key - 1) . ' ';
                         $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
                         $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
-                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) && $frame['type'] === '::' ? '::' : '->') : '';
-                        $traceOutput .= isset($frame['function']) ? $frame['function'].'()' : '[unknown function]';
+                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '';
+                        $traceOutput .= isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]';
                         $traceOutput .= PHP_EOL;
                     }
                 }
@@ -262,7 +262,7 @@ class App {
                 $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
                 $data = array('app' => $this, 'error_code' => $errno);
                 $file = self::$ENV['DIR'] . self::$ENV['ERROR_VIEW_FILE'];
-                exit(file_exists($file) ? include($file) : 'Something went wrong on our end. Please try again later.');
+                exit(file_exists($file) ? include($file) : 'An unexpected error occurred. Please try again later.');
             }
         }
     }
@@ -572,6 +572,13 @@ class App {
 
     public function resetClass($class) {
         $this->cache[$class][self::$CACHE_CLASS] = null;
+    }
+
+    public function loadClass($classes) {
+        if (!isset($this->cache[$class][self::$CACHE_PATH])) {
+            require(self::$ENV['DIR'] . (isset($this->class[$class][self::$CLASS_PATH]) && isset($this->pathList[$this->class[$class][self::$CLASS_PATH]]) ? $this->pathList[$this->class[$class][self::$CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+            $this->cache[$class][self::$CACHE_PATH] = true;
+        }
     }
 
     public function loadClasses($classes) {
