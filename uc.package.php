@@ -673,12 +673,12 @@ class App {
         }
     }
 
-    public function url($option, $url = '') {
+    public function url($option, $url = '', $base = '') {
         switch ($option) {
         case 'route':
-            return self::$ENV['BASE_URL'] . self::$ENV['ROUTE_FILE_PATH'] . $url;
+            return ($base != '' ? $base : self::$ENV['BASE_URL']) . self::$ENV['ROUTE_FILE_PATH'] . $url;
         case 'web':
-            return self::$ENV['BASE_URL'] . self::$ENV['URL_DIR_WEB'] . $url;
+            return ($base != '' ? $base : self::$ENV['BASE_URL']) . self::$ENV['URL_DIR_WEB'] . $url;
         default:
             trigger_error('1001|Invalid option: ' . $option);
         }
