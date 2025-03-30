@@ -22,11 +22,6 @@ class BookModel extends Model {
 
     public function validateAndUpdate($data) {
         $bookData = $data['book'];
-        if (empty($bookData['title'])) {
-            $this->addFlash('error', 'Title is empty.');
-            return false;
-        }
-
         if ($this->exists('title = ?', array($bookData['title']['new'])) && $bookData['title']['current'] !== $bookData['title']['new']) {
             $this->addFlash('error', 'Title Already Exists.');
             return false;

@@ -8,7 +8,7 @@ $app = init('dev');
 // [CONFIG] start
 
 // Auto-load classes from 'src/' directory and set path metadata (max depth 1)
-$app->autoSetClass('src' . DS, array('max' => 1));
+$app->autoSetClass('src' . DS, array('max' => 1, 'ignore' => array('lib-external')));
 
 // Set up the 'Database' class with caching enabled, ensuring a single instance is used.
 $app->setClass('Database', array('args' => array('App'), 'cache' => true));
