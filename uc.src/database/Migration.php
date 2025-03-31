@@ -1,9 +1,14 @@
 <?php
 class Migration {
+    private $database;
     private $conn;
 
-    public function __construct($dependencies) {
-        $this->conn = $dependencies['Database']->getConnection();
+    public function __construct($args) {
+        list(
+            $this->database
+        ) = $args;
+
+        $this->conn = $this->database->getConnection();
     }
 
     public function up() {

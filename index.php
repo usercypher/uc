@@ -8,14 +8,14 @@ $app = init('dev');
 // [CONFIG] start
 
 // Auto-load classes from 'src/' directory and set path metadata (max depth 1)
-$app->autoSetClass('src' . DS, array('max' => 1, 'ignore' => array('lib-external')));
+$app->autoSetClass('uc.src' . DS, array('max' => 1));
 
 // Set up the 'Database' class with caching enabled, ensuring a single instance is used.
 $app->setClass('Database', array('args' => array('App'), 'cache' => true));
 
 // Define and inject dependencies: 'BookModel' depends on 'Database', 'BookController' depends on 'BookModel', 'Request', and 'Response'.
 $app->setClasses(array(
-    'args' => array('App', 'Database')
+    'args' => array('Database')
 ), array(
     array('BookModel')
 ));

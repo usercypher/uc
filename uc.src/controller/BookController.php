@@ -1,14 +1,19 @@
 <?php
 
 class BookController extends Controller {
+    protected $app, $request, $response;
     private $session;
     private $bookModel;
 
-    public function __construct($d) {
-        parent::__construct($d);
-        $this->session = $d['Session'];
-        $this->bookModel = $d['BookModel'];
-    }
+    public function __construct($args) {
+        list(
+            $this->app, 
+            $this->request, 
+            $this->response, 
+            $this->session, 
+            $this->bookModel
+        ) = $args;
+    } 
 
     public function index() {
         return $this->view('home.php', array(

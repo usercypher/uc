@@ -3,12 +3,13 @@
 class CsrfValidateMiddleware {
     public $session;
 
-    public function __construct($dependency) {
-        $this->session = $dependency['Session'];
+    public function __construct($args) {
+        list(
+            $this->session
+        ) = $args;
     }
 
     public function process($request, $response, $next) {
-        // Validate CSRF Token
         if (!isset($request->post['csrf_token'])) {
             trigger_error('403|Invalid CSRF token');
         }

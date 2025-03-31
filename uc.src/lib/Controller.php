@@ -3,12 +3,6 @@
 class Controller {
     protected $app, $request, $response;
 
-    public function __construct($d) {
-        $this->app = $d['App'];
-        $this->request = $d['Request'];
-        $this->response = $d['Response'];
-    }
-
     protected function view($view, $data) {
         if (isset($this->request->server['HTTP_ACCEPT_ENCODING']) && strpos($this->request->server['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
             ob_start("ob_gzhandler");

@@ -1,4 +1,5 @@
 <?php 
+
 class Asset {
     private $css = array();
     private $js = array();
@@ -46,6 +47,4 @@ class Asset {
         return $jsScripts;
     }
 }
-
-
 ?>

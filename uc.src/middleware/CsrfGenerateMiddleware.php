@@ -3,8 +3,10 @@
 class CsrfGenerateMiddleware {
     public $session;
 
-    public function __construct($dependency) {
-        $this->session = $dependency['Session'];
+    public function __construct($args) {
+        list(
+            $this->session
+        ) = $args;
     }
 
     public function process($request, $response, $next) {

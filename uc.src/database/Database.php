@@ -1,16 +1,20 @@
 <?php
 
 class Database {
+    private $app;
     private $host, $port, $name, $user, $pass, $pdo, $time;
 
-    public function __construct($dependency) {
-        $app = $dependency['App'];
-        $this->host = $app->getEnv('DB_HOST');
-        $this->port = $app->getEnv('DB_PORT');
-        $this->name = $app->getEnv('DB_NAME');
-        $this->user = $app->getEnv('DB_USER');
-        $this->pass = $app->getEnv('DB_PASS');
-        $this->time = $app->getEnv('DB_TIME');
+    public function __construct($args) {
+        list(
+            $this->app
+        ) = $args;
+
+        $this->host = $this->app->getEnv('DB_HOST');
+        $this->port = $this->app->getEnv('DB_PORT');
+        $this->name = $this->app->getEnv('DB_NAME');
+        $this->user = $this->app->getEnv('DB_USER');
+        $this->pass = $this->app->getEnv('DB_PASS');
+        $this->time = $this->app->getEnv('DB_TIME');
     }
 
     public function getConnection() {

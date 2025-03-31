@@ -5,8 +5,8 @@ return array(
         'dev' => array(
             // Environment Settings
             'DIR_WEB' => 'web' . DS,  // Directory for web access (e.g., public folder)
-            'DIR_SRC' => 'src' . DS,  // Source directory for application code
-            'DIR_VIEW'=> 'view' . DS, // View Directory
+            'DIR_SRC' => 'uc.src' . DS,  // Source directory for application code
+            'DIR_VIEW'=> 'uc.view' . DS, // View Directory
             'URL_DIR_WEB' => 'web/',  // URL path for web access
             'URL_DIR_INDEX' => '',    // URL path for the index (usually root), become useless when route rewrite is enable
             // Error Settings
@@ -55,8 +55,8 @@ return array(
         'prod' => array(
             // Environment Settings
             'DIR_WEB' => 'web' . DS, 
-            'DIR_SRC' => 'src' . DS,
-            'DIR_VIEW'=> 'view' . DS,
+            'DIR_SRC' => 'uc.src' . DS,
+            'DIR_VIEW'=> 'uc.view' . DS,
             'URL_DIR_WEB' => 'web/',
             'URL_DIR_INDEX' => '', 
             // Error Settings

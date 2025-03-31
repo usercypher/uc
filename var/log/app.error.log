@@ -1,22 +1,41 @@
-[2025-03-26 06:55:48.382257] Route not found: GET /hme in /storage/emulated/0/htdocs/main/uc.package.php on line 464
-[2025-03-26 10:15:25.804497] Undefined array key "Database" in /storage/emulated/0/lamp/_htdocs_1/src/database/Migration.php on line 6
-[2025-03-26 10:17:21.271452] Route not found: GET /d in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 464
-[2025-03-26 10:57:23.739831] Trying to access array offset on null in /storage/emulated/0/lamp/_htdocs_1/src/database/Seeder.php on line 24
-[2025-03-26 10:59:18.871907] PDO::exec(): SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. in /storage/emulated/0/lamp/_htdocs_1/src/database/Seeder.php on line 14
-[2025-03-26 10:59:58.506114] Trying to access array offset on null in /storage/emulated/0/lamp/_htdocs_1/src/database/Seeder.php on line 24
-[2025-03-26 11:00:16.905957] PDO::exec(): SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active.  Consider using PDOStatement::fetchAll().  Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute. in /storage/emulated/0/lamp/_htdocs_1/src/database/Seeder.php on line 14
-[2025-03-26 11:03:45.753571] PDOStatement::execute(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'library.books' doesn't exist in /storage/emulated/0/lamp/_htdocs_1/src/lib/Model.php on line 167
-[2025-03-26 11:19:36.760509] PDOStatement::execute(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'library.books' doesn't exist in /storage/emulated/0/lamp/_htdocs_1/src/lib/Model.php on line 167
-[2025-03-26 11:45:26.556433] PDOStatement::execute(): SQLSTATE[42S02]: Base table or view not found: 1146 Table 'library.books' doesn't exist in /storage/emulated/0/lamp/_htdocs_1/src/lib/Model.php on line 167
-[2025-03-28 11:47:02.752432] Uncaught Error: Call to a member function unset() on null in /storage/emulated/0/lamp/_htdocs_1/src/controller/BookController.php:15
+[2025-03-31 18:36:21.404048] Route not found: GET /hom in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 455
+[2025-03-31 18:37:03.635067] Route not found: GET /hom in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 455
+[2025-03-31 18:37:23.901151] Route not found: GET /hom in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 455
+[2025-03-31 18:40:25.196763] Cannot use empty list in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 10
+[2025-03-31 19:02:25.365686] Cannot use empty list in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 9
+[2025-03-31 19:02:26.457284] Cannot use empty list in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 9
+[2025-03-31 19:02:54.454412] Uncaught Error: Call to a member function unset() on null in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php:45
 Stack trace:
-#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(482): BookController->index(Array)
-#1 /storage/emulated/0/lamp/_htdocs_1/src/middleware/CsrfGenerateMiddleware.php(13): App->process(Object(Request), Object(Response), Object(App))
-#2 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(479): CsrfGenerateMiddleware->process(Object(Request), Object(Response), Object(App))
-#3 /storage/emulated/0/lamp/_htdocs_1/src/middleware/SanitizeMiddleware.php(26): App->process(Object(Request), Object(Response), Object(App))
-#4 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(479): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
-#5 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(472): App->process(Object(Request), Object(Response), Object(App))
-#6 /storage/emulated/0/lamp/_htdocs_1/index.php(81): App->dispatch()
+#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(473): BookController->edit(Array)
+#1 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/CsrfGenerateMiddleware.php(15): App->process(Object(Request), Object(Response), Object(App))
+#2 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): CsrfGenerateMiddleware->process(Object(Request), Object(Response), Object(App))
+#3 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/SanitizeMiddleware.php(23): App->process(Object(Request), Object(Response), Object(App))
+#4 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
+#5 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(463): App->process(Object(Request), Object(Response), Object(App))
+#6 /storage/emulated/0/lamp/_htdocs_1/index.php(78): App->dispatch()
 #7 {main}
-  thrown in /storage/emulated/0/lamp/_htdocs_1/src/controller/BookController.php on line 15
-[2025-03-28 11:50:36.922684] Trying to access array offset on false in /storage/emulated/0/lamp/_htdocs_1/view/edit.php on line 26
+  thrown in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 45
+[2025-03-31 19:03:26.383287] Cannot use empty list in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 10
+[2025-03-31 19:24:01.660474] Uncaught Error: args(): Argument #1 ($list) could not be passed by reference in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php:14
+Stack trace:
+#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(634): BookController->__construct(Array)
+#1 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(472): App->resolveClass('BookController')
+#2 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/CsrfGenerateMiddleware.php(15): App->process(Object(Request), Object(Response), Object(App))
+#3 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): CsrfGenerateMiddleware->process(Object(Request), Object(Response), Object(App))
+#4 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/SanitizeMiddleware.php(23): App->process(Object(Request), Object(Response), Object(App))
+#5 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
+#6 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(463): App->process(Object(Request), Object(Response), Object(App))
+#7 /storage/emulated/0/lamp/_htdocs_1/index.php(84): App->dispatch()
+#8 {main}
+  thrown in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 14
+[2025-03-31 19:32:25.894650] Uncaught Error: Call to a member function unset() on null in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php:22
+Stack trace:
+#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(473): BookController->index(Array)
+#1 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/CsrfGenerateMiddleware.php(15): App->process(Object(Request), Object(Response), Object(App))
+#2 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): CsrfGenerateMiddleware->process(Object(Request), Object(Response), Object(App))
+#3 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/SanitizeMiddleware.php(23): App->process(Object(Request), Object(Response), Object(App))
+#4 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
+#5 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(463): App->process(Object(Request), Object(Response), Object(App))
+#6 /storage/emulated/0/lamp/_htdocs_1/index.php(88): App->dispatch()
+#7 {main}
+  thrown in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 22

@@ -1,8 +1,14 @@
 <?php
 
 class BookModel extends Model {
-    public function __construct($dependencies) {
-        parent::setConn($dependencies['Database']->getConnection());
+    private $database;
+
+    public function __construct($args) {
+        list(
+            $this->database,
+        ) = $args;
+
+        parent::setConn($this->database->getConnection());
         parent::setTable('books');
     }
 
