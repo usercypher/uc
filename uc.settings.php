@@ -1,14 +1,16 @@
 <?php
 
+define('DS', '/');
+
 return array(
     'env' => array(
         'dev' => array(
             // Environment Settings
-            'DIR_WEB' => 'web' . DS,  // Directory for web access (e.g., public folder)
-            'DIR_SRC' => 'uc.src' . DS,  // Source directory for application code
-            'DIR_VIEW'=> 'uc.view' . DS, // View Directory
-            'URL_DIR_WEB' => 'web/',  // URL path for web access
-            'URL_DIR_INDEX' => '',    // URL path for the index (usually root), become useless when route rewrite is enable
+            'DIR_WEB' => 'web' . DS, // Directory for web access (e.g., public folder)
+            'DIR_SRC' => 'uc.src' . DS, // Source directory for application code
+            'DIR_VIEW' => 'uc.view' . DS, // View Directory
+            'URL_DIR_WEB' => 'web/', // URL path for web access
+            'URL_DIR_INDEX' => '', // URL path for the index (usually root), become useless when route rewrite is enable
             // Error Settings
             'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
@@ -44,7 +46,7 @@ return array(
             'DB_USER' => 'root',
             'DB_PASS' => '',
             'DB_TIME' => '+08:00',
-            /*  
+            /*
              * Timezones
              *
              * -05:00 = Eastern Standard Time (EST)
@@ -54,14 +56,14 @@ return array(
         ),
         'prod' => array(
             // Environment Settings
-            'DIR_WEB' => 'web' . DS, 
+            'DIR_WEB' => 'web' . DS,
             'DIR_SRC' => 'uc.src' . DS,
-            'DIR_VIEW'=> 'uc.view' . DS,
+            'DIR_VIEW' => 'uc.view' . DS,
             'URL_DIR_WEB' => 'web/',
-            'URL_DIR_INDEX' => '', 
+            'URL_DIR_INDEX' => '',
             // Error Settings
             'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
-            'SHOW_ERRORS' => 0, 
+            'SHOW_ERRORS' => 0,
             // Routing Configuration
             'ROUTE_REWRITE' => 0,
             // Logging Configuration
@@ -94,9 +96,9 @@ return array(
             // Performance Settings
             'memory_limit' => '128M', // Increase memory limit
             'max_execution_time' => 7200, // Max execution time
-         ),
-         'prod' => array(
-             // Timezone
+        ),
+        'prod' => array(
+            // Timezone
             'date.timezone' => 'Asia/Manila',
             // Error Reporting
             'display_errors' => 'Off',
@@ -108,6 +110,6 @@ return array(
             // Performance Settings
             'memory_limit' => '256M',
             'max_execution_time' => 30,
-         )
+        )
     )
 );

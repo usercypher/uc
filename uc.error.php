@@ -1,6 +1,7 @@
 <?php
 
 $app = $data['app'];
+$errorCode = $data['error_code'];
 
 $errorMap = array(
     500 => array('Internal Server Error', '500', 'Something went wrong on our end. Please try again later.'),
@@ -8,7 +9,7 @@ $errorMap = array(
     // add more
 );
 
-$error = isset($errorMap[$data['error_code']]) ? $errorMap[$data['error_code']] : array('Oops! Something went wrong', 'Oops!', 'Something went wrong on our side. We\'re working to fix it.');
+$error = isset($errorMap[$errorCode]) ? $errorMap[$errorCode] : array('Oops! Something went wrong', 'Oops!', 'Something went wrong on our side. We\'re working to fix it.');
 
 $head_title = $error[0];
 $title = $error[1];
@@ -21,14 +22,14 @@ $description = $error[2];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $head_title; ?></title>
     <style>
-        * { box-sizing: border-box; }
-        html { font-size: 16px; }
-        body { font-family: Arial, sans-serif; padding: 0; margin: 0; }
-        div { word-wrap: break-word; padding: 3em; text-align: center; }
-        h1 { font-size: 4em; color: #e74c3c; font-weight: 900; }
-        p { font-size: 1em; line-height: 1.6;}
-        a { color: #3498db; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        * {box-sizing: border-box;}
+        html {font-size: 16px;}
+        body {font-family: Arial, sans-serif; padding: 0; margin: 0;}
+        div {word-wrap: break-word; padding: 3em; text-align: center;}
+        h1 {font-size: 4em; color: #e74c3c; font-weight: 900;}
+        p {font-size: 1em; line-height: 1.6;}
+        a {color: #3498db; text-decoration: none;}
+        a:hover {text-decoration: underline;}
     </style>
 </head>
 <body>

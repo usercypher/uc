@@ -1,10 +1,8 @@
 <?php
 
 function init($mode) {
-    define('DS', '/');
-
     $app = new App(array(
-        'Request' => new Request, 
+        'Request' => new Request,
         'Response' => new Response
     ));
 
@@ -12,7 +10,7 @@ function init($mode) {
 
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
-    
+
     $app->init();
 
     return $app;
@@ -131,7 +129,7 @@ class App {
         $this->ENV['LOG_SIZE_LIMIT_MB'] = isset($this->ENV['LOG_SIZE_LIMIT_MB']) && (int) $this->ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) $this->ENV['LOG_SIZE_LIMIT_MB'] : 5;
         $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset($this->ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
         $this->ENV['LOG_RETENTION_DAYS'] = isset($this->ENV['LOG_RETENTION_DAYS']) && (int) $this->ENV['LOG_RETENTION_DAYS'] > 0 ? (int) $this->ENV['LOG_RETENTION_DAYS'] : 7;
-        $this->ENV['MAX_LOG_FILES'] =  isset($this->ENV['MAX_LOG_FILES']) && (int) $this->ENV['MAX_LOG_FILES'] > 0 ? (int) $this->ENV['MAX_LOG_FILES'] : 10;
+        $this->ENV['MAX_LOG_FILES'] = isset($this->ENV['MAX_LOG_FILES']) && (int) $this->ENV['MAX_LOG_FILES'] > 0 ? (int) $this->ENV['MAX_LOG_FILES'] : 10;
 
         set_error_handler(array($this, 'error'));
         register_shutdown_function(array($this, 'shutdown'));
@@ -238,7 +236,9 @@ class App {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . PHP_EOL;
                     foreach ($trace as $key => $frame) {
-                        if ($key === 0) { continue; }
+                        if ($key === 0) {
+                            continue;
+                        }
                         $traceOutput .= '#' . ($key - 1) . ' ';
                         $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
                         $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
@@ -312,7 +312,7 @@ class App {
             if (isset($p[3])) {
                 $option['middleware'] = isset($option['middleware']) ? $option['middleware'] : array();
                 $p[3]['middleware'] = isset($p[3]['middleware']) ? array_merge($option['middleware'], $p[3]['middleware']) : $option['middleware'];
-                if (!((isset($p[3]['ignore']) && $p[3]['ignore'] === array(true)) || (isset($option['ignore']) && $option['ignore'] === array(true))) ) {
+                if (!((isset($p[3]['ignore']) && $p[3]['ignore'] === array(true)) || (isset($option['ignore']) && $option['ignore'] === array(true)))) {
                     $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
                     $p[3]['ignore'] = isset($p[3]['ignore']) ? array_merge($option['ignore'], $p[3]['ignore']) : $option['ignore'];
                 }
