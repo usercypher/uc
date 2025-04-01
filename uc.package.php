@@ -566,7 +566,7 @@ class App {
         $this->cache[$class][$this->CACHE_CLASS] = null;
     }
 
-    function loadClass($classes) {
+    function loadClass($class) {
         if (!isset($this->cache[$class][$this->CACHE_PATH])) {
             require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
             $this->cache[$class][$this->CACHE_PATH] = true;
