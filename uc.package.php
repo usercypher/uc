@@ -193,7 +193,7 @@ class App {
             $this->pathList = $data['path_list'];
             $this->pathListIndex = $data['path_list_index'];
         } else {
-            trigger_error('404|File not found: ' . $configFile);
+            trigger_error('404|File not found: ' . $configFile, E_USER_WARNING);
         }
     }
 
@@ -218,18 +218,18 @@ class App {
         }
 
         $parts = explode('|', $errstr, 2);
-        $errno = 500;
+        $httpCode = 500;
 
         if (isset($parts[0]) && is_numeric($parts[0])) {
-            $errno = (int) $parts[0];
+            $httpCode = (int) $parts[0];
             $errstr = $parts[1];
         }
 
-        header('HTTP/1.1 ' . $errno);
+        header('HTTP/1.1 ' . $httpCode);
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
             header('Content-Type: application/json');
-            exit($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"' . 'ERROR ' . $errno . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            exit($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -249,10 +249,10 @@ class App {
                     }
                 }
                 header('Content-Type: text/plain');
-                exit('ERROR ' . $errno . ': ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
+                exit('error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
                 $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-                $data = array('app' => $this, 'error_code' => $errno);
+                $data = array('app' => $this, 'http_code' => $httpCode);
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
                 exit(file_exists($file) ? include($file) : 'An unexpected error occurred. Please try again later.');
             }
@@ -453,7 +453,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if (!isset($route)) {
-            trigger_error('404|Route not found: ' . $request->method . ' ' . $path);
+            trigger_error('404|Route not found: ' . $request->method . ' ' . $path, E_USER_WARNING);
         }
 
         $this->finalMiddlewares = $route['handler']['middleware'];
@@ -597,7 +597,7 @@ class App {
             $stackSet[$classParent] = true;
 
             if (isset($stackSet[$class])) {
-                trigger_error('500|Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class);
+                trigger_error('500|Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class, E_USER_WARNING);
             }
 
             $cache = $this->class[$class][$this->CLASS_CACHE];

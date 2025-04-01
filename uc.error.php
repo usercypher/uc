@@ -1,15 +1,15 @@
 <?php
 
 $app = $data['app'];
-$errorCode = $data['error_code'];
+$httpCode = $data['http_code'];
 
-$errorMap = array(
+$httpMap = array(
     500 => array('Internal Server Error', '500', 'Something went wrong on our end. Please try again later.'),
     404 => array('Not Found', '404', 'The page you are looking for could not be found.'),
     // add more
 );
 
-$error = isset($errorMap[$errorCode]) ? $errorMap[$errorCode] : array('Oops! Something went wrong', 'Oops!', 'Something went wrong on our side. We\'re working to fix it.');
+$error = isset($httpMap[$httpCode]) ? $httpMap[$httpCode] : array('Oops! Something went wrong', 'Oops!', 'Something went wrong on our side. We\'re working to fix it.');
 
 $head_title = $error[0];
 $title = $error[1];
