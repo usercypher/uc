@@ -1,5 +1,7 @@
 <?php
 
+define('DS', '/');
+
 function init($mode) {
     $app = new App(array(
         'Request' => new Request,
@@ -32,12 +34,12 @@ class Request {
 }
 
 class Response {
-    var $headers, $code, $contentType, $content;
+    var $headers, $code, $type, $content;
 
     function __construct() {
         $this->headers = array();
         $this->code = 200;
-        $this->contentType = 'text/html';
+        $this->type = 'text/html';
         $this->content = '';
     }
 
@@ -49,7 +51,7 @@ class Response {
         }
 
         if (!isset($this->headers['Content-Type'])) {
-            header('Content-Type: ' . $this->contentType);
+            header('Content-Type: ' . $this->type);
         }
 
         exit(isset($this->headers['Location']) ? '' : $this->content);
@@ -105,7 +107,7 @@ class App {
     }
 
     function init() {
-        $this->ENV['DIR'] = realpath(__DIR__) . DS;
+        $this->ENV['DIR'] = __DIR__ . DS;
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : 'var' . DS . 'log' . DS;
         $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : 'var' . DS . 'data' . DS;

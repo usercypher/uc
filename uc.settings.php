@@ -1,7 +1,5 @@
 <?php
 
-define('DS', '/');
-
 return array(
     'env' => array(
         'dev' => array(

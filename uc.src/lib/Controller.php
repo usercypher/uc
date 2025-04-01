@@ -18,7 +18,7 @@ class Controller {
     }
 
     protected function json($data) {
-        $this->response->contentType = 'application/json';
+        $this->response->type = 'application/json';
         $jsonData = json_encode($data);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
