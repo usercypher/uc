@@ -3,10 +3,7 @@
 define('DS', '/');
 
 function init($mode) {
-    $app = new App(array(
-        'Request' => new Request,
-        'Response' => new Response
-    ));
+    $app = new App(array(new Request, new Response));
 
     $settings = require('uc.settings.php');
 
@@ -89,7 +86,9 @@ class App {
 
     // Application Setup
 
-    function __construct($dependencies) {
+    function __construct($args) {
+        list($request, $response) = $args;
+
         $this->class = array(
             'App' => array(array(1, 2), null, true, 0),
             'Request' => array(array(), null, true, 1),
@@ -101,8 +100,8 @@ class App {
 
         $this->cache = array(
             'App' => array($this, true),
-            'Request' => array($dependencies['Request'], true),
-            'Response' => array($dependencies['Response'], true),
+            'Request' => array($request, true),
+            'Response' => array($response, true),
         );
     }
 
