@@ -2,10 +2,11 @@
 
 define('DS', '/');
 
-function init($mode) {
+function app($mode) {
     $app = new App(array(new Request, new Response));
 
-    $settings = require('uc.settings.php');
+    require('uc.settings.php');
+    $settings = settings();
 
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
@@ -19,8 +20,8 @@ class Request {
     var $uri, $method, $get, $post, $files, $cookies, $server, $params;
 
     function __construct() {
-        $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : null;
-        $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null;
+        $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '';
+        $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : '';
         $this->get = $_GET;
         $this->post = $_POST;
         $this->files = $_FILES;
@@ -51,7 +52,7 @@ class Response {
             header('Content-Type: ' . $this->type);
         }
 
-        exit(isset($this->headers['Location']) ? '' : $this->content);
+        echo(isset($this->headers['Location']) ? '' : $this->content);
     }
 }
 
@@ -110,11 +111,11 @@ class App {
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : 'var' . DS . 'log' . DS;
         $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : 'var' . DS . 'data' . DS;
-        $this->ENV['DIR_VIEW'] = isset($this->ENV['DIR_VIEW']) ? $this->ENV['DIR_VIEW'] : 'view' . DS;
+        $this->ENV['DIR_VIEW'] = isset($this->ENV['DIR_VIEW']) ? $this->ENV['DIR_VIEW'] : 'uc.view' . DS;
         $this->ENV['DIR_WEB'] = isset($this->ENV['DIR_WEB']) ? $this->ENV['DIR_WEB'] : 'web' . DS;
-        $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : 'src' . DS;
+        $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : 'uc.src' . DS;
 
-        $this->ENV['ROUTE_REWRITE'] = $this->ENV['ROUTE_REWRITE'];
+        $this->ENV['ROUTE_REWRITE'] = (bool) $this->ENV['ROUTE_REWRITE'];
         $this->ENV['ROUTE_FILE_PATH'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['URL_DIR_INDEX'] . 'index.php?route=/');
 
         $this->ENV['URL_DIR_WEB'] = $this->ENV['URL_DIR_WEB'];
@@ -125,7 +126,7 @@ class App {
         $this->ENV['BASE_URL'] = $this->ENV['HTTP_PROTOCOL'] . '://' . $this->ENV['HTTP_HOST'] . '/';
 
         $this->ENV['ERROR_VIEW_FILE'] = isset($this->ENV['ERROR_VIEW_FILE']) ? $this->ENV['ERROR_VIEW_FILE'] : 'uc.error.php';
-        $this->ENV['SHOW_ERRORS'] = $this->ENV['SHOW_ERRORS'];
+        $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
 
         $this->ENV['LOG_SIZE_LIMIT_MB'] = isset($this->ENV['LOG_SIZE_LIMIT_MB']) && (int) $this->ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) $this->ENV['LOG_SIZE_LIMIT_MB'] : 5;
         $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset($this->ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
@@ -178,7 +179,7 @@ class App {
             'path_list_index' => $this->pathListIndex
         )));
 
-        exit('File created: ' . $configFile);
+        echo('File created: ' . $configFile);
     }
 
     function loadConfig($file) {
@@ -335,7 +336,7 @@ class App {
 
     function resolveRoute($method, $path) {
         if (!isset($this->routes[$method])) {
-            return null;
+            return array();
         }
 
         $current = $this->routes[$method];
@@ -359,7 +360,7 @@ class App {
                     $paramModifier = substr($paramName, -1);
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
-                            return null;
+                            return array();
                         }
                         $params[rtrim($paramName, '*')] = array_slice($pathSegments, $index);
                         $current = $value;
@@ -381,7 +382,7 @@ class App {
             }
 
             if (!$matched) {
-                return null;
+                return array();
             }
         }
 
@@ -396,7 +397,7 @@ class App {
                     $current = $value;
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
-                            return null;
+                            return array();
                         }
                         break 2;
                     }
@@ -408,12 +409,12 @@ class App {
             }
 
             if (!$matched) {
-                return null;
+                return array();
             }
         }
 
         if (!isset($current['_h'])) {
-            return null;
+            return array();
         }
 
         $finalMiddlewares = array();
@@ -442,17 +443,19 @@ class App {
     // Request Handling
 
     function dispatch() {
-        if ($this->isRunning) {
-            return;
-        }
+        $response = $this->cache['Response'][$this->CACHE_CLASS];
 
+        if ($this->isRunning) {
+            return $response;
+        }
+            
         $this->isRunning = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
         $parseUrl = parse_url($request->uri);
         $path = $this->ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get['route']) ? $request->get['route'] : '');
         $route = $this->resolveRoute($request->method, $path);
 
-        if (!isset($route)) {
+        if ($route === array()) {
             trigger_error('404|Route not found: ' . $request->method . ' ' . $path, E_USER_WARNING);
         }
 
@@ -461,7 +464,7 @@ class App {
         $this->action = $route['handler']['action'];
         $request->params = $route['params'];
 
-        return $this->process($request, $this->cache['Response'][$this->CACHE_CLASS], $this);
+        return $this->process($request, $response, $this);
     }
 
     function process($request, $response, $app) {
@@ -479,7 +482,7 @@ class App {
     function autoSetClass($path, $option) {
         $option = array(
             'depth' => isset($option['depth']) ? $option['depth'] : 0,
-            'max' => isset($option['max']) ? $option['max'] : 0,
+            'max' => isset($option['max']) ? $option['max'] : -1,
             'ignore' => isset($option['ignore']) ? $option['ignore'] : array(),
             'namespace' => isset($option['namespace']) ? $option['namespace'] : '',
             'dir_as_namespace' => isset($option['dir_as_namespace']) ? $option['dir_as_namespace'] : false,
@@ -566,7 +569,7 @@ class App {
         $this->cache[$class][$this->CACHE_CLASS] = null;
     }
 
-    function loadClass($class) {
+    function loadClass($classes) {
         if (!isset($this->cache[$class][$this->CACHE_PATH])) {
             require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
             $this->cache[$class][$this->CACHE_PATH] = true;

@@ -3,7 +3,7 @@
 
 require('uc.package.php');
 
-$app = init('dev');
+$app = app('prod');
 
 // [CONFIG] start
 
@@ -72,8 +72,8 @@ $app->setRoutes(array(
 // The configuration is saved using 'saveConfig' and loaded with 'loadConfig'.
 // After the initial run, you can comment out 'saveConfig' and just use 'loadConfig'.
 // When using 'loadConfig', remove or comment out the [CONFIG] body to avoid redundant config setting.
-//$app->saveConfig('var/data/app.config'); // Save the configuration once
-//$app->loadConfig('var/data/app.config'); // Load the saved configuration on subsequent runs
+//$app->saveConfig('var/data/app.config');exit; // Save the configuration once
+$app->loadConfig('var/data/app.config'); // Load the saved configuration on subsequent runs
 
 // Load base classes (Controller, Model), it included files base on class name
 $app->loadClasses(array('Controller', 'Model'));
