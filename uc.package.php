@@ -11,7 +11,10 @@ function app($mode) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    $app->init();
+    $app->setup();
+
+    set_error_handler(array($app, 'error'));
+    register_shutdown_function(array($app, 'shutdown'));
 
     return $app;
 }
@@ -106,19 +109,20 @@ class App {
         );
     }
 
-    function init() {
+    function setup() {
         $this->ENV['DIR'] = __DIR__ . DS;
 
-        $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : 'var' . DS . 'log' . DS;
-        $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : 'var' . DS . 'data' . DS;
-        $this->ENV['DIR_VIEW'] = isset($this->ENV['DIR_VIEW']) ? $this->ENV['DIR_VIEW'] : 'uc.view' . DS;
-        $this->ENV['DIR_WEB'] = isset($this->ENV['DIR_WEB']) ? $this->ENV['DIR_WEB'] : 'web' . DS;
-        $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : 'uc.src' . DS;
+        $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
+        $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
+        $this->ENV['DIR_VIEW'] = isset($this->ENV['DIR_VIEW']) ? $this->ENV['DIR_VIEW'] : '';
+        $this->ENV['DIR_WEB'] = isset($this->ENV['DIR_WEB']) ? $this->ENV['DIR_WEB'] : '';
+        $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : '';
 
-        $this->ENV['ROUTE_REWRITE'] = (bool) $this->ENV['ROUTE_REWRITE'];
-        $this->ENV['ROUTE_FILE_PATH'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['URL_DIR_INDEX'] . 'index.php?route=/');
+        $this->ENV['ROUTE_FILE'] = isset($this->ENV['ROUTE_FILE']) ? $this->ENV['ROUTE_FILE'] : 'index.php';
+        $this->ENV['ROUTE_REWRITE'] = isset($this->ENV['ROUTE_REWRITE']) ? (bool) $this->ENV['ROUTE_REWRITE'] : false;
+        $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
 
-        $this->ENV['URL_DIR_WEB'] = $this->ENV['URL_DIR_WEB'];
+        $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
 
         $request = $this->cache['Request'][$this->CACHE_CLASS];
         $this->ENV['HTTP_PROTOCOL'] = isset($this->ENV['HTTP_PROTOCOL']) ? $this->ENV['HTTP_PROTOCOL'] : ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http');
@@ -132,9 +136,6 @@ class App {
         $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset($this->ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
         $this->ENV['LOG_RETENTION_DAYS'] = isset($this->ENV['LOG_RETENTION_DAYS']) && (int) $this->ENV['LOG_RETENTION_DAYS'] > 0 ? (int) $this->ENV['LOG_RETENTION_DAYS'] : 7;
         $this->ENV['MAX_LOG_FILES'] = isset($this->ENV['MAX_LOG_FILES']) && (int) $this->ENV['MAX_LOG_FILES'] > 0 ? (int) $this->ENV['MAX_LOG_FILES'] : 10;
-
-        set_error_handler(array($this, 'error'));
-        register_shutdown_function(array($this, 'shutdown'));
     }
 
     function setEnv($key, $value) {
@@ -671,7 +672,7 @@ class App {
     function url($option, $url = '') {
         switch ($option) {
             case 'route':
-                return $this->ENV['BASE_URL'] . $this->ENV['ROUTE_FILE_PATH'] . $url;
+                return $this->ENV['BASE_URL'] . $this->ENV['URL_EXTRA'] . $url;
             case 'web':
                 return $this->ENV['BASE_URL'] . $this->ENV['URL_DIR_WEB'] . $url;
             default:
@@ -686,18 +687,18 @@ class App {
     function log($message, $file) {
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
         $maxLogSize = $this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
-        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int)((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
+        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int) ((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
 
-        if (file_exists($logFile) && filesize($logFile) >= $maxLogSize) {
+        file_put_contents($logFile, $message, FILE_APPEND);
+
+        if (filesize($logFile) >= $maxLogSize) {
             $newLogFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
-        file_put_contents($logFile, $message, FILE_APPEND);
-
         $timestampFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
         $now = time();
-        $lastCleanup = file_exists($timestampFile) ? (int)file_get_contents($timestampFile) : 0;
+        $lastCleanup = file_exists($timestampFile) ? (int) file_get_contents($timestampFile) : 0;
 
         if (($now - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');

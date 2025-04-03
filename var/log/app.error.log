@@ -1,5 +1,24 @@
-[2025-04-01 23:05:45.261809] Route not found: GET /hme in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 456
-[2025-04-02 09:01:51.808780] Route not found: GET /hoe in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 443
-[2025-04-02 09:46:34.943594] Route not found: GET /hme in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 443
-[2025-04-02 12:37:46.784094] Route not found: GET /h in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 443
-[2025-04-02 15:21:12.543479] Route not found: GET /hom in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 443
+[2025-04-03 18:12:28.831409] Route not found: GET /crate in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 462
+[2025-04-03 18:12:28.845510] Undefined array key "handler" in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 465
+[2025-04-03 18:12:28.854638] Trying to access array offset on null in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 465
+[2025-04-03 18:12:28.862821] Undefined array key "handler" in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 466
+[2025-04-03 18:12:28.871982] Trying to access array offset on null in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 466
+[2025-04-03 18:12:28.879556] Undefined array key "handler" in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 467
+[2025-04-03 18:12:28.890531] Trying to access array offset on null in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 467
+[2025-04-03 18:12:28.898674] Undefined array key "params" in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 468
+[2025-04-03 18:12:28.906794] Undefined array key "" in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 479
+[2025-04-03 18:12:28.914648] Undefined array key "" in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 609
+[2025-04-03 18:12:28.923439] Trying to access array offset on null in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 609
+[2025-04-03 18:12:28.931641] strrpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 637
+[2025-04-03 18:12:28.941329] substr(): Passing null to parameter #1 ($string) of type string is deprecated in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 637
+[2025-04-03 18:12:28.953841] require(/storage/emulated/0/lamp/_htdocs_1/.php): Failed to open stream: No such file or directory in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 637
+[2025-04-03 18:12:28.964564] Cannot modify header information - headers already sent by (output started at /storage/emulated/0/lamp/_htdocs_1/uc.error.php:19) in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 230
+[2025-04-03 18:12:28.974648] Uncaught Error: Failed opening required '/storage/emulated/0/lamp/_htdocs_1/.php' (include_path='.:') in /storage/emulated/0/lamp/_htdocs_1/uc.package.php:637
+Stack trace:
+#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(479): App->resolveClass(NULL)
+#1 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(470): App->process(Object(Request), Object(Response), Object(App))
+#2 /storage/emulated/0/lamp/_htdocs_1/index.php(82): App->dispatch()
+#3 {main}
+  thrown in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 637
+[2025-04-03 18:48:09.000607] Route not found: GET /crate in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-03 18:54:32.538609] Route not found: GET /m in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460

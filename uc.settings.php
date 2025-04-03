@@ -9,11 +9,11 @@ function settings() {
                 'DIR_SRC' => 'uc.src' . DS, // Source directory for application code
                 'DIR_VIEW' => 'uc.view' . DS, // View Directory
                 'URL_DIR_WEB' => 'web/', // URL path for web access
-                'URL_DIR_INDEX' => '', // URL path for the index (usually root), become useless when route rewrite is enable
                 // Error Settings
                 'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
                 'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
                 // Routing Configuration
+                'ROUTE_FILE' => 'index.php', // file for index (usually server root), become useless when route rewrite is enable
                 'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
                 // If enabled, routing is handled via clean URLs (e.g., /home),
                 /*
@@ -59,11 +59,11 @@ function settings() {
                 'DIR_SRC' => 'uc.src' . DS,
                 'DIR_VIEW' => 'uc.view' . DS,
                 'URL_DIR_WEB' => 'web/',
-                'URL_DIR_INDEX' => '',
                 // Error Settings
                 'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
                 'SHOW_ERRORS' => 0,
                 // Routing Configuration
+                'ROUTE_FILE' => 'index.php',
                 'ROUTE_REWRITE' => 0,
                 // Logging Configuration
                 'DIR_LOG' => 'var' . DS . 'log' . DS,
