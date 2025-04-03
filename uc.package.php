@@ -55,7 +55,7 @@ class Response {
             header('Content-Type: ' . $this->type);
         }
 
-        echo(isset($this->headers['Location']) ? '' : $this->content);
+        exit(isset($this->headers['Location']) ? '' : $this->content);
     }
 }
 
