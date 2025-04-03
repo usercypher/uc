@@ -11,7 +11,7 @@ function app($mode) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    $app->setup();
+    $app->init();
 
     set_error_handler(array($app, 'error'));
     register_shutdown_function(array($app, 'shutdown'));
@@ -109,7 +109,7 @@ class App {
         );
     }
 
-    function setup() {
+    function init() {
         $this->ENV['DIR'] = __DIR__ . DS;
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
