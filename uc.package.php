@@ -260,27 +260,24 @@ class App {
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
             header('Content-Type: application/json');
-            exit($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            exit($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"Error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
                 if ($enableStackTrace) {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . PHP_EOL;
-                    foreach ($trace as $key => $frame) {
-                        if ($key === 0) {
-                            continue;
-                        }
-                        $traceOutput .= '#' . ($key - 1) . ' ';
+                    foreach ($trace as $i => $frame) {
+                        if (1 > $i) { continue; }
+                        $traceOutput .= '#' . ($i - 1) . ' ';
                         $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
                         $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
                         $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '';
-                        $traceOutput .= isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]';
-                        $traceOutput .= PHP_EOL;
+                        $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . PHP_EOL;
                     }
                 }
                 header('Content-Type: text/plain');
-                exit('error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
+                exit('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
                 $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
                 $data = array('app' => $this, 'http_code' => $httpCode);
