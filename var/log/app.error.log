@@ -22,3 +22,19 @@ Stack trace:
   thrown in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 637
 [2025-04-03 18:48:09.000607] Route not found: GET /crate in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
 [2025-04-03 18:54:32.538609] Route not found: GET /m in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-03 19:16:04.919639] Route not found: GET /hom in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-03 19:16:11.512754] Route not found: GET /k in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-03 19:16:16.518688] Route not found: GET /edi/1 in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-03 19:19:00.449832] Route not found: GET /hme in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-03 19:23:15.240375] Route not found: GET /edidt/7 in /storage/emulated/0/lamp/_htdocs_1/uc.package.php on line 460
+[2025-04-04 06:13:47.923063] Uncaught Error: Cannot use object of type Request as array in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php:52
+Stack trace:
+#0 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(503): BookController->edit(Object(Request), Object(Response))
+#1 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/CsrfGenerateMiddleware.php(15): App->process(Object(Request), Object(Response), Object(App))
+#2 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(500): CsrfGenerateMiddleware->process(Object(Request), Object(Response), Object(App))
+#3 /storage/emulated/0/lamp/_htdocs_1/uc.src/middleware/SanitizeMiddleware.php(23): App->process(Object(Request), Object(Response), Object(App))
+#4 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(500): SanitizeMiddleware->process(Object(Request), Object(Response), Object(App))
+#5 /storage/emulated/0/lamp/_htdocs_1/uc.package.php(493): App->process(Object(Request), Object(Response), Object(App))
+#6 /storage/emulated/0/lamp/_htdocs_1/index.php(82): App->dispatch()
+#7 {main}
+  thrown in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 52

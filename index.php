@@ -3,7 +3,7 @@
 
 require('uc.package.php');
 
-$app = app('prod');
+$app = app('dev');
 
 // [CONFIG] start
 
@@ -23,7 +23,7 @@ $app->setClasses(array(
 $app->setClass('Session', array('cache' => true));
 
 $app->setClasses(array(
-    'args' => array('App', 'Request', 'Response', 'Session')
+    'args' => array('App', 'Session')
 ), array(
     array('BookController', array('args' => array('BookModel'))) // Class-specific options merged with group options
 ));
@@ -42,16 +42,21 @@ $app->setMiddlewares(array(
 ));
 
 // Define routes
-$app->setRoute('GET', '', 'index', array('controller' => 'BookController')); // Default route
+$app->setRoute('GET', '', 'index', array('controller' => 'BookController', 'middleware' => array('ResponseCompression'))); // Default route
 
 // Define additional routes for 'home' and 'create' actions in 'BookController'
-$app->setRoutes(array(), array(
+$app->setRoutes(array(
+    'middleware' => array('ResponseCompression')
+), array(
     array('GET', 'home', 'index', array('controller' => 'BookController')),
     array('GET', 'create', 'create', array('controller' => 'BookController'))
 ));
 
 // Define a route for editing a book, with an ID parameter (only digits allowed)
-$app->setRoutes(array('controller' => 'BookController'), array(
+$app->setRoutes(array(
+    'controller' => 'BookController', 
+    'middleware' => array('ResponseCompression')
+), array(
     array('GET', 'edit/{id:^\d+$}', 'edit')
 ));
 
@@ -73,7 +78,7 @@ $app->setRoutes(array(
 // After the initial run, you can comment out 'saveConfig' and just use 'loadConfig'.
 // When using 'loadConfig', remove or comment out the [CONFIG] body to avoid redundant config setting.
 //$app->saveConfig('var/data/app.config');exit; // Save the configuration once
-$app->loadConfig('var/data/app.config'); // Load the saved configuration on subsequent runs
+//$app->loadConfig('var/data/app.config'); // Load the saved configuration on subsequent runs
 
 // Load base classes (Controller, Model), it included files base on class name
 $app->loadClasses(array('Controller', 'Model'));

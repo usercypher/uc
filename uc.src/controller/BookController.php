@@ -1,22 +1,19 @@
 <?php
 
-class BookController extends Controller {
-    protected $app, $request, $response;
-    private $session;
+class BookController {
+    private $app, $session;
     private $bookModel;
 
     public function __construct($args) {
         list(
             $this->app, 
-            $this->request, 
-            $this->response, 
             $this->session, 
             $this->bookModel
         ) = $args;
     } 
 
-    public function index() {
-        return $this->view('home.php', array(
+    public function index($request, $response) {
+        return $response->view($this->app->path('view', 'home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
@@ -24,28 +21,28 @@ class BookController extends Controller {
         ));
     }
 
-    public function create() {
-        return $this->view('create.php', array(
+    public function create($request, $response) {
+        return $response->view($this->app->path('view', 'create.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
         ));
     }
 
-    public function store() {
-        $data = $this->request->post;
+    public function store($request, $response) {
+        $data = $request->post;
 
         $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        return $this->redirect($route);
+        return $response->redirect($this->app->url('route', $route));
     }
 
-    public function edit($param) {
-        $data = $param;
+    public function edit($request, $response) {
+        $data = $request->params;
 
-        return $this->view('edit.php', array(
+        return $response->view($this->app->path('view', 'edit.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
@@ -53,23 +50,23 @@ class BookController extends Controller {
         ));
     }
 
-    public function update() {
-        $data = $this->request->post;
+    public function update($request, $response) {
+        $data = $request->post;
 
         $this->bookModel->validateAndUpdate($data);
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        return $this->redirect('edit/' . $data['book']['id']);
+        return $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
     }
 
-    public function delete() {
-        $data = $this->request->post;
+    public function delete($request, $response) {
+        $data = $request->post;
 
         $this->bookModel->validateAndDelete($data);
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        return $this->redirect('home');
+        return $response->redirect($this->app->url('route', 'home'));
     }
 }

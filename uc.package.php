@@ -57,6 +57,34 @@ class Response {
 
         exit(isset($this->headers['Location']) ? '' : $this->content);
     }
+
+    function view($view, $data) {
+        ob_start();
+        require($view);
+        $this->content = ob_get_contents();
+        ob_end_clean();
+
+        return $this;
+    }
+
+    function json($data) {
+        $this->type = 'application/json';
+        $jsonData = json_encode($data);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $jsonData = '{"error": "Unable to encode data"}';
+        }
+
+        $this->content = $jsonData;
+
+        return $this;
+    }
+
+    function redirect($url) {
+        $this->headers['Location'] = $url;
+
+        return $this;
+    }
 }
 
 class App {
@@ -86,7 +114,8 @@ class App {
     var $finalMiddlewares = array();
     var $finalMiddlewaresIndex = 0;
 
-    var $isRunning = false;
+    var $invokeApp = false;
+    var $invokeController = false;
 
     // Application Setup
 
@@ -445,12 +474,10 @@ class App {
 
     function dispatch() {
         $response = $this->cache['Response'][$this->CACHE_CLASS];
-
-        if ($this->isRunning) {
+        if ($this->invokeApp) {
             return $response;
         }
-            
-        $this->isRunning = true;
+        $this->invokeApp = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
         $parseUrl = parse_url($request->uri);
         $path = $this->ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get['route']) ? $request->get['route'] : '');
@@ -474,8 +501,12 @@ class App {
             $middleware = $this->resolveClass($this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]]);
             return $middleware->process($request, $response, $app);
         }
+        if ($this->invokeController) {
+            return $response;
+        }
+        $this->invokeController = true;
         $controller = $this->resolveClass($this->classList[$this->controller]);
-        return $controller-> {$this->action} ($request->params);
+        return $controller-> {$this->action} ($request, $response);
     }
 
     // Class Management
