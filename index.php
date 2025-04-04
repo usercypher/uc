@@ -80,8 +80,8 @@ $app->setRoutes(array(
 //$app->saveConfig('var/data/app.config');exit; // Save the configuration once
 //$app->loadConfig('var/data/app.config'); // Load the saved configuration on subsequent runs
 
-// Load base classes (Controller, Model), it included files base on class name
-$app->loadClasses(array('Controller', 'Model'));
+// Load base classes (Model), it included files base on class name
+$app->loadClasses(array('Model'));
 
 // Run the application
 $response = $app->dispatch();
