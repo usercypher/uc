@@ -228,6 +228,7 @@ class App {
             $this->pathListIndex = $data['path_list_index'];
         } else {
             trigger_error('404|File not found: ' . $configFile, E_USER_WARNING);
+            exit();
         }
     }
 
@@ -346,7 +347,7 @@ class App {
 
     function setComponents($components) {
         foreach ($components as $key => $c) {
-            if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|is not prepend or append: ' . $key, E_USER_WARNING); }
+            if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|is not prepend or append: ' . $key, E_USER_WARNING); exit(); }
             foreach ($c as $class) {
                 if (!isset($this->class[$class])) {
                     $this->class[$class] = array(null, null, false, $this->classListIndex);
@@ -482,6 +483,7 @@ class App {
 
         if ($route === array()) {
             trigger_error('404|Route not found: ' . $request->method . ' ' . $path, E_USER_WARNING);
+            exit();
         }
 
         $request->params = $route['params'];
@@ -619,6 +621,7 @@ class App {
 
             if (isset($stackSet[$class])) {
                 trigger_error('500|Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $class, E_USER_WARNING);
+                exit();
             }
 
             $cache = $this->class[$class][$this->CLASS_CACHE];

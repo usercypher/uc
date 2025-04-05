@@ -18,6 +18,7 @@ class ValidateFileUpload {
 
                 if ($validationResult !== true) {
                     trigger_error($validationResult);
+                    exit();
                 }
             }
         }

@@ -64,6 +64,7 @@ class Model {
     public function updateBatch($ids, $data) {
         if (count($ids) !== count($data)) {
             trigger_error('500|Execute failed: The number of IDs and data elements must match.');
+            exit();
         }
         $setClauses = array();
         $values = array();
@@ -147,6 +148,7 @@ class Model {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
             trigger_error('500|Prepare failed: ' . $this->conn->errorInfo()[2]);
+            exit();
         }
         return $stmt;
     }
@@ -172,6 +174,7 @@ class Model {
 
         if (!$stmt->execute()) {
             trigger_error('500|Execute failed: ' . implode(', ', $stmt->errorInfo()[2]));
+            exit();
         }
 
         return $stmt;
