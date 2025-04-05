@@ -61,7 +61,7 @@ $app->setRoutes(array(
     array('GET', 'home', array('component' => array('BookHome'))),
     array('GET', 'create', array('component' => array('BookCreate'))),
     // Define a route for editing a book, with an ID parameter (only digits allowed)
-    array('GET', 'edit/{id:^\d+$}', array('component' => array('BookEdit', 'ResponseCompression')))
+    array('GET', 'edit/{id:^\d+$}', array('component' => array('BookEdit')))
 ));
 
 // Define routes for 'book/' prefix with CSRF validation 
