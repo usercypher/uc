@@ -42,33 +42,32 @@ $app->setClasses(array(
 
 // Define s to handle data sanitization, CSRF generation
 $app->setComponents(array(
-    'Sanitize',
-    'CsrfGenerate', 
+    // preppend component to all routes component
+    'prepend' => array(
+        'Sanitize',
+        'CsrfGenerate', 
+    ),
+    // append component to all routes component
+    'append' => array()
 ));
 
 // Define routes
 $app->setRoute('GET', '', array('component' => array('BookHome', 'ResponseCompression'))); // Default route
 
-// Define additional routes for 'home' and 'create' actions in 'BookController'
+// Define additional routes for 'home' and 'create'
 $app->setRoutes(array( 
-    // 1st param for options (prefix, component, ignore)
+    'append' => array('ResponseCompression') // append component to route define in group
 ), array(
     array('GET', 'home', array('component' => array('BookHome'))),
-    array('GET', 'create', array('component' => array('BookCreate')))
-), array(
-    'component' => array('ResponseCompression') // 3rd parameter only for components, if you want to concat component at the end of each routes
-));
-
-// Define a route for editing a book, with an ID parameter (only digits allowed)
-$app->setRoutes(array(
-), array(
+    array('GET', 'create', array('component' => array('BookCreate'))),
+    // Define a route for editing a book, with an ID parameter (only digits allowed)
     array('GET', 'edit/{id:^\d+$}', array('component' => array('BookEdit', 'ResponseCompression')))
 ));
 
 // Define routes for 'book/' prefix with CSRF validation 
 $app->setRoutes(array(
     'prefix' => 'book/',
-    'component' => array('CsrfValidate'),
+    'prepend' => array('CsrfValidate'), // prepend component to route define in group
     'ignore' => array('CsrfGenerate')
 ), array(
     array('POST', 'store', array('component' => array('BookStore'))),

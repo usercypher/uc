@@ -99,7 +99,7 @@ class App {
     var $CACHE_PATH = 1;
 
     var $routes = array();
-    var $components = array();
+    var $components = array('prepend' => array(), 'append' => array());
     var $class = array();
     var $classList = array();
     var $classListIndex = 0;
@@ -324,9 +324,9 @@ class App {
         $node['_h'] = array('_c' => $component, '_i' => $ignore);
     }
 
-    function setRoutes($option, $params, $option2 = array('component' => array())) {
+    function setRoutes($option, $params) {
         foreach ($params as $p) {
-            $p[2]['component'] =  array_merge((isset($option['component']) ? $option['component'] : array()), array_merge($p[2]['component'], $option2['component']));
+            $p[2]['component'] =  array_merge((isset($option['prepend']) ? $option['prepend'] : array()), array_merge($p[2]['component'], (isset($option['append']) ? $option['append'] : array())));
             if (!((isset($p[2]['ignore']) && $p[2]['ignore'] === array(true)) || (isset($option['ignore']) && $option['ignore'] === array(true)))) {
                 $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
                 $p[2]['ignore'] = isset($p[2]['ignore']) ? array_merge($option['ignore'], $p[2]['ignore']) : $option['ignore'];
@@ -336,13 +336,16 @@ class App {
     }
 
     function setComponents($components) {
-        foreach ($components as $class) {
-            if (!isset($this->class[$class])) {
-                $this->class[$class] = array(null, null, false, $this->classListIndex);
-                $this->classList[$this->classListIndex] = $class;
-                ++$this->classListIndex;
+        foreach ($components as $key => $c) {
+            if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|is not prepend or append: ' . $key, E_USER_WARNING); }
+            foreach ($c as $class) {
+                if (!isset($this->class[$class])) {
+                    $this->class[$class] = array(null, null, false, $this->classListIndex);
+                    $this->classList[$this->classListIndex] = $class;
+                    ++$this->classListIndex;
+                }
+                $this->components[$key][] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
             }
-            $this->components[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
         }
     }
 
@@ -431,20 +434,23 @@ class App {
 
         $finalComponents = array();
         if ($current['_h']['_i'] !== array(true)) {
-            $seen = array();
             $ignore = array_flip($current['_h']['_i']);
 
-            foreach ($this->components as $component) {
-                if (!isset($ignore[$component]) && !isset($seen[$component])) {
+            foreach ($this->components['prepend'] as $component) {
+                if (!isset($ignore[$component])) {
                     $finalComponents[] = $component;
-                    $seen[$component] = true;
                 }
             }
 
             foreach ($current['_h']['_c'] as $component) {
-                if (!isset($ignore[$component]) && !isset($seen[$component])) {
+                if (!isset($ignore[$component])) {
                     $finalComponents[] = $component;
-                    $seen[$component] = true;
+                }
+            }
+
+            foreach ($this->components['append'] as $component) {
+                if (!isset($ignore[$component])) {
+                    $finalComponents[] = $component;
                 }
             }
         }
