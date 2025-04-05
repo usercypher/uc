@@ -1,7 +1,9 @@
 <?php
 
-class SanitizeMiddleware {
-    public function process($request, $response, $next) {
+class Sanitize {
+    public function __construct($args) {}
+
+    public function process($request, $response) {
         $post = $request->post;
 
         if (isset($post)) {
@@ -20,7 +22,7 @@ class SanitizeMiddleware {
             $request->params = $this->sanitizeArray($params);
         }
 
-        return $next->process($request, $response, $next);
+        return array($request, $response);
     }
 
     private function sanitizeArray($array) {

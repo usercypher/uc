@@ -21,7 +21,7 @@ $app = $data['app'];
         </ul>
         <br>
         <div class='container-form'>
-            <form class="submit-form" action="<?php echo($app->url('route', 'book/create')); ?>" method="post">
+            <form class="submit-form" action="<?php echo($app->url('route', 'book/store')); ?>" method="post">
                 <input type="hidden" name="csrf_token" value="<?php echo $data['csrf_token']; ?>">
 
                 <label>Title:</label>

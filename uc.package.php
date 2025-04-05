@@ -99,7 +99,7 @@ class App {
     var $CACHE_PATH = 1;
 
     var $routes = array();
-    var $middlewares = array();
+    var $components = array();
     var $class = array();
     var $classList = array();
     var $classListIndex = 0;
@@ -109,13 +109,7 @@ class App {
     var $cache = array();
     var $pathListCache = array();
 
-    var $controller = '';
-    var $action = '';
-    var $finalMiddlewares = array();
-    var $finalMiddlewaresIndex = 0;
-
     var $invokeApp = false;
-    var $invokeController = false;
 
     // Application Setup
 
@@ -201,7 +195,7 @@ class App {
         $configFile = $this->ENV['DIR'] . $file . '.json';
         file_put_contents($configFile, json_encode(array(
             'routes' => $this->routes,
-            'middlewares' => $this->middlewares,
+            'components' => $this->components,
             'class' => $this->class,
             'class_list' => $this->classList,
             'class_list_index' => $this->classListIndex,
@@ -217,7 +211,7 @@ class App {
         if (file_exists($configFile)) {
             $data = json_decode(file_get_contents($configFile), true);
             $this->routes = $data['routes'];
-            $this->middlewares = $data['middlewares'];
+            $this->components = $data['components'];
             $this->class = $data['class'];
             $this->classList = $data['class_list'];
             $this->classListIndex = $data['class_list_index'];
@@ -289,22 +283,16 @@ class App {
 
     // Route Management
 
-    function setRoute($method, $route, $action, $option) {
-        if (!isset($this->class[$option['controller']])) {
-            $this->class[$option['controller']] = array(null, null, false, $this->classListIndex);
-            $this->classList[$this->classListIndex] = $option['controller'];
-            ++$this->classListIndex;
-        }
-
-        $middleware = array();
-        if (isset($option['middleware'])) {
-            foreach ($option['middleware'] as $class) {
+    function setRoute($method, $route, $option) {
+        $component = array();
+        if (isset($option['component'])) {
+            foreach ($option['component'] as $class) {
                 if (!isset($this->class[$class])) {
                     $this->class[$class] = array(null, null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
                     ++$this->classListIndex;
                 }
-                $middleware[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
+                $component[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
             }
         }
 
@@ -333,31 +321,28 @@ class App {
             $node = &$node[$segment];
         }
 
-        $node['_h'] = array('_a' => $action, '_c' => $this->class[$option['controller']][$this->CLASS_CLASS_LIST_INDEX], '_m' => $middleware, '_i' => $ignore);
+        $node['_h'] = array('_c' => $component, '_i' => $ignore);
     }
 
-    function setRoutes($option, $params) {
+    function setRoutes($option, $params, $option2 = array('component' => array())) {
         foreach ($params as $p) {
-            if (isset($p[3])) {
-                $option['middleware'] = isset($option['middleware']) ? $option['middleware'] : array();
-                $p[3]['middleware'] = isset($p[3]['middleware']) ? array_merge($option['middleware'], $p[3]['middleware']) : $option['middleware'];
-                if (!((isset($p[3]['ignore']) && $p[3]['ignore'] === array(true)) || (isset($option['ignore']) && $option['ignore'] === array(true)))) {
-                    $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
-                    $p[3]['ignore'] = isset($p[3]['ignore']) ? array_merge($option['ignore'], $p[3]['ignore']) : $option['ignore'];
-                }
+            $p[2]['component'] =  array_merge((isset($option['component']) ? $option['component'] : array()), array_merge($p[2]['component'], $option2['component']));
+            if (!((isset($p[2]['ignore']) && $p[2]['ignore'] === array(true)) || (isset($option['ignore']) && $option['ignore'] === array(true)))) {
+                $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
+                $p[2]['ignore'] = isset($p[2]['ignore']) ? array_merge($option['ignore'], $p[2]['ignore']) : $option['ignore'];
             }
-            $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], $p[2], isset($p[3]) ? array_merge($option, $p[3]) : $option);
+            $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], array_merge($option, $p[2]));
         }
     }
 
-    function setMiddlewares($middlewares) {
-        foreach ($middlewares as $class) {
+    function setComponents($components) {
+        foreach ($components as $class) {
             if (!isset($this->class[$class])) {
                 $this->class[$class] = array(null, null, false, $this->classListIndex);
                 $this->classList[$this->classListIndex] = $class;
                 ++$this->classListIndex;
             }
-            $this->middlewares[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
+            $this->components[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
         }
     }
 
@@ -444,27 +429,27 @@ class App {
             return array();
         }
 
-        $finalMiddlewares = array();
+        $finalComponents = array();
         if ($current['_h']['_i'] !== array(true)) {
             $seen = array();
             $ignore = array_flip($current['_h']['_i']);
 
-            foreach ($this->middlewares as $middleware) {
-                if (!isset($ignore[$middleware]) && !isset($seen[$middleware])) {
-                    $finalMiddlewares[] = $middleware;
-                    $seen[$middleware] = true;
+            foreach ($this->components as $component) {
+                if (!isset($ignore[$component]) && !isset($seen[$component])) {
+                    $finalComponents[] = $component;
+                    $seen[$component] = true;
                 }
             }
 
-            foreach ($current['_h']['_m'] as $middleware) {
-                if (!isset($ignore[$middleware]) && !isset($seen[$middleware])) {
-                    $finalMiddlewares[] = $middleware;
-                    $seen[$middleware] = true;
+            foreach ($current['_h']['_c'] as $component) {
+                if (!isset($ignore[$component]) && !isset($seen[$component])) {
+                    $finalComponents[] = $component;
+                    $seen[$component] = true;
                 }
             }
         }
 
-        return array('handler' => array('controller' => $current['_h']['_c'], 'action' => $current['_h']['_a'], 'middleware' => $finalMiddlewares), 'params' => $params);
+        return array('handler' => array('component' => $finalComponents), 'params' => $params);
     }
 
     // Request Handling
@@ -484,26 +469,15 @@ class App {
             trigger_error('404|Route not found: ' . $request->method . ' ' . $path, E_USER_WARNING);
         }
 
-        $this->finalMiddlewares = $route['handler']['middleware'];
-        $this->controller = $route['handler']['controller'];
-        $this->action = $route['handler']['action'];
         $request->params = $route['params'];
-
-        return $this->process($request, $response, $this);
-    }
-
-    function process($request, $response, $app) {
-        if (isset($this->finalMiddlewares[$this->finalMiddlewaresIndex])) {
-            ++$this->finalMiddlewaresIndex;
-            $middleware = $this->resolveClass($this->classList[$this->finalMiddlewares[$this->finalMiddlewaresIndex - 1]]);
-            return $middleware->process($request, $response, $app);
+        foreach ($route['handler']['component'] as $c) {
+            $c = $this->resolveClass($this->classList[$c]);
+            $rr = $c->process($request, $response);
+            $request = $rr[0];
+            $response = $rr[1];
         }
-        if ($this->invokeController) {
-            return $response;
-        }
-        $this->invokeController = true;
-        $controller = $this->resolveClass($this->classList[$this->controller]);
-        return $controller-> {$this->action} ($request, $response);
+
+        return $response;
     }
 
     // Class Management

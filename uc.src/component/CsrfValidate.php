@@ -1,6 +1,6 @@
 <?php
 
-class CsrfValidateMiddleware {
+class CsrfValidate {
     public $session;
 
     public function __construct($args) {
@@ -9,7 +9,7 @@ class CsrfValidateMiddleware {
         ) = $args;
     }
 
-    public function process($request, $response, $next) {
+    public function process($request, $response) {
         if (!isset($request->post['csrf_token'])) {
             trigger_error('403|Invalid CSRF token');
         }
@@ -23,6 +23,6 @@ class CsrfValidateMiddleware {
             trigger_error('403|Invalid CSRF token');
         }
 
-        return $next->process($request, $response, $next);
+        return array($request, $response);
     }
 }

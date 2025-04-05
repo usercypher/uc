@@ -1,13 +1,15 @@
 <?php
 
-class ValidateFileUploadMiddleware {
+class ValidateFileUpload {
+    public function __construct($args) {}
+
     private $allowedFileTypes = array(
         'image/jpeg' => 5 * 1024 * 1024,       // JPEG files, max 5MB
         'image/png'  => 5 * 1024 * 1024,       // PNG files, max 5MB
         'application/pdf' => 10 * 1024 * 1024, // PDF files, max 10MB
     );
 
-    public function process($request, $response, $next) {
+    public function process($request, $response) {
         if ($request->server->method === 'POST') {
             if (isset($request->files['upload'])) {
                 $file = $request->files['upload'];
@@ -20,7 +22,7 @@ class ValidateFileUploadMiddleware {
             }
         }
 
-        return $next->process($request, $response, $next);
+        return array($request, $response);
     }
 
     function validateFileUpload($file, $allowedFileTypes) {

@@ -7,13 +7,13 @@ $app = app('dev');
 
 // [CONFIG] start
 
-// Auto-load classes from 'src/' directory and set path metadata (max depth 1)
-$app->autoSetClass('uc.src' . DS, array('max' => 1));
+// Auto-load classes from 'src/' directory and set path metadata (max depth 2)
+$app->autoSetClass('uc.src' . DS, array('max' => 2));
 
 // Set up the 'Database' class with caching enabled, ensuring a single instance is used.
 $app->setClass('Database', array('args' => array('App'), 'cache' => true));
 
-// Define and inject dependencies: 'BookModel' depends on 'Database', 'BookController' depends on 'BookModel', 'Request', and 'Response'.
+// Define and inject dependencies: 'BookModel' depends on 'Database'
 $app->setClasses(array(
     'args' => array('Database')
 ), array(
@@ -23,53 +23,57 @@ $app->setClasses(array(
 $app->setClass('Session', array('cache' => true));
 
 $app->setClasses(array(
-    'args' => array('App', 'Session')
+    'args' => array('App', 'Session', 'BookModel')
 ), array(
-    array('BookController', array('args' => array('BookModel'))) // Class-specific options merged with group options
+    array('BookCreate'),
+    array('BookDelete'),
+    array('BookEdit'),
+    array('BookHome'),
+    array('BookStore'),
+    array('BookUpdate'),
 ));
 
 $app->setClasses(array(
     'args' => array('Session')
 ), array(
-    array('CsrfGenerateMiddleware'),
-    array('CsrfValidateMiddleware'),
+    array('CsrfGenerate'),
+    array('CsrfValidate'),
 ));
 
-// Define middlewares to handle data sanitization, CSRF generation
-$app->setMiddlewares(array(
-    'SanitizeMiddleware',
-    'CsrfGenerateMiddleware', 
+// Define s to handle data sanitization, CSRF generation
+$app->setComponents(array(
+    'Sanitize',
+    'CsrfGenerate', 
 ));
 
 // Define routes
-$app->setRoute('GET', '', 'index', array('controller' => 'BookController', 'middleware' => array('ResponseCompression'))); // Default route
+$app->setRoute('GET', '', array('component' => array('BookHome', 'ResponseCompression'))); // Default route
 
 // Define additional routes for 'home' and 'create' actions in 'BookController'
-$app->setRoutes(array(
-    'middleware' => array('ResponseCompression')
+$app->setRoutes(array( 
+    // 1st param for options (prefix, component, ignore)
 ), array(
-    array('GET', 'home', 'index', array('controller' => 'BookController')),
-    array('GET', 'create', 'create', array('controller' => 'BookController'))
+    array('GET', 'home', array('component' => array('BookHome'))),
+    array('GET', 'create', array('component' => array('BookCreate')))
+), array(
+    'component' => array('ResponseCompression') // 3rd parameter only for components, if you want to concat component at the end of each routes
 ));
 
 // Define a route for editing a book, with an ID parameter (only digits allowed)
 $app->setRoutes(array(
-    'controller' => 'BookController', 
-    'middleware' => array('ResponseCompression')
 ), array(
-    array('GET', 'edit/{id:^\d+$}', 'edit')
+    array('GET', 'edit/{id:^\d+$}', array('component' => array('BookEdit', 'ResponseCompression')))
 ));
 
-// Define routes for 'book/' prefix with CSRF validation middleware
+// Define routes for 'book/' prefix with CSRF validation 
 $app->setRoutes(array(
     'prefix' => 'book/',
-    'controller' => 'BookController',
-    'middleware' => array('CsrfValidateMiddleware'),
-    'ignore' => array('CsrfGenerateMiddleware')
+    'component' => array('CsrfValidate'),
+    'ignore' => array('CsrfGenerate')
 ), array(
-    array('POST', 'create', 'store'),
-    array('POST', 'update', 'update'),
-    array('POST', 'delete', 'delete')
+    array('POST', 'store', array('component' => array('BookStore'))),
+    array('POST', 'update', array('component' => array('BookUpdate'))),
+    array('POST', 'delete', array('component' => array('BookDelete')))
 ));
 // [CONFIG] end
 
