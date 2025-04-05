@@ -20,7 +20,7 @@ function app($mode) {
 }
 
 class Request {
-    var $uri, $method, $get, $post, $files, $cookies, $server, $params;
+    var $uri, $method, $get, $post, $files, $cookies, $server, $params, $data;
 
     function __construct() {
         $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '';
@@ -31,6 +31,15 @@ class Request {
         $this->cookies = $_COOKIE;
         $this->server = $_SERVER;
         $this->params = array();
+        $this->data = array();
+    }
+
+    public function setData($key, $value) {
+        $this->data[$key] = $value;
+    }
+
+    public function getData($key) {
+        return isset($this->data[$key]) ? $this->data[$key] : null;
     }
 }
 
