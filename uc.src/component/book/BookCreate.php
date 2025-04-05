@@ -13,7 +13,7 @@ class BookCreate {
     } 
 
     public function process($request, $response) {
-        $response = $response->view($this->app->path('view', 'create.php'), array(
+        $response->content = $response->view($this->app->path('view', 'create.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),

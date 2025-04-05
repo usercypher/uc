@@ -19,7 +19,7 @@ class BookStore {
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response = $response->redirect($this->app->url('route', $route));
+        $response->redirect($this->app->url('route', $route));
 
         return array($request, $response);
     }

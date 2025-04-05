@@ -15,7 +15,7 @@ class BookEdit {
     public function process($request, $response) {
         $data = $request->params;
 
-        $response = $response->view($this->app->path('view', 'edit.php'), array(
+        $response->content = $response->view($this->app->path('view', 'edit.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),

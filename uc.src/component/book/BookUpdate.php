@@ -19,7 +19,7 @@ class BookUpdate {
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response = $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
+        $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
 
         return array($request, $response);
     }

@@ -19,7 +19,7 @@ class BookDelete {
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response = $response->redirect($this->app->url('route', 'home'));
+        $response->redirect($this->app->url('route', 'home'));
 
         return array($request, $response);
     }

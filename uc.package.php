@@ -70,10 +70,10 @@ class Response {
     function view($view, $data) {
         ob_start();
         require($view);
-        $this->content = ob_get_contents();
+        $viewData = ob_get_contents();
         ob_end_clean();
 
-        return $this;
+        return $viewData;
     }
 
     function json($data) {
@@ -84,15 +84,11 @@ class Response {
             $jsonData = '{"error": "Unable to encode data"}';
         }
 
-        $this->content = $jsonData;
-
-        return $this;
+        return $jsonData;
     }
 
     function redirect($url) {
         $this->headers['Location'] = $url;
-
-        return $this;
     }
 }
 
