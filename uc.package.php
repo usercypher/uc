@@ -359,6 +359,10 @@ class App {
         $pathSegments = explode('/', trim($path, '/'));
 
         foreach ($pathSegments as $index => $pathSegment) {
+            if (strlen($pathSegment) > 255) {
+                return array();
+            }
+
             if (isset($current[$pathSegment])) {
                 $current = $current[$pathSegment];
                 continue;
