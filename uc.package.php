@@ -328,7 +328,7 @@ class App {
 
     function setRoutes($option, $params) {
         foreach ($params as $p) {
-            $p[2]['component'] =  array_merge((isset($option['prepend']) ? $option['prepend'] : array()), array_merge($p[2]['component'], (isset($option['append']) ? $option['append'] : array())));
+            $p[2]['component'] =  array_merge((isset($option['prepend']) ? $option['prepend'] : array()), array_merge((isset($p[2]['component']) ? $p[2]['component'] : array($p[2]['component'])), (isset($option['append']) ? $option['append'] : array())));
             $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
             $p[2]['ignore'] = isset($p[2]['ignore']) ? array_merge($option['ignore'], $p[2]['ignore']) : $option['ignore'];
             $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], array_merge($option, $p[2]));

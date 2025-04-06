@@ -1,6 +1,8 @@
 <?php 
 
 $app = $data['app'];
+$flash = $data['flash'];
+$csrfToken = $data['csrf_token'];
 
 ?>
 <html>
@@ -22,7 +24,7 @@ $app = $data['app'];
         <br>
         <div class='container-form'>
             <form class="submit-form" action="<?php echo($app->url('route', 'book/store')); ?>" method="post">
-                <input type="hidden" name="csrf_token" value="<?php echo $data['csrf_token']; ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
 
                 <label>Title:</label>
                 <input type="text" name="book[title]" required>

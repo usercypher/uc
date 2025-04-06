@@ -1,6 +1,9 @@
 <?php 
 
 $app = $data['app'];
+$flash = $data['flash'];
+$csrfToken = $data['csrf_token'];
+$books = $data['books'];
 
 ?>
 <html>
@@ -28,7 +31,7 @@ $app = $data['app'];
 
         <div class="book-grid">
             <!-- Display books here -->
-            <?php foreach ($data['books'] as $book) : ?>
+            <?php foreach ($books as $book) : ?>
 
             <div class="book-card">
                 <h3><?php echo htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
@@ -40,7 +43,7 @@ $app = $data['app'];
                 <div class="actions">
                     <a href="<?php echo $app->url('route', 'edit/' . $book['id']); ?>"><button>Edit</button></a>
                     <form action="<?php echo $app->url('route', 'book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, 'Delete book <?php echo htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8'); ?>?');">
-                        <input type="hidden" name="csrf_token" value="<?php echo $data['csrf_token']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
                         <input type="hidden" name="book[id]" value="<?php echo $book['id']; ?>">
                         <input type="submit" value="Delete">
                     </form>
