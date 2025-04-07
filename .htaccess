@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Prevent directory listing by disabling Indexes
+Options -Indexes
+
+# If the request is for the root URL (i.e., domain.com/), redirect to public/index.php
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule ^$ index.php [QSA,L]
+
+# Redirect all other requests (except for actual files or directories) to public/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]

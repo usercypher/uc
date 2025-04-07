@@ -360,7 +360,7 @@ class App {
         $decrement = 0;
 
         foreach ($pathSegments as $index => $pathSegment) {
-            if ($pathSegment === '') {
+            if ($pathSegment === '' && $index != 0) {
                 --$decrement;
                 continue;
             }
@@ -477,10 +477,17 @@ class App {
         if ($this->invokeApp) {
             return $response;
         }
+
         $this->invokeApp = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
-        $parseUrl = parse_url($request->uri);
-        $path = $this->ENV['ROUTE_REWRITE'] ? $parseUrl['path'] : (isset($request->get['route']) ? $request->get['route'] : '');
+
+        if ($this->ENV['ROUTE_REWRITE']) {
+            $parseUrl = parse_url($request->uri);
+            $path = ($parseUrl === false) ? $request->uri : $parseUrl['path'];
+        } else {
+            $path = isset($request->get['route']) ? $request->get['route'] : '';
+        }
+
         $route = $this->resolveRoute($request->method, $path);
 
         if ($route === array()) {
