@@ -357,8 +357,16 @@ class App {
         $current = $this->routes[$method];
         $params = array();
         $pathSegments = explode('/', trim($path, '/'));
+        $decrement = 0;
 
         foreach ($pathSegments as $index => $pathSegment) {
+            if ($pathSegment === '') {
+                --$decrement;
+                continue;
+            }
+
+            $index -= $decrement;
+
             if (strlen($pathSegment) > 255) {
                 return array();
             }
