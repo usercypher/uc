@@ -497,7 +497,7 @@ class App {
 
         $request->params = $route['params'];
         foreach ($route['handler']['component'] as $c) {
-            $c = $this->resolveClass($this->classList[$c]);
+            $c = $this->getClass($this->classList[$c]);
             $rr = $c->process($request, $response);
             $request = $rr[0];
             $response = $rr[1];
@@ -585,36 +585,16 @@ class App {
     function newClass($class) {
         $mode = $this->class[$class][$this->CLASS_CACHE];
         $this->class[$class][$this->CLASS_CACHE] = false;
-        $classInstance = $this->resolveClass($class);
+        $classInstance = $this->getClass($class);
         $this->class[$class][$this->CLASS_CACHE] = $mode;
         return $classInstance;
-    }
-
-    function getClass($class) {
-        return $this->resolveClass($class);
     }
 
     function resetClass($class) {
         $this->cache[$class][$this->CACHE_CLASS] = null;
     }
 
-    function loadClass($classes) {
-        if (!isset($this->cache[$class][$this->CACHE_PATH])) {
-            require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-            $this->cache[$class][$this->CACHE_PATH] = true;
-        }
-    }
-
-    function loadClasses($classes) {
-        foreach ($classes as $class) {
-            if (!isset($this->cache[$class][$this->CACHE_PATH])) {
-                require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-                $this->cache[$class][$this->CACHE_PATH] = true;
-            }
-        }
-    }
-
-    function resolveClass($class) {
+    function getClass($class) {
         $INDEX = 0;
         $COUNT = 1;
 
@@ -675,6 +655,22 @@ class App {
         }
 
         return $resolvedClass;
+    }
+
+    function loadClass($classes) {
+        if (!isset($this->cache[$class][$this->CACHE_PATH])) {
+            require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+            $this->cache[$class][$this->CACHE_PATH] = true;
+        }
+    }
+
+    function loadClasses($classes) {
+        foreach ($classes as $class) {
+            if (!isset($this->cache[$class][$this->CACHE_PATH])) {
+                require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+                $this->cache[$class][$this->CACHE_PATH] = true;
+            }
+        }
     }
 
     // Utility Functions
