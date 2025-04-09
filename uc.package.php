@@ -23,6 +23,10 @@ class Request {
     var $uri, $method, $get, $post, $files, $cookies, $server, $params, $data;
 
     function __construct() {
+        $this->init();
+    }
+
+    function init() {
         $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '';
         $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : '';
         $this->get = $_GET;
@@ -47,6 +51,10 @@ class Response {
     var $headers, $code, $type, $content;
 
     function __construct() {
+        $this->init();
+    }
+
+    function init() {
         $this->headers = array();
         $this->code = 200;
         $this->type = 'text/html';
