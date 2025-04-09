@@ -15,7 +15,7 @@ $app->setClass('Database', array('args' => array('App'), 'cache' => true));
 
 // Define and inject dependencies: 'BookModel' depends on 'Database'
 $app->setClasses(array(
-    'args' => array('Database')
+    'args_prepend' => array('Database')
 ), array(
     array('BookModel')
 ));
@@ -23,7 +23,7 @@ $app->setClasses(array(
 $app->setClass('Session', array('cache' => true));
 
 $app->setClasses(array(
-    'args' => array('App', 'Session', 'BookModel')
+    'args_prepend' => array('App', 'Session', 'BookModel'),
 ), array(
     array('BookCreate'),
     array('BookDelete'),
@@ -34,7 +34,7 @@ $app->setClasses(array(
 ));
 
 $app->setClasses(array(
-    'args' => array('Session')
+    'args_prepend' => array('Session')
 ), array(
     array('CsrfGenerate'),
     array('CsrfValidate'),
@@ -56,7 +56,7 @@ $app->setRoute('GET', '', array('component' => array('BookHome', 'ResponseCompre
 
 // Define additional routes for 'home' and 'create'
 $app->setRoutes(array( 
-    'append' => array('ResponseCompression') // append component to route define in group
+    'component_append' => array('ResponseCompression') // append component to route define in group
 ), array(
     array('GET', 'home', array('component' => array('BookHome'))),
     array('GET', 'create', array('component' => array('BookCreate'))),
@@ -67,7 +67,7 @@ $app->setRoutes(array(
 // Define routes for 'book/' prefix with CSRF validation 
 $app->setRoutes(array(
     'prefix' => 'book/',
-    'prepend' => array('CsrfValidate'), // prepend component to route define in group
+    'component_prepend' => array('CsrfValidate'), // prepend component to route define in group
     'ignore' => array('CsrfGenerate')
 ), array(
     array('POST', 'store', array('component' => array('BookStore'))),

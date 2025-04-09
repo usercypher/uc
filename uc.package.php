@@ -328,9 +328,8 @@ class App {
 
     function setRoutes($option, $params) {
         foreach ($params as $p) {
-            $p[2]['component'] =  array_merge((isset($option['prepend']) ? $option['prepend'] : array()), array_merge((isset($p[2]['component']) ? $p[2]['component'] : array($p[2]['component'])), (isset($option['append']) ? $option['append'] : array())));
-            $option['ignore'] = isset($option['ignore']) ? $option['ignore'] : array();
-            $p[2]['ignore'] = isset($p[2]['ignore']) ? array_merge($option['ignore'], $p[2]['ignore']) : $option['ignore'];
+            $p[2]['component'] = array_merge((isset($option['component_prepend']) ? $option['component_prepend'] : array()), (isset($p[2]['component']) ? $p[2]['component'] : array()), (isset($option['component_append']) ? $option['component_append'] : array()));
+            $p[2]['ignore'] = array_merge((isset($option['ignore']) ? $option['ignore'] : array()), (isset($p[2]['ignore']) ? $p[2]['ignore'] : array()));
             $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], array_merge($option, $p[2]));
         }
     }
@@ -574,11 +573,8 @@ class App {
 
     function setClasses($option, $classes) {
         foreach ($classes as $class) {
-            if (isset($class[1])) {
-                $option['args'] = isset($option['args']) ? $option['args'] : array();
-                $class[1]['args'] = isset($class[1]['args']) ? array_merge($option['args'], $class[1]['args']) : $option['args'];
-            }
-            $this->setClass($class[0], isset($class[1]) ? array_merge($option, $class[1]) : $option);
+            $class[1]['args'] = array_merge((isset($option['args_prepend']) ? $option['args_prepend'] : array()), (isset($class[1]['args']) ? $class[1]['args'] : array()), (isset($option['args_append']) ? $option['args_append'] : array()));
+            $this->setClass($class[0], array_merge($option, $class[1]));
         }
     }
 
