@@ -4,44 +4,38 @@ class Sanitize {
     public function __construct($args) {}
 
     public function process($request, $response) {
-        $post = $request->post;
-
-        if (isset($post)) {
-            $request->post = $this->sanitizeArray($post);
+        if (isset($request->post)) {
+            $this->sanitize($request->post);
         }
 
-        $get = $request->get;
-
-        if (isset($get)) {
-            $request->get = $this->sanitizeArray($get);
+        if (isset($request->get)) {
+            $this->sanitize($request->get);
         }
 
-        $params = $request->params;
-
-        if (isset($params)) {
-            $request->params = $this->sanitizeArray($params);
+        if (isset($request->params)) {
+            $this->sanitize($request->params);
         }
 
         return array($request, $response);
     }
 
-    private function sanitizeArray($array) {
-        foreach ($array as $key => $value) {
-            if (is_string($value)) {
-                $array[$key] = $this->sanitizeString($value);
-            } elseif (is_array($value)) {
-                $array[$key] = $this->sanitizeArray($value);
+    public function sanitize(&$array) {
+        $stack = array();
+        $stack[] = array(&$array);
+
+        while (!empty($stack)) {
+            $current = array_pop($stack);
+            $currentArray = &$current[0];
+
+            foreach ($currentArray as $key => $value) {
+                if (is_array($currentArray[$key])) {
+                    $stack[] = array(&$currentArray[$key]);
+                } elseif (is_string($currentArray[$key])) {
+                    $currentArray[$key] = trim($currentArray[$key]);
+                    $currentArray[$key] = strip_tags($currentArray[$key], '<b><i><u><a>');
+                    $currentArray[$key] = htmlspecialchars($currentArray[$key], ENT_QUOTES);
+                }
             }
         }
-        return $array;
-    }
-
-    private function sanitizeString($string) {
-        $string = trim($string);
-
-        $allowedTags = '<b><i><u><a>';
-        $string = strip_tags($string, $allowedTags);
-        
-        return htmlspecialchars($string, ENT_QUOTES);
     }
 }
