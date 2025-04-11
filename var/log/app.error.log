@@ -38,3 +38,8 @@ Stack trace:
 #6 /storage/emulated/0/lamp/_htdocs_1/index.php(82): App->dispatch()
 #7 {main}
   thrown in /storage/emulated/0/lamp/_htdocs_1/uc.src/controller/BookController.php on line 52
+[2025-04-11 17:56:24.226866] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 513
+[2025-04-11 17:56:48.638166] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 513
+[2025-04-11 18:04:16.617532] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 516
+[2025-04-11 18:06:56.094772] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 516
+[2025-04-11 18:07:16.191653] Trying to access array offset on false in /storage/emulated/0/github/uc.php/uc.view/edit.php on line 29

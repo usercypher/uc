@@ -62,14 +62,16 @@ class Response {
     }
 
     function send() {
-        header('HTTP/1.1 ' . $this->code);
+        if (!headers_sent()) {
+            header('HTTP/1.1 ' . $this->code);
 
-        foreach ($this->headers as $key => $value) {
-            header($key . ': ' . $value);
-        }
+            foreach ($this->headers as $key => $value) {
+                header($key . ': ' . $value);
+            }
 
-        if (!isset($this->headers['Content-Type'])) {
-            header('Content-Type: ' . $this->type);
+            if (!isset($this->headers['Content-Type'])) {
+                header('Content-Type: ' . $this->type);
+            }
         }
 
         exit(isset($this->headers['Location']) ? '' : $this->content);
@@ -78,8 +80,7 @@ class Response {
     function view($view, $data) {
         ob_start();
         require($view);
-        $viewData = ob_get_contents();
-        ob_end_clean();
+        $viewData = ob_get_clean();
 
         return $viewData;
     }
@@ -256,19 +257,20 @@ class App {
             ob_end_clean();
         }
 
-        $parts = explode('|', $errstr, 2);
         $httpCode = 500;
+        $type = '';
+        $content = '';
 
-        if (isset($parts[0]) && is_numeric($parts[0])) {
+        $parts = explode('|', $errstr, 2);
+        if (is_numeric($parts[0])) {
             $httpCode = (int) $parts[0];
             $errstr = $parts[1];
         }
 
-        header('HTTP/1.1 ' . $httpCode);
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-            header('Content-Type: application/json');
-            exit($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"Error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            $type = ('Content-Type: application/json');
+            $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"Error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -284,15 +286,28 @@ class App {
                         $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . PHP_EOL;
                     }
                 }
-                header('Content-Type: text/plain');
-                exit('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
+                $type = ('Content-Type: text/plain');
+                $content = ('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
             } else {
                 $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
-                $data = array('app' => $this, 'http_code' => $httpCode);
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
-                exit(file_exists($file) ? include($file) : 'An unexpected error occurred. Please try again later.');
+                if (file_exists($file)) {
+                    $data = array('app' => $this, 'http_code' => $httpCode);
+                    ob_start();
+                    include($file);
+                    $content = ob_get_clean();
+                } else {
+                    $content = 'An unexpected error occurred. Please try again later.' . PHP_EOL; 
+                }
             }
         }
+
+        if (!headers_sent()) {
+            header('HTTP/1.1 ' . $httpCode);
+            header($type);
+        }
+
+        exit($content);
     }
 
     // Route Management
