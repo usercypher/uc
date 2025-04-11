@@ -232,7 +232,7 @@ class App {
             $this->pathList = $data['path_list'];
             $this->pathListIndex = $data['path_list_index'];
         } else {
-            trigger_error('404|File not found: ' . $configFile . '.', E_USER_WARNING);
+            trigger_error('404|File not found: ' . $configFile, E_USER_WARNING);
             exit();
         }
     }
@@ -359,7 +359,7 @@ class App {
 
     function setComponents($components) {
         foreach ($components as $key => $c) {
-            if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|Invalid value: ' . $key . '. Expected "prepend" or "append".', E_USER_WARNING); exit(); }
+            if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|Invalid value: ' . $key . '. Expected "prepend" or "append"', E_USER_WARNING); exit(); }
             foreach ($c as $class) {
                 if (!isset($this->class[$class])) {
                     $this->class[$class] = array(null, null, false, $this->classListIndex);
@@ -513,7 +513,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if ($route === array()) {
-            trigger_error('404|Route not found: ' . $request->method . ' ' . $path . '.', E_USER_WARNING);
+            trigger_error('404|Route not found: ' . $request->method . ' ' . $path, E_USER_WARNING);
             exit();
         }
 
@@ -628,7 +628,7 @@ class App {
             $stackSet[$classParent] = true;
 
             if (isset($stackSet[$class])) {
-                trigger_error('500|Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $class . '.', E_USER_WARNING);
+                trigger_error('500|Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $class, E_USER_WARNING);
                 exit();
             }
 

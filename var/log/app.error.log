@@ -43,3 +43,4 @@ Stack trace:
 [2025-04-11 18:04:16.617532] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 516
 [2025-04-11 18:06:56.094772] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 516
 [2025-04-11 18:07:16.191653] Trying to access array offset on false in /storage/emulated/0/github/uc.php/uc.view/edit.php on line 29
+[2025-04-11 18:12:23.104160] Trying to access array offset on false in /storage/emulated/0/github/uc.php/uc.view/edit.php on line 29
