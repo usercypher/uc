@@ -206,24 +206,24 @@ class App {
     // Config Management
 
     function saveConfig($file) {
-        $configFile = $this->ENV['DIR'] . $file . '.json';
-        file_put_contents($configFile, json_encode(array(
-            'routes' => $this->routes,
-            'components' => $this->components,
-            'class' => $this->class,
-            'class_list' => $this->classList,
-            'class_list_index' => $this->classListIndex,
-            'path_list' => $this->pathList,
-            'path_list_index' => $this->pathListIndex
+        $configFile = $this->ENV['DIR'] . $file . '.dat';
+        file_put_contents($configFile, serialize(array(
+            'routes' => unserialize(serialize($this->routes)),
+            'components' => unserialize(serialize($this->components)),
+            'class' => unserialize(serialize($this->class)),
+            'class_list' => unserialize(serialize($this->classList)),
+            'class_list_index' => unserialize(serialize($this->classListIndex)),
+            'path_list' => unserialize(serialize($this->pathList)),
+            'path_list_index' => unserialize(serialize($this->pathListIndex))
         )));
 
         echo('File created: ' . $configFile);
     }
 
     function loadConfig($file) {
-        $configFile = $this->ENV['DIR'] . $file . '.json';
+        $configFile = $this->ENV['DIR'] . $file . '.dat';
         if (file_exists($configFile)) {
-            $data = json_decode(file_get_contents($configFile), true);
+            $data = unserialize(file_get_contents($configFile));
             $this->routes = $data['routes'];
             $this->components = $data['components'];
             $this->class = $data['class'];
