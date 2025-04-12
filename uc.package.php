@@ -317,7 +317,7 @@ class App {
         if (isset($option['component'])) {
             foreach ($option['component'] as $class) {
                 if (!isset($this->class[$class])) {
-                    $this->class[$class] = array(null, null, false, $this->classListIndex);
+                    $this->class[$class] = array(array(), null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
                     ++$this->classListIndex;
                 }
@@ -329,7 +329,7 @@ class App {
         if (isset($option['ignore'])) {
             foreach ($option['ignore'] as $class) {
                 if (!isset($this->class[$class])) {
-                    $this->class[$class] = array(null, null, false, $this->classListIndex);
+                    $this->class[$class] = array(array(), null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
                     ++$this->classListIndex;
                 }
@@ -362,7 +362,7 @@ class App {
             if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|Invalid value: ' . $key . '. Expected "prepend" or "append"', E_USER_WARNING); exit(); }
             foreach ($c as $class) {
                 if (!isset($this->class[$class])) {
-                    $this->class[$class] = array(null, null, false, $this->classListIndex);
+                    $this->class[$class] = array(array(), null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $class;
                     ++$this->classListIndex;
                 }
@@ -567,14 +567,14 @@ class App {
     function setClass($class, $option) {
         $class = (isset($option['namespace']) ? $option['namespace'] : '') . $class;
         if (!isset($this->class[$class])) {
-            $this->class[$class] = array(null, null, false, $this->classListIndex);
+            $this->class[$class] = array(array(), null, false, $this->classListIndex);
             $this->classList[$this->classListIndex] = $class;
             ++$this->classListIndex;
         }
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
                 if (!isset($this->class[$arg])) {
-                    $this->class[$arg] = array(null, null, false, $this->classListIndex);
+                    $this->class[$arg] = array(array(), null, false, $this->classListIndex);
                     $this->classList[$this->classListIndex] = $arg;
                     ++$this->classListIndex;
                 }
