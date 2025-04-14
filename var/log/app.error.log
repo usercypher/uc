@@ -44,3 +44,6 @@ Stack trace:
 [2025-04-11 18:06:56.094772] Route not found: GET /hme. in /storage/emulated/0/github/uc.php/uc.package.php on line 516
 [2025-04-11 18:07:16.191653] Trying to access array offset on false in /storage/emulated/0/github/uc.php/uc.view/edit.php on line 29
 [2025-04-11 18:12:23.104160] Trying to access array offset on false in /storage/emulated/0/github/uc.php/uc.view/edit.php on line 29
+[2025-04-14 23:49:52.609100] preg_match(): Compilation failed: missing terminating ] for character class at offset 8 in /storage/emulated/0/github/uc.php/uc.package.php on line 352
+[2025-04-14 23:51:48.184524] File not found: /storage/emulated/0/github/uc.php/var/data/app.config.dat in /storage/emulated/0/github/uc.php/uc.package.php on line 236
+[2025-04-15 00:04:43.263242] file_get_contents(/storage/emulated/0/github/uc.php/var/data/app.config.dat): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 226

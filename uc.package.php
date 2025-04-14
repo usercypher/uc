@@ -223,19 +223,14 @@ class App {
 
     function loadConfig($file) {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
-        if (file_exists($configFile)) {
-            $data = unserialize(file_get_contents($configFile));
-            $this->routes = $data['routes'];
-            $this->components = $data['components'];
-            $this->class = $data['class'];
-            $this->classList = $data['class_list'];
-            $this->classListIndex = $data['class_list_index'];
-            $this->pathList = $data['path_list'];
-            $this->pathListIndex = $data['path_list_index'];
-        } else {
-            trigger_error('404|File not found: ' . $configFile, E_USER_WARNING);
-            exit();
-        }
+        $data = unserialize(file_get_contents($configFile));
+        $this->routes = $data['routes'];
+        $this->components = $data['components'];
+        $this->class = $data['class'];
+        $this->classList = $data['class_list'];
+        $this->classListIndex = $data['class_list_index'];
+        $this->pathList = $data['path_list'];
+        $this->pathListIndex = $data['path_list_index'];
     }
 
     // Error Management
@@ -341,6 +336,16 @@ class App {
         $node = &$this->routes[$method];
         $routeSegments = explode('/', trim($route, '/'));
         foreach ($routeSegments as $segment) {
+            if (strpos($segment, '{') !== false || strpos($segment, '}') !== false) {
+                if (substr($segment, 0, 1) !== '{' || substr($segment, -1) !== '}') {
+                    trigger_error('404|Invalid parameter syntax in segment: ' . $segment, E_USER_WARNING);
+                    exit();
+                }
+                $param = trim($segment, '{}');
+                $paramParts = explode(':', $param, 2);
+                $paramRegex = isset($paramParts[1]) ? $paramParts[1] : '.+';
+                preg_match('/' . $paramRegex . '/', '');
+            }
             if (!isset($node[$segment])) {
                 $node[$segment] = array();
             }
