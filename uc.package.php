@@ -269,7 +269,6 @@ class App {
         }
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-            $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
             $type = ('Content-Type: application/json');
             $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"Error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
         } else {
@@ -290,7 +289,6 @@ class App {
                 $type = ('Content-Type: text/plain');
                 $content = ('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . EOL . EOL . $traceOutput);
             } else {
-                $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
                 if (file_exists($file)) {
                     $data = array('app' => $this, 'http_code' => $httpCode);
@@ -302,6 +300,8 @@ class App {
                 }
             }
         }
+
+        $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
 
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $httpCode);
