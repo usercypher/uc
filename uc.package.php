@@ -1,6 +1,7 @@
 <?php
 
 define('DS', '/');
+define('EOL', "\n");
 
 function app($mode) {
     $app = new App(array(new Request, new Response));
@@ -27,8 +28,8 @@ class Request {
     }
 
     function init() {
-        $this->uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : '';
-        $this->method = isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : '';
+        $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
         $this->get = $_GET;
         $this->post = $_POST;
         $this->files = $_FILES;
@@ -276,18 +277,18 @@ class App {
                 $traceOutput = '';
                 if ($enableStackTrace) {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-                    $traceOutput = 'Stack trace: ' . PHP_EOL;
+                    $traceOutput = 'Stack trace: ' . EOL;
                     foreach ($trace as $i => $frame) {
                         if (1 > $i) { continue; }
                         $traceOutput .= '#' . ($i - 1) . ' ';
                         $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
                         $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
                         $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '';
-                        $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . PHP_EOL;
+                        $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
                     }
                 }
                 $type = ('Content-Type: text/plain');
-                $content = ('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . PHP_EOL . PHP_EOL . $traceOutput);
+                $content = ('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . EOL . EOL . $traceOutput);
             } else {
                 $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
@@ -297,7 +298,7 @@ class App {
                     include($file);
                     $content = ob_get_clean();
                 } else {
-                    $content = 'An unexpected error occurred. Please try again later.' . PHP_EOL; 
+                    $content = 'An unexpected error occurred. Please try again later.' . EOL; 
                 }
             }
         }
@@ -731,7 +732,7 @@ class App {
     function log($message, $file) {
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
         $maxLogSize = $this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
-        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int) ((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . PHP_EOL;
+        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int) ((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . EOL;
 
         file_put_contents($logFile, $message, FILE_APPEND);
 
