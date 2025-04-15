@@ -12,6 +12,8 @@ function app($mode) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
+    $app->init();
+
     set_error_handler(array($app, 'error'));
     register_shutdown_function(array($app, 'shutdown'));
 
@@ -129,8 +131,6 @@ class App {
     function __construct($args) {
         list($request, $response) = $args;
 
-        $this->ENV['DIR'] = __DIR__ . DS;
-
         $this->class = array(
             'App' => array(array(1, 2), null, true, 0),
             'Request' => array(array(), null, true, 1),
@@ -145,6 +145,35 @@ class App {
             'Request' => array($request, true),
             'Response' => array($response, true),
         );
+    }
+
+    function init() {
+        $this->ENV['DIR'] = __DIR__ . DS;
+
+        $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
+        $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
+        $this->ENV['DIR_VIEW'] = isset($this->ENV['DIR_VIEW']) ? $this->ENV['DIR_VIEW'] : '';
+        $this->ENV['DIR_WEB'] = isset($this->ENV['DIR_WEB']) ? $this->ENV['DIR_WEB'] : '';
+        $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : '';
+
+        $this->ENV['ROUTE_FILE'] = isset($this->ENV['ROUTE_FILE']) ? $this->ENV['ROUTE_FILE'] : 'index.php';
+        $this->ENV['ROUTE_REWRITE'] = isset($this->ENV['ROUTE_REWRITE']) ? (bool) $this->ENV['ROUTE_REWRITE'] : false;
+        $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
+
+        $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
+
+        $request = $this->cache['Request'][$this->CACHE_CLASS];
+        $this->ENV['HTTP_PROTOCOL'] = isset($this->ENV['HTTP_PROTOCOL']) ? $this->ENV['HTTP_PROTOCOL'] : ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http');
+        $this->ENV['HTTP_HOST'] = isset($this->ENV['HTTP_HOST']) ? $this->ENV['HTTP_HOST'] : (isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1');
+        $this->ENV['BASE_URL'] = $this->ENV['HTTP_PROTOCOL'] . '://' . $this->ENV['HTTP_HOST'] . '/';
+
+        $this->ENV['ERROR_VIEW_FILE'] = isset($this->ENV['ERROR_VIEW_FILE']) ? $this->ENV['ERROR_VIEW_FILE'] : 'uc.error.php';
+        $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
+
+        $this->ENV['LOG_SIZE_LIMIT_MB'] = isset($this->ENV['LOG_SIZE_LIMIT_MB']) && (int) $this->ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) $this->ENV['LOG_SIZE_LIMIT_MB'] : 5;
+        $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset($this->ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
+        $this->ENV['LOG_RETENTION_DAYS'] = isset($this->ENV['LOG_RETENTION_DAYS']) && (int) $this->ENV['LOG_RETENTION_DAYS'] > 0 ? (int) $this->ENV['LOG_RETENTION_DAYS'] : 7;
+        $this->ENV['MAX_LOG_FILES'] = isset($this->ENV['MAX_LOG_FILES']) && (int) $this->ENV['MAX_LOG_FILES'] > 0 ? (int) $this->ENV['MAX_LOG_FILES'] : 10;
     }
 
     function setEnv($key, $value) {
@@ -479,9 +508,6 @@ class App {
             exit();
         }
 
-        $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
-        $this->ENV['BASE_URL'] = ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1') . '/';
-
         $request->params = $route['params'];
         foreach ($route['handler']['component'] as $c) {
             $c = $this->getClass($this->classList[$c]);
@@ -528,7 +554,7 @@ class App {
                     }
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
-                    $class = substr($file, 0, -4);
+                    $class = (isset($option['namespace']) ? $option['namespace'] : '') . substr($file, 0, -4);
                     if (!isset($this->class[$class])) {
                         $this->class[$class] = array(array(), null, false, $this->classListIndex);
                         $this->classList[$this->classListIndex] = $class;
@@ -542,7 +568,6 @@ class App {
                     }
                     $this->pathListCache[$path] = $pathListIndex;
                     $this->class[$class][$this->CLASS_PATH] = $pathListIndex;
-                    $this->setClass($class, array('path' => $path, 'namespace' => $option['namespace']));
                 }
             }
             closedir($dirHandle);
@@ -550,19 +575,10 @@ class App {
     }
 
     function setClass($class, $option) {
-        if(!isset($this->class[$class])) {
-            trigger_error('500|Class not found: ' . $class, E_USER_WARNING);
-            exit();
-        }
-
-        $class = (isset($option['namespace']) ? $option['namespace'] : '') . $class;
+        $classTest = $this->class[$class];
 
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
-                if(!isset($this->class[$arg])) {
-                    trigger_error('500|Class not found: ' . $arg, E_USER_WARNING);
-                    exit();
-                }
                 $this->class[$class][$this->CLASS_ARGS][] = $this->class[$arg][$this->CLASS_CLASS_LIST_INDEX];
             }
         }

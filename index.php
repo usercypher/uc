@@ -6,7 +6,7 @@
 //require('uc.compile.php');  // This generates config and exits the script after saving
 
 $configFile = 'var/data/app.config';
-$mode = 'dev';
+$mode = 'prod';
 
 // After the configuration has been generated, you can just load the package and continue
 require('uc.package.php');

@@ -75,3 +75,15 @@ Stack trace:
 [2025-04-15 09:06:59.009939] Class not found: Session in /storage/emulated/0/github/uc.php/uc.package.php on line 554
 [2025-04-15 09:46:04.827981] Undefined array key 2 in /storage/emulated/0/github/uc.php/uc.src/component/book/BookHome.php on line 9
 [2025-04-15 09:49:24.026587] Undefined property: App::$middlewares in /storage/emulated/0/github/uc.php/uc.package.php on line 184
+[2025-04-15 10:08:34.421361] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 478
+[2025-04-15 10:08:35.962524] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 478
+[2025-04-15 10:08:36.861381] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 478
+[2025-04-15 10:08:38.044204] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 478
+[2025-04-15 10:08:40.312752] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 478
+[2025-04-15 10:14:21.084575] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 507
+[2025-04-15 10:15:10.273304] Undefined array key "CsrfGenrate" in /storage/emulated/0/github/uc.php/uc.package.php on line 360
+[2025-04-15 10:19:28.056813] Undefined array key "Dataase" in /storage/emulated/0/github/uc.php/uc.package.php on line 579
+[2025-04-15 10:19:48.189882] Undefined array key "Dataase" in /storage/emulated/0/github/uc.php/uc.package.php on line 579
+[2025-04-15 10:21:52.702104] Undefined array key "Ap" in /storage/emulated/0/github/uc.php/uc.package.php on line 585
+[2025-04-15 10:27:30.601151] Route not found: GET /hme in /storage/emulated/0/github/uc.php/uc.package.php on line 507
+[2025-04-15 10:27:35.263029] Route not found: GET /eit/1 in /storage/emulated/0/github/uc.php/uc.package.php on line 507

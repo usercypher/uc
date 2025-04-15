@@ -8,7 +8,6 @@ require('uc.package.php');
 
 $app = app($mode);
 
-$app = validateEnv($app);
 $app = config($app);
 
 $app->saveConfig($configFile);
@@ -84,56 +83,5 @@ function config($app) {
         array('POST', 'update', array('component' => array('BookUpdate'))),
         array('POST', 'delete', array('component' => array('BookDelete')))
     ));
-    return $app;
-}
-
-function validateEnv($app) {
-    $keyList = array(
-        'DIR_LOG', 'DIR_LOG_TIMESTAMP', 'DIR_VIEW', 'DIR_WEB', 'DIR_SRC',
-        'URL_DIR_WEB',
-        'ROUTE_FILE',
-        'ROUTE_REWRITE',
-        'ERROR_VIEW_FILE',
-        'SHOW_ERRORS',
-        'LOG_SIZE_LIMIT_MB',
-        'LOG_CLEANUP_INTERVAL_DAYS',
-        'LOG_RETENTION_DAYS',
-        'MAX_LOG_FILES'
-    );
-
-    foreach ($keyList as $key) {
-        if (!isset($app->ENV[$key])) {
-            trigger_error('404|Missing env: ' . $key, E_USER_WARNING);
-        }
-    }
-
-    $fileList = array(
-        'DIR_LOG', 'DIR_LOG_TIMESTAMP', 'DIR_VIEW', 'DIR_WEB', 'DIR_SRC',
-        'ROUTE_FILE', 'ERROR_VIEW_FILE'
-    );
-
-    foreach ($fileList as $file) {
-        if (!file_exists($app->ENV['DIR'] . $app->ENV[$file])) {
-            trigger_error('404|Invalid file/dir: ' . $app->ENV[$file] . ' for env ' . $file, E_USER_WARNING);
-        }
-    }
-
-    $boolList = array('ROUTE_REWRITE', 'SHOW_ERRORS');
-    foreach ($boolList as $bool) {
-        if (!is_bool($app->ENV[$bool])) {
-            trigger_error('404|Invalid bool: ' . $app->ENV[$bool] . ' for env ' . $bool, E_USER_WARNING);
-        }
-    }
-    $intList = array('LOG_SIZE_LIMIT_MB', 'LOG_CLEANUP_INTERVAL_DAYS', 'LOG_RETENTION_DAYS', 'MAX_LOG_FILES');
-    foreach ($intList as $int) {
-        if (!is_int($app->ENV[$int])) {
-            trigger_error('404|Invalid int: ' . $app->ENV[$int] . ' for env ' . $int, E_USER_WARNING);
-        }
-
-        if (1 > $app->ENV[$int]) {
-            trigger_error('404|Invalid value, must be greater than 0: ' . $app->ENV[$int] . ' for env ' . $int, E_USER_WARNING);
-        }
-    }
-
     return $app;
 }
