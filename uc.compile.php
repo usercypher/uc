@@ -1,5 +1,5 @@
 <?php
-// index.php
+// uc.compile.php
 
 $configFile = 'var/data/app.config';
 $mode = 'dev';
@@ -8,77 +8,132 @@ require('uc.package.php');
 
 $app = app($mode);
 
-// [CONFIG] start
-
-// Auto-load classes from 'src/' directory and set path metadata (max depth 2)
-$app->autoSetClass('uc.src' . DS, array('max' => 2));
-
-// Set up the 'Database' class with caching enabled, ensuring a single instance is used.
-$app->setClass('Database', array('args' => array('App'), 'cache' => true));
-
-// Define and inject dependencies: 'BookModel' depends on 'Database'
-$app->setClasses(array(
-    'args_prepend' => array('Database')
-), array(
-    array('BookModel')
-));
-
-$app->setClass('Session', array('cache' => true));
-
-$app->setClasses(array(
-    'args_prepend' => array('App', 'Session', 'BookModel'),
-), array(
-    array('BookCreate'),
-    array('BookDelete'),
-    array('BookEdit'),
-    array('BookHome'),
-    array('BookStore'),
-    array('BookUpdate'),
-));
-
-$app->setClasses(array(
-    'args_prepend' => array('Session')
-), array(
-    array('CsrfGenerate'),
-    array('CsrfValidate'),
-));
-
-// Define s to handle data sanitization, CSRF generation
-$app->setComponents(array(
-    // preppend component to all routes component
-    'prepend' => array(
-        'Sanitize',
-        'CsrfGenerate', 
-    ),
-    // append component to all routes component
-    'append' => array()
-));
-
-// Define routes
-$app->setRoute('GET', '', array('component' => array('BookHome', 'ResponseCompression'))); // Default route
-
-// Define additional routes for 'home' and 'create'
-$app->setRoutes(array( 
-    'component_append' => array('ResponseCompression') // append component to route define in group
-), array(
-    array('GET', 'home', array('component' => array('BookHome'))),
-    array('GET', 'create', array('component' => array('BookCreate'))),
-    // Define a route for editing a book, with an ID parameter (only digits allowed)
-    array('GET', 'edit/{id:^\d+$}', array('component' => array('BookEdit')))
-));
-
-// Define routes for 'book/' prefix with CSRF validation 
-$app->setRoutes(array(
-    'prefix' => 'book/',
-    'component_prepend' => array('CsrfValidate'), // prepend component to route define in group
-    'ignore' => array('CsrfGenerate')
-), array(
-    array('POST', 'store', array('component' => array('BookStore'))),
-    array('POST', 'update', array('component' => array('BookUpdate'))),
-    array('POST', 'delete', array('component' => array('BookDelete')))
-));
-// [CONFIG] end
+$app = validateEnv($app);
+$app = config($app);
 
 $app->saveConfig($configFile);
 
 exit;
+
+// you can put it in separate file for more clean structure
+function config($app) {
+    // Auto-load classes from 'src/' directory and set path metadata (max depth 2), 'ignore' => array('ignore*.pattern', 'ignore.file')
+    $app->autoSetClass('uc.src' . DS, array('max' => 2));
+    
+    // Set up the 'Database' class with caching enabled, ensuring a single instance is used.
+    $app->setClass('Database', array('args' => array('App'), 'cache' => true));
+    
+    // Define and inject dependencies: 'BookModel' depends on 'Database'
+    $app->setClasses(array(
+        'args_prepend' => array('Database')
+    ), array(
+        array('BookModel')
+    ));
+    
+    $app->setClass('Session', array('cache' => true));
+    
+    $app->setClasses(array(
+        'args_prepend' => array('App', 'Session'),
+    ), array(
+        array('BookCreate'),
+        array('BookDelete', array('args' => array('BookModel'))),
+        array('BookEdit', array('args' => array('BookModel'))),
+        array('BookHome', array('args' => array('BookModel'))),
+        array('BookStore', array('args' => array('BookModel'))),
+        array('BookUpdate', array('args' => array('BookModel'))),
+    ));
+    
+    $app->setClasses(array(
+        'args_prepend' => array('Session')
+    ), array(
+        array('CsrfGenerate'),
+        array('CsrfValidate'),
+    ));
+    
+    // Define s to handle data sanitization, CSRF generation
+    $app->setComponents(array(
+        // preppend component to all routes component
+        'prepend' => array(
+            'Sanitize',
+            'CsrfGenerate', 
+        ),
+        // append component to all routes component
+        'append' => array()
+    ));
+    
+    // Define routes
+    $app->setRoute('GET', '', array('component' => array('BookHome', 'ResponseCompression'))); // Default route
+    
+    // Define additional routes for env 'home' and 'create'
+    $app->setRoutes(array( 
+        'component_append' => array('ResponseCompression') // append component to route define in group
+    ), array(
+        array('GET', 'home', array('component' => array('BookHome'))),
+        array('GET', 'create', array('component' => array('BookCreate'))),
+        // Define a route for env editing a book, with an ID parameter (only digits allowed)
+        array('GET', 'edit/{id:^\d+$}', array('component' => array('BookEdit')))
+    ));
+    
+    // Define routes for env 'book/' prefix with CSRF validation 
+    $app->setRoutes(array(
+        'prefix' => 'book/',
+        'component_prepend' => array('CsrfValidate'), // prepend component to route define in group
+        'ignore' => array('CsrfGenerate')
+    ), array(
+        array('POST', 'store', array('component' => array('BookStore'))),
+        array('POST', 'update', array('component' => array('BookUpdate'))),
+        array('POST', 'delete', array('component' => array('BookDelete')))
+    ));
+    return $app;
+}
+
+function validateEnv($app) {
+    $keyList = array(
+        'DIR_LOG', 'DIR_LOG_TIMESTAMP', 'DIR_VIEW', 'DIR_WEB', 'DIR_SRC',
+        'URL_DIR_WEB',
+        'ROUTE_FILE',
+        'ROUTE_REWRITE',
+        'ERROR_VIEW_FILE',
+        'SHOW_ERRORS',
+        'LOG_SIZE_LIMIT_MB',
+        'LOG_CLEANUP_INTERVAL_DAYS',
+        'LOG_RETENTION_DAYS',
+        'MAX_LOG_FILES'
+    );
+
+    foreach ($keyList as $key) {
+        if (!isset($app->ENV[$key])) {
+            trigger_error('404|Missing env: ' . $key, E_USER_WARNING);
+        }
+    }
+
+    $fileList = array(
+        'DIR_LOG', 'DIR_LOG_TIMESTAMP', 'DIR_VIEW', 'DIR_WEB', 'DIR_SRC',
+        'ROUTE_FILE', 'ERROR_VIEW_FILE'
+    );
+
+    foreach ($fileList as $file) {
+        if (!file_exists($app->ENV['DIR'] . $app->ENV[$file])) {
+            trigger_error('404|Invalid file/dir: ' . $app->ENV[$file] . ' for env ' . $file, E_USER_WARNING);
+        }
+    }
+
+    $boolList = array('ROUTE_REWRITE', 'SHOW_ERRORS');
+    foreach ($boolList as $bool) {
+        if (!is_bool($app->ENV[$bool])) {
+            trigger_error('404|Invalid bool: ' . $app->ENV[$bool] . ' for env ' . $bool, E_USER_WARNING);
+        }
+    }
+    $intList = array('LOG_SIZE_LIMIT_MB', 'LOG_CLEANUP_INTERVAL_DAYS', 'LOG_RETENTION_DAYS', 'MAX_LOG_FILES');
+    foreach ($intList as $int) {
+        if (!is_int($app->ENV[$int])) {
+            trigger_error('404|Invalid int: ' . $app->ENV[$int] . ' for env ' . $int, E_USER_WARNING);
+        }
+
+        if (1 > $app->ENV[$int]) {
+            trigger_error('404|Invalid value, must be greater than 0: ' . $app->ENV[$int] . ' for env ' . $int, E_USER_WARNING);
+        }
+    }
+
+    return $app;
+}

@@ -47,3 +47,31 @@ Stack trace:
 [2025-04-14 23:49:52.609100] preg_match(): Compilation failed: missing terminating ] for character class at offset 8 in /storage/emulated/0/github/uc.php/uc.package.php on line 352
 [2025-04-14 23:51:48.184524] File not found: /storage/emulated/0/github/uc.php/var/data/app.config.dat in /storage/emulated/0/github/uc.php/uc.package.php on line 236
 [2025-04-15 00:04:43.263242] file_get_contents(/storage/emulated/0/github/uc.php/var/data/app.config.dat): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 226
+[2025-04-15 07:59:54.043998] Uncaught Error: Using $this when not in object context in /storage/emulated/0/github/uc.php/uc.compile.php:103
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.compile.php(11): validateEnv(Object(App))
+#1 /storage/emulated/0/github/uc.php/index.php(6): require('/storage/emulat...')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.compile.php on line 103
+[2025-04-15 08:00:16.529653] Invalid bool: 0 for ROUTE_REWRITE in /storage/emulated/0/github/uc.php/uc.compile.php on line 122
+[2025-04-15 08:00:44.320766] Invalid bool: 1 for SHOW_ERRORS in /storage/emulated/0/github/uc.php/uc.compile.php on line 122
+[2025-04-15 08:01:46.032844] Invalid file/dir: uc.eror.php for ERROR_VIEW_FILE in /storage/emulated/0/github/uc.php/uc.compile.php on line 115
+[2025-04-15 08:36:11.773797] Undefined array key "Dataase" in /storage/emulated/0/github/uc.php/uc.package.php on line 549
+[2025-04-15 08:36:34.133704] Class not found: Dataase in /storage/emulated/0/github/uc.php/uc.package.php on line 550
+[2025-04-15 08:37:27.260056] Class not found: Dataase in /storage/emulated/0/github/uc.php/uc.package.php on line 550
+[2025-04-15 08:37:36.104012] Class not found: Ap in /storage/emulated/0/github/uc.php/uc.package.php on line 559
+[2025-04-15 08:37:55.234013] Class args not found: Ap in /storage/emulated/0/github/uc.php/uc.package.php on line 559
+[2025-04-15 08:38:06.790800] Class not found: Ap in /storage/emulated/0/github/uc.php/uc.package.php on line 559
+[2025-04-15 08:49:28.958672] Uncaught Error: Call to undefined function _matchesPattern() in /storage/emulated/0/github/uc.php/uc.package.php:512
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.compile.php(21): App->autoSetClass('uc.src/', Array)
+#1 /storage/emulated/0/github/uc.php/uc.compile.php(12): config(Object(App))
+#2 /storage/emulated/0/github/uc.php/index.php(6): require('/storage/emulat...')
+#3 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.package.php on line 512
+[2025-04-15 08:49:53.442397] Class not found: Database in /storage/emulated/0/github/uc.php/uc.package.php on line 560
+[2025-04-15 09:03:21.229571] Class not found: Database in /storage/emulated/0/github/uc.php/uc.package.php on line 554
+[2025-04-15 09:05:58.710067] Class not found: Database in /storage/emulated/0/github/uc.php/uc.package.php on line 554
+[2025-04-15 09:06:59.009939] Class not found: Session in /storage/emulated/0/github/uc.php/uc.package.php on line 554
+[2025-04-15 09:46:04.827981] Undefined array key 2 in /storage/emulated/0/github/uc.php/uc.src/component/book/BookHome.php on line 9
+[2025-04-15 09:49:24.026587] Undefined property: App::$middlewares in /storage/emulated/0/github/uc.php/uc.package.php on line 184

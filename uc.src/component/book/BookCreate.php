@@ -2,13 +2,11 @@
 
 class BookCreate {
     private $app, $session;
-    private $bookModel;
 
     public function __construct($args) {
         list(
             $this->app, 
             $this->session, 
-            $this->bookModel
         ) = $args;
     } 
 

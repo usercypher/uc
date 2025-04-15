@@ -11,10 +11,10 @@ function settings() {
                 'URL_DIR_WEB' => 'web/', // URL path for web access
                 // Error Settings
                 'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
-                'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
+                'SHOW_ERRORS' => true, // Enable (true) or disable (false) detailed error messages
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php', // file for index (usually server root), become useless when route rewrite is enable
-                'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
+                'ROUTE_REWRITE' => false, // Enable or disable URL rewriting (true: Yes, false: No).
                 // If enabled, routing is handled via clean URLs (e.g., /home),
                 /*
                  * Web Server Configuration for URL Rewriting:
@@ -61,10 +61,10 @@ function settings() {
                 'URL_DIR_WEB' => 'web/',
                 // Error Settings
                 'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
-                'SHOW_ERRORS' => 0,
+                'SHOW_ERRORS' => false,
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php',
-                'ROUTE_REWRITE' => 0,
+                'ROUTE_REWRITE' => false,
                 // Logging Configuration
                 'DIR_LOG' => 'var' . DS . 'log' . DS,
                 'DIR_LOG_TIMESTAMP' => 'var' . DS . 'data' . DS,
