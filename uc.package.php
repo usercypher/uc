@@ -14,14 +14,14 @@ function app($mode) {
 
     $app->init();
 
-    set_error_handler(array($app, 'error'));
+    set_error_handler(array($app, 'errorHandler'));
     register_shutdown_function(array($app, 'shutdown'));
 
     return $app;
 }
 
 class Request {
-    var $uri, $method, $get, $post, $files, $cookies, $server, $params, $data;
+    var $uri, $method, $get, $post, $files, $cookies, $server, $baseUrl, $params, $data;
 
     function __construct() {
         $this->init();
@@ -35,6 +35,7 @@ class Request {
         $this->files = $_FILES;
         $this->cookies = $_COOKIE;
         $this->server = $_SERVER;
+        $this->baseUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
         $this->params = array();
         $this->data = array();
     }
@@ -146,6 +147,8 @@ class App {
             'Request' => array($request, true),
             'Response' => array($response, true),
         );
+
+        $this->ENV['BASE_URL'] = $request->baseUrl;
     }
 
     function init() {
@@ -162,11 +165,6 @@ class App {
         $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
 
         $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
-
-        $request = $this->cache['Request'][$this->CACHE_CLASS];
-        $this->ENV['HTTP_PROTOCOL'] = isset($this->ENV['HTTP_PROTOCOL']) ? $this->ENV['HTTP_PROTOCOL'] : ((isset($request->server['HTTPS']) && $request->server['HTTPS'] === 'on') ? 'https' : 'http');
-        $this->ENV['HTTP_HOST'] = isset($this->ENV['HTTP_HOST']) ? $this->ENV['HTTP_HOST'] : (isset($request->server['HTTP_HOST']) ? $request->server['HTTP_HOST'] : '127.0.0.1');
-        $this->ENV['BASE_URL'] = $this->ENV['HTTP_PROTOCOL'] . '://' . $this->ENV['HTTP_HOST'] . '/';
 
         $this->ENV['ERROR_VIEW_FILE'] = isset($this->ENV['ERROR_VIEW_FILE']) ? $this->ENV['ERROR_VIEW_FILE'] : 'uc.error.php';
         $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
@@ -236,7 +234,13 @@ class App {
 
     // Error Management
 
-    function error($errno, $errstr, $errfile, $errline) {
+    function error($message, $no = 500) {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $frame = $trace[0];
+        $this->errorHandler(1, ($no . '|' . $message), $frame['file'], $frame['line']);
+    }
+
+    function errorHandler($errno, $errstr, $errfile, $errline) {
         $this->handleError($errno, $errstr, $errfile, $errline, true);
     }
 
@@ -266,7 +270,7 @@ class App {
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = ('Content-Type: application/json');
-            $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"Error: ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -283,7 +287,7 @@ class App {
                     }
                 }
                 $type = ('Content-Type: text/plain');
-                $content = ('Error: ' . $errstr . ' in '. $errfile . ' on line ' . $errline . EOL . EOL . $traceOutput);
+                $content = ('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in '. $errfile . ' on line ' . $errline . EOL . EOL . $traceOutput);
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
                 if (file_exists($file)) {
@@ -297,7 +301,7 @@ class App {
             }
         }
 
-        $this->log($errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
+        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
 
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $httpCode);
@@ -329,7 +333,7 @@ class App {
         foreach ($routeSegments as $segment) {
             if (strpos($segment, '{') !== false || strpos($segment, '}') !== false) {
                 if (substr($segment, 0, 1) !== '{' || substr($segment, -1) !== '}') {
-                    trigger_error('404|Invalid parameter syntax in segment: ' . $segment, E_USER_WARNING);
+                    $this->error('Invalid parameter syntax in segment: ' . $segment, 404);
                     exit();
                 }
                 $param = trim($segment, '{}');
@@ -356,7 +360,7 @@ class App {
 
     function setComponents($components) {
         foreach ($components as $key => $c) {
-            if (!in_array($key, array('prepend', 'append'))) { trigger_error('500|Invalid value: ' . $key . '. Expected "prepend" or "append"', E_USER_WARNING); exit(); }
+            if (!in_array($key, array('prepend', 'append'))) { $this->error('Invalid value: ' . $key . '. Expected "prepend" or "append"', 500); exit(); }
             foreach ($c as $class) {
                 $this->components[$key][] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
             }
@@ -505,7 +509,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if ($route === array()) {
-            trigger_error('404|Route not found: ' . $request->method . ' ' . $path, E_USER_WARNING);
+            $this->error('Route not found: ' . $request->method . ' ' . $path, 404);
             exit();
         }
 
@@ -628,7 +632,7 @@ class App {
             $stackSet[$classParent] = true;
 
             if (isset($stackSet[$class])) {
-                trigger_error('500|Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $class, E_USER_WARNING);
+                $this->error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
                 exit();
             }
 
