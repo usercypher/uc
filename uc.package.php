@@ -106,9 +106,10 @@ class App {
     var $ENV = array();
 
     var $CLASS_ARGS = 0;
-    var $CLASS_PATH = 1;
-    var $CLASS_CACHE = 2;
-    var $CLASS_CLASS_LIST_INDEX = 3;
+    var $CLASS_LOAD = 1;
+    var $CLASS_PATH = 2;
+    var $CLASS_CACHE = 3;
+    var $CLASS_CLASS_LIST_INDEX = 4;
 
     var $CACHE_CLASS = 0;
     var $CACHE_PATH = 1;
@@ -132,9 +133,9 @@ class App {
         list($request, $response) = $args;
 
         $this->class = array(
-            'App' => array(array(1, 2), null, true, 0),
-            'Request' => array(array(), null, true, 1),
-            'Response' => array(array(), null, true, 2),
+            'App' => array(array(1, 2), array(), null, true, 0),
+            'Request' => array(array(), array(), null, true, 1),
+            'Response' => array(array(), array(), null, true, 2),
         );
 
         $this->classList = array('App', 'Request', 'Response');
@@ -556,7 +557,7 @@ class App {
                 } else if (substr($file, -4) === '.php') {
                     $class = (isset($option['namespace']) ? $option['namespace'] : '') . substr($file, 0, -4);
                     if (!isset($this->class[$class])) {
-                        $this->class[$class] = array(array(), null, false, $this->classListIndex);
+                        $this->class[$class] = array(array(), array(), null, false, $this->classListIndex);
                         $this->classList[$this->classListIndex] = $class;
                         ++$this->classListIndex;
                     }
@@ -583,12 +584,19 @@ class App {
             }
         }
 
+        if (isset($option['load'])) {
+            foreach ($option['load'] as $load) {
+                $this->class[$class][$this->CLASS_LOAD][] = $this->class[$load][$this->CLASS_CLASS_LIST_INDEX];
+            }
+        }
+
         $this->class[$class][$this->CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->class[$class][$this->CLASS_CACHE]);
     }
 
     function setClasses($option, $classes) {
         foreach ($classes as $class) {
             $class[1]['args'] = array_merge((isset($option['args_prepend']) ? $option['args_prepend'] : array()), (isset($class[1]['args']) ? $class[1]['args'] : array()), (isset($option['args_append']) ? $option['args_append'] : array()));
+            $class[1]['load'] = array_merge((isset($option['load_prepend']) ? $option['load_prepend'] : array()), (isset($class[1]['load']) ? $class[1]['load'] : array()), (isset($option['load_append']) ? $option['load_append'] : array()));
             $this->setClass($class[0], array_merge($option, $class[1]));
         }
     }
@@ -651,8 +659,17 @@ class App {
 
             unset($stackSet[$classParent]);
 
+            $loads = $this->class[$class][$this->CLASS_LOAD];
+            foreach ($loads as $load) {
+                $load = $this->classList[$load];
+                if (!isset($this->cache[$load][$this->CACHE_PATH])) {
+                    require($this->ENV['DIR'] . $this->pathList[$this->class[$load][$this->CLASS_PATH]] . $load . '.php');
+                    $this->cache[$load][$this->CACHE_PATH] = true;
+                }
+            }
+
             if (!isset($this->cache[$class][$this->CACHE_PATH])) {
-                require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+                require($this->ENV['DIR'] . $this->pathList[$this->class[$class][$this->CLASS_PATH]] . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
                 $this->cache[$class][$this->CACHE_PATH] = true;
             }
 
@@ -668,19 +685,10 @@ class App {
         return $resolvedClass;
     }
 
-    function loadClass($classes) {
+    function loadClass($class) {
         if (!isset($this->cache[$class][$this->CACHE_PATH])) {
             require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
             $this->cache[$class][$this->CACHE_PATH] = true;
-        }
-    }
-
-    function loadClasses($classes) {
-        foreach ($classes as $class) {
-            if (!isset($this->cache[$class][$this->CACHE_PATH])) {
-                require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-                $this->cache[$class][$this->CACHE_PATH] = true;
-            }
         }
     }
 

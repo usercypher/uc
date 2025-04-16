@@ -87,3 +87,126 @@ Stack trace:
 [2025-04-15 10:21:52.702104] Undefined array key "Ap" in /storage/emulated/0/github/uc.php/uc.package.php on line 585
 [2025-04-15 10:27:30.601151] Route not found: GET /hme in /storage/emulated/0/github/uc.php/uc.package.php on line 507
 [2025-04-15 10:27:35.263029] Route not found: GET /eit/1 in /storage/emulated/0/github/uc.php/uc.package.php on line 507
+[2025-04-15 10:33:32.153939] Undefined array key "ResponsCompression" in /storage/emulated/0/github/uc.php/uc.package.php on line 315
+[2025-04-16 09:21:36.602080] Undefined array key 4 in /storage/emulated/0/github/uc.php/uc.package.php on line 583
+[2025-04-16 09:25:08.364255] Undefined array key 4 in /storage/emulated/0/github/uc.php/uc.package.php on line 583
+[2025-04-16 09:26:30.400356] Undefined array key 4 in /storage/emulated/0/github/uc.php/uc.package.php on line 583
+[2025-04-16 09:26:32.827456] Undefined array key 4 in /storage/emulated/0/github/uc.php/uc.package.php on line 583
+[2025-04-16 09:27:40.444461] Undefined array key 4 in /storage/emulated/0/github/uc.php/uc.package.php on line 583
+[2025-04-16 09:29:10.634689] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(663): require()
+#1 /storage/emulated/0/github/uc.php/uc.package.php(514): App->getClass('BookModel')
+#2 /storage/emulated/0/github/uc.php/index.php(21): App->dispatch()
+#3 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:29:19.773576] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(663): require()
+#1 /storage/emulated/0/github/uc.php/uc.package.php(514): App->getClass('BookModel')
+#2 /storage/emulated/0/github/uc.php/index.php(21): App->dispatch()
+#3 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:33:28.966008] Undefined variable $d in /storage/emulated/0/github/uc.php/index.php on line 19
+[2025-04-16 09:37:18.911475] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(668): require()
+#1 /storage/emulated/0/github/uc.php/index.php(19): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:46:28.321454] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:46:28.664153] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:47:38.257006] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:49:07.346662] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:50:09.865041] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:50:44.084237] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:51:22.982201] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:51:23.895978] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:52:07.387752] Uncaught Error: Call to undefined method App::getClass() in /storage/emulated/0/github/uc.php/index.php:20
+Stack trace:
+#0 {main}
+  thrown in /storage/emulated/0/github/uc.php/index.php on line 20
+[2025-04-16 09:54:12.397243] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:54:56.728003] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:54:57.784573] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:54:58.420526] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:55:57.663877] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(667): require()
+#1 /storage/emulated/0/github/uc.php/uc.package.php(518): App->getClass('BookModel')
+#2 /storage/emulated/0/github/uc.php/index.php(22): App->dispatch()
+#3 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:56:30.588654] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(668): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 09:56:39.785531] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(669): require()
+#1 /storage/emulated/0/github/uc.php/index.php(20): App->getClass('BookModel')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-16 10:42:56.111377] Cannot redeclare function app() (previously declared in /storage/emulated/0/github/uc.php/uc.package.php:6) in /storage/emulated/0/github/uc.php/uc.package.php on line 6
