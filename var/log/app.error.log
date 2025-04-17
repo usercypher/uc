@@ -230,3 +230,12 @@ Stack trace:
 [2025-04-16 20:30:34.265446] [php error 1] [http 404] Route not found: GET /crate in /storage/emulated/0/github/uc.php/uc.package.php on line 513
 [2025-04-16 20:45:03.471179] [php error 1] [http 404] Route not found: GET /crate in /storage/emulated/0/github/uc.php/uc.package.php on line 513
 [2025-04-16 20:49:41.238838] [php error 1] [http 404] Route not found: GET /d in /storage/emulated/0/github/uc.php/uc.package.php on line 512
+[2025-04-16 20:51:35.994406] [php error 1] [http 404] Route not found: GET /d in /storage/emulated/0/github/uc.php/uc.package.php on line 512
+[2025-04-17 07:37:30.381172] [php error 1] [http 500] Uncaught Error: Class "Model" not found in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php:3
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(695): require()
+#1 /storage/emulated/0/github/uc.php/index.php(13): App->loadFile('BookModel')
+#2 /storage/emulated/0/github/uc.php/index.php(9): index(Object(App), 'var/data/app.co...')
+#3 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/model/BookModel.php on line 3
+[2025-04-17 09:12:47.550513] [php error 1] [http 500] Circular Load found: BookModel -> BookModel in /storage/emulated/0/github/uc.php/uc.package.php on line 691

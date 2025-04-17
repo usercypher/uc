@@ -638,44 +638,30 @@ class App {
 
             $cache = $this->class[$class][$this->CLASS_CACHE];
             if ($cache && isset($this->cache[$class][$this->CACHE_CLASS])) {
-                unset($stackSet[$classParent]);
                 if (empty($stack)) {
                     return $this->cache[$class][$this->CACHE_CLASS];
                 }
+                unset($stackSet[$classParent]);
                 $resolved[$classParent][] = $this->cache[$class][$this->CACHE_CLASS];
                 continue;
             }
 
-            if (isset($this->class[$class][$this->CLASS_ARGS])) {
-                if (!isset($md[$class])) {
-                    $md[$class] = array(0, count($this->class[$class][$this->CLASS_ARGS]));
-                }
-
-                if ($md[$class][$COUNT] > $md[$class][$INDEX]) {
-                    $stack[] = $class;
-                    $stack[] = $this->classList[$this->class[$class][$this->CLASS_ARGS][$md[$class][$INDEX]]];
-                    ++$md[$class][$INDEX];
-                    continue;
-                }
-
-                unset($md[$class]);
+            if (!isset($md[$class])) {
+                $md[$class] = array(0, count($this->class[$class][$this->CLASS_ARGS]));
             }
+
+            if ($md[$class][$COUNT] > $md[$class][$INDEX]) {
+                $stack[] = $class;
+                $stack[] = $this->classList[$this->class[$class][$this->CLASS_ARGS][$md[$class][$INDEX]]];
+                ++$md[$class][$INDEX];
+                continue;
+            }
+
+            unset($md[$class]);
 
             unset($stackSet[$classParent]);
 
-            $loads = $this->class[$class][$this->CLASS_LOAD];
-            foreach ($loads as $load) {
-                $load = $this->classList[$load];
-                if (!isset($this->cache[$load][$this->CACHE_PATH])) {
-                    require($this->ENV['DIR'] . $this->pathList[$this->class[$load][$this->CLASS_PATH]] . $load . '.php');
-                    $this->cache[$load][$this->CACHE_PATH] = true;
-                }
-            }
-
-            if (!isset($this->cache[$class][$this->CACHE_PATH])) {
-                require($this->ENV['DIR'] . $this->pathList[$this->class[$class][$this->CLASS_PATH]] . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
-                $this->cache[$class][$this->CACHE_PATH] = true;
-            }
+            $this->loadClass($class);
 
             $resolvedClass = new $class(isset($resolved[$class]) ? $resolved[$class] : array());
             unset($resolved[$class]);
@@ -690,8 +676,46 @@ class App {
     }
 
     function loadClass($class) {
-        if (!isset($this->cache[$class][$this->CACHE_PATH])) {
-            require($this->ENV['DIR'] . (isset($this->class[$class][$this->CLASS_PATH]) && isset($this->pathList[$this->class[$class][$this->CLASS_PATH]]) ? $this->pathList[$this->class[$class][$this->CLASS_PATH]] : '') . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
+        $INDEX = 0;
+        $COUNT = 1;
+
+        $stack = array($class);
+        $md = array();
+
+        while (!empty($stack)) {
+            $class = array_pop($stack);
+            $classParent = end($stack);
+            $stackSet[$classParent] = true;
+
+            if (isset($stackSet[$class])) {
+                $this->error('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
+                exit();
+            }
+
+            if (isset($this->cache[$class][$this->CACHE_PATH])) {
+                if (empty($stack)) {
+                    return;
+                }
+                unset($stackSet[$classParent]);
+                continue;
+            }
+
+            if (!isset($md[$class])) {
+                $md[$class] = array(0, count($this->class[$class][$this->CLASS_LOAD]));
+            }
+
+            if ($md[$class][$COUNT] > $md[$class][$INDEX]) {
+                $stack[] = $class;
+                $stack[] = $this->classList[$this->class[$class][$this->CLASS_LOAD][$md[$class][$INDEX]]];
+                ++$md[$class][$INDEX];
+                continue;
+            }
+
+            unset($md[$class]);
+
+            unset($stackSet[$classParent]);
+
+            require($this->ENV['DIR'] . $this->pathList[$this->class[$class][$this->CLASS_PATH]] . (substr($class, ($pos = strrpos($class, '\\')) !== false ? $pos + 1 : 0)) . '.php');
             $this->cache[$class][$this->CACHE_PATH] = true;
         }
     }
