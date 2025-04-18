@@ -214,10 +214,10 @@ class App {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
         file_put_contents($configFile, serialize(array(
             'routes' => unserialize(serialize($this->routes)),
-            'components' => unserialize(serialize($this->pipes)),
-            'class' => unserialize(serialize($this->unit)),
-            'class_list' => unserialize(serialize($this->unitList)),
-            'class_list_index' => unserialize(serialize($this->unitListIndex)),
+            'pipes' => unserialize(serialize($this->pipes)),
+            'unit' => unserialize(serialize($this->unit)),
+            'unit_list' => unserialize(serialize($this->unitList)),
+            'unit_list_index' => unserialize(serialize($this->unitListIndex)),
             'path_list' => unserialize(serialize($this->pathList)),
             'path_list_index' => unserialize(serialize($this->pathListIndex))
         )));
@@ -229,10 +229,10 @@ class App {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
         $data = unserialize(file_get_contents($configFile));
         $this->routes = $data['routes'];
-        $this->pipes = $data['components'];
-        $this->unit = $data['class'];
-        $this->unitList = $data['class_list'];
-        $this->unitListIndex = $data['class_list_index'];
+        $this->pipes = $data['pipes'];
+        $this->unit = $data['unit'];
+        $this->unitList = $data['unit_list'];
+        $this->unitListIndex = $data['unit_list_index'];
         $this->pathList = $data['path_list'];
         $this->pathListIndex = $data['path_list_index'];
     }
@@ -627,7 +627,7 @@ class App {
         $stack = array($unit);
         $md = array();
         $resolved = array();
-        $resolveClass = null;
+        $class = null;
 
         while (!empty($stack)) {
             $unit = array_pop($stack);
