@@ -110,21 +110,21 @@ class Response {
 class App {
     var $ENV = array();
 
-    var $UNIT_LIST_INDEX = 0;
-    var $UNIT_PATH = 1;
-    var $UNIT_LOAD = 2;
-    var $UNIT_CLASS = 3;
-    var $UNIT_CLASS_ARGS = 4;
-    var $UNIT_CLASS_CACHE = 5;
+    var $CLASS_ARGS = 0;
+    var $CLASS_LOAD = 1;
+    var $CLASS_NAME = 2;
+    var $CLASS_PATH = 3;
+    var $CLASS_CACHE = 4;
+    var $CLASS_CLASS_LIST_INDEX = 5;
 
     var $CACHE_CLASS = 0;
     var $CACHE_PATH = 1;
 
     var $routes = array();
-    var $pipes = array('prepend' => array(), 'append' => array());
-    var $unit = array();
-    var $unitList = array();
-    var $unitListIndex = 0;
+    var $components = array('prepend' => array(), 'append' => array());
+    var $class = array();
+    var $classList = array();
+    var $classListIndex = 0;
     var $pathList = array();
     var $pathListIndex = 0;
 
@@ -138,14 +138,14 @@ class App {
     function __construct($args) {
         list($request, $response) = $args;
 
-        $this->unit = array(
-            'App' => array(0, null, array(), 'App', array(1, 2), true),
-            'Request' => array(1, null, array(), 'Request', array(), true),
-            'Response' => array(2, null, array(), 'Response', array(), true,),
+        $this->class = array(
+            'App' => array(array(1, 2), array(), 'App', null, true, 0),
+            'Request' => array(array(), array(), 'Request', null, true, 1),
+            'Response' => array(array(), array(), 'Response', null, true, 2),
         );
 
-        $this->unitList = array('App', 'Request', 'Response');
-        $this->unitListIndex = 3;
+        $this->classList = array('App', 'Request', 'Response');
+        $this->classListIndex = 3;
 
         $this->cache = array(
             'App' => array($this, true),
@@ -214,10 +214,10 @@ class App {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
         file_put_contents($configFile, serialize(array(
             'routes' => unserialize(serialize($this->routes)),
-            'components' => unserialize(serialize($this->pipes)),
-            'class' => unserialize(serialize($this->unit)),
-            'class_list' => unserialize(serialize($this->unitList)),
-            'class_list_index' => unserialize(serialize($this->unitListIndex)),
+            'components' => unserialize(serialize($this->components)),
+            'class' => unserialize(serialize($this->class)),
+            'class_list' => unserialize(serialize($this->classList)),
+            'class_list_index' => unserialize(serialize($this->classListIndex)),
             'path_list' => unserialize(serialize($this->pathList)),
             'path_list_index' => unserialize(serialize($this->pathListIndex))
         )));
@@ -229,10 +229,10 @@ class App {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
         $data = unserialize(file_get_contents($configFile));
         $this->routes = $data['routes'];
-        $this->pipes = $data['components'];
-        $this->unit = $data['class'];
-        $this->unitList = $data['class_list'];
-        $this->unitListIndex = $data['class_list_index'];
+        $this->components = $data['components'];
+        $this->class = $data['class'];
+        $this->classList = $data['class_list'];
+        $this->classListIndex = $data['class_list_index'];
         $this->pathList = $data['path_list'];
         $this->pathListIndex = $data['path_list_index'];
     }
@@ -319,17 +319,17 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $pipe = array();
-        if (isset($option['pipe'])) {
-            foreach ($option['pipe'] as $unit) {
-                $pipe[] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+        $component = array();
+        if (isset($option['component'])) {
+            foreach ($option['component'] as $class) {
+                $component[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
             }
         }
 
         $ignore = array();
         if (isset($option['ignore'])) {
-            foreach ($option['ignore'] as $unit) {
-                $ignore[] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+            foreach ($option['ignore'] as $class) {
+                $ignore[] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
             }
         }
 
@@ -352,22 +352,22 @@ class App {
             $node = &$node[$segment];
         }
 
-        $node['_h'] = array('_c' => $pipe, '_i' => $ignore);
+        $node['_h'] = array('_c' => $component, '_i' => $ignore);
     }
 
     function setRoutes($option, $params) {
         foreach ($params as $p) {
-            $p[2]['pipe'] = array_merge((isset($option['pipe_prepend']) ? $option['pipe_prepend'] : array()), (isset($p[2]['pipe']) ? $p[2]['pipe'] : array()), (isset($option['pipe_append']) ? $option['pipe_append'] : array()));
+            $p[2]['component'] = array_merge((isset($option['component_prepend']) ? $option['component_prepend'] : array()), (isset($p[2]['component']) ? $p[2]['component'] : array()), (isset($option['component_append']) ? $option['component_append'] : array()));
             $p[2]['ignore'] = array_merge((isset($option['ignore']) ? $option['ignore'] : array()), (isset($p[2]['ignore']) ? $p[2]['ignore'] : array()));
             $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], array_merge($option, $p[2]));
         }
     }
 
-    function setPipes($pipes) {
-        foreach ($pipes as $key => $p) {
+    function setComponents($components) {
+        foreach ($components as $key => $c) {
             if (!in_array($key, array('prepend', 'append'))) { $this->error('Invalid value: ' . $key . '. Expected "prepend" or "append"', 500); exit(); }
-            foreach ($p as $unit) {
-                $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+            foreach ($c as $class) {
+                $this->components[$key][] = $this->class[$class][$this->CLASS_CLASS_LIST_INDEX];
             }
         }
     }
@@ -467,30 +467,30 @@ class App {
             return array();
         }
 
-        $finalPipes = array();
+        $finalComponents = array();
         if ($current['_h']['_i'] !== array(true)) {
             $ignore = array_flip($current['_h']['_i']);
 
-            foreach ($this->pipes['prepend'] as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
+            foreach ($this->components['prepend'] as $component) {
+                if (!isset($ignore[$component])) {
+                    $finalComponents[] = $component;
                 }
             }
 
-            foreach ($current['_h']['_c'] as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
+            foreach ($current['_h']['_c'] as $component) {
+                if (!isset($ignore[$component])) {
+                    $finalComponents[] = $component;
                 }
             }
 
-            foreach ($this->pipes['append'] as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
+            foreach ($this->components['append'] as $component) {
+                if (!isset($ignore[$component])) {
+                    $finalComponents[] = $component;
                 }
             }
         }
 
-        return array('handler' => array('pipe' => $finalPipes), 'params' => $params);
+        return array('handler' => array('component' => $finalComponents), 'params' => $params);
     }
 
     // Request Handling
@@ -519,9 +519,9 @@ class App {
         }
 
         $request->params = $route['params'];
-        foreach ($route['handler']['pipe'] as $p) {
-            $p = $this->getClass($this->unitList[$p]);
-            $rr = $p->process($request, $response);
+        foreach ($route['handler']['component'] as $c) {
+            $c = $this->getClass($this->classList[$c]);
+            $rr = $c->process($request, $response);
             $request = $rr[0];
             $response = $rr[1];
         }
@@ -531,7 +531,7 @@ class App {
 
     // Class Management
 
-    function autoSetUnit($path, $option) {
+    function autoSetClass($path, $option) {
         $option = array(
             'depth' => isset($option['depth']) ? $option['depth'] : 0,
             'max' => isset($option['max']) ? $option['max'] : -1,
@@ -556,171 +556,172 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= ($file . '/');
-                    $this->autoSetUnit($path . $file . DS, $option);
+                    $this->autoSetClass($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
-                    $unitClass = substr($file, 0, -4);
-                    $unit = $option['namespace']  . $unitClass;
-                    $pathToStore = str_replace($option['namespace'] . $unitClass, '', $path . $unitClass);
-                    $unitClass = ($option['dir_as_namespace']) ? str_replace('/', '\\', $unit) : $unitClass;
-
+                    $className = substr($file, 0, -4);
+                    $class = $option['namespace']  . $className;
+                    $pathToStore = str_replace($option['namespace'] . $className, '', $path . $className);
+                    $className = ($option['dir_as_namespace']) ? str_replace('/', '\\', $class) : $className;
+                    if (!isset($this->class[$class])) {
+                        $this->class[$class] = array(array(), array(), $className, null, false, $this->classListIndex);
+                        $this->classList[$this->classListIndex] = $class;
+                        ++$this->classListIndex;
+                    }
                     $pathListIndex = isset($this->pathListCache[$pathToStore]) ? $this->pathListCache[$pathToStore] : array_search($pathToStore, $this->pathList);
                     if ($pathListIndex === false) {
                         $pathListIndex = $this->pathListIndex;
                         $this->pathList[$this->pathListIndex] = $pathToStore;
                         ++$this->pathListIndex;
-                        $this->pathListCache[$pathToStore] = $pathListIndex;
                     }
-
-                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, array(), $unitClass, array(), false);
-                    $this->unitList[$this->unitListIndex] = $unit;
-                    ++$this->unitListIndex;
+                    $this->pathListCache[$pathToStore] = $pathListIndex;
+                    $this->class[$class][$this->CLASS_PATH] = $pathListIndex;
                 }
             }
             closedir($dirHandle);
         }
     }
 
-    function setUnit($unit, $option) {
-        $unitTest = $this->unit[$unit];
+    function setClass($class, $option) {
+        $classTest = $this->class[$class];
 
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
-                $this->unit[$unit][$this->UNIT_CLASS_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
+                $this->class[$class][$this->CLASS_ARGS][] = $this->class[$arg][$this->CLASS_CLASS_LIST_INDEX];
             }
         }
 
         if (isset($option['load'])) {
             foreach ($option['load'] as $load) {
-                $this->unit[$unit][$this->UNIT_LOAD][] = $this->unit[$load][$this->UNIT_LIST_INDEX];
+                $this->class[$class][$this->CLASS_LOAD][] = $this->class[$load][$this->CLASS_CLASS_LIST_INDEX];
             }
         }
 
-        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CLASS_CACHE]);
+        $this->class[$class][$this->CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->class[$class][$this->CLASS_CACHE]);
     }
 
-    function setUnits($option, $units) {
-        foreach ($units as $unit) {
-            $unit[1]['args'] = array_merge((isset($option['args_prepend']) ? $option['args_prepend'] : array()), (isset($unit[1]['args']) ? $unit[1]['args'] : array()), (isset($option['args_append']) ? $option['args_append'] : array()));
-            $unit[1]['load'] = array_merge((isset($option['load_prepend']) ? $option['load_prepend'] : array()), (isset($unit[1]['load']) ? $unit[1]['load'] : array()), (isset($option['load_append']) ? $option['load_append'] : array()));
-            $this->setUnit($unit[0], array_merge($option, $unit[1]));
+    function setClasses($option, $classes) {
+        foreach ($classes as $class) {
+            $class[1]['args'] = array_merge((isset($option['args_prepend']) ? $option['args_prepend'] : array()), (isset($class[1]['args']) ? $class[1]['args'] : array()), (isset($option['args_append']) ? $option['args_append'] : array()));
+            $class[1]['load'] = array_merge((isset($option['load_prepend']) ? $option['load_prepend'] : array()), (isset($class[1]['load']) ? $class[1]['load'] : array()), (isset($option['load_append']) ? $option['load_append'] : array()));
+            $this->setClass($class[0], array_merge($option, $class[1]));
         }
     }
 
-    function newClass($unit) {
-        $mode = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
-        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = false;
-        $class = $this->getClass($unit);
-        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = $mode;
-        return $class;
+    function newClass($class) {
+        $mode = $this->class[$class][$this->CLASS_CACHE];
+        $this->class[$class][$this->CLASS_CACHE] = false;
+        $classInstance = $this->getClass($class);
+        $this->class[$class][$this->CLASS_CACHE] = $mode;
+        return $classInstance;
     }
 
-    function resetClass($unit) {
-        $this->cache[$unit][$this->CACHE_CLASS] = null;
+    function resetClass($class) {
+        $this->cache[$class][$this->CACHE_CLASS] = null;
     }
 
-    function getClass($unit) {
+    function getClass($class) {
         $INDEX = 0;
         $COUNT = 1;
 
-        $stack = array($unit);
+        $stack = array($class);
         $md = array();
         $resolved = array();
         $resolveClass = null;
 
         while (!empty($stack)) {
-            $unit = array_pop($stack);
-            $unitParent = end($stack);
-            $stackSet[$unitParent] = true;
+            $class = array_pop($stack);
+            $classParent = end($stack);
+            $stackSet[$classParent] = true;
 
-            if (isset($stackSet[$unit])) {
-                $this->error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$class])) {
+                $this->error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
                 exit();
             }
 
-            $cache = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
-            if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
+            $cache = $this->class[$class][$this->CLASS_CACHE];
+            if ($cache && isset($this->cache[$class][$this->CACHE_CLASS])) {
                 if (empty($stack)) {
-                    return $this->cache[$unit][$this->CACHE_CLASS];
+                    return $this->cache[$class][$this->CACHE_CLASS];
                 }
-                unset($stackSet[$unitParent]);
-                $resolved[$unitParent][] = $this->cache[$unit][$this->CACHE_CLASS];
+                unset($stackSet[$classParent]);
+                $resolved[$classParent][] = $this->cache[$class][$this->CACHE_CLASS];
                 continue;
             }
 
-            if (!isset($md[$unit])) {
-                $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_CLASS_ARGS]));
+            if (!isset($md[$class])) {
+                $md[$class] = array(0, count($this->class[$class][$this->CLASS_ARGS]));
             }
 
-            if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
-                $stack[] = $unit;
-                $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_CLASS_ARGS][$md[$unit][$INDEX]]];
-                ++$md[$unit][$INDEX];
+            if ($md[$class][$COUNT] > $md[$class][$INDEX]) {
+                $stack[] = $class;
+                $stack[] = $this->classList[$this->class[$class][$this->CLASS_ARGS][$md[$class][$INDEX]]];
+                ++$md[$class][$INDEX];
                 continue;
             }
 
-            unset($md[$unit]);
+            unset($md[$class]);
 
-            unset($stackSet[$unitParent]);
+            unset($stackSet[$classParent]);
 
-            $this->loadUnit($unit);
+            $this->loadClass($class);
 
-            $class = $this->unit[$unit][$this->UNIT_CLASS];
-            $class = new $class(isset($resolved[$unit]) ? $resolved[$unit] : array());
-            unset($resolved[$unit]);
+            $className = $this->class[$class][$this->CLASS_NAME];
+            $resolvedClass = new $className(isset($resolved[$class]) ? $resolved[$class] : array());
+            unset($resolved[$class]);
             if ($cache) {
-                $this->cache[$unit][$this->CACHE_CLASS] = $class;
+                $this->cache[$class][$this->CACHE_CLASS] = $resolvedClass;
             }
 
-            $resolved[$unitParent][] = $class;
+            $resolved[$classParent][] = $resolvedClass;
         }
 
-        return $class;
+        return $resolvedClass;
     }
 
-    function loadUnit($unit) {
+    function loadClass($class) {
         $INDEX = 0;
         $COUNT = 1;
 
-        $stack = array($unit);
+        $stack = array($class);
         $md = array();
 
         while (!empty($stack)) {
-            $unit = array_pop($stack);
-            $unitParent = end($stack);
-            $stackSet[$unitParent] = true;
+            $class = array_pop($stack);
+            $classParent = end($stack);
+            $stackSet[$classParent] = true;
 
-            if (isset($stackSet[$unit])) {
-                $this->error('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$class])) {
+                $this->error('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $class, 500);
                 exit();
             }
 
-            if (isset($this->cache[$unit][$this->CACHE_PATH])) {
+            if (isset($this->cache[$class][$this->CACHE_PATH])) {
                 if (empty($stack)) {
                     return;
                 }
-                unset($stackSet[$unitParent]);
+                unset($stackSet[$classParent]);
                 continue;
             }
 
-            if (!isset($md[$unit])) {
-                $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
+            if (!isset($md[$class])) {
+                $md[$class] = array(0, count($this->class[$class][$this->CLASS_LOAD]));
             }
 
-            if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
-                $stack[] = $unit;
-                $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
-                ++$md[$unit][$INDEX];
+            if ($md[$class][$COUNT] > $md[$class][$INDEX]) {
+                $stack[] = $class;
+                $stack[] = $this->classList[$this->class[$class][$this->CLASS_LOAD][$md[$class][$INDEX]]];
+                ++$md[$class][$INDEX];
                 continue;
             }
 
-            unset($md[$unit]);
+            unset($md[$class]);
 
-            unset($stackSet[$unitParent]);
+            unset($stackSet[$classParent]);
 
-            require($this->ENV['DIR'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $unit . '.php');
-            $this->cache[$unit][$this->CACHE_PATH] = true;
+            require($this->ENV['DIR'] . $this->pathList[$this->class[$class][$this->CLASS_PATH]] . $class . '.php');
+            $this->cache[$class][$this->CACHE_PATH] = true;
         }
     }
 

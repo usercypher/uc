@@ -14,43 +14,43 @@ function config($app) {
     define('GET', 'GET');
     define('POST', 'POST');
 
-    // Auto-load classes from 'src/' directory and set path metadata (max depth 2), 'ignore' => array('ignore*.pattern', 'ignore.file')
-    $app->autoSetClass('uc.src' . DS, array('max' => 2));
+    // Auto-load units from 'uc.src/' directory and set path metadata (max depth 2), options: 'ignore' => array('ignore*.pattern', 'ignore.file'), dir_as_namespace => true
+    $app->autoSetUnit('uc.src' . DS, array('max' => 2));
     
     // Set up the 'Database' class with caching enabled, ensuring a single instance is used.
-    $app->setClass('Database', array('args' => array('App'), 'cache' => true));
+    $app->setUnit('lib/Database', array('args' => array('App'), 'cache' => true));
     
     // Define and inject dependencies: 'BookModel' depends on 'Database'
-    // inject load: 'Bookmodel' loads 'Model'
-    $app->setClasses(array(
-        'args_prepend' => array('Database'),
-        'load_prepend' => array('Model'),
+    // imports: 'Bookmodel' loads 'Model'
+    $app->setUnits(array(
+        'args_prepend' => array('lib/Database'),
+        'load_prepend' => array('lib/Model'),
     ), array(
-        array('BookModel')
+        array('model/BookModel')
     ));
     
-    $app->setClass('Session', array('cache' => true));
+    $app->setUnit('lib/Session', array('cache' => true));
     
-    $app->setClasses(array(
-        'args_prepend' => array('App', 'Session'),
+    $app->setUnits(array(
+        'args_prepend' => array('App', 'lib/Session'),
     ), array(
-        array('BookCreate'),
-        array('BookDelete', array('args' => array('BookModel'))),
-        array('BookEdit', array('args' => array('BookModel'))),
-        array('BookHome', array('args' => array('BookModel'))),
-        array('BookStore', array('args' => array('BookModel'))),
-        array('BookUpdate', array('args' => array('BookModel'))),
+        array('book/BookCreate'),
+        array('book/BookDelete', array('args' => array('model/BookModel'))),
+        array('book/BookEdit', array('args' => array('model/BookModel'))),
+        array('book/BookHome', array('args' => array('model/BookModel'))),
+        array('book/BookStore', array('args' => array('model/BookModel'))),
+        array('book/BookUpdate', array('args' => array('model/BookModel'))),
     ));
     
-    $app->setClasses(array(
-        'args_prepend' => array('Session')
+    $app->setUnits(array(
+        'args_prepend' => array('lib/Session')
     ), array(
         array('CsrfGenerate'),
         array('CsrfValidate'),
     ));
     
-    // Define s to handle data sanitization, CSRF generation
-    $app->setComponents(array(
+    // Define pipes to handle data sanitization, CSRF generation
+    $app->setPipes(array(
         // preppend component to all routes component
         'prepend' => array(
             'Sanitize',
@@ -61,27 +61,27 @@ function config($app) {
     ));
     
     // Define routes
-    $app->setRoute(GET, '', array('component' => array('BookHome', 'ResponseCompression'))); // Default route
+    $app->setRoute(GET, '', array('pipe' => array('book/BookHome', 'ResponseCompression'))); // Default route
     
     // Define additional routes for env 'home' and 'create'
     $app->setRoutes(array( 
-        'component_append' => array('ResponseCompression') // append component to route define in group
+        'pipe_append' => array('ResponseCompression') // append component to route define in group
     ), array(
-        array(GET, 'home', array('component' => array('BookHome'))),
-        array(GET, 'create', array('component' => array('BookCreate'))),
+        array(GET, 'home', array('pipe' => array('book/BookHome'))),
+        array(GET, 'create', array('pipe' => array('book/BookCreate'))),
         // Define a route for env editing a book, with an ID parameter (only digits allowed)
-        array(GET, 'edit/{id:^\d+$}', array('component' => array('BookEdit')))
+        array(GET, 'edit/{id:^\d+$}', array('pipe' => array('book/BookEdit')))
     ));
     
     // Define routes for env 'book/' prefix with CSRF validation 
     $app->setRoutes(array(
         'prefix' => 'book/',
-        'component_prepend' => array('CsrfValidate'), // prepend component to route define in group
+        'pipe_prepend' => array('CsrfValidate'), // prepend component to route define in group
         'ignore' => array('CsrfGenerate')
     ), array(
-        array(POST, 'store', array('component' => array('BookStore'))),
-        array(POST, 'update', array('component' => array('BookUpdate'))),
-        array(POST, 'delete', array('component' => array('BookDelete')))
+        array(POST, 'store', array('pipe' => array('book/BookStore'))),
+        array(POST, 'update', array('pipe' => array('book/BookUpdate'))),
+        array(POST, 'delete', array('pipe' => array('book/BookDelete')))
     ));
     return $app;
 }

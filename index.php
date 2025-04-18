@@ -10,6 +10,7 @@ index(app('dev'), 'var/data/app.config');
 
 function index($app, $configFile) {
     $app->loadConfig($configFile);
+    
     $response = $app->dispatch();
     $response->send();
 }
