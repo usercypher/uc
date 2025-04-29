@@ -9,7 +9,7 @@ class CsrfValidate {
         ) = $args;
     }
 
-    public function process($request, $response) {
+    public function pipe($request, $response) {
         if (!isset($request->post['csrf_token'])) {
             trigger_error('403|Invalid CSRF token');
             exit();

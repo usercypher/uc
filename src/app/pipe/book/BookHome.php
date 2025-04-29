@@ -1,6 +1,6 @@
 <?php
 
-class BookEdit {
+class BookHome {
     private $app, $session;
     private $bookModel;
 
@@ -12,14 +12,12 @@ class BookEdit {
         ) = $args;
     } 
 
-    public function process($request, $response) {
-        $data = $request->params;
-
-        $response->content = $response->view($this->app->path('view', 'edit.php'), array(
+    public function pipe($request, $response) {
+        $response->content = $response->html($this->app->path('res', 'html/home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'book' => $this->bookModel->first('id = ?', array($data['id']))
+            'books' => $this->bookModel->all()
         ));
 
         return array($request, $response);

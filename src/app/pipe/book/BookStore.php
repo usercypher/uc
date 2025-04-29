@@ -1,6 +1,6 @@
 <?php
 
-class BookDelete {
+class BookStore {
     private $app, $session;
     private $bookModel;
 
@@ -12,14 +12,14 @@ class BookDelete {
         ) = $args;
     } 
 
-    public function process($request, $response) {
+    public function pipe($request, $response) {
         $data = $request->post;
 
-        $this->bookModel->validateAndDelete($data);
+        $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', 'home'));
+        $response->redirect($this->app->url('route', $route));
 
         return array($request, $response);
     }

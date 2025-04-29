@@ -3,7 +3,7 @@
 class Sanitize {
     public function __construct($args) {}
 
-    public function process($request, $response) {
+    public function pipe($request, $response) {
         if (isset($request->post)) {
             $this->sanitize($request->post);
         }

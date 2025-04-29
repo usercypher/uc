@@ -9,7 +9,7 @@ class SrcAutoLoader {
         ) = $args;
     }
 
-    public function process($request, $response) {
+    public function pipe($request, $response) {
         $this->src = $app->path('root', 'src' . DS);
         spl_autoload_register(array($this, 'autoLoader'));
 

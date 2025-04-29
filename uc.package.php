@@ -3,10 +3,11 @@
 define('DS', '/');
 define('EOL', "\n");
 
-function d($var) {
+function _d($var) {
     header('Content-Type: text/plain');
     echo var_export($var, true);
 }
+
 function app($mode) {
     $app = new App(array(new Request, new Response));
 
@@ -83,12 +84,12 @@ class Response {
         exit(isset($this->headers['Location']) ? '' : $this->content);
     }
 
-    function view($view, $data) {
+    function html($html, $data) {
         ob_start();
-        require($view);
-        $viewData = ob_get_clean();
+        require($html);
+        $htmlData = ob_get_clean();
 
-        return $viewData;
+        return $htmlData;
     }
 
     function json($data) {
@@ -112,10 +113,11 @@ class App {
 
     var $UNIT_LIST_INDEX = 0;
     var $UNIT_PATH = 1;
-    var $UNIT_LOAD = 2;
-    var $UNIT_CLASS = 3;
-    var $UNIT_CLASS_ARGS = 4;
-    var $UNIT_CLASS_CACHE = 5;
+    var $UNIT_FILE = 2;
+    var $UNIT_LOAD = 3;
+    var $UNIT_CLASS = 4;
+    var $UNIT_CLASS_ARGS = 5;
+    var $UNIT_CLASS_CACHE = 6;
 
     var $CACHE_CLASS = 0;
     var $CACHE_PATH = 1;
@@ -139,9 +141,9 @@ class App {
         list($request, $response) = $args;
 
         $this->unit = array(
-            'App' => array(0, null, array(), 'App', array(1, 2), true),
-            'Request' => array(1, null, array(), 'Request', array(), true),
-            'Response' => array(2, null, array(), 'Response', array(), true,),
+            'App' => array(0, null, null, array(), 'App', array(1, 2), true),
+            'Request' => array(1, null, null, array(), 'Request', array(), true),
+            'Response' => array(2, null, null, array(), 'Response', array(), true),
         );
 
         $this->unitList = array('App', 'Request', 'Response');
@@ -161,7 +163,7 @@ class App {
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
-        $this->ENV['DIR_VIEW'] = isset($this->ENV['DIR_VIEW']) ? $this->ENV['DIR_VIEW'] : '';
+        $this->ENV['DIR_RES'] = isset($this->ENV['DIR_RES']) ? $this->ENV['DIR_RES'] : '';
         $this->ENV['DIR_WEB'] = isset($this->ENV['DIR_WEB']) ? $this->ENV['DIR_WEB'] : '';
         $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : '';
 
@@ -521,7 +523,7 @@ class App {
         $request->params = $route['params'];
         foreach ($route['handler']['pipe'] as $p) {
             $p = $this->getClass($this->unitList[$p]);
-            $rr = $p->process($request, $response);
+            $rr = $p->pipe($request, $response);
             $request = $rr[0];
             $response = $rr[1];
         }
@@ -555,25 +557,23 @@ class App {
                 if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR'] . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
-                    $option['namespace'] .= ($file . '/');
+                    $option['namespace'] .= ($file . '.');
                     $this->autoSetUnit($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
-                    $unitClass = substr($file, 0, -4);
-                    $unit = $option['namespace']  . $unitClass;
-                    $pathToStore = str_replace($option['namespace'] . $unitClass, '', $path . $unitClass);
-                    $unitClass = ($option['dir_as_namespace']) ? str_replace('/', '\\', $unit) : $unitClass;
-
-                    $pathListIndex = isset($this->pathListCache[$pathToStore]) ? $this->pathListCache[$pathToStore] : array_search($pathToStore, $this->pathList);
+                    $unitFile = substr($file, 0, -4);
+                    $unit = $option['namespace'] . $unitFile;
+                    $unitClass = ($option['dir_as_namespace']) ? str_replace('.', '\\', $unit) : $unitFile;                    
+                    $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
                         $pathListIndex = $this->pathListIndex;
-                        $this->pathList[$this->pathListIndex] = $pathToStore;
+                        $this->pathList[$this->pathListIndex] = $path;
                         ++$this->pathListIndex;
-                        $this->pathListCache[$pathToStore] = $pathListIndex;
+                        $this->pathListCache[$path] = $pathListIndex;
                     }
 
-                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, array(), $unitClass, array(), false);
+                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), $unitClass, array(), false);
                     $this->unitList[$this->unitListIndex] = $unit;
                     ++$this->unitListIndex;
                 }
@@ -719,7 +719,7 @@ class App {
 
             unset($stackSet[$unitParent]);
 
-            require($this->ENV['DIR'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $unit . '.php');
+            require($this->ENV['DIR'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
             $this->cache[$unit][$this->CACHE_PATH] = true;
         }
     }
@@ -734,8 +734,8 @@ class App {
         switch ($option) {
             case 'root':
                 return $this->ENV['DIR'] . $path;
-            case 'view':
-                return $this->ENV['DIR'] . $this->ENV['DIR_VIEW'] . $path;
+            case 'res':
+                return $this->ENV['DIR'] . $this->ENV['DIR_RES'] . $path;
             case 'web':
                 return $this->ENV['DIR'] . $this->ENV['DIR_WEB'] . $path;
             case 'src':

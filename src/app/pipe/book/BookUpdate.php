@@ -12,7 +12,7 @@ class BookUpdate {
         ) = $args;
     } 
 
-    public function process($request, $response) {
+    public function pipe($request, $response) {
         $data = $request->post;
 
         $this->bookModel->validateAndUpdate($data);

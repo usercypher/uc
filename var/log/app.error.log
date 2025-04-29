@@ -246,3 +246,27 @@ Stack trace:
 #5 {main}
   thrown in /storage/emulated/0/github/uc.php/uc.src/db/db/Database.php on line 24
 [2025-04-18 09:45:42.863637] [php error 8192] [http 500] Automatic conversion of false to array is deprecated in /storage/emulated/0/github/uc.php/uc.package.php on line 591
+[2025-04-28 17:23:21.275290] [php error 1] [http 500] Uncaught Error: Call to undefined method Sanitize::process() in /storage/emulated/0/github/uc.php/uc.package.php:525
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/index.php(13): App->dispatch()
+#1 /storage/emulated/0/github/uc.php/index.php(9): index(Object(App), 'var/data/app.co...')
+#2 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.package.php on line 525
+[2025-04-28 17:24:24.146015] [php error 1] [http 404] Route not found: GET /hoe in /storage/emulated/0/github/uc.php/uc.package.php on line 518
+[2025-04-28 17:33:36.516788] [php error 2] [http 500] require(/storage/emulated/0/github/uc.php/uc.res/html/html/edit.php): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 89
+[2025-04-28 20:19:32.004482] [php error 2] [http 500] require(/storage/emulated/0/github/uc.php/home.php): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 89
+[2025-04-28 20:20:11.052239] [php error 1] [http 500] Uncaught Error: Call to undefined method Response::view() in /storage/emulated/0/github/uc.php/uc.src/pipe/book/BookHome.php:16
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.package.php(525): BookHome->process(Object(Request), Object(Response))
+#1 /storage/emulated/0/github/uc.php/index.php(13): App->dispatch()
+#2 /storage/emulated/0/github/uc.php/index.php(9): index(Object(App), 'var/data/app.co...')
+#3 {main}
+  thrown in /storage/emulated/0/github/uc.php/uc.src/pipe/book/BookHome.php on line 16
+[2025-04-28 22:46:45.117003] [php error 2] [http 500] Undefined array key "pipe/Sanitize" in /storage/emulated/0/github/uc.php/uc.package.php on line 371
+[2025-04-28 22:46:57.087236] [php error 2] [http 500] Undefined array key "pipe/Sanitize" in /storage/emulated/0/github/uc.php/uc.package.php on line 371
+[2025-04-28 22:48:33.562254] [php error 2] [http 500] require(/storage/emulated/0/github/uc.php/uc.src/pipe/Sanitizepipe\Sanitize.php): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 723
+[2025-04-28 22:50:09.040266] [php error 2] [http 500] require(/storage/emulated/0/github/uc.php/uc.src/pipe/Sanitizepipe\Sanitize.php): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 723
+[2025-04-28 23:10:27.377893] [php error 2] [http 500] require(/storage/emulated/0/github/uc.php/uc.src/pipe/SanitizeSanitize.php): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 724
+[2025-04-29 00:22:29.231652] [php error 2] [http 500] opendir(/storage/emulated/0/github/uc.php/uc/src/): Failed to open directory: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 545
+[2025-04-29 00:35:14.215802] [php error 2] [http 500] opendir(/storage/emulated/0/github/uc.php/src/uc/): Failed to open directory: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 545
+[2025-04-29 00:58:30.640255] [php error 2] [http 500] require(/storage/emulated/0/github/uc.php/src/app/pipe/Sanitize.php.php): Failed to open stream: No such file or directory in /storage/emulated/0/github/uc.php/uc.package.php on line 722

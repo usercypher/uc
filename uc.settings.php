@@ -6,8 +6,8 @@ function settings() {
             'dev' => array(
                 // Environment Settings
                 'DIR_WEB' => 'web' . DS, // Directory for web access (e.g., public folder)
-                'DIR_SRC' => 'uc.src' . DS, // Source directory for application code
-                'DIR_VIEW' => 'uc.view' . DS, // View Directory
+                'DIR_SRC' => 'src' . DS . 'app' . DS, // Source directory for application code
+                'DIR_RES' => 'res' . DS, // Resource Directory
                 'URL_DIR_WEB' => 'web/', // URL path for web access
                 // Error Settings
                 'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
@@ -56,8 +56,8 @@ function settings() {
             'prod' => array(
                 // Environment Settings
                 'DIR_WEB' => 'web' . DS,
-                'DIR_SRC' => 'uc.src' . DS,
-                'DIR_VIEW' => 'uc.view' . DS,
+                'DIR_SRC' => 'src' . DS . 'app' . DS,
+                'DIR_RES' => 'res' . DS,
                 'URL_DIR_WEB' => 'web/',
                 // Error Settings
                 'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file

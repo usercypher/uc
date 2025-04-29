@@ -9,7 +9,7 @@ class ValidateFileUpload {
         'application/pdf' => 10 * 1024 * 1024, // PDF files, max 10MB
     );
 
-    public function process($request, $response) {
+    public function pipe($request, $response) {
         if ($request->server->method === 'POST') {
             if (isset($request->files['upload'])) {
                 $file = $request->files['upload'];

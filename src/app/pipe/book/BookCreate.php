@@ -10,8 +10,8 @@ class BookCreate {
         ) = $args;
     } 
 
-    public function process($request, $response) {
-        $response->content = $response->view($this->app->path('view', 'create.php'), array(
+    public function pipe($request, $response) {
+        $response->content = $response->html($this->app->path('res', 'html/create.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
