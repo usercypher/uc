@@ -1,9 +1,22 @@
 <?php
 
-define('DS', '/');
-define('EOL', "\n");
+init();
 
-function _d($var) {
+function init() {
+    $os = strtoupper(PHP_OS);
+    if (strpos($os, 'WIN') !== false) {
+        define('DS', '\\');
+        define('EOL', "\r\n");
+    } elseif (strpos($os, 'DAR') !== false) {
+        define('DS', '/');
+        define('EOL', "\r");
+    } else {
+        define('DS', '/');
+        define('EOL', "\n");
+    }
+}
+
+function d($var) {
     header('Content-Type: text/plain');
     echo var_export($var, true);
 }
@@ -159,7 +172,7 @@ class App {
     }
 
     function init() {
-        $this->ENV['DIR'] = __DIR__ . DS;
+        $this->ENV['DIR'] = dirname(__FILE__) . DS;
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
