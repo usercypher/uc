@@ -557,14 +557,14 @@ class App {
                 if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR'] . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
-                    $option['namespace'] .= ($file . '.');
+                    $option['namespace'] .= ($file . '\\');
                     $this->autoSetUnit($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
                     $unitFile = substr($file, 0, -4);
-                    $unit = $option['namespace'] . $unitFile;
-                    $unitClass = ($option['dir_as_namespace']) ? str_replace('.', '\\', $unit) : $unitFile;                    
+                    $unit = str_replace('\\', '.', ($option['namespace'] . $unitFile));
+                    $unitClass = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;                    
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
                         $pathListIndex = $this->pathListIndex;
