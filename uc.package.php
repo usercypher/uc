@@ -290,7 +290,7 @@ class App {
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = ('Content-Type: application/json');
-            $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at ' . $errfile . ':' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -307,7 +307,7 @@ class App {
                     }
                 }
                 $type = ('Content-Type: text/plain');
-                $content = ('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in '. $errfile . ' on line ' . $errline . EOL . EOL . $traceOutput);
+                $content = ('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at '. $errfile . ':' . $errline . EOL . EOL . $traceOutput);
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
                 if (file_exists($file)) {
@@ -321,7 +321,7 @@ class App {
             }
         }
 
-        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ' on line ' . $errline, 'app.error');
+        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at ' . $errfile . ':' . $errline, 'app.error');
 
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $httpCode);
@@ -334,17 +334,20 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $pipe = array();
-        if (isset($option['pipe'])) {
-            foreach ($option['pipe'] as $unit) {
-                $pipe[] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
-            }
-        }
+        $this->_validateOptionAndUnits('route', $option, array('pipe', 'ignore'));
 
+        $pipe = array();
         $ignore = array();
-        if (isset($option['ignore'])) {
-            foreach ($option['ignore'] as $unit) {
-                $ignore[] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+
+        foreach (array('pipe', 'ignore') as $key) {
+            if (isset($option[$key])) {
+                foreach ($option[$key] as $unit) {
+                    if ($unit == 'global' && $key === 'ignore') {
+                        ${$key}[] = -1;
+                        continue;
+                    }
+                    ${$key}[] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+                }
             }
         }
 
@@ -353,7 +356,7 @@ class App {
         foreach ($routeSegments as $segment) {
             if (strpos($segment, '{') !== false || strpos($segment, '}') !== false) {
                 if (substr($segment, 0, 1) !== '{' || substr($segment, -1) !== '}') {
-                    $this->error('Invalid parameter syntax in segment: ' . $segment, 404);
+                    $this->error('Invalid parameter syntax: ' . $segment . '. Expected {' . trim($segment, '{}') . '} in route() with ' . trim($route, '/'), 404);
                     exit();
                 }
                 $param = trim($segment, '{}');
@@ -367,20 +370,28 @@ class App {
             $node = &$node[$segment];
         }
 
-        $node['_h'] = array('_c' => $pipe, '_i' => $ignore);
+        $node['_h'] = array('_p' => $pipe, '_i' => $ignore);
     }
 
-    function setRoutes($option, $params) {
+    function groupRoute($option, $params) {
+        $this->_validateOptionAndUnits('groupRoute', $option, array('prefix', 'pipe_prepend', 'pipe_append', 'ignore'));
+
         foreach ($params as $p) {
             $p[2]['pipe'] = array_merge((isset($option['pipe_prepend']) ? $option['pipe_prepend'] : array()), (isset($p[2]['pipe']) ? $p[2]['pipe'] : array()), (isset($option['pipe_append']) ? $option['pipe_append'] : array()));
             $p[2]['ignore'] = array_merge((isset($option['ignore']) ? $option['ignore'] : array()), (isset($p[2]['ignore']) ? $p[2]['ignore'] : array()));
-            $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], array_merge($option, $p[2]));
+            $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], $p[2]);
         }
     }
 
+    function addRoute($method, $route, $option = array()) {
+        $this->_validateOptionAndUnits('addRoute', $option, array('pipe', 'ignore'));
+
+        return array($method, $route, $option);
+    }
+
     function setPipes($pipes) {
+        $this->_validateOptionAndUnits('setPipes', $pipes, array('prepend', 'append'));
         foreach ($pipes as $key => $p) {
-            if (!in_array($key, array('prepend', 'append'))) { $this->error('Invalid value: ' . $key . '. Expected "prepend" or "append"', 500); exit(); }
             foreach ($p as $unit) {
                 $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
             }
@@ -427,12 +438,12 @@ class App {
                         if (!isset($value['_h'])) {
                             return array();
                         }
-                        $params[rtrim($paramName, '*')] = array_slice($pathSegments, $index);
+                        $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
                         break 2;
                     }
                     if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
-                        $params[rtrim($paramName, '?')] = (count($matches) === 1) ? $matches[0] : $matches;
+                        $params[substr($paramName, 0, -1)] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
@@ -483,29 +494,24 @@ class App {
         }
 
         $finalPipes = array();
-        if ($current['_h']['_i'] !== array(true)) {
-            $ignore = array_flip($current['_h']['_i']);
 
-            foreach ($this->pipes['prepend'] as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
-                }
-            }
+        $ignore = array_flip($current['_h']['_i']);
 
-            foreach ($current['_h']['_c'] as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
-                }
-            }
+        $prepend = &$this->pipes['prepend'];
+        $current_p = &$current['_h']['_p'];
+        $append = &$this->pipes['append'];
 
-            foreach ($this->pipes['append'] as $pipe) {
+        list($pipes, $length) = isset($ignore[-1]) ? array(array($current_p), 1) : array(array($prepend, $current_p, $append), 3);
+
+        for ($i = 0; $length > $i; $i++) {
+            foreach ($pipes[$i] as $pipe) {
                 if (!isset($ignore[$pipe])) {
                     $finalPipes[] = $pipe;
                 }
             }
         }
 
-        return array('handler' => array('pipe' => $finalPipes), 'params' => $params);
+        return array('pipe' => $finalPipes, 'params' => $params);
     }
 
     // Request Handling
@@ -534,11 +540,9 @@ class App {
         }
 
         $request->params = $route['params'];
-        foreach ($route['handler']['pipe'] as $p) {
+        foreach ($route['pipe'] as $p) {
             $p = $this->getClass($this->unitList[$p]);
-            $rr = $p->pipe($request, $response);
-            $request = $rr[0];
-            $response = $rr[1];
+            list($request, $response) = $p->pipe($request, $response);
         }
 
         return $response;
@@ -546,7 +550,7 @@ class App {
 
     // Class Management
 
-    function autoSetUnit($path, $option) {
+    function scanUnits($path, $option) {
         $option = array(
             'depth' => isset($option['depth']) ? $option['depth'] : 0,
             'max' => isset($option['max']) ? $option['max'] : -1,
@@ -571,7 +575,7 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= ($file . '\\');
-                    $this->autoSetUnit($path . $file . DS, $option);
+                    $this->scanUnits($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
@@ -596,7 +600,8 @@ class App {
     }
 
     function setUnit($unit, $option) {
-        $unitTest = $this->unit[$unit];
+        $this->_validateUnit($unit, 'Unit not found: ' . $unit . ' in setUnit()');
+        $this->_validateOptionAndUnits('setUnit', $option, array('args', 'load', 'cache'));
 
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
@@ -613,12 +618,39 @@ class App {
         $this->unit[$unit][$this->UNIT_CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CLASS_CACHE]);
     }
 
-    function setUnits($option, $units) {
+    function groupUnit($option, $units) {
+        $this->_validateOptionAndUnits('groupUnit', $option, array('args_prepend', 'args_append', 'load_prepend', 'load_append', 'cache'));
+
         foreach ($units as $unit) {
             $unit[1]['args'] = array_merge((isset($option['args_prepend']) ? $option['args_prepend'] : array()), (isset($unit[1]['args']) ? $unit[1]['args'] : array()), (isset($option['args_append']) ? $option['args_append'] : array()));
             $unit[1]['load'] = array_merge((isset($option['load_prepend']) ? $option['load_prepend'] : array()), (isset($unit[1]['load']) ? $unit[1]['load'] : array()), (isset($option['load_append']) ? $option['load_append'] : array()));
-            $this->setUnit($unit[0], array_merge($option, $unit[1]));
+            $unit[1]['cache'] = isset($unit[1]['cache']) ? $unit[1]['cache'] : (isset($option['cache']) ? $option['cache'] : false);
+            $this->setUnit($unit[0], $unit[1]);
         }
+    }
+
+    function addUnit($unit, $option = array()) {
+        $this->_validateUnit($unit, 'Unit not found: ' . $unit . ' in addUnit()');
+        $this->_validateOptionAndUnits('addUnit', $option, array('args', 'load', 'cache'));
+
+        return array($unit, $option);
+    }
+
+    function _validateOptionAndUnits($func, $arr, $keys) {
+        foreach ($arr as $key => $value) {
+            if (!in_array($key, $keys)) { $this->error('Invalid key: "' . $key . '" in ' . $func . '() with "' . $key . '" => ["' . implode('", "', $value) . '"] Expected: "' . implode('", "', $keys) . '"', 500); exit(); }
+            if (is_array($value)) {
+                foreach ($value as $unit) {
+                    if ($unit == 'global') { continue; }
+                    $this->_validateUnit($unit, 'Unit not found: "' . $unit . '" in ' . $func . '() with "' . $key . '" => ["' . implode('", "', $value) . '"]');
+                }
+            }
+        }
+    }
+
+    function _validateUnit($unit, $message) {
+        $matches = $this->closestMatch($unit, $this->unitList);
+        if (!isset($this->unit[$unit])) { $this->error($message . (empty($matches) ? '' : ' Closest match: "' . implode('", "', $matches) . '"'), 500); exit(); }
     }
 
     function newClass($unit) {
@@ -816,5 +848,19 @@ class App {
 
             file_put_contents($timestampFile, $now);
         }
+    }
+
+    function closestMatch($input, $validOptions, $maxDistance = 3) {
+        $matches = array();
+
+        foreach ($validOptions as $option) {
+            $distance = levenshtein($input, $option);
+            if ($maxDistance >= $distance) {
+                $matches[$option] = $distance;
+            }
+        }
+
+        asort($matches);
+        return array_keys($matches);
     }
 }
