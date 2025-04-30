@@ -334,8 +334,6 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $this->_validateOptionAndUnits('route', $option, array('pipe', 'ignore'));
-
         $pipe = array();
         $ignore = array();
 
@@ -373,24 +371,13 @@ class App {
         $node['_h'] = array('_p' => $pipe, '_i' => $ignore);
     }
 
-    function groupRoute($option, $params) {
-        $this->_validateOptionAndUnits('groupRoute', $option, array('prefix', 'pipe_prepend', 'pipe_append', 'ignore'));
-
-        foreach ($params as $p) {
-            $p[2]['pipe'] = array_merge((isset($option['pipe_prepend']) ? $option['pipe_prepend'] : array()), (isset($p[2]['pipe']) ? $p[2]['pipe'] : array()), (isset($option['pipe_append']) ? $option['pipe_append'] : array()));
-            $p[2]['ignore'] = array_merge((isset($option['ignore']) ? $option['ignore'] : array()), (isset($p[2]['ignore']) ? $p[2]['ignore'] : array()));
-            $this->setRoute($p[0], (isset($option['prefix']) ? $option['prefix'] : '') . $p[1], $p[2]);
-        }
-    }
-
-    function addRoute($method, $route, $option = array()) {
-        $this->_validateOptionAndUnits('addRoute', $option, array('pipe', 'ignore'));
-
-        return array($method, $route, $option);
+    function addRoute($group, $method, $route, $option) {
+        $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
+        $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
+        $this->setRoute($method, (isset($group['prefix']) ? $group['prefix'] : '') . $route, $option);
     }
 
     function setPipes($pipes) {
-        $this->_validateOptionAndUnits('setPipes', $pipes, array('prepend', 'append'));
         foreach ($pipes as $key => $p) {
             foreach ($p as $unit) {
                 $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
@@ -550,7 +537,7 @@ class App {
 
     // Class Management
 
-    function scanUnits($path, $option) {
+    function autoSetUnit($path, $option) {
         $option = array(
             'depth' => isset($option['depth']) ? $option['depth'] : 0,
             'max' => isset($option['max']) ? $option['max'] : -1,
@@ -575,7 +562,7 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= ($file . '\\');
-                    $this->scanUnits($path . $file . DS, $option);
+                    $this->autoSetUnit($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
@@ -600,9 +587,6 @@ class App {
     }
 
     function setUnit($unit, $option) {
-        $this->_validateUnit($unit, 'Unit not found: ' . $unit . ' in setUnit()');
-        $this->_validateOptionAndUnits('setUnit', $option, array('args', 'load', 'cache'));
-
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
                 $this->unit[$unit][$this->UNIT_CLASS_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
@@ -618,39 +602,11 @@ class App {
         $this->unit[$unit][$this->UNIT_CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CLASS_CACHE]);
     }
 
-    function groupUnit($option, $units) {
-        $this->_validateOptionAndUnits('groupUnit', $option, array('args_prepend', 'args_append', 'load_prepend', 'load_append', 'cache'));
-
-        foreach ($units as $unit) {
-            $unit[1]['args'] = array_merge((isset($option['args_prepend']) ? $option['args_prepend'] : array()), (isset($unit[1]['args']) ? $unit[1]['args'] : array()), (isset($option['args_append']) ? $option['args_append'] : array()));
-            $unit[1]['load'] = array_merge((isset($option['load_prepend']) ? $option['load_prepend'] : array()), (isset($unit[1]['load']) ? $unit[1]['load'] : array()), (isset($option['load_append']) ? $option['load_append'] : array()));
-            $unit[1]['cache'] = isset($unit[1]['cache']) ? $unit[1]['cache'] : (isset($option['cache']) ? $option['cache'] : false);
-            $this->setUnit($unit[0], $unit[1]);
-        }
-    }
-
-    function addUnit($unit, $option = array()) {
-        $this->_validateUnit($unit, 'Unit not found: ' . $unit . ' in addUnit()');
-        $this->_validateOptionAndUnits('addUnit', $option, array('args', 'load', 'cache'));
-
-        return array($unit, $option);
-    }
-
-    function _validateOptionAndUnits($func, $arr, $keys) {
-        foreach ($arr as $key => $value) {
-            if (!in_array($key, $keys)) { $this->error('Invalid key: "' . $key . '" in ' . $func . '() with "' . $key . '" => ["' . implode('", "', $value) . '"] Expected: "' . implode('", "', $keys) . '"', 500); exit(); }
-            if (is_array($value)) {
-                foreach ($value as $unit) {
-                    if ($unit == 'global') { continue; }
-                    $this->_validateUnit($unit, 'Unit not found: "' . $unit . '" in ' . $func . '() with "' . $key . '" => ["' . implode('", "', $value) . '"]');
-                }
-            }
-        }
-    }
-
-    function _validateUnit($unit, $message) {
-        $matches = $this->closestMatch($unit, $this->unitList);
-        if (!isset($this->unit[$unit])) { $this->error($message . (empty($matches) ? '' : ' Closest match: "' . implode('", "', $matches) . '"'), 500); exit(); }
+    function addUnit($group, $unit, $option = array()) {
+        $option['args'] = array_merge((isset($group['args_prepend']) ? $group['args_prepend'] : array()), (isset($option['args']) ? $option['args'] : array()), (isset($group['args_append']) ? $group['args_append'] : array()));
+        $option['load'] = array_merge((isset($group['load_prepend']) ? $group['load_prepend'] : array()), (isset($option['load']) ? $option['load'] : array()), (isset($group['load_append']) ? $group['load_append'] : array()));
+        $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : false);
+        $this->setUnit($unit, $option);
     }
 
     function newClass($unit) {
@@ -848,19 +804,5 @@ class App {
 
             file_put_contents($timestampFile, $now);
         }
-    }
-
-    function closestMatch($input, $validOptions, $maxDistance = 3) {
-        $matches = array();
-
-        foreach ($validOptions as $option) {
-            $distance = levenshtein($input, $option);
-            if ($maxDistance >= $distance) {
-                $matches[$option] = $distance;
-            }
-        }
-
-        asort($matches);
-        return array_keys($matches);
     }
 }
