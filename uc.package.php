@@ -3,6 +3,31 @@
 init();
 
 function init() {
+    define('GET', 'GET');
+    define('POST', 'POST');
+
+    define('PIPE', 'pipe');
+    define('IGNORE', 'ignore');
+
+    define('PREFIX', 'prefix');
+    define('PIPE_PREPEND', 'pipe_prepend');
+    define('PIPE_APPEND', 'pipe_append');
+
+    define('APPEND', 'append');
+    define('PREPEND', 'prepend');
+
+    define('MAX', 'max');
+    define('DIR_AS_NAMESPACE', 'dir_as_namespace');
+
+    define('ARGS', 'args');
+    define('LOAD', 'load');
+    define('CACHE', 'cache');
+
+    define('ARGS_PREPEND', 'args_prepend');
+    define('ARGS_APPEND', 'args_append');
+    define('LOAD_PREPEND', 'load_prepend');
+    define('LOAD_APPEND', 'load_append');
+
     $os = strtoupper(PHP_OS);
     if (strpos($os, 'WIN') !== false) {
         define('DS', '\\');

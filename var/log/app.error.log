@@ -274,3 +274,10 @@ Stack trace:
 [2025-04-30 23:49:01.355585] [php error 2] [http 500] Undefined array key "pipe.bookBookCreate" at /storage/emulated/0/lamp/_htdocs_2/uc.package.php:347
 [2025-04-30 23:50:26.588608] [php error 2] [http 500] Undefined array key "book_post" at /storage/emulated/0/lamp/_htdocs_2/routes.php:39
 [2025-04-30 23:59:47.213840] [php error 2] [http 500] Undefined array key "pip.CsrfGenerate" at /storage/emulated/0/lamp/_htdocs_2/uc.package.php:383
+[2025-05-01 12:14:54.209911] [php error 1] [http 500] Uncaught Error: Undefined constant "MX" in /storage/emulated/0/github/uc.php/units.php:6
+Stack trace:
+#0 /storage/emulated/0/github/uc.php/uc.compile.php(13): require()
+#1 /storage/emulated/0/github/uc.php/uc.compile.php(5): config(Object(App))
+#2 /storage/emulated/0/github/uc.php/index.php(6): require('/storage/emulat...')
+#3 {main}
+  thrown at /storage/emulated/0/github/uc.php/units.php:6
