@@ -1,8 +1,6 @@
 <?php
 // units.php
 
-$group = array();
-
 // Auto-load units from 'src/app/' directory and set path metadata (max depth 2), options: 'ignore' => array('ignore*.pattern', 'ignore.file'), dir_as_namespace => true
 // Unit names will be generated based on the file path, with directory separators replaced by dots.
 $app->autoSetUnit('src'.DS.'app'.DS, array('max' => 2));

@@ -4,8 +4,6 @@
 define('GET', 'GET');
 define('POST', 'POST');
 
-$group = array();
-
 // Define pipes to handle data sanitization, CSRF generation
 $app->setPipes(array(
     // preppend component to all routes component
