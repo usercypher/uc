@@ -612,6 +612,8 @@ class App {
     }
 
     function setUnit($unit, $option) {
+        $test = $this->unit[$unit];
+
         if (isset($option['args'])) {
             foreach ($option['args'] as $arg) {
                 $this->unit[$unit][$this->UNIT_CLASS_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];

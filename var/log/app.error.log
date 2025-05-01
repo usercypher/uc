@@ -281,3 +281,9 @@ Stack trace:
 #2 /storage/emulated/0/github/uc.php/index.php(6): require('/storage/emulat...')
 #3 {main}
   thrown at /storage/emulated/0/github/uc.php/units.php:6
+[2025-05-01 19:38:24.409251] [php error 4] [http 500] syntax error, unexpected token "->", expecting variable or "{" or "$" at /storage/emulated/0/github/uc.php/units.php:28
+[2025-05-01 19:40:12.754589] [php error 2] [http 500] Undefined array key "pipe.booBookDelete" at /storage/emulated/0/github/uc.php/uc.package.php:615
+[2025-05-01 19:42:56.261141] [php error 2] [http 500] Undefined array key "modelookModel" at /storage/emulated/0/github/uc.php/uc.package.php:619
+[2025-05-01 19:43:15.284061] [php error 2] [http 500] Undefined array key "pipeook.BookHome" at /storage/emulated/0/github/uc.php/uc.package.php:372
+[2025-05-01 19:43:23.493628] [php error 2] [http 500] Undefined array key "pipeResponseCompression" at /storage/emulated/0/github/uc.php/uc.package.php:372
+[2025-05-01 19:44:16.011280] [php error 2] [http 500] Undefined array key "pipeCsrfGenerate" at /storage/emulated/0/github/uc.php/uc.package.php:408
