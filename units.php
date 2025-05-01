@@ -12,28 +12,26 @@ $app->setUnit('lib.Database', array('args' => array('App'), 'cache' => true));
 
 // Define and inject dependencies: 'BookModel' depends on 'Database'
 // imports: 'BookModel' loads 'Model'
-$group['model'] = array(
+$group = array(
     'args_prepend' => array('lib.Database'),
     'load_prepend' => array('lib.Model'),
 );
-$app->addUnit($group['model'], 'model.BookModel');
-
+$app->addUnit($group, 'model.BookModel');
 
 $app->setUnit('lib.Session', array('cache' => true));
 
-$group['book'] = array(
+$group = array(
     'args_prepend' => array('App', 'lib.Session'),
 );
-$app->addUnit($group['book'], 'pipe.book.BookCreate');
-$app->addUnit($group['book'], 'pipe.book.BookDelete', array('args' => array('model.BookModel')));
-$app->addUnit($group['book'], 'pipe.book.BookEdit', array('args' => array('model.BookModel')));
-$app->addUnit($group['book'], 'pipe.book.BookHome', array('args' => array('model.BookModel')));
-$app->addUnit($group['book'], 'pipe.book.BookStore', array('args' => array('model.BookModel')));
-$app->addUnit($group['book'], 'pipe.book.BookUpdate', array('args' => array('model.BookModel')));
+$app->addUnit($group, 'pipe.book.BookCreate');
+$app->addUnit($group, 'pipe.book.BookDelete', array('args' => array('model.BookModel')));
+$app->addUnit($group, 'pipe.book.BookEdit', array('args' => array('model.BookModel')));
+$app->addUnit($group, 'pipe.book.BookHome', array('args' => array('model.BookModel')));
+$app->addUnit($group, 'pipe.book.BookStore', array('args' => array('model.BookModel')));
+$app->addUnit($group, 'pipe.book.BookUpdate', array('args' => array('model.BookModel')));
 
-
-$group['csrf'] = array(
+$group = array(
     'args_prepend' => array('lib.Session')
 );
-$app->addUnit($group['csrf'], 'pipe.CsrfGenerate');
-$app->addUnit($group['csrf'], 'pipe.CsrfValidate');
+$app->addUnit($group, 'pipe.CsrfGenerate');
+$app->addUnit($group, 'pipe.CsrfValidate');

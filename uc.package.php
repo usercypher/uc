@@ -371,7 +371,7 @@ class App {
         $node['_h'] = array('_p' => $pipe, '_i' => $ignore);
     }
 
-    function addRoute($group, $method, $route, $option) {
+    function addRoute($group, $method, $route, $option = array()) {
         $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
         $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
         $this->setRoute($method, (isset($group['prefix']) ? $group['prefix'] : '') . $route, $option);

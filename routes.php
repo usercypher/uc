@@ -21,21 +21,20 @@ $app->setPipes(array(
 $app->setRoute(GET, '', array('pipe' => array('pipe.book.BookHome', 'pipe.ResponseCompression'))); // Default route
 
 // Define additional routes for env 'home' and 'create'
-$group['book_get'] = array( 
+$group = array( 
     'pipe_append' => array('pipe.ResponseCompression') // append component to route define in group
 );
-$app->addRoute($group['book_get'], GET, 'home', array('pipe' => array('pipe.book.BookHome')));
-$app->addRoute($group['book_get'], GET, 'create', array('pipe' => array('pipe.book.BookCreate')));
+$app->addRoute($group, GET, 'home', array('pipe' => array('pipe.book.BookHome')));
+$app->addRoute($group, GET, 'create', array('pipe' => array('pipe.book.BookCreate')));
 // Define a route for env editing a book, with an ID parameter (only digits allowed)
-$app->addRoute($group['book_get'], GET, 'edit/{id:^\d+$}', array('pipe' => array('pipe.book.BookEdit')));
-
+$app->addRoute($group, GET, 'edit/{id:^\d+$}', array('pipe' => array('pipe.book.BookEdit')));
 
 // Define routes for env 'book/' prefix with CSRF validation 
-$group['book_post'] = array(
+$group = array(
     'prefix' => 'book/',
     'pipe_prepend' => array('pipe.CsrfValidate'), // prepend component to route define in group
     'ignore' => array('pipe.CsrfGenerate')
 );
-$app->addRoute($group['book_post'], POST, 'store', array('pipe' => array('pipe.book.BookStore')));
-$app->addRoute($group['book_post'], POST, 'update', array('pipe' => array('pipe.book.BookUpdate')));
-$app->addRoute($group['book_post'], POST, 'delete', array('pipe' => array('pipe.book.BookDelete')));
+$app->addRoute($group, POST, 'store', array('pipe' => array('pipe.book.BookStore')));
+$app->addRoute($group, POST, 'update', array('pipe' => array('pipe.book.BookUpdate')));
+$app->addRoute($group, POST, 'delete', array('pipe' => array('pipe.book.BookDelete')));
