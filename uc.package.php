@@ -377,16 +377,6 @@ class App {
         $node = &$this->routes[$method];
         $routeSegments = explode('/', trim($route, '/'));
         foreach ($routeSegments as $segment) {
-            if (strpos($segment, '{') !== false || strpos($segment, '}') !== false) {
-                if (substr($segment, 0, 1) !== '{' || substr($segment, -1) !== '}') {
-                    $this->error('Invalid parameter syntax: ' . $segment . '. Expected {' . trim($segment, '{}') . '} in route() with ' . trim($route, '/'), 404);
-                    exit();
-                }
-                $param = trim($segment, '{}');
-                $paramParts = explode(':', $param, 2);
-                $paramRegex = isset($paramParts[1]) ? $paramParts[1] : '.+';
-                preg_match('/' . $paramRegex . '/', '');
-            }
             if (!isset($node[$segment])) {
                 $node[$segment] = array();
             }
