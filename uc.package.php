@@ -256,8 +256,7 @@ class App {
 
     function error($message, $no = 500) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        $frame = $trace[0];
-        $this->errorHandler(1, ($no . '|' . $message), $frame['file'], $frame['line']);
+        $this->errorHandler(1, ($no . '|' . $message), $trace[0]['file'], $trace[0]['line']);
     }
 
     function errorHandler($errno, $errstr, $errfile, $errline) {
@@ -279,7 +278,7 @@ class App {
         }
 
         $httpCode = 500;
-        $type = '';
+        $type = 'text/html';
         $content = '';
 
         $parts = explode('|', $errstr, 2);
@@ -289,8 +288,8 @@ class App {
         }
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
-            $type = ('Content-Type: application/json');
-            $content = ($this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at ' . $errfile . ':' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}');
+            $type = 'application/json';
+            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at ' . $errfile . ':' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}';
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -306,8 +305,8 @@ class App {
                         $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
                     }
                 }
-                $type = ('Content-Type: text/plain');
-                $content = ('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at '. $errfile . ':' . $errline . EOL . EOL . $traceOutput);
+                $type = 'text/plain';
+                $content = '[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
                 if (file_exists($file)) {
@@ -325,7 +324,7 @@ class App {
 
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $httpCode);
-            header($type);
+            header('Content-Type: ' . $type);
         }
 
         exit($content);
@@ -334,17 +333,17 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $pipe = array();
-        $ignore = array();
+        $handler = array('_p' => array(), '_i' => array());
 
-        foreach (array('pipe', 'ignore') as $key) {
+        $map = array('pipe' => '_p', 'ignore' => '_i');
+        foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $unit) {
                     if ($unit == 'global' && $key === 'ignore') {
-                        ${$key}[] = -1;
+                        $handler[$value][] = -1;
                         continue;
                     }
-                    ${$key}[] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+                    $handler[$value][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
                 }
             }
         }
@@ -358,7 +357,7 @@ class App {
             $node = &$node[$segment];
         }
 
-        $node['_h'] = array('_p' => $pipe, '_i' => $ignore);
+        $node['_h'] = $handler;
     }
 
     function addRoute($group, $method, $route, $option = array()) {
@@ -474,11 +473,7 @@ class App {
 
         $ignore = array_flip($current['_h']['_i']);
 
-        $prepend = &$this->pipes['prepend'];
-        $current_p = &$current['_h']['_p'];
-        $append = &$this->pipes['append'];
-
-        list($pipes, $length) = isset($ignore[-1]) ? array(array($current_p), 1) : array(array($prepend, $current_p, $append), 3);
+        list($pipes, $length) = isset($ignore[-1]) ? array(array(&$current['_h']['_p']), 1) : array(array(&$this->pipes['prepend'], &$current['_h']['_p'], &$this->pipes['append']), 3);
 
         for ($i = 0; $length > $i; $i++) {
             foreach ($pipes[$i] as $pipe) {
