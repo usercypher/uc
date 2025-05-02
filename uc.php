@@ -1,4 +1,19 @@
 <?php
+/**
+ * Copyright 2025 Lloyd Miles M. Bersabe
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 init();
 
@@ -19,23 +34,6 @@ function init() {
 function d($var) {
     header('Content-Type: text/plain');
     echo var_export($var, true);
-}
-
-function app($mode) {
-    $app = new App(array(new Request, new Response));
-
-    require('uc.settings.php');
-    $settings = settings();
-
-    $app->setInis($settings['ini'][$mode]);
-    $app->setEnvs($settings['env'][$mode]);
-
-    $app->init();
-
-    set_error_handler(array($app, 'error'));
-    register_shutdown_function(array($app, 'shutdown'));
-
-    return $app;
 }
 
 class Request {
@@ -186,7 +184,7 @@ class App {
         
         $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
 
-        $this->ENV['ERROR_VIEW_FILE'] = isset($this->ENV['ERROR_VIEW_FILE']) ? $this->ENV['ERROR_VIEW_FILE'] : 'uc.error.php';
+        $this->ENV['ERROR_HTML_FILE'] = isset($this->ENV['ERROR_HTML_FILE']) ? $this->ENV['ERROR_HTML_FILE'] : '';
         $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
 
         $this->ENV['LOG_SIZE_LIMIT_MB'] = isset($this->ENV['LOG_SIZE_LIMIT_MB']) && (int) $this->ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) $this->ENV['LOG_SIZE_LIMIT_MB'] : 5;
@@ -308,7 +306,7 @@ class App {
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
-                $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
+                $file = $this->ENV['DIR'] . $this->ENV['ERROR_HTML_FILE'];
                 if (file_exists($file)) {
                     $data = array('app' => $this, 'http_code' => $httpCode);
                     ob_start();

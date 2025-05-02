@@ -5,12 +5,12 @@ function settings() {
         'env' => array(
             'dev' => array(
                 // Environment Settings
-                'DIR_WEB' => 'web' . DS, // Directory for web access (e.g., public folder)
-                'DIR_SRC' => 'src' . DS . 'app' . DS, // Source directory for application code
-                'DIR_RES' => 'res' . DS, // Resource Directory
+                'DIR_WEB' => 'web'.DS, // Directory for web access (e.g., public folder)
+                'DIR_SRC' => 'src'.DS.'app'.DS, // Source directory for application code
+                'DIR_RES' => 'res'.DS, // Resource Directory
                 'URL_DIR_WEB' => 'web/', // URL path for web access
                 // Error Settings
-                'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
+                'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
                 'SHOW_ERRORS' => true, // Enable (true) or disable (false) detailed error messages
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php', // file for index (usually server root), become useless when route rewrite is enable
@@ -32,8 +32,8 @@ function settings() {
                  *     }
                  */
                 // Logging Configuration
-                'DIR_LOG' => 'var' . DS . 'log' . DS,
-                'DIR_LOG_TIMESTAMP' => 'var' . DS . 'data' . DS,
+                'DIR_LOG' => 'var'.DS.'log'.DS,
+                'DIR_LOG_TIMESTAMP' => 'var'.DS.'data'.DS,
                 'LOG_SIZE_LIMIT_MB' => 5,
                 'LOG_CLEANUP_INTERVAL_DAYS' => 1,
                 'LOG_RETENTION_DAYS' => 7,
@@ -55,19 +55,19 @@ function settings() {
             ),
             'prod' => array(
                 // Environment Settings
-                'DIR_WEB' => 'web' . DS,
-                'DIR_SRC' => 'src' . DS . 'app' . DS,
-                'DIR_RES' => 'res' . DS,
+                'DIR_WEB' => 'web'.DS,
+                'DIR_SRC' => 'src'.DS.'app'.DS,
+                'DIR_RES' => 'res'.DS,
                 'URL_DIR_WEB' => 'web/',
                 // Error Settings
-                'ERROR_VIEW_FILE' => 'uc.error.php', // Error view file
+                'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
                 'SHOW_ERRORS' => false,
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php',
                 'ROUTE_REWRITE' => false,
                 // Logging Configuration
-                'DIR_LOG' => 'var' . DS . 'log' . DS,
-                'DIR_LOG_TIMESTAMP' => 'var' . DS . 'data' . DS,
+                'DIR_LOG' => 'var'.DS.'log'.DS,
+                'DIR_LOG_TIMESTAMP' => 'var'.DS.'data'.DS,
                 'LOG_SIZE_LIMIT_MB' => 5,
                 'LOG_CLEANUP_INTERVAL_DAYS' => 1,
                 'LOG_RETENTION_DAYS' => 7,

@@ -1,14 +1,29 @@
 <?php
 // index.php
 
-// Uncomment this line during initial setup to compile and generate configurations
-// Alternatively, you can run 'php uc.compile.php' from the terminal to generate the config and exit the script
-//require('uc.compile.php');  // This generates config and exits the script after saving
+// Uncomment for initial setup to generate config or run 'php compile.php' to generate config
+//require('compile.php');  // Generates config and exits script
 
-require('uc.package.php');
-index(app('dev'), 'var/data/app.config'); 
+// Run the application
+index('dev', 'var/data/app.config'); 
 
-function index($app, $configFile) {
+function index($mode, $configFile) {
+    require('uc.php');
+
+    $app = new App(array(new Request, new Response));
+
+    require('settings.php');
+    $settings = settings();
+
+    $app->setInis($settings['ini'][$mode]);
+    $app->setEnvs($settings['env'][$mode]);
+
+    $app->init();
+
+    set_error_handler(array($app, 'error'));
+    register_shutdown_function(array($app, 'shutdown'));
+
+    // Load app configuration and dispatch the response
     $app->loadConfig($configFile);
     $response = $app->dispatch();
     $response->send();
