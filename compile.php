@@ -2,7 +2,12 @@
 // compile.php
 
 // Run the compilation
-compile('dev', 'var/data/app.config');
+compile(
+    'dev',
+    'uc.php',
+    'settings.php',
+    'var/data/app.config'
+);
 
 function config($app) {
     require('units.php');
@@ -10,12 +15,12 @@ function config($app) {
     return $app;
 }
 
-function compile($mode, $configFile) {
-    require('uc.php');
+function compile($mode, $packageFile, $settingsFile, $configFile) {
+    require($packageFile);
 
     $app = new App(array(new Request, new Response));
 
-    require('settings.php');
+    require($settingsFile);
     $settings = settings();
 
     $app->setInis($settings['ini'][$mode]);

@@ -5,14 +5,19 @@
 //require('compile.php');  // Generates config and exits script
 
 // Run the application
-index('dev', 'var/data/app.config'); 
+index(
+    'dev',
+    'uc.php',
+    'settings.php',
+    'var/data/app.config'
+); 
 
-function index($mode, $configFile) {
-    require('uc.php');
+function index($mode, $packageFile, $settingsFile, $configFile) {
+    require($packageFile);
 
     $app = new App(array(new Request, new Response));
 
-    require('settings.php');
+    require($settingsFile);
     $settings = settings();
 
     $app->setInis($settings['ini'][$mode]);
