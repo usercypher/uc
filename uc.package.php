@@ -32,7 +32,7 @@ function app($mode) {
 
     $app->init();
 
-    set_error_handler(array($app, 'errorHandler'));
+    set_error_handler(array($app, 'error'));
     register_shutdown_function(array($app, 'shutdown'));
 
     return $app;
@@ -183,7 +183,7 @@ class App {
         $this->ENV['ROUTE_FILE'] = isset($this->ENV['ROUTE_FILE']) ? $this->ENV['ROUTE_FILE'] : 'index.php';
         $this->ENV['ROUTE_REWRITE'] = isset($this->ENV['ROUTE_REWRITE']) ? (bool) $this->ENV['ROUTE_REWRITE'] : false;
         $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
-
+        
         $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
 
         $this->ENV['ERROR_VIEW_FILE'] = isset($this->ENV['ERROR_VIEW_FILE']) ? $this->ENV['ERROR_VIEW_FILE'] : 'uc.error.php';
@@ -254,12 +254,12 @@ class App {
 
     // Error Management
 
-    function error($message, $no = 500) {
+    function triggerError($message, $no = 500) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        $this->errorHandler(1, ($no . '|' . $message), $trace[0]['file'], $trace[0]['line']);
+        $this->error(1, ($no . '|' . $message), $trace[0]['file'], $trace[0]['line']);
     }
 
-    function errorHandler($errno, $errstr, $errfile, $errline) {
+    function error($errno, $errstr, $errfile, $errline) {
         $this->handleError($errno, $errstr, $errfile, $errline, true);
     }
 
@@ -289,7 +289,7 @@ class App {
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
-            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at ' . $errfile . ':' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}';
+            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}';
         } else {
             if ($this->ENV['SHOW_ERRORS']) {
                 $traceOutput = '';
@@ -306,7 +306,7 @@ class App {
                     }
                 }
                 $type = 'text/plain';
-                $content = '[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
+                $content = '[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_VIEW_FILE'];
                 if (file_exists($file)) {
@@ -320,7 +320,7 @@ class App {
             }
         }
 
-        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' at ' . $errfile . ':' . $errline, 'app.error');
+        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, 'app.error');
 
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $httpCode);
@@ -507,7 +507,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if ($route === array()) {
-            $this->error('Route not found: ' . $request->method . ' ' . $path, 404);
+            $this->triggerError('Route not found: ' . $request->method . ' ' . $path, 404);
             exit();
         }
 
@@ -623,7 +623,7 @@ class App {
             $stackSet[$unitParent] = true;
 
             if (isset($stackSet[$unit])) {
-                $this->error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+                $this->triggerError('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
                 exit();
             }
 
@@ -680,7 +680,7 @@ class App {
             $stackSet[$unitParent] = true;
 
             if (isset($stackSet[$unit])) {
-                $this->error('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+                $this->triggerError('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
                 exit();
             }
 
