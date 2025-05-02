@@ -209,14 +209,14 @@ class App {
 
     function setIni($key, $value) {
         if (ini_set($key, $value) === false) {
-            $this->log('Failed to set ini setting: ' . $key, 'app.error');
+            $this->log('Failed to set ini setting: ' . $key, 'app/error');
         }
     }
 
     function setInis($keys) {
         foreach ($keys as $key => $value) {
             if (ini_set($key, $value) === false) {
-                $this->log('Failed to set ini setting: ' . $key, 'app.error');
+                $this->log('Failed to set ini setting: ' . $key, 'app/error');
             }
         }
     }
@@ -318,7 +318,7 @@ class App {
             }
         }
 
-        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, 'app.error');
+        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, 'app/error');
 
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $httpCode);

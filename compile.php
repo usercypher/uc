@@ -6,7 +6,7 @@ compile(
     'dev',
     'uc.php',
     'settings.php',
-    'var/data/app.config'
+    'var/data/app/config'
 );
 
 function config($app) {
