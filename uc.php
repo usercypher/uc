@@ -144,7 +144,7 @@ class App {
     var $cache = array();
     var $pathListCache = array();
 
-    var $invokeApp = false;
+    var $isDispatch = false;
 
     // Application Setup
 
@@ -488,11 +488,11 @@ class App {
 
     function dispatch() {
         $response = $this->cache['Response'][$this->CACHE_CLASS];
-        if ($this->invokeApp) {
+        if ($this->isDispatch) {
             return $response;
         }
 
-        $this->invokeApp = true;
+        $this->isDispatch = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
         if ($this->ENV['ROUTE_REWRITE']) {
