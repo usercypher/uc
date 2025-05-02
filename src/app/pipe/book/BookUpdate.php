@@ -4,7 +4,7 @@ class BookUpdate {
     private $app, $session;
     private $bookModel;
 
-    public function __construct($args) {
+    public function __construct($args = array()) {
         list(
             $this->app, 
             $this->session, 

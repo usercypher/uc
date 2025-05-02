@@ -3,7 +3,7 @@
 class SrcAutoLoader {
     private $src, $app;
 
-    public function __construct($args) {
+    public function __construct($args = array()) {
         list(
             $this->app, 
         ) = $args;

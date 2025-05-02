@@ -1,7 +1,7 @@
 <?php
 
 class Html {
-    public function __construct() {}
+    public function __construct($args = array()) {}
 
     public function encode(&$array, $stripTags = false, $allowedTags = '') {
         $this->htmlProcessor($array, true, $stripTags, $allowedTags);

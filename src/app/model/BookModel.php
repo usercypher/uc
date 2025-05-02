@@ -3,7 +3,7 @@
 class BookModel extends Model {
     private $database;
 
-    public function __construct($args) {
+    public function __construct($args = array()) {
         list(
             $this->database,
         ) = $args;

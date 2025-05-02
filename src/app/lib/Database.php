@@ -4,7 +4,7 @@ class Database {
     private $app;
     private $host, $port, $name, $user, $pass, $pdo, $time;
 
-    public function __construct($args) {
+    public function __construct($args = array()) {
         list(
             $this->app
         ) = $args;

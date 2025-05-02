@@ -1,7 +1,7 @@
 <?php
 
 class Sanitize {
-    public function __construct($args) {}
+    public function __construct($args = array()) {}
 
     public function pipe($request, $response) {
         if (isset($request->post)) {

@@ -1,7 +1,7 @@
 <?php
 
 class ResponseCompression {
-    public function __construct($args) {}
+    public function __construct($args = array()) {}
 
     public function pipe($request, $response) {
         if (!empty($response->content) && isset($request->server['HTTP_ACCEPT_ENCODING']) && is_string($request->server['HTTP_ACCEPT_ENCODING']) && strpos($request->server['HTTP_ACCEPT_ENCODING'], 'gzip') !== false && function_exists('gzencode')) {

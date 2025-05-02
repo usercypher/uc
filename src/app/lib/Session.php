@@ -1,7 +1,7 @@
 <?php
 
 class Session {
-    public function __construct() {
+    public function __construct($args = array()) {
         $this->start();
     }
 

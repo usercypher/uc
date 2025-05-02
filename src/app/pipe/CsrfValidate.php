@@ -3,7 +3,7 @@
 class CsrfValidate {
     public $session;
 
-    public function __construct($args) {
+    public function __construct($args = array()) {
         list(
             $this->session
         ) = $args;

@@ -5,6 +5,8 @@ class Asset {
     private $js = array();
     private $indent = '';
 
+    public function __construct($args = array()) {}
+
     public function setIndent($indent) {
         $this->indent = $indent;
     }

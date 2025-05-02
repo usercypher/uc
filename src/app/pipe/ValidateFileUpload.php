@@ -1,7 +1,7 @@
 <?php
 
 class ValidateFileUpload {
-    public function __construct($args) {}
+    public function __construct($args = array()) {}
 
     private $allowedFileTypes = array(
         'image/jpeg' => 5 * 1024 * 1024,       // JPEG files, max 5MB
