@@ -37,25 +37,41 @@ function d($var) {
 }
 
 class Request {
-    var $argv, $uri, $method, $get, $post, $files, $cookies, $server, $baseUrl, $params, $cli, $data;
+    var $server, $data, $uri, $method, $baseUrl, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
 
     function __construct() {
         $this->init();
     }
 
     function init() {
-        $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
+        $this->server = $_SERVER;
+        $this->data = array();
         $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+        $this->baseUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
+        $this->params = array();
         $this->get = $_GET;
         $this->post = $_POST;
         $this->files = $_FILES;
         $this->cookies = $_COOKIE;
-        $this->server = $_SERVER;
-        $this->baseUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
-        $this->params = array();
-        $this->cli = array();
-        $this->data = array();
+        $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
+        $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : array();
+        $this->cli = array('positional' => array(), 'options' => array());
+        if ($this->method === '') {
+            for ($i = 0; $this->argc > $i; $i++) {
+                $arg = $this->argv[$i];
+                if (strpos($arg, '--') === 0) {
+                    $eq = strpos($arg, '=');
+                    if ($eq !== false) {
+                        $this->cli['options'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
+                    } else {
+                        $this->cli['options'][substr($arg, 2)] = true;
+                    }
+                } elseif (strpos($arg, '-') !== 0) {
+                    $this->cli['positional'][] = $arg;
+                }
+            }
+        }
     }
 
     function setData($key, $value) {
@@ -504,22 +520,11 @@ class App {
 
         $path = '';
         if ($request->method === '') {
-            $count = count($request->argv);
+            $count = count($request->cli['positional']);
             for ($i = 1; $count > $i; $i++) {
-                $value = $request->argv[$i];
-                if (strpos($value, '--') === 0) {
-                    $paramName = substr($value, 2);
-                    $paramValue = true;
-                    if (strpos($value, '=') !== false) {
-                        list($paramName, $paramValue) = explode('=', $paramName, 2);
-                    }
-                    $request->cli[$paramName] = $paramValue;
-                }
-                elseif (strpos($value, '-') !== 0) {
-                    $path .= urlencode($value) . '/';
-                }
+                $path .= urlencode($request->cli['positional'][$i]) . '/';
             }
-            $request->method = (isset($request->cli['method']) && $request->cli['method'] !== true) ? $request->cli['method'] : '';
+            $request->method = (isset($request->cli['options']['method']) && $request->cli['options']['method'] !== true) ? $request->cli['options']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $parseUrl = parse_url($request->uri);
             $path = ($parseUrl === false) ? $request->uri : $parseUrl['path'];
