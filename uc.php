@@ -37,13 +37,14 @@ function d($var) {
 }
 
 class Request {
-    var $uri, $method, $get, $post, $files, $cookies, $server, $baseUrl, $params, $data;
+    var $argv, $uri, $method, $get, $post, $files, $cookies, $server, $baseUrl, $params, $cli, $data;
 
     function __construct() {
         $this->init();
     }
 
     function init() {
+        $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
         $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
         $this->get = $_GET;
@@ -53,6 +54,7 @@ class Request {
         $this->server = $_SERVER;
         $this->baseUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
         $this->params = array();
+        $this->cli = array();
         $this->data = array();
     }
 
@@ -235,7 +237,7 @@ class App {
             'path_list_index' => unserialize(serialize($this->pathListIndex))
         )));
 
-        echo('File created: ' . $configFile);
+        echo('File created: ' . $configFile . EOL);
     }
 
     function loadConfig($file) {
@@ -289,7 +291,7 @@ class App {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":true,"message":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":true,"message":"An unexpected error occurred. Please try again later."}';
         } else {
-            if ($this->ENV['SHOW_ERRORS']) {
+            if ($this->ENV['SHOW_ERRORS'] || empty($_SERVER['REQUEST_METHOD'])) {
                 $traceOutput = '';
                 if ($enableStackTrace) {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
@@ -412,17 +414,21 @@ class App {
                         if (!isset($value['_h'])) {
                             return array();
                         }
-                        $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
+                        $decodedSegments = array_slice($pathSegments, $index);
+                        foreach ($decodedSegments as $k => $v) $decodedSegments[$k] = urldecode($v);
+                        $params[substr($paramName, 0, -1)] = $decodedSegments;
                         $current = $value;
                         break 2;
                     }
                     if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
                         $params[substr($paramName, 0, -1)] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
                     }
                     if (preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
                         $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
@@ -495,7 +501,25 @@ class App {
         $this->isDispatch = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
-        if ($this->ENV['ROUTE_REWRITE']) {
+        $path = '';
+        if ($request->method === '') {
+            $count = count($request->argv);
+            for ($i = 1; $count > $i; $i++) {
+                $value = $request->argv[$i];
+                if (strpos($value, '--') === 0) {
+                    $paramName = substr($value, 2);
+                    $paramValue = true;
+                    if (strpos($value, '=') !== false) {
+                        list($paramName, $paramValue) = explode('=', $paramName, 2);
+                    }
+                    $request->cli[$paramName] = $paramValue;
+                }
+                elseif (strpos($value, '-') !== 0) {
+                    $path .= urlencode($value) . '/';
+                }
+            }
+            $request->method = (isset($request->cli['method']) && $request->cli['method'] !== true) ? $request->cli['method'] : '';
+        } elseif ($this->ENV['ROUTE_REWRITE']) {
             $parseUrl = parse_url($request->uri);
             $path = ($parseUrl === false) ? $request->uri : $parseUrl['path'];
         } else {
@@ -742,7 +766,7 @@ class App {
         }
     }
 
-    function urlEncode($url) {
+    function urlEncodeSeo($url) {
         return urlencode(preg_replace('/\s+/', '-', strtolower($url)));
     }
 

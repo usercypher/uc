@@ -12,6 +12,12 @@ $app->setPipes(array(
     'append' => array()
 ));
 
+// Define route for cli empty method
+$group = array( 
+
+);
+$app->addRoute($group, '', 'pipe-create/{class_path?}/{class?}', array('pipe' => array('pipe.cli.CliPipeCreate')));
+
 // Define routes
 $app->setRoute('GET', '', array('pipe' => array('pipe.book.BookHome', 'pipe.ResponseCompression'))); // Default route
 

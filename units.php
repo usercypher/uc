@@ -19,6 +19,11 @@ $app->addUnit($group, 'model.BookModel');
 $app->setUnit('lib.Session', array('cache' => true));
 
 $group = array(
+    'args_prepend' => array('App'),
+);
+$app->addUnit($group, 'pipe.cli.CliPipeCreate');
+
+$group = array(
     'args_prepend' => array('App', 'lib.Session'),
 );
 $app->addUnit($group, 'pipe.book.BookCreate');
