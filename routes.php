@@ -25,7 +25,7 @@ $app->setRoute('GET', '', array('pipe' => array('pipe.book.BookHome', 'pipe.Resp
 $group = array( 
     'pipe_append' => array('pipe.ResponseCompression') // append component to route define in group
 );
-$app->addRoute($group, 'GET', 'home', array('pipe' => array('pipe.book.BookHome')));
+$app->addRoute($group, 'GET', 'home/{test}/test/{test2}', array('pipe' => array('pipe.book.BookHome')));
 $app->addRoute($group, 'GET', 'create', array('pipe' => array('pipe.book.BookCreate')));
 // Define a route for env editing a book, with an ID parameter (only digits allowed)
 $app->addRoute($group, 'GET', 'edit/{id:^\d+$}', array('pipe' => array('pipe.book.BookEdit')));

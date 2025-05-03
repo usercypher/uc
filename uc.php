@@ -386,7 +386,10 @@ class App {
 
         foreach ($pathSegments as $index => $pathSegment) {
             if ($pathSegment === '' && $index != 0) {
-                --$decrement;
+                ++$decrement;
+                if ($decrement > 20) {
+                    return array();
+                }
                 continue;
             }
 
@@ -414,9 +417,7 @@ class App {
                         if (!isset($value['_h'])) {
                             return array();
                         }
-                        $decodedSegments = array_slice($pathSegments, $index);
-                        foreach ($decodedSegments as $k => $v) $decodedSegments[$k] = urldecode($v);
-                        $params[substr($paramName, 0, -1)] = $decodedSegments;
+                        $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
                         break 2;
                     }
