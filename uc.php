@@ -534,7 +534,6 @@ class App {
 
         if ($route === array()) {
             $this->triggerError('Route not found: ' . $request->method . ' ' . $path, 404);
-            exit();
         }
 
         $request->params = $route['params'];
@@ -650,7 +649,6 @@ class App {
 
             if (isset($stackSet[$unit])) {
                 $this->triggerError('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
-                exit();
             }
 
             $cache = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
@@ -707,7 +705,6 @@ class App {
 
             if (isset($stackSet[$unit])) {
                 $this->triggerError('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
-                exit();
             }
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
