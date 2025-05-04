@@ -13,13 +13,13 @@ class CliPipeCreate {
         $response->type = 'text/plain';
 
         if (!isset($request->params['class']) || !isset($request->params['class_path'])) {
-            $response->content = 'Error: Usage — php [file] pipe-create [class_path] [class] --class_args=[value]';
+            $response->content = 'Error: Usage - php [file] pipe-create [class_path] [class] --class_args=[value]';
             $response->send();
         }
 
         $className = $request->params['class'];
         $classPath = $request->params['class_path'];
-        $classDeps = isset($request->cli['option']['class_args']) ? explode(',', $request->cli['option']['class_args']) : array();
+        $classDeps = empty($request->cli['option']['class_args']) ? array() : explode(',', $request->cli['option']['class_args']);
 
         $classContent = $this->classContent($className, $classDeps);
 
