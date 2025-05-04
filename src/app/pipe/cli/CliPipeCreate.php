@@ -19,7 +19,7 @@ class CliPipeCreate {
 
         $className = $request->params['class'];
         $classPath = $request->params['class_path'];
-        $classDeps = isset($request->cli['options']['class_args']) ? explode(',', $request->cli['options']['class_args']) : array();
+        $classDeps = isset($request->cli['option']['class_args']) ? explode(',', $request->cli['option']['class_args']) : array();
 
         $classContent = $this->classContent($className, $classDeps);
 

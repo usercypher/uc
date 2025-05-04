@@ -56,16 +56,16 @@ class Request {
         $this->cookies = $_COOKIE;
         $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
         $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : array();
-        $this->cli = array('positional' => array(), 'options' => array());
+        $this->cli = array('positional' => array(), 'option' => array());
         if ($this->method === '') {
-            for ($i = 0; $this->argc > $i; $i++) {
+            for ($i = 1; $this->argc > $i; $i++) {
                 $arg = $this->argv[$i];
                 if (strpos($arg, '--') === 0) {
                     $eq = strpos($arg, '=');
                     if ($eq !== false) {
-                        $this->cli['options'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
+                        $this->cli['option'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
                     } else {
-                        $this->cli['options'][substr($arg, 2)] = true;
+                        $this->cli['option'][substr($arg, 2)] = true;
                     }
                 } elseif (strpos($arg, '-') !== 0) {
                     $this->cli['positional'][] = $arg;
@@ -520,11 +520,8 @@ class App {
 
         $path = '';
         if ($request->method === '') {
-            $count = count($request->cli['positional']);
-            for ($i = 1; $count > $i; $i++) {
-                $path .= urlencode($request->cli['positional'][$i]) . '/';
-            }
-            $request->method = (isset($request->cli['options']['method']) && $request->cli['options']['method'] !== true) ? $request->cli['options']['method'] : '';
+            foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
+            $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $parseUrl = parse_url($request->uri);
             $path = ($parseUrl === false) ? $request->uri : $parseUrl['path'];
