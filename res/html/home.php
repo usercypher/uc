@@ -41,7 +41,7 @@ $books = $data['books'];
 
                 <!-- Actions (Edit & Delete) -->
                 <div class="actions">
-                    <a href="<?php echo $app->url('route', 'edit/' . $book['id']); ?>"><button>Edit</button></a>
+                    <a href="<?php echo $app->url('route', 'edit/' . $app->urlSlug($book['title'] . '-' . $book['id'])); ?>"><button>Edit</button></a>
                     <form action="<?php echo $app->url('route', 'book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, 'Delete book <?php echo htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8'); ?>?');">
                         <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
                         <input type="hidden" name="book[id]" value="<?php echo $book['id']; ?>">

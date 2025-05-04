@@ -312,8 +312,9 @@ class App {
                 if ($enableStackTrace) {
                     $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                     $traceOutput = 'Stack trace: ' . EOL;
-                    foreach ($trace as $i => $frame) {
-                        if (1 > $i) { continue; }
+                    $count = count($trace);
+                    for ($i = 1; $count > $i; $i++) {
+                        $frame = $trace[$i];
                         $traceOutput .= '#' . ($i - 1) . ' ';
                         $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
                         $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
@@ -769,8 +770,8 @@ class App {
         }
     }
 
-    function urlEncodeSeo($url) {
-        return urlencode(preg_replace('/\s+/', '-', strtolower($url)));
+    function urlSlug($s) {
+        return trim(preg_replace('/[^a-z0-9-]/', '', strtolower(preg_replace('/[\s-]+/', '-', $s))), '-');
     }
 
     function log($message, $file) {
