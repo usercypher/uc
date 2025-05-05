@@ -661,18 +661,18 @@ class App {
                 continue;
             }
 
-            if (!isset($md[$unit])) {
-                $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_CLASS_ARGS]));
+            if ($this->unit[$unit][$this->UNIT_CLASS_ARGS] !== array()) {
+                if (!isset($md[$unit])) {
+                    $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_CLASS_ARGS]));
+                }
+                if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
+                    $stack[] = $unit;
+                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_CLASS_ARGS][$md[$unit][$INDEX]]];
+                    ++$md[$unit][$INDEX];
+                    continue;
+                }
+                unset($md[$unit]);
             }
-
-            if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
-                $stack[] = $unit;
-                $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_CLASS_ARGS][$md[$unit][$INDEX]]];
-                ++$md[$unit][$INDEX];
-                continue;
-            }
-
-            unset($md[$unit]);
 
             unset($stackSet[$unitParent]);
 
@@ -714,18 +714,18 @@ class App {
                 continue;
             }
 
-            if (!isset($md[$unit])) {
-                $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
+            if ($this->unit[$unit][$this->UNIT_LOAD] !== array()) {
+                if (!isset($md[$unit])) {
+                    $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
+                }
+                if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
+                    $stack[] = $unit;
+                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
+                    ++$md[$unit][$INDEX];
+                    continue;
+                }
+                unset($md[$unit]);
             }
-
-            if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
-                $stack[] = $unit;
-                $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
-                ++$md[$unit][$INDEX];
-                continue;
-            }
-
-            unset($md[$unit]);
 
             unset($stackSet[$unitParent]);
 
