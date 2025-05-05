@@ -678,8 +678,7 @@ class App {
 
             $this->loadUnit($unit);
 
-            $class = $this->unit[$unit][$this->UNIT_CLASS];
-            $class = new $class(isset($resolved[$unit]) ? $resolved[$unit] : array());
+            $class = new $this->unit[$unit][$this->UNIT_CLASS](isset($resolved[$unit]) ? $resolved[$unit] : array());
             unset($resolved[$unit]);
             if ($cache) {
                 $this->cache[$unit][$this->CACHE_CLASS] = $class;
