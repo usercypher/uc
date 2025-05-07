@@ -4,12 +4,16 @@ $app = $data['app'];
 $httpCode = $data['http_code'];
 
 $httpMap = array(
-    500 => array('Internal Server Error', '500', 'Something went wrong on our end. Please try again later.'),
-    404 => array('Not Found', '404', 'The page you are looking for could not be found.'),
-    // add more
+    400 => array('Bad Request', '400', 'The request could not be processed. Please verify the URL or parameters.'),
+    401 => array('Unauthorized', '401', 'Authentication is required to access this resource.'),
+    403 => array('Forbidden', '403', 'You do not have permission to access this resource.'),
+    404 => array('Not Found', '404', 'The requested page could not be found.'),
+    405 => array('Method Not Allowed', '405', 'The HTTP method used is not allowed for this resource.'),
+    422 => array('Unprocessable Entity', '422', 'The request was well-formed but could not be followed due to semantic errors.'),
+    500 => array('Internal Server Error', '500', 'An unexpected error occurred. Please try again later.')
 );
 
-$error = isset($httpMap[$httpCode]) ? $httpMap[$httpCode] : array('Oops! Something went wrong', 'Oops!', 'Something went wrong on our side. We\'re working to fix it.');
+$error = isset($httpMap[$httpCode]) ? $httpMap[$httpCode] : $httpMap[500];
 
 $head_title = $error[0];
 $title = $error[1];

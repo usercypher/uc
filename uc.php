@@ -399,7 +399,7 @@ class App {
 
     function resolveRoute($method, $path) {
         if (!isset($this->routes[$method])) {
-            return array();
+            return array('http_code' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
         }
 
         $current = $this->routes[$method];
@@ -411,7 +411,7 @@ class App {
             if ($pathSegment === '' && $index != 0) {
                 ++$decrement;
                 if ($decrement > 20) {
-                    return array();
+                    return array('http_code' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $method . ' ' . $path);
                 }
                 continue;
             }
@@ -419,7 +419,7 @@ class App {
             $index -= $decrement;
 
             if (strlen($pathSegment) > 255) {
-                return array();
+                return array('http_code' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $method . ' ' . $path);
             }
 
             if (isset($current[$pathSegment])) {
@@ -438,7 +438,7 @@ class App {
                     $paramModifier = substr($paramName, -1);
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
-                            return array();
+                            return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
                         }
                         $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
@@ -462,7 +462,7 @@ class App {
             }
 
             if (!$matched) {
-                return array();
+                return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
             }
         }
 
@@ -477,7 +477,7 @@ class App {
                     $current = $value;
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
-                            return array();
+                            return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
                         }
                         break 2;
                     }
@@ -489,12 +489,12 @@ class App {
             }
 
             if (!$matched) {
-                return array();
+                return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
             }
         }
 
         if (!isset($current['_h'])) {
-            return array();
+            return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
         $finalPipes = array();
@@ -538,8 +538,8 @@ class App {
 
         $route = $this->resolveRoute($request->method, $path);
 
-        if ($route === array()) {
-            $this->triggerError('Route not found: ' . $request->method . ' ' . $path, 404);
+        if (isset($route['error'])) {
+            $this->triggerError($route['error'], $route['http_code']);
         }
 
         $request->params = $route['params'];
