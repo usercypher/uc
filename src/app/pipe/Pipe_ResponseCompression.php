@@ -1,6 +1,6 @@
 <?php
 
-class ResponseCompression {
+class Pipe_ResponseCompression {
     public function __construct($args = array()) {}
 
     public function pipe($request, $response) {

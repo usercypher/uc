@@ -1,6 +1,6 @@
 <?php
 
-class Session {
+class Lib_Session {
     public function __construct($args = array()) {
         $this->start();
     }

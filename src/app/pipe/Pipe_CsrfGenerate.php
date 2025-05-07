@@ -1,6 +1,6 @@
 <?php
 
-class CsrfGenerate {
+class Pipe_CsrfGenerate {
     public $session;
 
     public function __construct($args = array()) {

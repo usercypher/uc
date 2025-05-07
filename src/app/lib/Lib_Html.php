@@ -1,6 +1,6 @@
 <?php
 
-class Html {
+class Lib_Html {
     public function __construct($args = array()) {}
 
     public function encode(&$array, $stripTags = false, $allowedTags = '') {

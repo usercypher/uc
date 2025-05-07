@@ -1,6 +1,6 @@
 <?php
 
-class BookDelete {
+class Pipe_Book_Update {
     private $app, $session;
     private $bookModel;
 
@@ -15,11 +15,11 @@ class BookDelete {
     public function pipe($request, $response) {
         $data = $request->post;
 
-        $this->bookModel->validateAndDelete($data);
+        $this->bookModel->validateAndUpdate($data);
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', 'home'));
+        $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
 
         return array($request, $response);
     }

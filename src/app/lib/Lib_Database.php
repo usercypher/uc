@@ -1,6 +1,6 @@
 <?php
 
-class Database {
+class Lib_Database {
     private $app;
     private $host, $port, $name, $user, $pass, $pdo, $time;
 

@@ -1,6 +1,6 @@
 <?php
 
-class Model {
+class Lib_Model {
     private $flash = array();
     private $table, $conn, $primaryColumn = 'id';
 

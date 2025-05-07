@@ -1,6 +1,6 @@
 <?php
 
-class SrcAutoLoader {
+class Pipe_SrcAutoLoader {
     private $src, $app;
 
     public function __construct($args = array()) {

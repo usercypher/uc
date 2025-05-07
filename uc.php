@@ -144,9 +144,8 @@ class App {
     var $UNIT_PATH = 1;
     var $UNIT_FILE = 2;
     var $UNIT_LOAD = 3;
-    var $UNIT_CLASS = 4;
-    var $UNIT_CLASS_ARGS = 5;
-    var $UNIT_CLASS_CACHE = 6;
+    var $UNIT_CLASS_ARGS = 4;
+    var $UNIT_CLASS_CACHE = 5;
 
     var $CACHE_CLASS = 0;
     var $CACHE_PATH = 1;
@@ -170,9 +169,9 @@ class App {
         list($request, $response) = $args;
 
         $this->unit = array(
-            'App' => array(0, null, null, array(), 'App', array(1, 2), true),
-            'Request' => array(1, null, null, array(), 'Request', array(), true),
-            'Response' => array(2, null, null, array(), 'Response', array(), true),
+            'App' => array(0, null, null, array(), array(1, 2), true),
+            'Request' => array(1, null, null, array(), array(), true),
+            'Response' => array(2, null, null, array(), array(), true),
         );
 
         $this->unitList = array('App', 'Request', 'Response');
@@ -199,7 +198,7 @@ class App {
         $this->ENV['ROUTE_FILE'] = isset($this->ENV['ROUTE_FILE']) ? $this->ENV['ROUTE_FILE'] : 'index.php';
         $this->ENV['ROUTE_REWRITE'] = isset($this->ENV['ROUTE_REWRITE']) ? (bool) $this->ENV['ROUTE_REWRITE'] : false;
         $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
-        
+
         $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
 
         $this->ENV['ERROR_HTML_FILE'] = isset($this->ENV['ERROR_HTML_FILE']) ? $this->ENV['ERROR_HTML_FILE'] : '';
@@ -243,6 +242,13 @@ class App {
 
     function saveConfig($file) {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
+
+        if (file_exists($configFile)) {
+            $newFileName = $this->ENV['DIR'] . $file . '_' . date('Y-m-d_H-i-s', filectime($configFile)) . '.dat';
+            rename($configFile, $newFileName);
+            echo('Existing file detected. backed up as: ' . $newFileName . EOL);
+        }
+
         file_put_contents($configFile, serialize(array(
             'routes' => unserialize(serialize($this->routes)),
             'pipes' => unserialize(serialize($this->pipes)),
@@ -332,7 +338,7 @@ class App {
                     include($file);
                     $content = ob_get_clean();
                 } else {
-                    $content = 'An unexpected error occurred. Please try again later.' . EOL; 
+                    $content = 'An unexpected error occurred. Please try again later.' . EOL;
                 }
             }
         }
@@ -577,8 +583,7 @@ class App {
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
                     $unitFile = substr($file, 0, -4);
-                    $unit = str_replace('\\', '.', ($option['namespace'] . $unitFile));
-                    $unitClass = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;                    
+                    $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
                         $pathListIndex = $this->pathListIndex;
@@ -587,7 +592,11 @@ class App {
                         $this->pathListCache[$path] = $pathListIndex;
                     }
 
-                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), $unitClass, array(), false);
+                    if (isset($this->unit[$unit])) {
+                        $this->triggerError('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
+                    }
+
+                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), array(), false);
                     $this->unitList[$this->unitListIndex] = $unit;
                     ++$this->unitListIndex;
                 }
@@ -678,7 +687,7 @@ class App {
 
             $this->loadUnit($unit);
 
-            $class = new $this->unit[$unit][$this->UNIT_CLASS](isset($resolved[$unit]) ? $resolved[$unit] : array());
+            $class = new $unit(isset($resolved[$unit]) ? $resolved[$unit] : array());
             unset($resolved[$unit]);
             if ($cache) {
                 $this->cache[$unit][$this->CACHE_CLASS] = $class;
@@ -757,12 +766,12 @@ class App {
 
     function url($option, $url = '') {
         switch ($option) {
-            case 'route':
-                return $this->ENV['BASE_URL'] . $this->ENV['URL_EXTRA'] . $url;
-            case 'web':
-                return $this->ENV['BASE_URL'] . $this->ENV['URL_DIR_WEB'] . $url;
-            default:
-                return $url;
+        case 'route':
+            return $this->ENV['BASE_URL'] . $this->ENV['URL_EXTRA'] . $url;
+        case 'web':
+            return $this->ENV['BASE_URL'] . $this->ENV['URL_DIR_WEB'] . $url;
+        default:
+            return $url;
         }
     }
 

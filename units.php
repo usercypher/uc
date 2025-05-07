@@ -5,36 +5,36 @@
 // Unit names will be generated based on the file path, with directory separators replaced by dots.
 $app->autoSetUnit('src'.DS.'app'.DS, array('max' => 2));
 
-// Set up the 'Database' class with caching enabled, ensuring a single instance is used.
-$app->setUnit('lib.Database', array('args' => array('App'), 'cache' => true));
+// Set up the 'Lib_Database' class with caching enabled, ensuring a single instance is used.
+$app->setUnit('Lib_Database', array('args' => array('App'), 'cache' => true));
 
-// Define and inject dependencies: 'BookModel' depends on 'Database'
-// imports: 'BookModel' loads 'Model'
+// Define and inject dependencies: 'Model_Book' depends on 'Lib_Model'
+// imports: 'Model_Book' loads 'Lib_Model'
 $group = array(
-    'args_prepend' => array('lib.Database'),
-    'load_prepend' => array('lib.Model'),
+    'args_prepend' => array('Lib_Database'),
+    'load_prepend' => array('Lib_Model'),
 );
-$app->addUnit($group, 'model.BookModel');
+$app->addUnit($group, 'Model_Book');
 
-$app->setUnit('lib.Session', array('cache' => true));
+$app->setUnit('Lib_Session', array('cache' => true));
 
 $group = array(
     'args_prepend' => array('App'),
 );
-$app->addUnit($group, 'pipe.cli.CliPipeCreate');
+$app->addUnit($group, 'Pipe_Cli_PipeCreate');
 
 $group = array(
-    'args_prepend' => array('App', 'lib.Session'),
+    'args_prepend' => array('App', 'Lib_Session'),
 );
-$app->addUnit($group, 'pipe.book.BookCreate');
-$app->addUnit($group, 'pipe.book.BookDelete', array('args' => array('model.BookModel')));
-$app->addUnit($group, 'pipe.book.BookEdit', array('args' => array('model.BookModel')));
-$app->addUnit($group, 'pipe.book.BookHome', array('args' => array('model.BookModel')));
-$app->addUnit($group, 'pipe.book.BookStore', array('args' => array('model.BookModel')));
-$app->addUnit($group, 'pipe.book.BookUpdate', array('args' => array('model.BookModel')));
+$app->addUnit($group, 'Pipe_Book_Create');
+$app->addUnit($group, 'Pipe_Book_Delete', array('args' => array('Model_Book')));
+$app->addUnit($group, 'Pipe_Book_Edit', array('args' => array('Model_Book')));
+$app->addUnit($group, 'Pipe_Book_Home', array('args' => array('Model_Book')));
+$app->addUnit($group, 'Pipe_Book_Store', array('args' => array('Model_Book')));
+$app->addUnit($group, 'Pipe_Book_Update', array('args' => array('Model_Book')));
 
 $group = array(
-    'args_prepend' => array('lib.Session')
+    'args_prepend' => array('Lib_Session')
 );
-$app->addUnit($group, 'pipe.CsrfGenerate');
-$app->addUnit($group, 'pipe.CsrfValidate');
+$app->addUnit($group, 'Pipe_CsrfGenerate');
+$app->addUnit($group, 'Pipe_CsrfValidate');

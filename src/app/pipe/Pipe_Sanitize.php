@@ -1,6 +1,6 @@
 <?php
 
-class Sanitize {
+class Pipe_Sanitize {
     public function __construct($args = array()) {}
 
     public function pipe($request, $response) {

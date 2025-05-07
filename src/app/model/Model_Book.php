@@ -1,6 +1,6 @@
 <?php
 
-class BookModel extends Model {
+class Model_Book extends Lib_Model {
     private $database;
 
     public function __construct($args = array()) {

@@ -1,6 +1,6 @@
 <?php
 
-class ValidateFileUpload {
+class Pipe_ValidateFileUpload {
     public function __construct($args = array()) {}
 
     private $allowedFileTypes = array(

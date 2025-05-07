@@ -1,6 +1,6 @@
 <?php
 
-class CliPipeCreate {
+class Pipe_Cli_PipeCreate {
     private $app;
 
     public function __construct($args = array()) {
@@ -18,12 +18,12 @@ class CliPipeCreate {
         }
 
         $className = $request->params['class'];
-        $classPath = $request->params['class_path'];
+        $classPath = $request->params['class_path'] . $className . '.php';
         $classDeps = empty($request->cli['option']['class_args']) ? array() : explode(',', $request->cli['option']['class_args']);
 
         $classContent = $this->classContent($className, $classDeps);
 
-        file_put_contents($this->app->path('src', $classPath), $classContent);
+        file_put_contents($this->app->path('src', $classPath) , $classContent);
         $response->content = EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL;
 
         return array($request, $response);

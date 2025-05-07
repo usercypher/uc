@@ -1,6 +1,6 @@
 <?php
 
-class CsrfValidate {
+class Pipe_CsrfValidate {
     public $session;
 
     public function __construct($args = array()) {

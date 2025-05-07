@@ -1,6 +1,6 @@
 <?php
 
-class BookHome {
+class Pipe_Book_Store {
     private $app, $session;
     private $bookModel;
 
@@ -13,12 +13,13 @@ class BookHome {
     } 
 
     public function pipe($request, $response) {
-        $response->content = $response->html($this->app->path('res', 'html/home.php'), array(
-            'app' => $this->app,
-            'flash' => $this->session->unset('flash'),
-            'csrf_token' => $this->session->get('csrf_token'),
-            'books' => $this->bookModel->all()
-        ));
+        $data = $request->post;
+
+        $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
+
+        $this->session->set('flash', $this->bookModel->getFlash());
+
+        $response->redirect($this->app->url('route', $route));
 
         return array($request, $response);
     }

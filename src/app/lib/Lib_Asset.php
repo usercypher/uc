@@ -1,6 +1,6 @@
 <?php 
 
-class Asset {
+class Lib_Asset {
     private $css = array();
     private $js = array();
     private $indent = '';
