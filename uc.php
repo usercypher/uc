@@ -430,8 +430,8 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (strpos($key, '{') !== false && strpos($key, '}') !== false) {
-                    $param = trim($key, '{}');
+                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
+                    $param = substr($key, 1, -1);
                     $paramParts = explode(':', $param, 2);
                     $paramName = $paramParts[0];
                     $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '.+';
@@ -470,8 +470,8 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (strpos($key, '{') !== false && strpos($key, '}') !== false) {
-                    $param = trim($key, '{}');
+                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
+                    $param = substr($key, 1, -1);
                     $paramParts = explode(':', $param, 2);
                     $paramModifier = substr($paramParts[0], -1);
                     $current = $value;
