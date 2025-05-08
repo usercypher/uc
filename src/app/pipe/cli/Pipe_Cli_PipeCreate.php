@@ -10,10 +10,8 @@ class Pipe_Cli_PipeCreate {
     } 
 
     public function pipe($request, $response) {
-        $response->type = 'text/plain';
-
         if (!isset($request->params['class']) || !isset($request->params['class_path'])) {
-            $response->content = 'Error: Usage - php [file] pipe-create [class_path] [class] --class_args=[value]';
+            $response->plain('Error: Usage - php [file] pipe-create [class_path] [class] --class_args=[value]' . EOL);
             $response->send();
         }
 
@@ -24,9 +22,8 @@ class Pipe_Cli_PipeCreate {
         $classContent = $this->classContent($className, $classDeps);
 
         file_put_contents($this->app->path('src', $classPath) , $classContent);
-        $response->content = EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL;
 
-        return array($request, $response);
+        return array($request, $response->plain(EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL));
     }
 
     private function classContent($className, $classDependency) {

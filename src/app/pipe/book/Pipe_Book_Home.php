@@ -13,13 +13,11 @@ class Pipe_Book_Home {
     } 
 
     public function pipe($request, $response) {
-        $response->content = $response->html($this->app->path('res', 'html/home.php'), array(
+        return array($request, $response->html($this->app->path('res', 'html/home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'books' => $this->bookModel->all()
-        ));
-
-        return array($request, $response);
+            'books' => $this->bookModel->all(),
+        )));
     }
 }

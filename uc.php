@@ -113,27 +113,36 @@ class Response {
         exit(isset($this->headers['Location']) ? '' : $this->content);
     }
 
-    function html($html, $data) {
-        ob_start();
-        require($html);
-        $htmlData = ob_get_clean();
+    function plain($string) {
+        $this->type = 'text/plain';
+        $this->content = $string;
 
-        return $htmlData;
+        return $this;
+    }
+
+    function html($string, $data) {
+        $this->type = 'text/html';
+        ob_start();
+        require($string);
+        $this->content = ob_get_clean();
+
+        return $this;
     }
 
     function json($data) {
         $this->type = 'application/json';
-        $jsonData = json_encode($data);
-
+        $this->content = json_encode($data);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $jsonData = '{"error": "Unable to encode data"}';
+            $this->content = '{"error": "Unable to encode data"}';
         }
 
-        return $jsonData;
+        return $this;
     }
 
     function redirect($url) {
         $this->headers['Location'] = $url;
+
+        return $this;
     }
 }
 

@@ -19,8 +19,6 @@ class Pipe_Book_Delete {
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', 'home'));
-
-        return array($request, $response);
+        return array($request, $response->redirect($this->app->url('route', 'home')));
     }
 }

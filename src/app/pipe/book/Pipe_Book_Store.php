@@ -19,8 +19,6 @@ class Pipe_Book_Store {
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', $route));
-
-        return array($request, $response);
+        return array($request, $response->redirect($this->app->url('route', $route)));
     }
 }
