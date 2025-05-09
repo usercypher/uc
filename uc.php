@@ -55,19 +55,19 @@ class Request {
         $this->files = $_FILES;
         $this->cookies = $_COOKIE;
         $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
-        $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : array();
+        $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : 0;
         $this->cli = array('positional' => array(), 'option' => array());
         if ($this->method === '') {
             for ($i = 1; $this->argc > $i; $i++) {
                 $arg = $this->argv[$i];
-                if (strpos($arg, '--') === 0) {
+                if (substr($arg, 0, 2) === '--') {
                     $eq = strpos($arg, '=');
                     if ($eq !== false) {
                         $this->cli['option'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
                     } else {
                         $this->cli['option'][substr($arg, 2)] = true;
                     }
-                } elseif (strpos($arg, '-') !== 0) {
+                } elseif (substr($arg, 0, 1) !== '-') {
                     $this->cli['positional'][] = $arg;
                 }
             }
@@ -356,7 +356,7 @@ class App {
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $unit) {
-                    if ($unit == 'global' && $key === 'ignore') {
+                    if ($unit === '--global' && $key === 'ignore') {
                         $handler[$value][] = -1;
                         continue;
                     }
@@ -549,7 +549,7 @@ class App {
 
     function autoSetUnit($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
-        if (!isset($option['max'])) $option['max'] = -1;
+        if (!isset($option['max'])) $option['max'] = 0;
         if (!isset($option['ignore'])) $option['ignore'] = array();
         if (!isset($option['namespace'])) $option['namespace'] = '';
         if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
@@ -566,10 +566,10 @@ class App {
                     }
                 }
 
-                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR'] . $path . $file)) {
+                if (($option['max'] === 0 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR'] . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
-                    $option['namespace'] .= ($file . '\\');
+                    $option['namespace'] .= $file . '\\';
                     $this->autoSetUnit($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
@@ -758,12 +758,12 @@ class App {
 
     function url($option, $url = '') {
         switch ($option) {
-        case 'route':
-            return $this->ENV['BASE_URL'] . $this->ENV['URL_EXTRA'] . $url;
-        case 'web':
-            return $this->ENV['BASE_URL'] . $this->ENV['URL_DIR_WEB'] . $url;
-        default:
-            return $url;
+            case 'route':
+                return $this->ENV['BASE_URL'] . $this->ENV['URL_EXTRA'] . $url;
+            case 'web':
+                return $this->ENV['BASE_URL'] . $this->ENV['URL_DIR_WEB'] . $url;
+            default:
+                return $url;
         }
     }
 
@@ -790,10 +790,11 @@ class App {
     }
 
     function log($message, $file) {
+        list($micro, $time) = explode(' ', microtime());
+
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
         $maxLogSize = $this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
-        list($usec, $sec) = explode(' ', microtime());
-        $message = '[' . date('Y-m-d H:i:s', $sec) . '.' . sprintf('%06d', $usec * 1000000) . '] ' . $message . "\n";
+        $message = '[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $message . EOL;
 
         $this->fileWrite($logFile, $message, true);
 
@@ -803,10 +804,9 @@ class App {
         }
 
         $timestampFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
-        $now = (int) $sec;
         $lastCleanup = file_exists($timestampFile) ? (int) $this->fileRead($timestampFile) : 0;
 
-        if (($now - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
+        if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
             $logFilesWithTime = array();
             foreach ($logFiles as $file) {
@@ -826,12 +826,12 @@ class App {
             }
 
             foreach ($logFiles as $file) {
-                if (($now - $logFilesWithTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
+                if (($time - $logFilesWithTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
                     unlink($file);
                 }
             }
 
-            $this->fileWrite($timestampFile, $now);
+            $this->fileWrite($timestampFile, $time);
         }
     }
 }

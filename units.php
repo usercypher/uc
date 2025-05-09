@@ -3,6 +3,7 @@
 
 // Auto-load units from the 'src/app/' directory and set path metadata (max depth 2).
 // Options: 
+// 'max' => '0' // 0 = no limits.
 // 'ignore' => array('ignore*.pattern', 'ignore.file')  // Ignore files matching the given patterns.
 // 'dir_as_namespace' => true  // If enabled, treat directories as namespaces. Each directory level becomes part of the namespace prefix, separated by '\'. 
 // Unit names will be derived from the filename. If 'dir_as_namespace' is true, the directory structure is included in the namespace, 
