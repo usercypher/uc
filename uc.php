@@ -773,20 +773,20 @@ class App {
 
     function fileWrite($file, $data, $append = false) {
         $fp = fopen($file, (($append) ? 'a' : 'w'));
-        if (!$fp) return false;
-        fwrite($fp, $data);
-        fclose($fp);
-        return true;
+        if ($fp) {
+            fwrite($fp, $data);
+            fclose($fp);
+        }
     }
 
-    function fileRead($file, $chunkSize = 128) {
-        if (!file_exists($file)) return false;
+    function fileRead($file, $chunkSizeKb = 128) {
         $fp = fopen($file, 'r');
-        if (!$fp) return false;
-        $content = '';
-        while (!feof($fp)) $content .= fread($fp, $chunkSize * 1024);
-        fclose($fp);
-        return $content;
+        if ($fp) {
+            $content = '';
+            while (!feof($fp)) $content .= fread($fp, $chunkSizeKb * 1024);
+            fclose($fp);
+            return $content;
+        }
     }
 
     function log($message, $file) {
@@ -804,7 +804,7 @@ class App {
 
         $timestampFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
         $now = (int) $sec;
-        $lastCleanup = (int) $this->fileRead($timestampFile);
+        $lastCleanup = file_exists($timestampFile) ? (int) $this->fileRead($timestampFile) : 0;
 
         if (($now - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
