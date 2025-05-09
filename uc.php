@@ -258,29 +258,14 @@ class App {
             echo('Existing file detected. backed up as: ' . $newFileName . EOL);
         }
 
-        file_put_contents($configFile, serialize(array(
-            'routes' => unserialize(serialize($this->routes)),
-            'pipes' => unserialize(serialize($this->pipes)),
-            'unit' => unserialize(serialize($this->unit)),
-            'unit_list' => unserialize(serialize($this->unitList)),
-            'unit_list_index' => unserialize(serialize($this->unitListIndex)),
-            'path_list' => unserialize(serialize($this->pathList)),
-            'path_list_index' => unserialize(serialize($this->pathListIndex))
-        )));
+        $this->fileWrite($configFile, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
 
         echo('File created: ' . $configFile . EOL);
     }
 
     function loadConfig($file) {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
-        $data = unserialize(file_get_contents($configFile));
-        $this->routes = $data['routes'];
-        $this->pipes = $data['pipes'];
-        $this->unit = $data['unit'];
-        $this->unitList = $data['unit_list'];
-        $this->unitListIndex = $data['unit_list_index'];
-        $this->pathList = $data['path_list'];
-        $this->pathListIndex = $data['path_list_index'];
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->fileRead($configFile));
     }
 
     // Error Management
@@ -563,13 +548,11 @@ class App {
     // Class Management
 
     function autoSetUnit($path, $option) {
-        $option = array(
-            'depth' => isset($option['depth']) ? $option['depth'] : 0,
-            'max' => isset($option['max']) ? $option['max'] : -1,
-            'ignore' => isset($option['ignore']) ? $option['ignore'] : array(),
-            'namespace' => isset($option['namespace']) ? $option['namespace'] : '',
-            'dir_as_namespace' => isset($option['dir_as_namespace']) ? $option['dir_as_namespace'] : false,
-        );
+        if (!isset($option['depth'])) $option['depth'] = 0;
+        if (!isset($option['max'])) $option['max'] = -1;
+        if (!isset($option['ignore'])) $option['ignore'] = array();
+        if (!isset($option['namespace'])) $option['namespace'] = '';
+        if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
 
         if ($dirHandle = opendir($this->ENV['DIR'] . $path)) {
             while (($file = readdir($dirHandle)) !== false) {
@@ -788,12 +771,31 @@ class App {
         return trim(preg_replace('/[^a-z0-9-]/', '', strtolower(preg_replace('/[\s-]+/', '-', $s))), '-');
     }
 
+    function fileWrite($file, $data, $append = false) {
+        $fp = fopen($file, (($append) ? 'a' : 'w'));
+        if (!$fp) return false;
+        fwrite($fp, $data);
+        fclose($fp);
+        return true;
+    }
+
+    function fileRead($file, $chunkSize = 128) {
+        if (!file_exists($file)) return false;
+        $fp = fopen($file, 'r');
+        if (!$fp) return false;
+        $content = '';
+        while (!feof($fp)) $content .= fread($fp, $chunkSize * 1024);
+        fclose($fp);
+        return $content;
+    }
+
     function log($message, $file) {
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
         $maxLogSize = $this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
-        $message = '[' . date('Y-m-d H:i:s') . '.' . sprintf('%06d', (int) ((microtime(true) - floor(microtime(true))) * 1000000)) . '] ' . $message . EOL;
+        list($usec, $sec) = explode(' ', microtime());
+        $message = '[' . date('Y-m-d H:i:s', $sec) . '.' . sprintf('%06d', $usec * 1000000) . '] ' . $message . "\n";
 
-        file_put_contents($logFile, $message, FILE_APPEND);
+        $this->fileWrite($logFile, $message, true);
 
         if (filesize($logFile) >= $maxLogSize) {
             $newLogFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
@@ -801,8 +803,8 @@ class App {
         }
 
         $timestampFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
-        $now = time();
-        $lastCleanup = file_exists($timestampFile) ? (int) file_get_contents($timestampFile) : 0;
+        $now = (int) $sec;
+        $lastCleanup = (int) $this->fileRead($timestampFile);
 
         if (($now - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
@@ -829,7 +831,7 @@ class App {
                 }
             }
 
-            file_put_contents($timestampFile, $now);
+            $this->fileWrite($timestampFile, $now);
         }
     }
 }
