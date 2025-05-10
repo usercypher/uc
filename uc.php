@@ -32,7 +32,7 @@ function init() {
 }
 
 function d($var) {
-    header('Content-Type: text/plain');
+    if (!headers_sent()) header('Content-Type: text/plain');
     echo var_export($var, true);
 }
 
@@ -120,10 +120,10 @@ class Response {
         return $this;
     }
 
-    function html($string, $data) {
+    function html($file, $data) {
         $this->type = 'text/html';
         ob_start();
-        require($string);
+        require($file);
         $this->content = ob_get_clean();
 
         return $this;

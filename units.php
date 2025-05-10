@@ -15,6 +15,12 @@ $app->autoSetUnit('src'.DS.'app'.DS, array('max' => 2));
 // The 'args' option specifies that 'App' is passed as an argument when the class is instantiated.
 $app->setUnit('Lib_Database', array('args' => array('App'), 'cache' => true));
 
+// Services
+$group = array(
+    'args_prepend' => array('App'),
+);
+$app->addUnit($group, 'Service_Logger');
+
 // Define and inject dependencies: 'Model_Book' depends on 'Lib_Model'.
 // This means that before 'Model_Book' is instantiated, 'Lib_Model' will be loaded first.
 $group = array(
@@ -31,10 +37,11 @@ $group = array(
     'args_prepend' => array('App'),
 );
 $app->addUnit($group, 'Pipe_Cli_PipeCreate');
+$app->addUnit($group, 'Pipe_SrcAutoLoader');
 
 // Define other pipe units, specifying their dependencies:
 $group = array(
-    'args_prepend' => array('App', 'Lib_Session'),  // Inject 'App' and 'Lib_Session' as arguments for the pipes.
+    'args_prepend' => array('App', 'Lib_Session', 'Service_Logger'),  // Inject 'App' and 'Lib_Session' as arguments for the pipes.
 );
 $app->addUnit($group, 'Pipe_Book_Create');
 $app->addUnit($group, 'Pipe_Book_Delete', array('args' => array('Model_Book')));
