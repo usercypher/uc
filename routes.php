@@ -5,7 +5,6 @@
 $app->setPipes(array(
     // 'prepend' - these pipes will be applied to all routes before the route's specific pipes
     'prepend' => array(
-        'Pipe_SrcAutoLoader',
         'Pipe_Sanitize',  // Data sanitization pipe applied before each route
         'Pipe_CsrfGenerate',  // CSRF token generation pipe applied before each route
     ),

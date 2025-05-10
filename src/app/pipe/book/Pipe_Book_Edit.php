@@ -1,22 +1,18 @@
 <?php
 
 class Pipe_Book_Edit {
-    private $app, $session, $loggerService;
+    private $app, $session;
     private $bookModel;
 
     public function __construct($args = array()) {
         list(
             $this->app, 
             $this->session, 
-            $this->loggerService,
             $this->bookModel
         ) = $args;
     } 
 
     public function pipe($request, $response) {
-        $logger = $this->loggerService->get();
-        $logger->info('edit');
-
         $data = $request->params;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
 
