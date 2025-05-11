@@ -33,7 +33,7 @@ function init() {
 
 function d($var) {
     if (!headers_sent()) header('Content-Type: text/plain');
-    echo var_export($var, true);
+    echo var_export($var, true) . EOL;
 }
 
 class Request {
@@ -779,11 +779,10 @@ class App {
         }
     }
 
-    function fileRead($file, $chunkSizeKb = 128) {
+    function fileRead($file) {
         $fp = fopen($file, 'r');
         if ($fp) {
-            $content = '';
-            while (!feof($fp)) $content .= fread($fp, $chunkSizeKb * 1024);
+            $content = fread($fp, filesize($file));
             fclose($fp);
             return $content;
         }
