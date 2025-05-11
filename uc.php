@@ -37,7 +37,7 @@ function d($var) {
 }
 
 class Request {
-    var $server, $data, $uri, $method, $baseUrl, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
+    var $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
 
     function __construct() {
         $this->init();
@@ -48,7 +48,6 @@ class Request {
         $this->data = array();
         $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
-        $this->baseUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
         $this->params = array();
         $this->get = $_GET;
         $this->post = $_POST;
@@ -191,8 +190,6 @@ class App {
             'Request' => array($request, true),
             'Response' => array($response, true),
         );
-
-        $this->ENV['BASE_URL'] = $request->baseUrl;
     }
 
     function init() {
@@ -206,9 +203,9 @@ class App {
 
         $this->ENV['ROUTE_FILE'] = isset($this->ENV['ROUTE_FILE']) ? $this->ENV['ROUTE_FILE'] : 'index.php';
         $this->ENV['ROUTE_REWRITE'] = isset($this->ENV['ROUTE_REWRITE']) ? (bool) $this->ENV['ROUTE_REWRITE'] : false;
-        $this->ENV['URL_EXTRA'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
-
+        $this->ENV['URL_URI'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
         $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
+        $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
 
         $this->ENV['ERROR_HTML_FILE'] = isset($this->ENV['ERROR_HTML_FILE']) ? $this->ENV['ERROR_HTML_FILE'] : '';
         $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
@@ -759,9 +756,9 @@ class App {
     function url($option, $url = '') {
         switch ($option) {
             case 'route':
-                return $this->ENV['BASE_URL'] . $this->ENV['URL_EXTRA'] . $url;
+                return $this->ENV['URL_BASE'] . $this->ENV['URL_URI'] . $url;
             case 'web':
-                return $this->ENV['BASE_URL'] . $this->ENV['URL_DIR_WEB'] . $url;
+                return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
             default:
                 return $url;
         }
