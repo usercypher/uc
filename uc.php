@@ -425,25 +425,23 @@ class App {
                     $param = substr($key, 1, -1);
                     $paramParts = explode(':', $param, 2);
                     $paramName = $paramParts[0];
-                    $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '.+';
+                    $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '.*';
                     $paramModifier = substr($paramName, -1);
                     if ($paramModifier === '*') {
-                        if (!isset($value['_h'])) {
-                            return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
-                        }
                         $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
-                        break 2;
+                        $matched = true;
+                        break;
                     }
                     if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
-                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
+                        foreach ($matches as $k => $v) {$matches[$k] = urldecode($v);}
                         $params[substr($paramName, 0, -1)] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
                     }
                     if (preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
-                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
+                        foreach ($matches as $k => $v) {$matches[$k] = urldecode($v);}
                         $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
@@ -465,14 +463,8 @@ class App {
                     $param = substr($key, 1, -1);
                     $paramParts = explode(':', $param, 2);
                     $paramModifier = substr($paramParts[0], -1);
-                    $current = $value;
-                    if ($paramModifier === '*') {
-                        if (!isset($value['_h'])) {
-                            return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
-                        }
-                        break 2;
-                    }
-                    if ($paramModifier === '?') {
+                    if ($paramModifier === '*' || $paramModifier === '?') {
+                        $current = $value;
                         $matched = true;
                         break;
                     }
@@ -518,7 +510,7 @@ class App {
 
         $path = '';
         if ($request->method === '') {
-            foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
+            foreach ($request->cli['positional'] as $positional) {$path .= urlencode($positional) . '/';}
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $parseUrl = parse_url($request->uri);
@@ -545,11 +537,11 @@ class App {
     // Class Management
 
     function autoSetUnit($path, $option) {
-        if (!isset($option['depth'])) $option['depth'] = 0;
-        if (!isset($option['max'])) $option['max'] = 0;
-        if (!isset($option['ignore'])) $option['ignore'] = array();
-        if (!isset($option['namespace'])) $option['namespace'] = '';
-        if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
+        if (!isset($option['depth'])) {$option['depth'] = 0;}
+        if (!isset($option['max'])) {$option['max'] = 0;}
+        if (!isset($option['ignore'])) {$option['ignore'] = array();}
+        if (!isset($option['namespace'])) {$option['namespace'] = '';}
+        if (!isset($option['dir_as_namespace'])) {$option['dir_as_namespace'] = false;}
 
         if ($dirHandle = opendir($this->ENV['DIR'] . $path)) {
             while (($file = readdir($dirHandle)) !== false) {
