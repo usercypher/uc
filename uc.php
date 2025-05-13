@@ -290,19 +290,19 @@ class App {
             ob_end_clean();
         }
 
-        $httpCode = 500;
+        $http = 500;
         $type = 'text/html';
         $content = '';
 
         $parts = explode('|', $errstr, 2);
         if (is_numeric($parts[0])) {
-            $httpCode = (int) $parts[0];
+            $http = (int) $parts[0];
             $errstr = $parts[1];
         }
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
-            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
+            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
             if ($this->ENV['SHOW_ERRORS'] || empty($_SERVER['REQUEST_METHOD'])) {
                 $traceOutput = '';
@@ -320,11 +320,11 @@ class App {
                     }
                 }
                 $type = 'text/plain';
-                $content = '[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
+                $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_HTML_FILE'];
                 if (file_exists($file)) {
-                    $data = array('app' => $this, 'http_code' => $httpCode);
+                    $data = array('app' => $this, 'http' => $http);
                     ob_start();
                     include($file);
                     $content = ob_get_clean();
@@ -334,10 +334,10 @@ class App {
             }
         }
 
-        $this->log('[php error ' . $errno . '] [http ' . $httpCode . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, 'app/error');
+        $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, 'app/error');
 
         if (!headers_sent()) {
-            header('HTTP/1.1 ' . $httpCode);
+            header('HTTP/1.1 ' . $http);
             header('Content-Type: ' . $type);
         }
 
@@ -390,7 +390,7 @@ class App {
 
     function resolveRoute($method, $path) {
         if (!isset($this->routes[$method])) {
-            return array('http_code' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
+            return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
         }
 
         $current = $this->routes[$method];
@@ -402,7 +402,7 @@ class App {
             if ($pathSegment === '' && $index != 0) {
                 ++$decrement;
                 if ($decrement > 20) {
-                    return array('http_code' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $method . ' ' . $path);
+                    return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $method . ' ' . $path);
                 }
                 continue;
             }
@@ -410,7 +410,7 @@ class App {
             $index -= $decrement;
 
             if (strlen($pathSegment) > 255) {
-                return array('http_code' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $method . ' ' . $path);
+                return array('http' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $method . ' ' . $path);
             }
 
             if (isset($current[$pathSegment])) {
@@ -429,7 +429,7 @@ class App {
                     $paramModifier = substr($paramName, -1);
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
-                            return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+                            return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
                         }
                         $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
@@ -453,7 +453,7 @@ class App {
             }
 
             if (!$matched) {
-                return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+                return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
             }
         }
 
@@ -468,7 +468,7 @@ class App {
                     $current = $value;
                     if ($paramModifier === '*') {
                         if (!isset($value['_h'])) {
-                            return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+                            return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
                         }
                         break 2;
                     }
@@ -480,12 +480,12 @@ class App {
             }
 
             if (!$matched) {
-                return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+                return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
             }
         }
 
         if (!isset($current['_h'])) {
-            return array('http_code' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+            return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
         $finalPipes = array();
@@ -530,7 +530,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if (isset($route['error'])) {
-            $this->triggerError($route['error'], $route['http_code']);
+            $this->triggerError($route['error'], $route['http']);
         }
 
         $request->params = $route['params'];

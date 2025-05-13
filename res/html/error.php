@@ -1,7 +1,7 @@
 <?php
 
 $app = $data['app'];
-$httpCode = $data['http_code'];
+$http = $data['http'];
 
 $httpMap = array(
     400 => array('Bad Request', '400', 'The request could not be processed. Please verify the URL or parameters.'),
@@ -13,11 +13,7 @@ $httpMap = array(
     500 => array('Internal Server Error', '500', 'An unexpected error occurred. Please try again later.')
 );
 
-$error = isset($httpMap[$httpCode]) ? $httpMap[$httpCode] : $httpMap[500];
-
-$head_title = $error[0];
-$title = $error[1];
-$description = $error[2];
+list($head_title, $title, $description) = isset($httpMap[$http]) ? $httpMap[$http] : $httpMap[500];
 
 ?>
 
