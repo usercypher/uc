@@ -393,6 +393,10 @@ class App {
             return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
         }
 
+        if (strlen($path) > 2048) {
+            return array('http' => 414, 'error' => 'Request-URI Too Long');
+        }
+
         $current = $this->routes[$method];
         $params = array();
         $pathSegments = explode('/', trim($path, '/'));

@@ -9,6 +9,7 @@ $httpMap = array(
     403 => array('Forbidden', '403', 'You do not have permission to access this resource.'),
     404 => array('Not Found', '404', 'The requested page could not be found.'),
     405 => array('Method Not Allowed', '405', 'The HTTP method used is not allowed for this resource.'),
+    414 => array('Request-URI Too Long', '414', 'The URI provided in the request is too long. Please shorten the URL and try again.'),
     422 => array('Unprocessable Entity', '422', 'The request was well-formed but could not be followed due to semantic errors.'),
     500 => array('Internal Server Error', '500', 'An unexpected error occurred. Please try again later.')
 );
