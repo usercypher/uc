@@ -353,11 +353,7 @@ class App {
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $unit) {
-                    if ($unit === '--global' && $key === 'ignore') {
-                        $handler[$value][] = -1;
-                        continue;
-                    }
-                    $handler[$value][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+                    $handler[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
                 }
             }
         }
@@ -394,7 +390,7 @@ class App {
         }
 
         if (strlen($path) > 2048) {
-            return array('http' => 414, 'error' => 'Request-URI Too Long');
+            return array('http' => 414, 'error' => 'Request-URI too long (max 2048 chars): ' . $path);
         }
 
         $current = $this->routes[$method];
@@ -406,7 +402,7 @@ class App {
             if ($pathSegment === '' && $index != 0) {
                 ++$decrement;
                 if ($decrement > 20) {
-                    return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $method . ' ' . $path);
+                    return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
                 }
                 continue;
             }
@@ -414,7 +410,7 @@ class App {
             $index -= $decrement;
 
             if (strlen($pathSegment) > 255) {
-                return array('http' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $method . ' ' . $path);
+                return array('http' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $pathSegment);
             }
 
             if (isset($current[$pathSegment])) {
