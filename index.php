@@ -30,6 +30,6 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
 
     // Load app configuration and dispatch the response
     $app->loadConfig($configFile);
-    $response = $app->dispatch();
+    $response = $app->run();
     $response->send();
 }

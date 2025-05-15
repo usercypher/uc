@@ -169,7 +169,7 @@ class App {
     var $cache = array();
     var $pathListCache = array();
 
-    var $isDispatch = false;
+    var $isRunning = false;
 
     // Application Setup
 
@@ -499,13 +499,14 @@ class App {
 
     // Request Handling
 
-    function dispatch() {
+    function run() {
         $response = $this->cache['Response'][$this->CACHE_CLASS];
-        if ($this->isDispatch) {
+
+        if ($this->isRunning) {
             return $response;
         }
 
-        $this->isDispatch = true;
+        $this->isRunning = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
         $path = '';
@@ -543,8 +544,8 @@ class App {
         if (!isset($option['namespace'])) {$option['namespace'] = '';}
         if (!isset($option['dir_as_namespace'])) {$option['dir_as_namespace'] = false;}
 
-        if ($dirHandle = opendir($this->ENV['DIR'] . $path)) {
-            while (($file = readdir($dirHandle)) !== false) {
+        if ($dp = opendir($this->ENV['DIR'] . $path)) {
+            while (($file = readdir($dp)) !== false) {
                 if ($file === '.' || $file === '..') {
                     continue;
                 }
@@ -582,7 +583,7 @@ class App {
                     ++$this->unitListIndex;
                 }
             }
-            closedir($dirHandle);
+            closedir($dp);
         }
     }
 
@@ -760,17 +761,15 @@ class App {
         return trim(preg_replace('/[^a-z0-9-]/', '', strtolower(preg_replace('/[\s-]+/', '-', $s))), '-');
     }
 
-    function fileWrite($file, $data, $append = false) {
-        $fp = fopen($file, (($append) ? 'a' : 'w'));
-        if ($fp) {
-            fwrite($fp, $data);
+    function fileWrite($file, $string, $append = false) {
+        if ($fp = fopen($file, (($append) ? 'a' : 'w'))) {
+            fwrite($fp, $string);
             fclose($fp);
         }
     }
 
     function fileRead($file) {
-        $fp = fopen($file, 'r');
-        if ($fp) {
+        if ($fp = fopen($file, 'r')) {
             $content = fread($fp, filesize($file));
             fclose($fp);
             return $content;
@@ -796,25 +795,25 @@ class App {
 
         if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
-            $logFilesWithTime = array();
+            $logFilesMTime = array();
             foreach ($logFiles as $file) {
-                $logFilesWithTime[$file] = filemtime($file);
+                $logFilesMTime[$file] = filemtime($file);
             }
 
-            asort($logFilesWithTime);
-            $logFiles = array_keys($logFilesWithTime);
+            asort($logFilesMTime);
+            $logFiles = array_keys($logFilesMTime);
 
             if (count($logFiles) > $this->ENV['MAX_LOG_FILES']) {
                 $filesToDelete = array_slice($logFiles, 0, count($logFiles) - $this->ENV['MAX_LOG_FILES']);
                 foreach ($filesToDelete as $file) {
                     unlink($file);
-                    unset($logFilesWithTime[$file]);
+                    unset($logFilesMTime[$file]);
                 }
-                $logFiles = array_keys($logFilesWithTime);
+                $logFiles = array_keys($logFilesMTime);
             }
 
             foreach ($logFiles as $file) {
-                if (($time - $logFilesWithTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
+                if (($time - $logFilesMTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
                     unlink($file);
                 }
             }
