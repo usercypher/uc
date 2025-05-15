@@ -18,11 +18,11 @@
 init();
 
 function init() {
-    $os = strtoupper(PHP_OS);
-    if (strpos($os, 'WIN') !== false) {
+    $os = strtolower(PHP_OS);
+    if (strpos($os, 'win') !== false) {
         define('DS', '\\');
         define('EOL', "\r\n");
-    } elseif (strpos($os, 'DAR') !== false) {
+    } elseif (strpos($os, 'dar') !== false) {
         define('DS', '/');
         define('EOL', "\r");
     } else {
