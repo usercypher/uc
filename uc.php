@@ -574,6 +574,7 @@ class App {
         $COUNT = 1;
 
         $stack = array($unit);
+        $stackSet = array();
         $md = array();
         $resolved = array();
         $class = null;
@@ -626,6 +627,7 @@ class App {
         $COUNT = 1;
 
         $stack = array($unit);
+        $stackSet = array();
         $md = array();
 
         while (!empty($stack)) {
@@ -699,7 +701,7 @@ class App {
 
     function fileWrite($file, $string, $append = false) {
         if ($fp = fopen($file, (($append) ? 'a' : 'w'))) {
-            fwrite($fp, $string);
+            fwrite($fp, (string) $string);
             fclose($fp);
         }
     }
@@ -713,7 +715,10 @@ class App {
     }
 
     function log($message, $file) {
-        list($micro, $time) = explode(' ', microtime());
+        $mt = explode(' ', microtime());
+        $micro = (int) $mt[0];
+        $time = (int) $mt[1];
+
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
 
         $this->fileWrite($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $message . EOL), true);
