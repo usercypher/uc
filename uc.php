@@ -32,7 +32,7 @@ function init() {
 }
 
 function d($var) {
-    if (!headers_sent()) header('Content-Type: text/plain');
+    if (!headers_sent()) {header('Content-Type: text/plain');}
     echo var_export($var, true) . EOL;
 }
 
