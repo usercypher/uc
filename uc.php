@@ -277,8 +277,7 @@ class App {
     }
 
     function shutdown() {
-        $error = error_get_last();
-        if ($error !== null) {
+        if (($error = error_get_last()) !== null) {
             if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
                 $this->handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
             }
@@ -566,16 +565,16 @@ class App {
                 } else if (substr($file, -4) === '.php') {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
+                    if (isset($this->unit[$unit])) {
+                        $this->triggerError('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
+                    }
+
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
                         $pathListIndex = $this->pathListIndex;
                         $this->pathList[$this->pathListIndex] = $path;
                         ++$this->pathListIndex;
                         $this->pathListCache[$path] = $pathListIndex;
-                    }
-
-                    if (isset($this->unit[$unit])) {
-                        $this->triggerError('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
                     }
 
                     $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), array(), false);
