@@ -32,7 +32,7 @@ function init() {
 }
 
 function d($var) {
-    if (!headers_sent()) {header('Content-Type: text/plain');}
+    if (!headers_sent()) header('Content-Type: text/plain');
     echo var_export($var, true) . EOL;
 }
 
@@ -99,14 +99,8 @@ class Response {
     function send() {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
-
-            foreach ($this->headers as $key => $value) {
-                header($key . ': ' . $value);
-            }
-
-            if (!isset($this->headers['Content-Type'])) {
-                header('Content-Type: ' . $this->type);
-            }
+            foreach ($this->headers as $key => $value) header($key . ': ' . $value);
+            if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
         }
 
         exit(isset($this->headers['Location']) ? '' : $this->content);
@@ -131,9 +125,7 @@ class Response {
     function json($data) {
         $this->type = 'application/json';
         $this->content = json_encode($data);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->content = '{"error": "Unable to encode data"}';
-        }
+        if (json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "Unable to encode data"}';
 
         return $this;
     }
@@ -221,9 +213,7 @@ class App {
     }
 
     function setEnvs($keys) {
-        foreach ($keys as $key => $value) {
-            $this->ENV[$key] = $value;
-        }
+        foreach ($keys as $key => $value) $this->ENV[$key] = $value;
     }
 
     function getEnv($key) {
@@ -231,16 +221,12 @@ class App {
     }
 
     function setIni($key, $value) {
-        if (ini_set($key, $value) === false) {
-            $this->log('Failed to set ini setting: ' . $key, 'app/error');
-        }
+        if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, 'app/error');
     }
 
     function setInis($keys) {
         foreach ($keys as $key => $value) {
-            if (ini_set($key, $value) === false) {
-                $this->log('Failed to set ini setting: ' . $key, 'app/error');
-            }
+            if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, 'app/error');
         }
     }
 
@@ -278,16 +264,12 @@ class App {
 
     function shutdown() {
         if (($error = error_get_last()) !== null) {
-            if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
-                $this->handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
-            }
+            if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) $this->handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
         }
     }
 
     function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
-        if (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        if (ob_get_level() > 0) ob_end_clean();
 
         $http = 500;
         $type = 'text/html';
@@ -351,18 +333,14 @@ class App {
         $map = array('pipe' => '_p', 'ignore' => '_i');
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
-                foreach ($option[$key] as $unit) {
-                    $handler[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
-                }
+                foreach ($option[$key] as $unit) $handler[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
             }
         }
 
         $node = &$this->routes[$method];
         $routeSegments = explode('/', trim($route, '/'));
         foreach ($routeSegments as $segment) {
-            if (!isset($node[$segment])) {
-                $node[$segment] = array();
-            }
+            if (!isset($node[$segment])) $node[$segment] = array();
             $node = &$node[$segment];
         }
 
@@ -377,20 +355,13 @@ class App {
 
     function setPipes($pipes) {
         foreach ($pipes as $key => $p) {
-            foreach ($p as $unit) {
-                $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
-            }
+            foreach ($p as $unit) $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
         }
     }
 
     function resolveRoute($method, $path) {
-        if (!isset($this->routes[$method])) {
-            return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
-        }
-
-        if (strlen($path) > 2048) {
-            return array('http' => 414, 'error' => 'Request-URI too long (max 2048 chars): ' . $path);
-        }
+        if (!isset($this->routes[$method])) return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
+        if (strlen($path) > 2048) return array('http' => 414, 'error' => 'Request-URI too long (max 2048 chars): ' . $path);
 
         $current = $this->routes[$method];
         $params = array();
@@ -400,17 +371,13 @@ class App {
         foreach ($pathSegments as $index => $pathSegment) {
             if ($pathSegment === '' && $index != 0) {
                 ++$decrement;
-                if ($decrement > 20) {
-                    return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
-                }
+                if ($decrement > 20) return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
                 continue;
             }
 
             $index -= $decrement;
 
-            if (strlen($pathSegment) > 255) {
-                return array('http' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $pathSegment);
-            }
+            if (strlen($pathSegment) > 255) return array('http' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $pathSegment);
 
             if (isset($current[$pathSegment])) {
                 $current = $current[$pathSegment];
@@ -433,14 +400,14 @@ class App {
                         break;
                     }
                     if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
-                        foreach ($matches as $k => $v) {$matches[$k] = urldecode($v);}
+                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
                         $params[substr($paramName, 0, -1)] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
                     }
                     if (preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
-                        foreach ($matches as $k => $v) {$matches[$k] = urldecode($v);}
+                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
                         $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
@@ -449,9 +416,7 @@ class App {
                 }
             }
 
-            if (!$matched) {
-                return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
-            }
+            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
         while (!isset($current['_h'])) {
@@ -470,14 +435,10 @@ class App {
                 }
             }
 
-            if (!$matched) {
-                return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
-            }
+            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
-        if (!isset($current['_h'])) {
-            return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
-        }
+        if (!isset($current['_h'])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
 
         $finalPipes = array();
 
@@ -487,9 +448,7 @@ class App {
 
         for ($i = 0; $length > $i; $i++) {
             foreach ($pipes[$i] as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
-                }
+                if (!isset($ignore[$pipe])) $finalPipes[] = $pipe;
             }
         }
 
@@ -501,16 +460,14 @@ class App {
     function run() {
         $response = $this->cache['Response'][$this->CACHE_CLASS];
 
-        if ($this->isRunning) {
-            return $response;
-        }
+        if ($this->isRunning) return $response;
 
         $this->isRunning = true;
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
         $path = '';
         if ($request->method === '') {
-            foreach ($request->cli['positional'] as $positional) {$path .= urlencode($positional) . '/';}
+            foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $parseUrl = parse_url($request->uri);
@@ -521,9 +478,7 @@ class App {
 
         $route = $this->resolveRoute($request->method, $path);
 
-        if (isset($route['error'])) {
-            $this->triggerError($route['error'], $route['http']);
-        }
+        if (isset($route['error'])) $this->triggerError($route['error'], $route['http']);
 
         $request->params = $route['params'];
         foreach ($route['pipe'] as $p) {
@@ -537,22 +492,18 @@ class App {
     // Class Management
 
     function autoSetUnit($path, $option) {
-        if (!isset($option['depth'])) {$option['depth'] = 0;}
-        if (!isset($option['max'])) {$option['max'] = 0;}
-        if (!isset($option['ignore'])) {$option['ignore'] = array();}
-        if (!isset($option['namespace'])) {$option['namespace'] = '';}
-        if (!isset($option['dir_as_namespace'])) {$option['dir_as_namespace'] = false;}
+        if (!isset($option['depth'])) $option['depth'] = 0;
+        if (!isset($option['max'])) $option['max'] = 0;
+        if (!isset($option['ignore'])) $option['ignore'] = array();
+        if (!isset($option['namespace'])) $option['namespace'] = '';
+        if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
 
         if ($dp = opendir($this->ENV['DIR'] . $path)) {
             while (($file = readdir($dp)) !== false) {
-                if ($file === '.' || $file === '..') {
-                    continue;
-                }
+                if ($file === '.' || $file === '..') continue;
 
                 foreach ($option['ignore'] as $pattern) {
-                    if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) {
-                        continue 2;
-                    }
+                    if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
                 }
 
                 if (($option['max'] === 0 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR'] . $path . $file)) {
@@ -565,9 +516,8 @@ class App {
                 } else if (substr($file, -4) === '.php') {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
-                    if (isset($this->unit[$unit])) {
-                        $this->triggerError('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
-                    }
+
+                    if (isset($this->unit[$unit])) $this->triggerError('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -590,15 +540,11 @@ class App {
         $test = $this->unit[$unit];
 
         if (isset($option['args'])) {
-            foreach ($option['args'] as $arg) {
-                $this->unit[$unit][$this->UNIT_CLASS_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
-            }
+            foreach ($option['args'] as $arg) $this->unit[$unit][$this->UNIT_CLASS_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
         }
 
         if (isset($option['load'])) {
-            foreach ($option['load'] as $load) {
-                $this->unit[$unit][$this->UNIT_LOAD][] = $this->unit[$load][$this->UNIT_LIST_INDEX];
-            }
+            foreach ($option['load'] as $load) $this->unit[$unit][$this->UNIT_LOAD][] = $this->unit[$load][$this->UNIT_LIST_INDEX];
         }
 
         $this->unit[$unit][$this->UNIT_CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CLASS_CACHE]);
@@ -637,24 +583,20 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) {
-                $this->triggerError('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
-            }
+            if (isset($stackSet[$unit])) $this->triggerError('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
             $cache = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
-                if (empty($stack)) {
-                    return $this->cache[$unit][$this->CACHE_CLASS];
-                }
+                if (empty($stack)) return $this->cache[$unit][$this->CACHE_CLASS];
+
                 unset($stackSet[$unitParent]);
                 $resolved[$unitParent][] = $this->cache[$unit][$this->CACHE_CLASS];
                 continue;
             }
 
             if ($this->unit[$unit][$this->UNIT_CLASS_ARGS] !== array()) {
-                if (!isset($md[$unit])) {
-                    $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_CLASS_ARGS]));
-                }
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_CLASS_ARGS]));
+
                 if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
                     $stack[] = $unit;
                     $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_CLASS_ARGS][$md[$unit][$INDEX]]];
@@ -670,9 +612,8 @@ class App {
 
             $class = new $unit(isset($resolved[$unit]) ? $resolved[$unit] : array());
             unset($resolved[$unit]);
-            if ($cache) {
-                $this->cache[$unit][$this->CACHE_CLASS] = $class;
-            }
+
+            if ($cache) $this->cache[$unit][$this->CACHE_CLASS] = $class;
 
             $resolved[$unitParent][] = $class;
         }
@@ -692,22 +633,18 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) {
-                $this->triggerError('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
-            }
+            if (isset($stackSet[$unit])) $this->triggerError('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
-                if (empty($stack)) {
-                    return;
-                }
+                if (empty($stack)) return;
+
                 unset($stackSet[$unitParent]);
                 continue;
             }
 
             if ($this->unit[$unit][$this->UNIT_LOAD] !== array()) {
-                if (!isset($md[$unit])) {
-                    $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
-                }
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
+
                 if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
                     $stack[] = $unit;
                     $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
@@ -777,14 +714,11 @@ class App {
 
     function log($message, $file) {
         list($micro, $time) = explode(' ', microtime());
-
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
-        $maxLogSize = $this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576;
-        $message = '[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $message . EOL;
 
-        $this->fileWrite($logFile, $message, true);
+        $this->fileWrite($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $message . EOL), true);
 
-        if (filesize($logFile) >= $maxLogSize) {
+        if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
             $newLogFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
@@ -795,9 +729,8 @@ class App {
         if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
             $logFilesMTime = array();
-            foreach ($logFiles as $file) {
-                $logFilesMTime[$file] = filemtime($file);
-            }
+
+            foreach ($logFiles as $file) $logFilesMTime[$file] = filemtime($file);
 
             asort($logFilesMTime);
             $logFiles = array_keys($logFilesMTime);
@@ -812,9 +745,7 @@ class App {
             }
 
             foreach ($logFiles as $file) {
-                if (($time - $logFilesMTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
-                    unlink($file);
-                }
+                if (($time - $logFilesMTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) unlink($file);
             }
 
             $this->fileWrite($timestampFile, $time);
