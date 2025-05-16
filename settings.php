@@ -11,7 +11,9 @@ function settings() {
                 'URL_DIR_WEB' => 'web/', // URL path for web access
                 // Error Settings
                 'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
+                'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
                 'SHOW_ERRORS' => true, // Enable (true) or disable (false) detailed error messages
+                'LOG_ERRORS' => true, // Enable (true) or disable (false) error logging
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php', // file for index (usually server root), become useless when route rewrite is enable
                 'ROUTE_REWRITE' => false, // Enable or disable URL rewriting (true: Yes, false: No).
@@ -61,7 +63,9 @@ function settings() {
                 'URL_DIR_WEB' => 'web/',
                 // Error Settings
                 'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
+                'ERROR_LOG_FILE' => 'app'.DS.'error',
                 'SHOW_ERRORS' => false,
+                'LOG_ERRORS' => true,
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php',
                 'ROUTE_REWRITE' => false,

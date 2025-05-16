@@ -200,7 +200,9 @@ class App {
         $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
 
         $this->ENV['ERROR_HTML_FILE'] = isset($this->ENV['ERROR_HTML_FILE']) ? $this->ENV['ERROR_HTML_FILE'] : '';
+        $this->ENV['ERROR_LOG_FILE'] = isset($this->ENV['ERROR_LOG_FILE']) ? $this->ENV['ERROR_LOG_FILE'] : 'app/error';
         $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
+        $this->ENV['LOG_ERRORS'] = (bool) $this->ENV['LOG_ERRORS'];
 
         $this->ENV['LOG_SIZE_LIMIT_MB'] = isset($this->ENV['LOG_SIZE_LIMIT_MB']) && (int) $this->ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) $this->ENV['LOG_SIZE_LIMIT_MB'] : 5;
         $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset($this->ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
@@ -253,24 +255,20 @@ class App {
 
     // Error Management
 
-    function triggerError($message, $no = 500) {
+    function report($message, $http = 500, $errno = 1) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        $this->error(1, ($no . '|' . $message), $trace[0]['file'], $trace[0]['line']);
+        $this->handleError($errno, ($http . '|' . $message), $trace[0]['file'], $trace[0]['line']);
     }
 
     function error($errno, $errstr, $errfile, $errline) {
-        $this->handleError($errno, $errstr, $errfile, $errline, true);
+        $this->handleError($errno, $errstr, $errfile, $errline);
     }
 
     function shutdown() {
-        if (($error = error_get_last()) !== null) {
-            if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) $this->handleError($error['type'], $error['message'], $error['file'], $error['line'], false);
-        }
+        if (($error = error_get_last()) !== null) $this->handleError($error['type'], $error['message'], $error['file'], $error['line']);
     }
 
-    function handleError($errno, $errstr, $errfile, $errline, $enableStackTrace) {
-        if (ob_get_level() > 0) ob_end_clean();
-
+    function handleError($errno, $errstr, $errfile, $errline) {
         $http = 500;
         $type = 'text/html';
         $content = '';
@@ -281,24 +279,33 @@ class App {
             $errstr = $parts[1];
         }
 
+        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+
+        $active = array();
+        $current_reporting = error_reporting();
+        
+        foreach (array(E_ERROR, E_WARNING, E_PARSE, E_NOTICE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE) as $critical) {
+            if ($current_reporting & $critical) $active[] = $critical;
+        }
+
+        if (!in_array($errno, $active)) return;
+
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
             if ($this->ENV['SHOW_ERRORS'] || empty($_SERVER['REQUEST_METHOD'])) {
                 $traceOutput = '';
-                if ($enableStackTrace) {
-                    $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-                    $traceOutput = 'Stack trace: ' . EOL;
-                    $count = count($trace);
-                    for ($i = 1; $count > $i; $i++) {
-                        $frame = $trace[$i];
-                        $traceOutput .= '#' . ($i - 1) . ' ';
-                        $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
-                        $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
-                        $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '';
-                        $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
-                    }
+                $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                $traceOutput = 'Stack trace: ' . EOL;
+                $count = count($trace);
+                for ($i = 1; $count > $i; $i++) {
+                    $frame = $trace[$i];
+                    $traceOutput .= '#' . ($i - 1) . ' ';
+                    $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
+                    $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
+                    $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '';
+                    $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
                 }
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
@@ -315,12 +322,12 @@ class App {
             }
         }
 
-        $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, 'app/error');
-
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $http);
             header('Content-Type: ' . $type);
         }
+
+        if (ob_get_level() > 0) ob_end_clean();
 
         exit($content);
     }
@@ -478,7 +485,7 @@ class App {
 
         $route = $this->resolveRoute($request->method, $path);
 
-        if (isset($route['error'])) $this->triggerError($route['error'], $route['http']);
+        if (isset($route['error'])) $this->report($route['error'], $route['http']);
 
         $request->params = $route['params'];
         foreach ($route['pipe'] as $p) {
@@ -517,7 +524,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) $this->triggerError('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
+                    if (isset($this->unit[$unit])) $this->report('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -584,7 +591,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) $this->triggerError('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$unit])) $this->report('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
             $cache = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
@@ -635,7 +642,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) $this->triggerError('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$unit])) $this->report('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
@@ -716,7 +723,7 @@ class App {
 
     function log($message, $file) {
         $mt = explode(' ', microtime());
-        $micro = (int) $mt[0];
+        $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
