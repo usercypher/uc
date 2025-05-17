@@ -29,6 +29,8 @@ function init() {
         define('DS', '/');
         define('EOL', "\n");
     }
+
+    define('ROOT', dirname(__FILE__) . DS);
 }
 
 function d($var) {
@@ -185,7 +187,7 @@ class App {
     }
 
     function init() {
-        $this->ENV['DIR'] = dirname(__FILE__) . DS;
+        $this->ENV['DIR'] = ROOT;
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
@@ -255,7 +257,7 @@ class App {
 
     // Error Management
 
-    function report($message, $http = 500, $errno = 1) {
+    function alert($message, $http = 500, $errno = 1) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $this->handleError($errno, ($http . '|' . $message), $trace[0]['file'], $trace[0]['line']);
     }
@@ -482,7 +484,7 @@ class App {
 
         $route = $this->resolveRoute($request->method, $path);
 
-        if (isset($route['error'])) $this->report($route['error'], $route['http']);
+        if (isset($route['error'])) $this->alert($route['error'], $route['http']);
 
         $request->params = $route['params'];
         foreach ($route['pipe'] as $p) {
@@ -521,7 +523,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) $this->report('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
+                    if (isset($this->unit[$unit])) $this->alert('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -588,7 +590,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) $this->report('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$unit])) $this->alert('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
             $cache = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
@@ -639,7 +641,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) $this->report('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$unit])) $this->alert('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
