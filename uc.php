@@ -33,9 +33,16 @@ function init() {
     define('ROOT', dirname(__FILE__) . DS);
 }
 
-function d($var) {
+function d($var, $detailed = false) {
     if (!headers_sent()) header('Content-Type: text/plain');
-    echo var_export($var, true) . EOL;
+
+    ob_start();
+    if ($detailed) {
+        var_dump($var);
+    } else {
+        print_r($var);
+    }
+    return ob_get_clean();
 }
 
 class Request {
@@ -476,8 +483,8 @@ class App {
             foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
-            $parseUrl = parse_url($request->uri);
-            $path = ($parseUrl === false) ? $request->uri : $parseUrl['path'];
+            $pos = strpos($request->uri, '?');
+            $path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
         } else {
             $path = isset($request->get['route']) ? $request->get['route'] : '';
         }
