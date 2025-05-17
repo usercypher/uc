@@ -1,19 +1,19 @@
 <?php
 /**
- * Copyright 2025 Lloyd Miles M. Bersabe
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2025 Lloyd Miles M. Bersabe
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 init();
 
@@ -29,30 +29,23 @@ function init() {
         define('DS', '/');
         define('EOL', "\n");
     }
-
     define('ROOT', dirname(__FILE__) . DS);
 }
 
 function d($var, $detailed = false) {
     if (!headers_sent()) header('Content-Type: text/plain');
-
-    ob_start();
     if ($detailed) {
         var_dump($var);
     } else {
         print_r($var);
     }
-    return ob_get_clean();
 }
 
 class Request {
-    var $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
+    var $sapi, $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
 
     function __construct() {
-        $this->init();
-    }
-
-    function init() {
+        $this->sapi = php_sapi_name();
         $this->server = $_SERVER;
         $this->data = array();
         $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
@@ -65,7 +58,7 @@ class Request {
         $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
         $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : 0;
         $this->cli = array('positional' => array(), 'option' => array());
-        if ($this->method === '') {
+        if ($this->sapi === 'cli') {
             for ($i = 1; $this->argc > $i; $i++) {
                 $arg = $this->argv[$i];
                 if (substr($arg, 0, 2) === '--') {
@@ -95,46 +88,49 @@ class Response {
     var $headers, $code, $type, $content;
 
     function __construct() {
-        $this->init();
-    }
-
-    function init() {
         $this->headers = array();
         $this->code = 200;
         $this->type = 'text/html';
         $this->content = '';
     }
 
-    function send() {
+    function headers() {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
             if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
         }
+    }
 
+    function send() {
+        $this->headers();
         exit(isset($this->headers['Location']) ? '' : $this->content);
     }
 
-    function plain($string) {
+    function plain($string = '') {
         $this->type = 'text/plain';
-        $this->content = $string;
+        if ($string !== '') $this->content = $string;
 
         return $this;
     }
 
-    function html($file, $data) {
+    function html($file = '', $data = array()) {
         $this->type = 'text/html';
-        ob_start();
-        require($file);
-        $this->content = ob_get_clean();
+        if ($file !== '') {
+            ob_start();
+            require($file);
+            $this->content = ob_get_clean();
+        }
 
         return $this;
     }
 
-    function json($data) {
+    function json($data = array()) {
         $this->type = 'application/json';
-        $this->content = json_encode($data);
-        if (json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "Unable to encode data"}';
+        if ($data !== array()) {
+            $this->content = json_encode($data);
+            if (json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "Unable to encode data"}';
+        }
 
         return $this;
     }
@@ -300,7 +296,7 @@ class App {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
-            if ($this->ENV['SHOW_ERRORS'] || empty($_SERVER['REQUEST_METHOD'])) {
+            if ($this->ENV['SHOW_ERRORS'] || php_sapi_name() === 'cli') {
                 $traceOutput = '';
                 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                 $traceOutput = 'Stack trace: ' . EOL;
@@ -479,14 +475,16 @@ class App {
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
         $path = '';
-        if ($request->method === '') {
+        if ($request->sapi === 'cli') {
             foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
-        } elseif ($this->ENV['ROUTE_REWRITE']) {
-            $pos = strpos($request->uri, '?');
-            $path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
         } else {
-            $path = isset($request->get['route']) ? $request->get['route'] : '';
+            if ($this->ENV['ROUTE_REWRITE']) {
+                $pos = strpos($request->uri, '?');
+                $path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
+            } else {
+                $path = isset($request->get['route']) ? $request->get['route'] : '';
+            }
         }
 
         $route = $this->resolveRoute($request->method, $path);
@@ -699,12 +697,12 @@ class App {
 
     function url($option, $url = '') {
         switch ($option) {
-            case 'route':
-                return $this->ENV['URL_BASE'] . $this->ENV['URL_URI'] . $url;
-            case 'web':
-                return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
-            default:
-                return $url;
+        case 'route':
+            return $this->ENV['URL_BASE'] . $this->ENV['URL_URI'] . $url;
+        case 'web':
+            return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
+        default:
+            return $url;
         }
     }
 
