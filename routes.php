@@ -16,7 +16,7 @@ $app->setPipes(array(
 $group = array( 
     // No additional configurations for this route group
 );
-$app->addRoute($group, '', 'pipe-create/{class_path?}/{class?}', array('pipe' => array('Pipe_Cli_PipeCreate'), 'ignore' => array('--global')));
+$app->addRoute($group, '', 'pipe/{option?}/{class?}', array('pipe' => array('Pipe_Cli_Pipe'), 'ignore' => array('--global')));
 
 // Define the default route which triggers the 'Pipe_Book_Home' and 'Pipe_ResponseCompression' pipes
 $app->setRoute('GET', '', array('pipe' => array('Pipe_Book_Home', 'Pipe_ResponseCompression'))); // This is the default route, triggered for a basic GET request

@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Cli_PipeCreate {
+class Pipe_Cli_Pipe {
     private $app;
 
     public function __construct($args = array()) {
@@ -10,20 +10,28 @@ class Pipe_Cli_PipeCreate {
     } 
 
     public function pipe($request, $response) {
-        if (!isset($request->params['class']) || !isset($request->params['class_path'])) {
-            $response->plain('Error: Usage - php [file] pipe-create [class_path] [class] --class_args=[value]' . EOL);
+        if (!isset($request->params['option']) || !isset($request->params['class'])) {
+            $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
             $response->send();
         }
 
         $className = $request->params['class'];
-        $classPath = $request->params['class_path'] . $className . '.php';
-        $classDeps = empty($request->cli['option']['class_args']) ? array() : explode(',', $request->cli['option']['class_args']);
+        $classPath = (isset($request->cli['option']['path']) ? $request->cli['option']['path'] : '') . $className . '.php';
+        $classDeps = empty($request->cli['option']['args']) ? array() : explode(',', $request->cli['option']['args']);
 
         $classContent = $this->classContent($className, $classDeps);
 
-        file_put_contents($this->app->path('src', $classPath) , $classContent);
+        switch ($request->params['option']) {
+            case 'create':
+                file_put_contents($this->app->path('src', $classPath) , $classContent);
+                $response->std(EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL);
+                break;
+            default:
+                $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
+                $response->send();
+        }
 
-        return array($request, $response->plain(EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL));
+        return array($request, $response);
     }
 
     private function classContent($className, $classDependency) {

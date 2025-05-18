@@ -29,11 +29,13 @@ function init() {
         define('DS', '/');
         define('EOL', "\n");
     }
+
     define('ROOT', dirname(__FILE__) . DS);
 }
 
 function d($var, $detailed = false) {
-    if (!headers_sent()) header('Content-Type: text/plain');
+    if (php_sapi_name() !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
+
     if ($detailed) {
         var_dump($var);
     } else {
@@ -58,19 +60,18 @@ class Request {
         $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
         $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : 0;
         $this->cli = array('positional' => array(), 'option' => array());
-        if ($this->sapi === 'cli') {
-            for ($i = 1; $this->argc > $i; $i++) {
-                $arg = $this->argv[$i];
-                if (substr($arg, 0, 2) === '--') {
-                    $eq = strpos($arg, '=');
-                    if ($eq !== false) {
-                        $this->cli['option'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
-                    } else {
-                        $this->cli['option'][substr($arg, 2)] = true;
-                    }
-                } elseif (substr($arg, 0, 1) !== '-') {
-                    $this->cli['positional'][] = $arg;
+
+        for ($i = 1; $this->argc > $i; $i++) {
+            $arg = $this->argv[$i];
+            if (substr($arg, 0, 2) === '--') {
+                $eq = strpos($arg, '=');
+                if ($eq !== false) {
+                    $this->cli['option'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
+                } else {
+                    $this->cli['option'][substr($arg, 2)] = true;
                 }
+            } elseif (substr($arg, 0, 1) !== '-') {
+                $this->cli['positional'][] = $arg;
             }
         }
     }
@@ -79,64 +80,75 @@ class Request {
         $this->data[$key] = $value;
     }
 
-    function getData($key) {
-        return isset($this->data[$key]) ? $this->data[$key] : null;
+    function getData($key, $default = null) {
+        return isset($this->data[$key]) ? $this->data[$key] : $default;
+    }
+
+    function std($mark = '') {
+        if ($this->sapi !== 'cli') return '';
+        if ($mark === '') return rtrim(fgets(STDIN));
+
+        $lines = array();
+        while (($line = fgets(STDIN)) !== false) {
+            $line = rtrim($line);
+            if ($line === $mark) break;
+            $lines[] = $line;
+        }
+
+        return implode(EOL, $lines);
     }
 }
 
 class Response {
-    var $headers, $code, $type, $content;
+    var $sapi, $headers, $code, $type, $content;
 
     function __construct() {
+        $this->sapi = php_sapi_name();
         $this->headers = array();
         $this->code = 200;
         $this->type = 'text/html';
         $this->content = '';
     }
 
-    function headers() {
-        if (!headers_sent()) {
+    function init() {
+        if ($this->sapi !== 'cli' && !headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
             if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
         }
+
+        return isset($this->headers['Location']) ? '' : $this->content;
     }
 
     function send() {
-        $this->headers();
-        exit(isset($this->headers['Location']) ? '' : $this->content);
+        exit($this->init());
     }
 
-    function plain($string = '') {
-        $this->type = 'text/plain';
-        if ($string !== '') $this->content = $string;
-
-        return $this;
-    }
-
-    function html($file = '', $data = array()) {
+    function html($file, $data) {
         $this->type = 'text/html';
-        if ($file !== '') {
-            ob_start();
-            require($file);
-            $this->content = ob_get_clean();
-        }
+        ob_start();
+        require($file);
+        $this->content = ob_get_clean();
 
         return $this;
     }
 
-    function json($data = array()) {
+    function json($data) {
         $this->type = 'application/json';
-        if ($data !== array()) {
-            $this->content = json_encode($data);
-            if (json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "Unable to encode data"}';
-        }
+        $this->content = json_encode($data);
+        if (json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "' . json_last_error_msg() . '"}';
 
         return $this;
     }
 
     function redirect($url) {
         $this->headers['Location'] = $url;
+
+        return $this;
+    }
+
+    function std($msg, $err = false) {
+        if ($this->sapi === 'cli') fwrite($err ? STDERR : STDOUT, $msg);
 
         return $this;
     }
@@ -149,8 +161,8 @@ class App {
     var $UNIT_PATH = 1;
     var $UNIT_FILE = 2;
     var $UNIT_LOAD = 3;
-    var $UNIT_CLASS_ARGS = 4;
-    var $UNIT_CLASS_CACHE = 5;
+    var $UNIT_ARGS = 4;
+    var $UNIT_CACHE = 5;
 
     var $CACHE_CLASS = 0;
     var $CACHE_PATH = 1;
@@ -223,8 +235,8 @@ class App {
         foreach ($keys as $key => $value) $this->ENV[$key] = $value;
     }
 
-    function getEnv($key) {
-        return isset($this->ENV[$key]) ? $this->ENV[$key] : null;
+    function getEnv($key, $default = null) {
+        return isset($this->ENV[$key]) ? $this->ENV[$key] : $default;
     }
 
     function setIni($key, $value) {
@@ -286,17 +298,14 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        $current_reporting = error_reporting();
-        foreach (array(E_ERROR, E_WARNING, E_PARSE, E_NOTICE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING, E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE) as $e) {
-            $isNotActive = !($current_reporting & $e);
-            if ($isNotActive && $errno === $e) return;
-        }
+        if (!(error_reporting() & $errno)) return;
 
+        $sapi = php_sapi_name();
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
-            if ($this->ENV['SHOW_ERRORS'] || php_sapi_name() === 'cli') {
+            if ($this->ENV['SHOW_ERRORS'] || $sapi === 'cli') {
                 $traceOutput = '';
                 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                 $traceOutput = 'Stack trace: ' . EOL;
@@ -324,12 +333,17 @@ class App {
             }
         }
 
+        if (ob_get_level() > 0) ob_end_clean();
+
+        if ($sapi === 'cli') {
+            fwrite(STDERR, $content);
+            exit;
+        }
+
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $http);
             header('Content-Type: ' . $type);
         }
-
-        if (ob_get_level() > 0) ob_end_clean();
 
         exit($content);
     }
@@ -478,13 +492,11 @@ class App {
         if ($request->sapi === 'cli') {
             foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
+        } elseif ($this->ENV['ROUTE_REWRITE']) {
+            $pos = strpos($request->uri, '?');
+            $path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
         } else {
-            if ($this->ENV['ROUTE_REWRITE']) {
-                $pos = strpos($request->uri, '?');
-                $path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
-            } else {
-                $path = isset($request->get['route']) ? $request->get['route'] : '';
-            }
+            $path = isset($request->get['route']) ? $request->get['route'] : '';
         }
 
         $route = $this->resolveRoute($request->method, $path);
@@ -551,14 +563,14 @@ class App {
         $test = $this->unit[$unit];
 
         if (isset($option['args'])) {
-            foreach ($option['args'] as $arg) $this->unit[$unit][$this->UNIT_CLASS_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
+            foreach ($option['args'] as $arg) $this->unit[$unit][$this->UNIT_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
         }
 
         if (isset($option['load'])) {
             foreach ($option['load'] as $load) $this->unit[$unit][$this->UNIT_LOAD][] = $this->unit[$load][$this->UNIT_LIST_INDEX];
         }
 
-        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CLASS_CACHE]);
+        $this->unit[$unit][$this->UNIT_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CACHE]);
     }
 
     function addUnit($group, $unit, $option = array()) {
@@ -569,10 +581,10 @@ class App {
     }
 
     function newClass($unit) {
-        $mode = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
-        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = false;
+        $mode = $this->unit[$unit][$this->UNIT_CACHE];
+        $this->unit[$unit][$this->UNIT_CACHE] = false;
         $class = $this->getClass($unit);
-        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = $mode;
+        $this->unit[$unit][$this->UNIT_CACHE] = $mode;
         return $class;
     }
 
@@ -597,7 +609,7 @@ class App {
 
             if (isset($stackSet[$unit])) $this->alert('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
 
-            $cache = $this->unit[$unit][$this->UNIT_CLASS_CACHE];
+            $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
                 if (empty($stack)) return $this->cache[$unit][$this->CACHE_CLASS];
 
@@ -606,12 +618,12 @@ class App {
                 continue;
             }
 
-            if ($this->unit[$unit][$this->UNIT_CLASS_ARGS] !== array()) {
-                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_CLASS_ARGS]));
+            if ($this->unit[$unit][$this->UNIT_ARGS] !== array()) {
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_ARGS]));
 
                 if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
                     $stack[] = $unit;
-                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_CLASS_ARGS][$md[$unit][$INDEX]]];
+                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_ARGS][$md[$unit][$INDEX]]];
                     ++$md[$unit][$INDEX];
                     continue;
                 }
@@ -697,12 +709,12 @@ class App {
 
     function url($option, $url = '') {
         switch ($option) {
-        case 'route':
-            return $this->ENV['URL_BASE'] . $this->ENV['URL_URI'] . $url;
-        case 'web':
-            return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
-        default:
-            return $url;
+            case 'route':
+                return $this->ENV['URL_BASE'] . $this->ENV['URL_URI'] . $url;
+            case 'web':
+                return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
+            default:
+                return $url;
         }
     }
 

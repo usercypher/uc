@@ -26,11 +26,11 @@ $app->addUnit($group, 'Model_Book');
 // Set up 'Lib_Session' with caching enabled to reuse the same instance across the application.
 $app->setUnit('Lib_Session', array('cache' => true));
 
-// Define a group for 'Pipe_Cli_PipeCreate', where 'App' is injected as a required argument.
+// Define a group for 'Pipe_Cli_Pipe', where 'App' is injected as a required argument.
 $group = array(
     'args_prepend' => array('App'),
 );
-$app->addUnit($group, 'Pipe_Cli_PipeCreate');
+$app->addUnit($group, 'Pipe_Cli_Pipe');
 $app->addUnit($group, 'Pipe_SrcAutoLoader');
 
 // Define other pipe units, specifying their dependencies:
