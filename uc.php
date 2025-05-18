@@ -83,7 +83,6 @@ class Request {
     function std($mark = '') {
         if ($this->sapi !== 'cli') return '';
         if ($mark === '') return rtrim(fgets(STDIN));
-
         $lines = array();
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
 
@@ -92,7 +91,7 @@ class Request {
 }
 
 class Response {
-    var $sapi, $headers, $code, $type, $content;
+    var $sapi, $headers, $code, $type, $content, $error;
 
     function __construct() {
         $this->sapi = php_sapi_name();
@@ -100,9 +99,16 @@ class Response {
         $this->code = 200;
         $this->type = 'text/html';
         $this->content = '';
+        $this->error = false;
     }
 
-    function init() {
+    function send() {
+        if ($this->sapi !== 'cli') exit($this->http());
+        $this->std($this->content, $this->error);
+        exit;
+    }
+
+    function http() {
         if ($this->sapi !== 'cli' && !headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
@@ -112,8 +118,8 @@ class Response {
         return isset($this->headers['Location']) ? '' : $this->content;
     }
 
-    function send() {
-        exit($this->init());
+    function std($msg, $err = false) {
+        if ($this->sapi === 'cli') fwrite($err ? STDERR : STDOUT, $msg);
     }
 
     function html($file, $data) {
@@ -135,12 +141,6 @@ class Response {
 
     function redirect($url) {
         $this->headers['Location'] = $url;
-
-        return $this;
-    }
-
-    function std($msg, $err = false) {
-        if ($this->sapi === 'cli') fwrite($err ? STDERR : STDOUT, $msg);
 
         return $this;
     }
@@ -245,7 +245,6 @@ class App {
 
     function saveConfig($file) {
         $configFile = $this->ENV['DIR'] . $file . '.dat';
-
         if (file_exists($configFile)) {
             $newFileName = $this->ENV['DIR'] . $file . '_' . date('Y-m-d_H-i-s', filectime($configFile)) . '.dat';
             rename($configFile, $newFileName);
