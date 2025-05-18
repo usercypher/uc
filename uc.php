@@ -29,7 +29,6 @@ function init() {
         define('DS', '/');
         define('EOL', "\n");
     }
-    define('ROOT', dirname(__FILE__) . DS);
 }
 
 function d($var, $detailed = false) {
@@ -86,11 +85,7 @@ class Request {
         if ($mark === '') return rtrim(fgets(STDIN));
 
         $lines = array();
-        while (($line = fgets(STDIN)) !== false) {
-            $line = rtrim($line);
-            if ($line === $mark) break;
-            $lines[] = $line;
-        }
+        while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
 
         return implode(EOL, $lines);
     }
@@ -199,7 +194,7 @@ class App {
     }
 
     function init() {
-        $this->ENV['DIR'] = ROOT;
+        $this->ENV['DIR'] = dirname(__FILE__) . DS;
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
