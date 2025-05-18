@@ -1,19 +1,19 @@
 <?php
 /**
-* Copyright 2025 Lloyd Miles M. Bersabe
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2025 Lloyd Miles M. Bersabe
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 init();
 
@@ -29,13 +29,11 @@ function init() {
         define('DS', '/');
         define('EOL', "\n");
     }
-
     define('ROOT', dirname(__FILE__) . DS);
 }
 
 function d($var, $detailed = false) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
-
     if ($detailed) {
         var_dump($var);
     } else {
@@ -60,7 +58,6 @@ class Request {
         $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
         $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : 0;
         $this->cli = array('positional' => array(), 'option' => array());
-
         for ($i = 1; $this->argc > $i; $i++) {
             $arg = $this->argv[$i];
             if (substr($arg, 0, 2) === '--') {
@@ -272,9 +269,9 @@ class App {
 
     // Error Management
 
-    function alert($message, $http = 500, $errno = 1) {
+    function alert($msg, $http = 500, $errno = 1) {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        $this->handleError($errno, ($http . '|' . $message), $trace[0]['file'], $trace[0]['line']);
+        $this->handleError($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line']);
     }
 
     function error($errno, $errstr, $errfile, $errline) {
@@ -737,14 +734,14 @@ class App {
         }
     }
 
-    function log($message, $file) {
+    function log($msg, $file) {
         $mt = explode(' ', microtime());
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
         $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
 
-        $this->fileWrite($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $message . EOL), true);
+        $this->fileWrite($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
 
         if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
             $newLogFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
