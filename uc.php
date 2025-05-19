@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
- http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ function init() {
 }
 
 function d($var, $detailed = false) {
-    if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
+    if (!headers_sent()) header('Content-Type: text/plain');
     if ($detailed) {
         var_dump($var);
     } else {
@@ -80,6 +80,7 @@ class Request {
     function std($mark = '') {
         if (SAPI !== 'cli') return '';
         if ($mark === '') return rtrim(fgets(STDIN));
+
         $lines = array();
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
 
@@ -99,13 +100,17 @@ class Response {
     }
 
     function send() {
-        if (SAPI !== 'cli') exit($this->http());
-        $this->std($this->content, $this->stderr);
+        if (SAPI === 'cli') {
+            $this->std($this->content, $this->stderr);
+        } else {
+            echo($this->http());
+        }
+
         exit;
     }
 
     function http() {
-        if (SAPI !== 'cli' && !headers_sent()) {
+        if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
             if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
