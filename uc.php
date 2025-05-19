@@ -79,7 +79,7 @@ class Request {
 
     function std($mark = '') {
         if (SAPI !== 'cli') return '';
-        if ($mark === '') return rtrim(fgets(STDIN));
+        if ($mark === '' && ($line = fgets(STDIN))) return $line ? rtrim($line) : '';
 
         $lines = array();
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
@@ -148,29 +148,9 @@ class Response {
 }
 
 class App {
-    var $ENV = array();
-
-    var $UNIT_LIST_INDEX = 0;
-    var $UNIT_PATH = 1;
-    var $UNIT_FILE = 2;
-    var $UNIT_LOAD = 3;
-    var $UNIT_ARGS = 4;
-    var $UNIT_CACHE = 5;
-
-    var $CACHE_CLASS = 0;
-    var $CACHE_PATH = 1;
-
-    var $routes = array();
-    var $pipes = array('prepend' => array(), 'append' => array());
-    var $unit = array();
-    var $unitList = array();
-    var $unitListIndex = 0;
-    var $pathList = array();
-    var $pathListIndex = 0;
-
-    var $cache = array();
-    var $pathListCache = array();
-
+    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
+    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
+    var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
     var $isRunning = false;
 
     // Application Setup
