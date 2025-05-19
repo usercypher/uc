@@ -22,17 +22,15 @@ function init() {
     if (strpos($os, 'win') !== false) {
         define('DS', '\\');
         define('EOL', "\r\n");
-    } elseif (strpos($os, 'dar') !== false) {
-        define('DS', '/');
-        define('EOL', "\r");
     } else {
         define('DS', '/');
         define('EOL', "\n");
     }
+    define('SAPI', php_sapi_name());
 }
 
 function d($var, $detailed = false) {
-    if (php_sapi_name() !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
+    if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
     if ($detailed) {
         var_dump($var);
     } else {
@@ -41,10 +39,9 @@ function d($var, $detailed = false) {
 }
 
 class Request {
-    var $sapi, $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
+    var $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
 
     function __construct() {
-        $this->sapi = php_sapi_name();
         $this->server = $_SERVER;
         $this->data = array();
         $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
@@ -81,7 +78,7 @@ class Request {
     }
 
     function std($mark = '') {
-        if ($this->sapi !== 'cli') return '';
+        if (SAPI !== 'cli') return '';
         if ($mark === '') return rtrim(fgets(STDIN));
         $lines = array();
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
@@ -91,25 +88,24 @@ class Request {
 }
 
 class Response {
-    var $sapi, $headers, $code, $type, $content, $error;
+    var $headers, $code, $type, $content, $stderr;
 
     function __construct() {
-        $this->sapi = php_sapi_name();
         $this->headers = array();
         $this->code = 200;
         $this->type = 'text/html';
         $this->content = '';
-        $this->error = false;
+        $this->stderr = false;
     }
 
     function send() {
-        if ($this->sapi !== 'cli') exit($this->http());
-        $this->std($this->content, $this->error);
+        if (SAPI !== 'cli') exit($this->http());
+        $this->std($this->content, $this->stderr);
         exit;
     }
 
     function http() {
-        if ($this->sapi !== 'cli' && !headers_sent()) {
+        if (SAPI !== 'cli' && !headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
             if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
@@ -119,7 +115,7 @@ class Response {
     }
 
     function std($msg, $err = false) {
-        if ($this->sapi === 'cli') fwrite($err ? STDERR : STDOUT, $msg);
+        if (SAPI === 'cli') fwrite($err ? STDERR : STDOUT, $msg);
     }
 
     function html($file, $data) {
@@ -134,7 +130,7 @@ class Response {
     function json($data) {
         $this->type = 'application/json';
         $this->content = json_encode($data);
-        if ($this->error = json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "' . json_last_error_msg() . '"}';
+        if ($this->stderr = json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "' . json_last_error_msg() . '"}';
 
         return $this;
     }
@@ -194,6 +190,7 @@ class App {
     }
 
     function init() {
+        $this->ENV['SAPI'] = SAPI;
         $this->ENV['DIR'] = dirname(__FILE__) . DS;
 
         $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
@@ -287,16 +284,15 @@ class App {
             $errstr = $parts[1];
         }
 
-        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+        if ($this->ENV['LOG_ERRORS']) $this->log('[http ' . $http . '] [php error ' . $errno . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
         if (!(error_reporting() & $errno)) return;
 
-        $sapi = php_sapi_name();
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
-            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
+            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[http ' . $http . '] [php error ' . $errno . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
-            if ($this->ENV['SHOW_ERRORS'] || $sapi === 'cli') {
+            if ($this->ENV['SHOW_ERRORS'] || $this->ENV['SAPI'] === 'cli') {
                 $traceOutput = '';
                 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
                 $traceOutput = 'Stack trace: ' . EOL;
@@ -310,7 +306,7 @@ class App {
                     $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
                 }
                 $type = 'text/plain';
-                $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
+                $content = '[http ' . $http . '] [php error ' . $errno . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_HTML_FILE'];
                 if (file_exists($file)) {
@@ -326,7 +322,7 @@ class App {
 
         if (ob_get_level() > 0) ob_end_clean();
 
-        if ($sapi === 'cli') {
+        if ($this->ENV['SAPI'] === 'cli') {
             fwrite(STDERR, $content);
             exit;
         }
@@ -480,7 +476,7 @@ class App {
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
         $path = '';
-        if ($request->sapi === 'cli') {
+        if ($this->ENV['SAPI'] === 'cli') {
             foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
