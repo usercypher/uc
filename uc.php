@@ -691,7 +691,8 @@ class App {
 
     function fileRead($file) {
         if ($fp = fopen($file, 'r')) {
-            $content = fread($fp, filesize($file));
+            $fs = fstat($fp);
+            $content = fread($fp, $fs['size']);
             fclose($fp);
             return $content;
         }
