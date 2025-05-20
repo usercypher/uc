@@ -19,6 +19,8 @@ class Pipe_Book_Update {
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        return array($request, $response->redirect($this->app->url('route', 'edit/' . $data['book']['id'])));
+        $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
+
+        return array($request, $response);
     }
 }
