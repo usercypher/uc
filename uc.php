@@ -254,7 +254,7 @@ class App {
     }
 
     function shutdown() {
-        if (($error = error_get_last()) !== null) $this->handleError($error['type'], $error['message'], $error['file'], $error['line']);
+        if (function_exists('error_get_last') && ($error = error_get_last()) !== null) $this->handleError($error['type'], $error['message'], $error['file'], $error['line']);
     }
 
     function handleError($errno, $errstr, $errfile, $errline) {
