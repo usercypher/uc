@@ -246,7 +246,7 @@ class App {
     // Error Management
 
     function alert($msg, $http = 500, $errno = 1) {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $trace = debug_backtrace();
         $this->handleError($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line']);
     }
 
@@ -269,17 +269,17 @@ class App {
             $errstr = $parts[1];
         }
 
-        if ($this->ENV['LOG_ERRORS']) $this->log('[http ' . $http . '] [php error ' . $errno . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
         if (!(error_reporting() & $errno)) return;
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
-            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[http ' . $http . '] [php error ' . $errno . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
+            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
             if ($this->ENV['SHOW_ERRORS'] || $this->ENV['SAPI'] === 'cli') {
                 $traceOutput = '';
-                $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+                $trace = debug_backtrace();
                 $traceOutput = 'Stack trace: ' . EOL;
                 $count = count($trace);
                 for ($i = 1; $count > $i; $i++) {
@@ -291,7 +291,7 @@ class App {
                     $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
                 }
                 $type = 'text/plain';
-                $content = '[http ' . $http . '] [php error ' . $errno . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
+                $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
                 $file = $this->ENV['DIR'] . $this->ENV['ERROR_HTML_FILE'];
                 if (file_exists($file)) {

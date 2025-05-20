@@ -12,11 +12,11 @@ function settings() {
                 // Error Settings
                 'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
                 'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
-                'SHOW_ERRORS' => true, // Enable (true) or disable (false) detailed error messages
-                'LOG_ERRORS' => true, // Enable (true) or disable (false) error logging
+                'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
+                'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php', // file for index (usually server root), become useless when route rewrite is enable
-                'ROUTE_REWRITE' => false, // Enable or disable URL rewriting (true: Yes, false: No).
+                'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
                 // If enabled, routing is handled via clean URLs (e.g., /home),
                 /*
                  * Web Server Configuration for URL Rewriting:
@@ -64,11 +64,11 @@ function settings() {
                 // Error Settings
                 'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
                 'ERROR_LOG_FILE' => 'app'.DS.'error',
-                'SHOW_ERRORS' => false,
-                'LOG_ERRORS' => true,
+                'SHOW_ERRORS' => 0,
+                'LOG_ERRORS' => 1,
                 // Routing Configuration
                 'ROUTE_FILE' => 'index.php',
-                'ROUTE_REWRITE' => false,
+                'ROUTE_REWRITE' => 0,
                 // Logging Configuration
                 'DIR_LOG' => 'var'.DS.'log'.DS,
                 'DIR_LOG_TIMESTAMP' => 'var'.DS.'data'.DS,
@@ -90,8 +90,8 @@ function settings() {
                 // Timezone
                 'date.timezone' => 'Asia/Manila', // Set to your timezone
                 // Error Reporting
-                'display_errors' => 'On', // Display errors
-                'display_startup_errors' => 'On', // Display startup errors
+                'display_errors' => 1, // Display errors
+                'display_startup_errors' => 1, // Display startup errors
                 'error_reporting' => E_ALL, // Report all errors
                 'log_errors' => 1, // Log errors
                 // General Settings
@@ -104,8 +104,8 @@ function settings() {
                 // Timezone
                 'date.timezone' => 'Asia/Manila',
                 // Error Reporting
-                'display_errors' => 'Off',
-                'display_startup_errors' => 'Off',
+                'display_errors' => 0,
+                'display_startup_errors' => 0,
                 'error_reporting' => E_ALL & ~E_NOTICE & ~E_DEPRECATED,
                 'log_errors' => 1,
                 // General Settings
