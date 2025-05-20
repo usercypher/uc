@@ -135,7 +135,6 @@ class Response {
     function json($data) {
         $this->type = 'application/json';
         $this->content = json_encode($data);
-        if ($this->stderr = json_last_error() !== JSON_ERROR_NONE) $this->content = '{"error": "' . json_last_error_msg() . '"}';
 
         return $this;
     }
