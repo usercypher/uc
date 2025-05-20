@@ -689,9 +689,9 @@ class App {
         }
     }
 
-    function fileRead($file) {
+    function fileRead($file, $length = 0) {
         if ($fp = fopen($file, 'r')) {
-            $content = fread($fp, filesize($file));
+            $content = fread($fp, ($length === 0 ? filesize($file) : $length));
             fclose($fp);
             return $content;
         }
