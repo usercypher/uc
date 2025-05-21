@@ -1,15 +1,15 @@
 <?php
 // index.php
 
-/*
+// Uncomment to start profiling
+//declare(ticks=1);
+//profiler('TickProfiler');
 
-// Profiler
-declare(ticks=1);
-require('TickProfiler.php');
-$tickProfiler = new TickProfiler();
-$tickProfiler->init('TickProfiler.log');
-
-*/
+function profiler($name) {
+    require($name . '.php');
+    $tickProfiler = new TickProfiler();
+    $tickProfiler->init($name . '.log');
+}
 
 // Uncomment for initial setup to generate config or run 'php compile.php' to generate config
 //require('compile.php');  // Generates config and exits script
@@ -27,8 +27,7 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
 
     $app = new App(array(new Request, new Response));
 
-    require($settingsFile);
-    $settings = settings();
+    $settings = require($settingsFile);
 
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);

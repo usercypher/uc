@@ -683,7 +683,7 @@ class App {
     }
 
     function fileWrite($file, $string, $append = false) {
-        if ($fp = fopen($file, ($append ? 'a' : 'w'))) {
+        if ($fp = fopen($file, (($append) ? 'a' : 'w'))) {
             fwrite($fp, (string) $string);
             fclose($fp);
         }

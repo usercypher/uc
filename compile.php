@@ -20,8 +20,7 @@ function compile($mode, $packageFile, $settingsFile, $configFile) {
 
     $app = new App(array(new Request, new Response));
 
-    require($settingsFile);
-    $settings = settings();
+    $settings = require($settingsFile);
 
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
