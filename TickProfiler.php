@@ -1,6 +1,7 @@
 <?php
 
 class TickProfiler {
+    var $eol = "\n";
     var $file;
     var $timeStart;
     var $timeTotal;
@@ -58,7 +59,7 @@ class TickProfiler {
         $stamp = '[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ';
         $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'No uri';
         if ($fp = fopen($this->file, 'a')) {
-            fwrite($fp, (string) ($stamp . 'uri: ' . $uri . EOL . implode(EOL, $this->messages) . EOL . EOL . "[$formattedTime] [$formattedMemory]" . EOL . EOL));
+            fwrite($fp, (string) ($stamp . 'uri: ' . $uri . $this->eol . implode($this->eol, $this->messages) . $this->eol . $this->eol . "[$formattedTime] [$formattedMemory]" . $this->eol . $this->eol));
             fclose($fp);
         }
     }
