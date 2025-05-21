@@ -1,6 +1,16 @@
 <?php
 // index.php
 
+/**
+
+// Profiler
+declare(ticks=1);
+require('TickProfiler.php');
+$tickProfiler = new TickProfiler();
+$tickProfiler->init('TickProfiler.log');
+
+*/
+
 // Uncomment for initial setup to generate config or run 'php compile.php' to generate config
 //require('compile.php');  // Generates config and exits script
 
