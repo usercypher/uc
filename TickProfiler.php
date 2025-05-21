@@ -2,12 +2,7 @@
 
 class TickProfiler {
     var $eol = "\n";
-    var $file;
-    var $timeStart;
-    var $timeTotal;
-    var $memoryStart;
-    var $memoryTotal;
-    var $messages;
+    var $file, $timeStart, $timeTotal, $memoryStart, $memoryTotal, $messages;
 
     function init($file) {
         $this->file = dirname(__FILE__) . '/' . $file;
@@ -15,7 +10,7 @@ class TickProfiler {
         $this->timeTotal = 0;
         $this->memoryStart = 0;
         $this->memoryTotal = 0;
-        $this->handler('PHP');
+        $this->messages = array();
         register_tick_function(array($this, 'handler'));
         register_shutdown_function(array($this, 'shutdown'));
     }
@@ -39,8 +34,9 @@ class TickProfiler {
         $f = debug_backtrace();
         $line = isset($f[1]['line']) ? $f[1]['line'] : 0;
         $file = isset($f[1]['file']) ? $f[1]['file'] : 'No file';
+        $funtion = isset($f[2]['function']) ? $f[2]['function'] : 'No function';
 
-        $message = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] $file [$comment]";
+        $message = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] $file [$funtion] $comment";
 
         $this->timeTotal += ($timeCurrent - $this->timeStart);
         $this->memoryTotal += $memoryUsage;
@@ -49,7 +45,8 @@ class TickProfiler {
     }
 
     function shutdown() {
-        $this->handler('shutdown');
+        $this->messages[0] .= '[tick init] [php init state]';
+        $this->messages[] = $this->get('[shutdown]');
 
         list($micro, $time) = $this->microtime();
 

@@ -1,7 +1,7 @@
 <?php
 // index.php
 
-/**
+/*
 
 // Profiler
 declare(ticks=1);
