@@ -15,41 +15,41 @@ class TickProfiler {
         $this->timeTotal = 0;
         $this->memoryStart = 0;
         $this->memoryTotal = 0;
-        $this->messages = array($this->get('PHP'));
+        $this->handler('PHP');
         register_tick_function(array($this, 'handler'));
         register_shutdown_function(array($this, 'shutdown'));
     }
 
-    function handler() {
-        $this->messages[] = $this->get();
-    }
+    function handler($comment = '') {
+        $this->messages[] = $this->get($comment);
+        $this->timeStart = $this->microtime(true);
+        $this->memoryStart = memory_get_usage();
+    } 
 
     function get($comment = '') {
+        $timeCurrent = $this->microtime(true);
+        $memoryCurrent = memory_get_usage();
+
+        $timeElapse = $timeCurrent - $this->timeStart;
+        $memoryUsage = $memoryCurrent - $this->memoryStart;
+    
+        $formattedTime = sprintf("%10.6f s", $timeElapse);
+        $formattedMemory = sprintf("%9.2f KB", $memoryUsage / 1024);
+
         $f = debug_backtrace();
         $line = isset($f[1]['line']) ? $f[1]['line'] : 0;
         $file = isset($f[1]['file']) ? $f[1]['file'] : 'No file';
-
-        $timeCurrent = $this->microtime(true);
-    
-        $memoryCurrent = memory_get_usage();
-        $memoryUsage = $memoryCurrent - $this->memoryStart;
-    
-        $formattedTime = sprintf("%10.6f s", $timeCurrent - $this->timeStart);
-        $formattedMemory = sprintf("%9.2f KB", $memoryUsage / 1024);
 
         $message = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] $file [$comment]";
 
         $this->timeTotal += ($timeCurrent - $this->timeStart);
         $this->memoryTotal += $memoryUsage;
 
-        $this->timeStart = $timeCurrent;
-        $this->memoryStart = $memoryCurrent;
-
         return $message;
     }
 
     function shutdown() {
-        $this->messages[] = $this->get('shutdown');
+        $this->handler('shutdown');
 
         list($micro, $time) = $this->microtime();
 
