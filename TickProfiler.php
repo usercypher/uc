@@ -2,61 +2,60 @@
 
 class TickProfiler {
     var $eol = "\n";
-    var $file, $timeStart, $timeTotal, $memoryStart, $memoryTotal, $messages;
+    var $file, $memoryStart, $memoryTotal, $timeStart, $timeTotal, $ticks;
 
     function init($file) {
         $this->file = dirname(__FILE__) . '/' . $file;
-        $this->timeStart = $this->microtime(true);
-        $this->timeTotal = 0;
-        $this->memoryStart = 0;
+
+        $this->ticks = array();
+
         $this->memoryTotal = 0;
-        $this->messages = array();
+        $this->timeTotal = 0;
+
+        $this->memoryStart = 0;
+        $this->timeStart = $this->microtime(true);
+
         register_tick_function(array($this, 'handler'));
         register_shutdown_function(array($this, 'shutdown'));
     }
 
     function handler($comment = '') {
-        $this->messages[] = $this->get($comment);
-        $this->timeStart = $this->microtime(true);
+        $this->tick(memory_get_usage(), $this->microtime(true), $comment);
         $this->memoryStart = memory_get_usage();
+        $this->timeStart = $this->microtime(true);
     } 
 
-    function get($comment = '') {
-        $timeCurrent = $this->microtime(true);
-        $memoryCurrent = memory_get_usage();
-
-        $timeElapse = $timeCurrent - $this->timeStart;
+    function tick($memoryCurrent, $timeCurrent, $comment = '') {
         $memoryUsage = $memoryCurrent - $this->memoryStart;
-    
-        $formattedTime = sprintf("%10.6f s", $timeElapse);
-        $formattedMemory = sprintf("%9.2f KB", $memoryUsage / 1024);
+        $timeElapse = $timeCurrent - $this->timeStart;
 
-        $f = debug_backtrace();
-        $line = isset($f[1]['line']) ? $f[1]['line'] : 0;
-        $file = isset($f[1]['file']) ? $f[1]['file'] : 'No file';
-        $funtion = isset($f[2]['function']) ? $f[2]['function'] : 'No function';
-
-        $message = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] $file [$funtion] $comment";
-
-        $this->timeTotal += ($timeCurrent - $this->timeStart);
         $this->memoryTotal += $memoryUsage;
+        $this->timeTotal += $timeElapse;
 
-        return $message;
+        $formattedMemory = sprintf("%9.2f KB", $memoryUsage / 1024);
+        $formattedTime = sprintf("%10.6f s", $timeElapse);
+
+        $db = debug_backtrace();
+        $line = isset($db[1]['line']) ? $db[1]['line'] : 0;
+        $file = isset($db[1]['file']) ? $db[1]['file'] : 'No file';
+        $funtion = isset($db[2]['function']) ? $db[2]['function'] : 'No function';
+
+        $this->ticks[] = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] $file [$funtion] $comment";
     }
 
     function shutdown() {
-        $this->messages[0] .= '[tick init] [php init state]';
-        $this->messages[] = $this->get('[shutdown]');
+        $this->ticks[0] .= '[tick init] [php init state]';
+        $this->tick(memory_get_usage(), $this->microtime(true), '[shutdown]');
 
         list($micro, $time) = $this->microtime();
 
-        $formattedTime = sprintf("Total: %10.6f s", $this->timeTotal);
         $formattedMemory = sprintf("Total: %9.2f KB", $this->memoryTotal / 1024);
+        $formattedTime = sprintf("Total: %10.6f s", $this->timeTotal);
     
         $stamp = '[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ';
         $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'No uri';
         if ($fp = fopen($this->file, 'a')) {
-            fwrite($fp, (string) ($stamp . 'uri: ' . $uri . $this->eol . implode($this->eol, $this->messages) . $this->eol . $this->eol . "[$formattedTime] [$formattedMemory]" . $this->eol . $this->eol));
+            fwrite($fp, (string) ($stamp . 'uri: ' . $uri . $this->eol . implode($this->eol, $this->ticks) . $this->eol . $this->eol . "[$formattedTime] [$formattedMemory]" . $this->eol . $this->eol));
             fclose($fp);
         }
     }
