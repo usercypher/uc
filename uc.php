@@ -455,7 +455,7 @@ class App {
         }
 
         $route = $this->resolveRoute($request->method, $path);
-d($route);exit;
+
         if (isset($route['error'])) $this->alert($route['error'], $route['http']);
 
         $request->params = $route['params'];
