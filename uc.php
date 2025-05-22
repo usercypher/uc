@@ -380,18 +380,13 @@ class App {
                         $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
                         $matched = true;
+                        if (isset($current['_h'])) break 2;
                         break;
-                    }
-                    if ($paramModifier === '?' && preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                    }                    
+                    $matches = array($pathSegment);
+                    if ($paramRegex === '.*' || preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
                         foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
-                        $params[substr($paramName, 0, -1)] = (count($matches) === 1) ? $matches[0] : $matches;
-                        $current = $value;
-                        $matched = true;
-                        break;
-                    }
-                    if (preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
-                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
-                        $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
+                        $params[($paramModifier === '?' ? substr($paramName, 0, -1) : $paramName)] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
@@ -460,7 +455,7 @@ class App {
         }
 
         $route = $this->resolveRoute($request->method, $path);
-
+d($route);exit;
         if (isset($route['error'])) $this->alert($route['error'], $route['http']);
 
         $request->params = $route['params'];

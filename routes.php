@@ -20,7 +20,7 @@ $app->addRoute($group, '', 'pipe/{option?}/{class?}', array('pipe' => array('Pip
 
 // Define the default route which triggers the 'Pipe_Book_Home' and 'Pipe_ResponseCompression' pipes
 $app->setRoute('GET', '', array('pipe' => array('Pipe_Book_Home', 'Pipe_ResponseCompression'))); // This is the default route, triggered for a basic GET request
-
+$app->setRoute('GET', '{a}/{b}/{c}/{d?}/{e?}/{f*}', array('pipe' => array('Pipe_Book_Home', 'Pipe_ResponseCompression')));
 // Define additional routes for 'home' and 'create' using the 'GET' method
 $group = array( 
     'pipe_append' => array('Pipe_ResponseCompression') // Append the 'Pipe_ResponseCompression' to the routes in this group
