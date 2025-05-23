@@ -27,6 +27,7 @@ function init() {
         define('EOL', "\n");
     }
     define('SAPI', php_sapi_name());
+    define('ROOT', dirname(__FILE__) . DS);
 }
 
 function d($var, $detailed = false) {
@@ -136,7 +137,7 @@ class Response {
 }
 
 class App {
-    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
+    var $ENV = array(), $TMP = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
     var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
     var $isRunning = false;
@@ -145,6 +146,29 @@ class App {
 
     function __construct($args) {
         list($request, $response) = $args;
+
+        $this->ENV['DIR_LOG'] = '';
+        $this->ENV['DIR_LOG_TIMESTAMP'] = '';
+        $this->ENV['DIR_RES'] = '';
+        $this->ENV['DIR_WEB'] = '';
+        $this->ENV['DIR_SRC'] = '';
+
+        $this->ENV['ROUTE_FILE'] = 'index.php';
+        $this->ENV['ROUTE_REWRITE'] = false;
+        $this->ENV['URL_DIR_WEB'] = '';
+        $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
+
+        $this->ENV['ERROR_HTML_FILE'] = '';
+        $this->ENV['ERROR_LOG_FILE'] = 'app/error';
+        $this->ENV['SHOW_ERRORS'] = true;
+        $this->ENV['LOG_ERRORS'] = true;
+
+        $this->ENV['LOG_SIZE_LIMIT_MB'] = 5;
+        $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = 1;
+        $this->ENV['LOG_RETENTION_DAYS'] = 7;
+        $this->ENV['MAX_LOG_FILES'] = 10;
+
+        $this->TMP['URL_URI'] = array(true => array(array('ROUTE_FILE' => ''), ''), false => array(&$this->ENV, '?route=/'));
 
         $this->unit = array(
             'App' => array(0, null, null, array(), array(1, 2), true),
@@ -160,33 +184,6 @@ class App {
             'Request' => array($request, true),
             'Response' => array($response, true),
         );
-    }
-
-    function init() {
-        $this->ENV['SAPI'] = SAPI;
-        $this->ENV['DIR'] = dirname(__FILE__) . DS;
-
-        $this->ENV['DIR_LOG'] = isset($this->ENV['DIR_LOG']) ? $this->ENV['DIR_LOG'] : '';
-        $this->ENV['DIR_LOG_TIMESTAMP'] = isset($this->ENV['DIR_LOG_TIMESTAMP']) ? $this->ENV['DIR_LOG_TIMESTAMP'] : '';
-        $this->ENV['DIR_RES'] = isset($this->ENV['DIR_RES']) ? $this->ENV['DIR_RES'] : '';
-        $this->ENV['DIR_WEB'] = isset($this->ENV['DIR_WEB']) ? $this->ENV['DIR_WEB'] : '';
-        $this->ENV['DIR_SRC'] = isset($this->ENV['DIR_SRC']) ? $this->ENV['DIR_SRC'] : '';
-
-        $this->ENV['ROUTE_FILE'] = isset($this->ENV['ROUTE_FILE']) ? $this->ENV['ROUTE_FILE'] : 'index.php';
-        $this->ENV['ROUTE_REWRITE'] = isset($this->ENV['ROUTE_REWRITE']) ? (bool) $this->ENV['ROUTE_REWRITE'] : false;
-        $this->ENV['URL_URI'] = $this->ENV['ROUTE_REWRITE'] ? '' : ($this->ENV['ROUTE_FILE'] . '?route=/');
-        $this->ENV['URL_DIR_WEB'] = isset($this->ENV['URL_DIR_WEB']) ? $this->ENV['URL_DIR_WEB'] : '';
-        $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
-
-        $this->ENV['ERROR_HTML_FILE'] = isset($this->ENV['ERROR_HTML_FILE']) ? $this->ENV['ERROR_HTML_FILE'] : '';
-        $this->ENV['ERROR_LOG_FILE'] = isset($this->ENV['ERROR_LOG_FILE']) ? $this->ENV['ERROR_LOG_FILE'] : 'app/error';
-        $this->ENV['SHOW_ERRORS'] = (bool) $this->ENV['SHOW_ERRORS'];
-        $this->ENV['LOG_ERRORS'] = (bool) $this->ENV['LOG_ERRORS'];
-
-        $this->ENV['LOG_SIZE_LIMIT_MB'] = isset($this->ENV['LOG_SIZE_LIMIT_MB']) && (int) $this->ENV['LOG_SIZE_LIMIT_MB'] > 0 ? (int) $this->ENV['LOG_SIZE_LIMIT_MB'] : 5;
-        $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = isset($this->ENV['LOG_CLEANUP_INTERVAL_DAYS']) && (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] > 0 ? (int) $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] : 1;
-        $this->ENV['LOG_RETENTION_DAYS'] = isset($this->ENV['LOG_RETENTION_DAYS']) && (int) $this->ENV['LOG_RETENTION_DAYS'] > 0 ? (int) $this->ENV['LOG_RETENTION_DAYS'] : 7;
-        $this->ENV['MAX_LOG_FILES'] = isset($this->ENV['MAX_LOG_FILES']) && (int) $this->ENV['MAX_LOG_FILES'] > 0 ? (int) $this->ENV['MAX_LOG_FILES'] : 10;
     }
 
     function setEnv($key, $value) {
@@ -214,9 +211,9 @@ class App {
     // Config Management
 
     function saveConfig($file) {
-        $configFile = $this->ENV['DIR'] . $file . '.dat';
+        $configFile = ROOT . $file . '.dat';
         if (file_exists($configFile)) {
-            $newFileName = $this->ENV['DIR'] . $file . '_' . date('Y-m-d_H-i-s', filectime($configFile)) . '.dat';
+            $newFileName = ROOT . $file . '_' . date('Y-m-d_H-i-s', filectime($configFile)) . '.dat';
             rename($configFile, $newFileName);
             echo('Existing file detected. backed up as: ' . $newFileName . EOL);
         }
@@ -227,7 +224,7 @@ class App {
     }
 
     function loadConfig($file) {
-        $configFile = $this->ENV['DIR'] . $file . '.dat';
+        $configFile = ROOT . $file . '.dat';
         list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->fileRead($configFile));
     }
 
@@ -265,23 +262,15 @@ class App {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } else {
-            if ($this->ENV['SHOW_ERRORS'] || $this->ENV['SAPI'] === 'cli') {
-                $traceOutput = '';
-                $trace = debug_backtrace();
+            if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
                 $traceOutput = 'Stack trace: ' . EOL;
+                $trace = debug_backtrace();
                 $count = count($trace);
-                for ($i = 1; $count > $i; $i++) {
-                    $frame = $trace[$i];
-                    $traceOutput .= '#' . ($i - 1) . ' ';
-                    $traceOutput .= isset($frame['file']) ? $frame['file'] : '[internal function]';
-                    $traceOutput .= ' (' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ';
-                    $traceOutput .= isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '';
-                    $traceOutput .= (isset($frame['function']) ? $frame['function'] . '()' : '[unknown function]') . EOL;
-                }
+                for ($i = 1; $count > $i; $i++) $traceOutput .= '#' . ($i - 1) . ' ' . (isset($trace[$i]['file']) ? $trace[$i]['file'] : '[internal function]') . ' (' . ((isset($trace[$i]['line']) ? $trace[$i]['line'] : 'no line')) . '): ' . (isset($trace[$i]['class']) ? $trace[$i]['class'] . (isset($trace[$i]['type']) ? $trace[$i]['type'] : '') : '') . (isset($trace[$i]['function']) ? $trace[$i]['function'] . '()' : '[unknown function]') . EOL;
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
-                $file = $this->ENV['DIR'] . $this->ENV['ERROR_HTML_FILE'];
+                $file = ROOT . $this->ENV['ERROR_HTML_FILE'];
                 if (file_exists($file)) {
                     $data = array('app' => $this, 'http' => $http);
                     ob_start();
@@ -295,7 +284,7 @@ class App {
 
         if (ob_get_level() > 0) ob_end_clean();
 
-        if ($this->ENV['SAPI'] === 'cli') {
+        if (SAPI === 'cli') {
             fwrite(STDERR, $content);
             exit;
         }
@@ -354,7 +343,7 @@ class App {
 
         foreach ($pathSegments as $index => $pathSegment) {
             if ($pathSegment === '' && !(!$foundSegment && $last === $index)) {
-                if (++$decrement > 21) return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
+                if (++$decrement > 20) return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
                 continue;
             }
 
@@ -373,8 +362,7 @@ class App {
 
             foreach ($current as $key => $value) {
                 if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
-                    $param = substr($key, 1, -1);
-                    $paramParts = explode(':', $param, 2);
+                    $paramParts = explode(':', substr($key, 1, -1), 2);
                     $paramName = $paramParts[0];
                     $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '.*';
                     $paramModifier = substr($paramName, -1);
@@ -384,7 +372,7 @@ class App {
                         $matched = true;
                         if (isset($current['_h'])) break 2;
                         break;
-                    }                    
+                    }
                     $matches = array($pathSegment);
                     if ($paramRegex === '.*' || preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
                         foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
@@ -404,8 +392,7 @@ class App {
 
             foreach ($current as $key => $value) {
                 if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
-                    $param = substr($key, 1, -1);
-                    $paramParts = explode(':', $param, 2);
+                    $paramParts = explode(':', substr($key, 1, -1), 2);
                     $paramModifier = substr($paramParts[0], -1);
                     if ($paramModifier === '*' || $paramModifier === '?') {
                         $current = $value;
@@ -438,15 +425,13 @@ class App {
     // Request Handling
 
     function run() {
-        $response = $this->cache['Response'][$this->CACHE_CLASS];
-
-        if ($this->isRunning) return $response;
-
+        if ($this->isRunning) return;
         $this->isRunning = true;
+
         $request = $this->cache['Request'][$this->CACHE_CLASS];
 
         $path = '';
-        if ($this->ENV['SAPI'] === 'cli') {
+        if (SAPI === 'cli') {
             foreach ($request->cli['positional'] as $positional) $path .= '/' . urlencode($positional);
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
@@ -461,6 +446,7 @@ class App {
         if (isset($route['error'])) $this->alert($route['error'], $route['http']);
 
         $request->params = $route['params'];
+        $response = $this->cache['Response'][$this->CACHE_CLASS];
         foreach ($route['pipe'] as $p) {
             $p = $this->getClass($this->unitList[$p]);
             list($request, $response) = $p->pipe($request, $response);
@@ -478,7 +464,7 @@ class App {
         if (!isset($option['namespace'])) $option['namespace'] = '';
         if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
 
-        if ($dp = opendir($this->ENV['DIR'] . $path)) {
+        if ($dp = opendir(ROOT . $path)) {
             while (($file = readdir($dp)) !== false) {
                 if ($file === '.' || $file === '..') continue;
 
@@ -486,7 +472,7 @@ class App {
                     if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
                 }
 
-                if (($option['max'] === 0 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR'] . $path . $file)) {
+                if (($option['max'] === 0 || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
@@ -638,7 +624,7 @@ class App {
 
             unset($stackSet[$unitParent]);
 
-            require($this->ENV['DIR'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
+            require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
             $this->cache[$unit][$this->CACHE_PATH] = true;
         }
     }
@@ -646,19 +632,19 @@ class App {
     // Utility Functions
 
     function unsetProperty($name) {
-        unset($this-> {$name});
+        unset($this-> { $name });
     }
 
     function path($option, $path = '') {
         switch ($option) {
             case 'root':
-                return $this->ENV['DIR'] . $path;
+                return ROOT . $path;
             case 'res':
-                return $this->ENV['DIR'] . $this->ENV['DIR_RES'] . $path;
+                return ROOT . $this->ENV['DIR_RES'] . $path;
             case 'web':
-                return $this->ENV['DIR'] . $this->ENV['DIR_WEB'] . $path;
+                return ROOT . $this->ENV['DIR_WEB'] . $path;
             case 'src':
-                return $this->ENV['DIR'] . $this->ENV['DIR_SRC'] . $path;
+                return ROOT . $this->ENV['DIR_SRC'] . $path;
             default:
                 return $path;
         }
@@ -667,7 +653,8 @@ class App {
     function url($option, $url = '') {
         switch ($option) {
             case 'route':
-                return $this->ENV['URL_BASE'] . $this->ENV['URL_URI'] . $url;
+                $uri = $this->TMP['URL_URI'][$this->ENV['ROUTE_REWRITE']];
+                return $this->ENV['URL_BASE'] . $uri[0]['ROUTE_FILE'] . $uri[1] . $url;
             case 'web':
                 return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
             default:
@@ -700,20 +687,20 @@ class App {
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
-        $logFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '.log';
+        $logFile = ROOT . $this->ENV['DIR_LOG'] . $file . '.log';
 
         $this->fileWrite($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
 
         if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
-            $newLogFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = ROOT . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
-        $timestampFile = $this->ENV['DIR'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
+        $timestampFile = ROOT . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
         $lastCleanup = file_exists($timestampFile) ? (int) $this->fileRead($timestampFile) : 0;
 
         if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
-            $logFiles = glob($this->ENV['DIR'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
+            $logFiles = glob(ROOT . $this->ENV['DIR_LOG'] . $file . '_*.log');
             $logFilesMTime = array();
 
             foreach ($logFiles as $file) $logFilesMTime[$file] = filemtime($file);

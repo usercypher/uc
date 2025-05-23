@@ -33,8 +33,6 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    $app->init();
-
     set_error_handler(array($app, 'error'));
     register_shutdown_function(array($app, 'shutdown'));
 
