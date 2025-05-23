@@ -9,6 +9,7 @@ function profiler($name) {
     require($name . '.php');
     $tickProfiler = new TickProfiler();
     $tickProfiler->init($name . '.log');
+    return $tickProfiler;
 }
 
 // Uncomment for initial setup to generate config or run 'php compile.php' to generate config

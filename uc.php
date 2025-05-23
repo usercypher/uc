@@ -447,7 +447,7 @@ class App {
 
         $path = '';
         if ($this->ENV['SAPI'] === 'cli') {
-            foreach ($request->cli['positional'] as $positional) $path .= urlencode($positional) . '/';
+            foreach ($request->cli['positional'] as $positional) $path .= '/' . urlencode($positional);
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($request->uri, '?');
