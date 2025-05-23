@@ -321,7 +321,7 @@ class App {
         }
 
         $node = &$this->routes[$method];
-        $routeSegments = explode('/', trim($route, '/'));
+        $routeSegments = explode('/', $route);
         foreach ($routeSegments as $segment) {
             if (!isset($node[$segment])) $node[$segment] = array();
             $node = &$node[$segment];
@@ -344,19 +344,21 @@ class App {
 
     function resolveRoute($method, $path) {
         if (!isset($this->routes[$method])) return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
-        if (strlen($path) > 2048) return array('http' => 414, 'error' => 'Request-URI too long (max 2048 chars): ' . $path);
 
         $current = $this->routes[$method];
         $params = array();
-        $pathSegments = explode('/', trim($path, '/'));
+        $pathSegments = explode('/', $path);
         $decrement = 0;
+        $foundSegment = false;
+        $last = count($pathSegments) - 1;
 
         foreach ($pathSegments as $index => $pathSegment) {
-            if ($pathSegment === '' && $index != 0) {
-                ++$decrement;
-                if ($decrement > 20) return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
+            if ($pathSegment === '' && !(!$foundSegment && $last === $index)) {
+                if (++$decrement > 21) return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
                 continue;
             }
+
+            $foundSegment = true;
 
             $index -= $decrement;
 

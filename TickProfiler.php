@@ -36,11 +36,13 @@ class TickProfiler {
         $formattedTime = sprintf("%10.6f s", $timeElapse);
 
         $db = debug_backtrace();
+        $pad = str_repeat('-', count($db) - 2);
         $line = isset($db[1]['line']) ? $db[1]['line'] : 0;
         $file = isset($db[1]['file']) ? $db[1]['file'] : 'No file';
         $funtion = isset($db[2]['function']) ? $db[2]['function'] : 'No function';
+        $class = isset($db[2]['class']) ? $db[2]['class'] . (isset($db[2]['type']) ? $db[2]['type'] : '') : '';
 
-        $this->ticks[] = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] $file [$funtion] $comment";
+        $this->ticks[] = "  [$formattedTime] [$formattedMemory] [line: " . sprintf("%5.0f", $line) . "] [$pad] $file [$class$funtion] $comment";
     }
 
     function shutdown() {
