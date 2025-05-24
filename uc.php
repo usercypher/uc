@@ -466,7 +466,7 @@ class App {
 
     function autoSetUnit($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
-        if (!isset($option['max'])) $option['max'] = 0;
+        if (!isset($option['max'])) $option['max'] = -1;
         if (!isset($option['ignore'])) $option['ignore'] = array();
         if (!isset($option['namespace'])) $option['namespace'] = '';
         if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
