@@ -147,6 +147,8 @@ class App {
     function __construct($args) {
         list($request, $response) = $args;
 
+        $this->ENV['DEBUG'] = false;
+
         $this->ENV['DIR_LOG'] = '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = '';
         $this->ENV['DIR_RES'] = '';
@@ -230,7 +232,7 @@ class App {
 
     // Error Management
 
-    function alert($msg, $http = 500, $errno = 1) {
+    function alert($msg, $http = 500, $errno = E_NOTICE) {
         $trace = debug_backtrace();
         $this->handleError($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line']);
     }
@@ -252,6 +254,11 @@ class App {
         if (is_numeric($parts[0])) {
             $http = (int) $parts[0];
             $errstr = $parts[1];
+        }
+
+        if ($this->ENV['DEBUG']) {
+            echo $errstr;
+            return;
         }
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
@@ -443,7 +450,7 @@ class App {
 
         $route = $this->resolveRoute($request->method, $path);
 
-        if (isset($route['error'])) $this->alert($route['error'], $route['http']);
+        if (isset($route['error'])) return $this->alert($route['error'], $route['http'], E_ERROR);
 
         $request->params = $route['params'];
         $response = $this->cache['Response'][$this->CACHE_CLASS];
@@ -472,7 +479,7 @@ class App {
                     if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
                 }
 
-                if (($option['max'] === 0 || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
+                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
@@ -483,7 +490,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) $this->alert('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500);
+                    if (isset($this->unit[$unit])) return $this->alert('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500, E_ERROR);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -550,7 +557,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) $this->alert('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$unit])) return $this->alert('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500, E_ERROR);
 
             $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
@@ -601,7 +608,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) $this->alert('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500);
+            if (isset($stackSet[$unit])) return $this->alert('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500, E_ERROR);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
