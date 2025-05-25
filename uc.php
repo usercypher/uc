@@ -159,7 +159,6 @@ class App {
         $this->ENV['ROUTE_REWRITE'] = false;
         $this->ENV['URL_DIR_WEB'] = '';
         $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
-        $this->ENV['URL_URI_PARTS'] = array(true => array('path' => '','query' => ''), false => array('path' => &$this->ENV['ROUTE_FILE'], 'query' =>  '?route=/'));
 
         $this->ENV['ERROR_HTML_FILE'] = '';
         $this->ENV['ERROR_LOG_FILE'] = 'app/error';
@@ -655,8 +654,7 @@ class App {
     function url($option, $url = '') {
         switch ($option) {
             case 'route':
-                $uri = $this->ENV['URL_URI_PARTS'][$this->ENV['ROUTE_REWRITE']];
-                return $this->ENV['URL_BASE'] . $uri['path'] . $uri['query'] . $url;
+                return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . $url;
             case 'web':
                 return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
             default:
