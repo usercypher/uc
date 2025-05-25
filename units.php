@@ -9,7 +9,7 @@
 // Unit names will be derived from the filename. If 'dir_as_namespace' is true, the directory structure is included in the namespace, 
 // with the root directory (in this case, 'src/app/') excluded from the namespace.
 // For example, 'src/app/Model/Book.php' would become 'Model\Book' when 'dir_as_namespace' is enabled.
-$app->scanUnit('src'.DS.'app'.DS, array('max' => 2));
+$app->scanUnits('src'.DS.'app'.DS, array('max' => 2));
 
 // Set up the 'Lib_Database' class, enabling caching to ensure only a single instance is used.
 // The 'args' option specifies that 'App' is passed as an argument when the class is instantiated.

@@ -460,7 +460,7 @@ class App {
 
     // Class Management
 
-    function scanUnit($path, $option) {
+    function scanUnits($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
         if (!isset($option['max'])) $option['max'] = -1;
         if (!isset($option['ignore'])) $option['ignore'] = array();
@@ -479,7 +479,7 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
-                    $this->scanUnit($path . $file . DS, $option);
+                    $this->scanUnits($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
