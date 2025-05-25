@@ -31,7 +31,7 @@ function compile($mode, $packageFile, $settingsFile, $configFile) {
     // Configure the app with units and routes
     $app = config($app);
 
-    $app->saveConfig($configFile);
+    $app->save($configFile);
 
     exit;
 }

@@ -212,7 +212,7 @@ class App {
 
     // Config Management
 
-    function saveConfig($file) {
+    function save($file) {
         $configFile = ROOT . $file . '.dat';
         if (file_exists($configFile)) {
             $newFileName = ROOT . $file . '_' . date('Y-m-d_H-i-s', filectime($configFile)) . '.dat';
@@ -220,32 +220,28 @@ class App {
             echo('Existing file detected. backed up as: ' . $newFileName . EOL);
         }
 
-        $this->fileWrite($configFile, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
+        $this->write($configFile, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
 
         echo('File created: ' . $configFile . EOL);
     }
 
-    function loadConfig($file) {
+    function load($file) {
         $configFile = ROOT . $file . '.dat';
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->fileRead($configFile));
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($configFile));
     }
 
     // Error Management
 
     function alert($msg, $http = 500, $errno = E_NOTICE) {
         $trace = debug_backtrace();
-        $this->handleError($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line']);
-    }
-
-    function error($errno, $errstr, $errfile, $errline) {
-        $this->handleError($errno, $errstr, $errfile, $errline);
+        $this->error($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line']);
     }
 
     function shutdown() {
-        if (function_exists('error_get_last') && ($error = error_get_last()) !== null) $this->handleError($error['type'], $error['message'], $error['file'], $error['line']);
+        if (function_exists('error_get_last') && ($error = error_get_last()) !== null) $this->error($error['type'], $error['message'], $error['file'], $error['line']);
     }
 
-    function handleError($errno, $errstr, $errfile, $errline) {
+    function error($errno, $errstr, $errfile, $errline) {
         $http = 500;
         $type = 'text/html';
         $content = '';
@@ -273,7 +269,7 @@ class App {
                 $traceOutput = 'Stack trace: ' . EOL;
                 $trace = debug_backtrace();
                 $count = count($trace);
-                for ($i = 1; $count > $i; $i++) $traceOutput .= '#' . ($i - 1) . ' ' . (isset($trace[$i]['file']) ? $trace[$i]['file'] : '[internal function]') . ' (' . ((isset($trace[$i]['line']) ? $trace[$i]['line'] : 'no line')) . '): ' . (isset($trace[$i]['class']) ? $trace[$i]['class'] . (isset($trace[$i]['type']) ? $trace[$i]['type'] : '') : '') . (isset($trace[$i]['function']) ? $trace[$i]['function'] . '()' : '[unknown function]') . EOL;
+                for ($i = 0; $count > $i; $i++) $traceOutput .= '#' . $i . ' ' . (isset($trace[$i]['file']) ? $trace[$i]['file'] : '[internal function]') . ' (' . ((isset($trace[$i]['line']) ? $trace[$i]['line'] : 'no line')) . '): ' . (isset($trace[$i]['class']) ? $trace[$i]['class'] . (isset($trace[$i]['type']) ? $trace[$i]['type'] : '') : '') . (isset($trace[$i]['function']) ? $trace[$i]['function'] . '()' : '[unknown function]') . EOL;
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
@@ -326,7 +322,7 @@ class App {
         $node['_h'] = $handler;
     }
 
-    function addRoute($group, $method, $route, $option = array()) {
+    function groupRoute($group, $method, $route, $option = array()) {
         $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
         $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
         $this->setRoute($method, (isset($group['prefix']) ? $group['prefix'] : '') . $route, $option);
@@ -464,7 +460,7 @@ class App {
 
     // Class Management
 
-    function autoSetUnit($path, $option) {
+    function scanUnit($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
         if (!isset($option['max'])) $option['max'] = -1;
         if (!isset($option['ignore'])) $option['ignore'] = array();
@@ -483,7 +479,7 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
-                    $this->autoSetUnit($path . $file . DS, $option);
+                    $this->scanUnit($path . $file . DS, $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
@@ -523,11 +519,52 @@ class App {
         $this->unit[$unit][$this->UNIT_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CACHE]);
     }
 
-    function addUnit($group, $unit, $option = array()) {
+    function groupUnit($group, $unit, $option = array()) {
         $option['args'] = array_merge((isset($group['args_prepend']) ? $group['args_prepend'] : array()), (isset($option['args']) ? $option['args'] : array()), (isset($group['args_append']) ? $group['args_append'] : array()));
         $option['load'] = array_merge((isset($group['load_prepend']) ? $group['load_prepend'] : array()), (isset($option['load']) ? $option['load'] : array()), (isset($group['load_append']) ? $group['load_append'] : array()));
         $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : false);
         $this->setUnit($unit, $option);
+    }
+
+    function loadUnit($unit) {
+        $INDEX = 0;
+        $COUNT = 1;
+
+        $stack = array($unit);
+        $stackSet = array();
+        $md = array();
+
+        while (!empty($stack)) {
+            $unit = array_pop($stack);
+            $unitParent = end($stack);
+            $stackSet[$unitParent] = true;
+
+            if (isset($stackSet[$unit])) return $this->alert('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500, E_ERROR);
+
+            if (isset($this->cache[$unit][$this->CACHE_PATH])) {
+                if (empty($stack)) return;
+
+                unset($stackSet[$unitParent]);
+                continue;
+            }
+
+            if ($this->unit[$unit][$this->UNIT_LOAD] !== array()) {
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
+
+                if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
+                    $stack[] = $unit;
+                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
+                    ++$md[$unit][$INDEX];
+                    continue;
+                }
+                unset($md[$unit]);
+            }
+
+            unset($stackSet[$unitParent]);
+
+            require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
+            $this->cache[$unit][$this->CACHE_PATH] = true;
+        }
     }
 
     function newClass($unit) {
@@ -595,51 +632,10 @@ class App {
         return $class;
     }
 
-    function loadUnit($unit) {
-        $INDEX = 0;
-        $COUNT = 1;
-
-        $stack = array($unit);
-        $stackSet = array();
-        $md = array();
-
-        while (!empty($stack)) {
-            $unit = array_pop($stack);
-            $unitParent = end($stack);
-            $stackSet[$unitParent] = true;
-
-            if (isset($stackSet[$unit])) return $this->alert('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500, E_ERROR);
-
-            if (isset($this->cache[$unit][$this->CACHE_PATH])) {
-                if (empty($stack)) return;
-
-                unset($stackSet[$unitParent]);
-                continue;
-            }
-
-            if ($this->unit[$unit][$this->UNIT_LOAD] !== array()) {
-                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
-
-                if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
-                    $stack[] = $unit;
-                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
-                    ++$md[$unit][$INDEX];
-                    continue;
-                }
-                unset($md[$unit]);
-            }
-
-            unset($stackSet[$unitParent]);
-
-            require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
-            $this->cache[$unit][$this->CACHE_PATH] = true;
-        }
-    }
-
     // Utility Functions
 
-    function unsetProperty($name) {
-        unset($this-> { $name });
+    function remove($property) {
+        unset($this-> { $property });
     }
 
     function path($option, $path = '') {
@@ -673,14 +669,14 @@ class App {
         return trim(preg_replace('/[^a-z0-9-]/', '', strtolower(preg_replace('/[\s-]+/', '-', $s))), '-');
     }
 
-    function fileWrite($file, $string, $append = false) {
+    function write($file, $string, $append = false) {
         if ($fp = fopen($file, (($append) ? 'a' : 'w'))) {
             fwrite($fp, (string) $string);
             fclose($fp);
         }
     }
 
-    function fileRead($file) {
+    function read($file) {
         if ($fp = fopen($file, 'r')) {
             $fs = fstat($fp);
             $content = fread($fp, $fs['size']);
@@ -696,7 +692,7 @@ class App {
 
         $logFile = ROOT . $this->ENV['DIR_LOG'] . $file . '.log';
 
-        $this->fileWrite($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
+        $this->write($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
 
         if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
             $newLogFile = ROOT . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
@@ -704,7 +700,7 @@ class App {
         }
 
         $timestampFile = ROOT . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
-        $lastCleanup = file_exists($timestampFile) ? (int) $this->fileRead($timestampFile) : 0;
+        $lastCleanup = file_exists($timestampFile) ? (int) $this->read($timestampFile) : 0;
 
         if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
             $logFiles = glob(ROOT . $this->ENV['DIR_LOG'] . $file . '_*.log');
@@ -728,7 +724,7 @@ class App {
                 if (($time - $logFilesMTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) unlink($file);
             }
 
-            $this->fileWrite($timestampFile, $time);
+            $this->write($timestampFile, $time);
         }
     }
 }

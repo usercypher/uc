@@ -37,7 +37,7 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     register_shutdown_function(array($app, 'shutdown'));
 
     // Load app configuration and dispatch the response
-    $app->loadConfig($configFile);
+    $app->load($configFile);
     $response = $app->run();
     $response->send();
 }
