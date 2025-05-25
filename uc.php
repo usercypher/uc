@@ -137,7 +137,7 @@ class Response {
 }
 
 class App {
-    var $ENV = array(), $TMP = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
+    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
     var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
     var $isRunning = false;
@@ -159,6 +159,7 @@ class App {
         $this->ENV['ROUTE_REWRITE'] = false;
         $this->ENV['URL_DIR_WEB'] = '';
         $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
+        $this->ENV['URL_URI_PARTS'] = array(true => array('path' => '','query' => ''), false => array('path' => &$this->ENV['ROUTE_FILE'], 'query' =>  '?route=/'));
 
         $this->ENV['ERROR_HTML_FILE'] = '';
         $this->ENV['ERROR_LOG_FILE'] = 'app/error';
@@ -169,8 +170,6 @@ class App {
         $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = 1;
         $this->ENV['LOG_RETENTION_DAYS'] = 7;
         $this->ENV['MAX_LOG_FILES'] = 10;
-
-        $this->TMP['URL_URI'] = array(true => array(array('ROUTE_FILE' => ''), ''), false => array(&$this->ENV, '?route=/'));
 
         $this->unit = array(
             'App' => array(0, null, null, array(), array(1, 2), true),
@@ -656,8 +655,8 @@ class App {
     function url($option, $url = '') {
         switch ($option) {
             case 'route':
-                $uri = $this->TMP['URL_URI'][$this->ENV['ROUTE_REWRITE']];
-                return $this->ENV['URL_BASE'] . $uri[0]['ROUTE_FILE'] . $uri[1] . $url;
+                $uri = $this->ENV['URL_URI_PARTS'][$this->ENV['ROUTE_REWRITE']];
+                return $this->ENV['URL_BASE'] . $uri['path'] . $uri['query'] . $url;
             case 'web':
                 return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
             default:
