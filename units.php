@@ -1,50 +1,82 @@
 <?php
 // units.php
 
-// Auto-load units from the 'src/app/' directory and set path metadata (max depth 2).
-// Options: 
-// 'max' => '0' // 0 = no limits.
-// 'ignore' => array('ignore*.pattern', 'ignore.file')  // Ignore files matching the given patterns.
-// 'dir_as_namespace' => true  // If enabled, treat directories as namespaces. Each directory level becomes part of the namespace prefix, separated by '\'. 
-// Unit names will be derived from the filename. If 'dir_as_namespace' is true, the directory structure is included in the namespace, 
-// with the root directory (in this case, 'src/app/') excluded from the namespace.
-// For example, 'src/app/Model/Book.php' would become 'Model\Book' when 'dir_as_namespace' is enabled.
+/**
+ * ------------------------------------------------------------------------
+ * Auto-load Units
+ * ------------------------------------------------------------------------
+ * Automatically scan and load units from the 'src/app/' directory.
+ * Options:
+ *  - 'max' => 2          // Max directory depth to scan (-1 = unlimited)
+ *  - 'ignore' => [...]   // Patterns/files to ignore
+ *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
+ */
 $app->scanUnits('src'.DS.'app'.DS, array('max' => 2));
 
-// Set up the 'Lib_Database' class, enabling caching to ensure only a single instance is used.
-// The 'args' option specifies that 'App' is passed as an argument when the class is instantiated.
-$app->setUnit('Lib_Database', array('args' => array('App'), 'cache' => true));
+/**
+ * ------------------------------------------------------------------------
+ * Core Library Units
+ * ------------------------------------------------------------------------
+ * Configure core library units with caching and constructor args.
+ */
 
-// Define and inject dependencies: 'Model_Book' depends on 'Lib_Model'.
-// This means that before 'Model_Book' is instantiated, 'Lib_Model' will be loaded first.
+// Set 'Lib_Database' with 'App' argument and enable caching (singleton instance)
+$app->setUnit('Lib_Database', array(
+    'args' => array('App'),
+    'cache' => true
+));
+
+// Set 'Lib_Session' with caching enabled
+$app->setUnit('Lib_Session', array(
+    'cache' => true
+));
+
+/**
+ * ------------------------------------------------------------------------
+ * Model Units with Dependencies
+ * ------------------------------------------------------------------------
+ * Define 'Model_Book' with dependencies on 'Lib_Model' and 'Lib_Database'.
+ */
 $group = array(
-    'args_prepend' => array('Lib_Database'),  // 'Lib_Database' is injected as the first argument.
-    'load_prepend' => array('Lib_Model'),     // 'Lib_Model' is loaded before 'Model_Book'.
+    'args_prepend' => array('Lib_Database'),  // Inject 'Lib_Database' as first constructor argument
+    'load_prepend' => array('Lib_Model')      // Load 'Lib_Model' before 'Model_Book'
 );
 $app->groupUnit($group, 'Model_Book');
 
-// Set up 'Lib_Session' with caching enabled to reuse the same instance across the application.
-$app->setUnit('Lib_Session', array('cache' => true));
-
-// Define a group for 'Pipe_Cli_Pipe', where 'App' is injected as a required argument.
+/**
+ * ------------------------------------------------------------------------
+ * CLI and Source AutoLoader Pipes
+ * ------------------------------------------------------------------------
+ * Define pipe units handling CLI and source auto-loading.
+ */
 $group = array(
-    'args_prepend' => array('App'),
+    'args_prepend' => array('App')
 );
 $app->groupUnit($group, 'Pipe_Cli_Pipe');
 $app->groupUnit($group, 'Pipe_SrcAutoLoader');
 
-// Define other pipe units, specifying their dependencies:
+/**
+ * ------------------------------------------------------------------------
+ * Book-related Pipe Units with Dependencies
+ * ------------------------------------------------------------------------
+ * Pipes related to book functionality, with dependencies injected.
+ */
 $group = array(
-    'args_prepend' => array('App', 'Lib_Session'),  // Inject 'App' and 'Lib_Session' as arguments for the pipes.
+    'args_prepend' => array('App', 'Lib_Session')
 );
 $app->groupUnit($group, 'Pipe_Book_Create');
+$app->groupUnit($group, 'Pipe_Book_Store', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Pipe_Book_Update', array('args' => array('Model_Book')));
 $app->groupUnit($group, 'Pipe_Book_Delete', array('args' => array('Model_Book')));
 $app->groupUnit($group, 'Pipe_Book_Edit', array('args' => array('Model_Book')));
 $app->groupUnit($group, 'Pipe_Book_Home', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Store', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Update', array('args' => array('Model_Book')));
 
-// Set up CSRF protection pipes, with 'Lib_Session' injected as a dependency.
+/**
+ * ------------------------------------------------------------------------
+ * CSRF Protection Pipes
+ * ------------------------------------------------------------------------
+ * Pipes for CSRF token generation and validation, requiring session support.
+ */
 $group = array(
     'args_prepend' => array('Lib_Session')
 );
