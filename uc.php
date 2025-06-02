@@ -103,11 +103,10 @@ class Response {
     function send() {
         if (SAPI === 'cli') {
             $this->std($this->content, $this->stderr);
+            exit($this->stderr);
         } else {
-            echo($this->http());
+            exit($this->http());
         }
-
-        exit;
     }
 
     function http() {
@@ -132,6 +131,7 @@ class Response {
     }
 
     function redirect($url) {
+        $this->code = 302;
         $this->headers['Location'] = $url;
     }
 }
@@ -287,7 +287,7 @@ class App {
 
         if (SAPI === 'cli') {
             fwrite(STDERR, $content);
-            exit;
+            exit(1);
         }
 
         if (!headers_sent()) {
@@ -632,7 +632,7 @@ class App {
 
     // Utility Functions
 
-    function remove($property) {
+    function unset($property) {
         unset($this-> { $property });
     }
 

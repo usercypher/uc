@@ -7,8 +7,8 @@
  * ------------------------------------------------------------------------
  * Uncomment to enable profiling via TickProfiler.
  */
-// declare(ticks=1);
-// profiler('TickProfiler');
+ declare(ticks=1);
+ profiler('TickProfiler');
 
 /**
  * Initialize and start the TickProfiler.
