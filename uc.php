@@ -251,7 +251,7 @@ class App {
         }
 
         if ($this->ENV['DEBUG']) {
-            echo $errstr;
+            echo($errstr);
             return;
         }
 
