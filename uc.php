@@ -161,7 +161,7 @@ class App {
         $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
 
         $this->ENV['ERROR_HTML_FILE'] = '';
-        $this->ENV['ERROR_LOG_FILE'] = 'app/error';
+        $this->ENV['ERROR_LOG_FILE'] = 'error';
         $this->ENV['SHOW_ERRORS'] = true;
         $this->ENV['LOG_ERRORS'] = true;
 
@@ -199,12 +199,12 @@ class App {
     }
 
     function setIni($key, $value) {
-        if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, 'app/error');
+        if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
     }
 
     function setInis($keys) {
         foreach ($keys as $key => $value) {
-            if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, 'app/error');
+            if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
         }
     }
 
