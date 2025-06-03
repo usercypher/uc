@@ -45,41 +45,41 @@ $app->groupUnit($group, 'Model_Book');
 
 /**
  * ------------------------------------------------------------------------
- * CLI and Source AutoLoader Pipes
+ * CLI and Source AutoLoader Links
  * ------------------------------------------------------------------------
- * Define pipe units handling CLI and source auto-loading.
+ * Define link units handling CLI and source auto-loading.
  */
 $group = array(
     'args_prepend' => array('App')
 );
-$app->groupUnit($group, 'Pipe_Cli_Pipe');
-$app->groupUnit($group, 'Pipe_Cli_Route');
-$app->groupUnit($group, 'Pipe_SrcAutoLoader');
+$app->groupUnit($group, 'Link_Cli_Link');
+$app->groupUnit($group, 'Link_Cli_Route');
+$app->groupUnit($group, 'Link_SrcAutoLoader');
 
 /**
  * ------------------------------------------------------------------------
- * Book-related Pipe Units with Dependencies
+ * Book-related Link Units with Dependencies
  * ------------------------------------------------------------------------
- * Pipes related to book functionality, with dependencies injected.
+ * Links related to book functionality, with dependencies injected.
  */
 $group = array(
     'args_prepend' => array('App', 'Lib_Session')
 );
-$app->groupUnit($group, 'Pipe_Book_Create');
-$app->groupUnit($group, 'Pipe_Book_Store', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Update', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Delete', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Edit', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Home', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Link_Book_Create');
+$app->groupUnit($group, 'Link_Book_Store', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Link_Book_Update', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Link_Book_Delete', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Link_Book_Edit', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Link_Book_Home', array('args' => array('Model_Book')));
 
 /**
  * ------------------------------------------------------------------------
- * CSRF Protection Pipes
+ * CSRF Protection Links
  * ------------------------------------------------------------------------
- * Pipes for CSRF token generation and validation, requiring session support.
+ * Links for CSRF token generation and validation, requiring session support.
  */
 $group = array(
     'args_prepend' => array('Lib_Session')
 );
-$app->groupUnit($group, 'Pipe_CsrfGenerate');
-$app->groupUnit($group, 'Pipe_CsrfValidate');
+$app->groupUnit($group, 'Link_CsrfGenerate');
+$app->groupUnit($group, 'Link_CsrfValidate');

@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Book_Store {
+class Link_Book_Store {
     private $app, $session;
     private $bookModel;
 
@@ -12,7 +12,7 @@ class Pipe_Book_Store {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function link($request, $response) {
         $data = $request->post;
 
         $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
@@ -21,6 +21,6 @@ class Pipe_Book_Store {
 
         $response->redirect($this->app->url('route', $route));
 
-        return array($request, $response);
+        return true;
     }
 }

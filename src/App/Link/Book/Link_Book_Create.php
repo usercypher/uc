@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Book_Create {
+class Link_Book_Create {
     private $app, $session;
 
     public function __construct($args = array()) {
@@ -10,13 +10,13 @@ class Pipe_Book_Create {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function link($request, $response) {
         $response->html($this->app->path('res', 'html/create.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
         ));
 
-        return array($request, $response);
+        return true;
     }
 }

@@ -37,8 +37,8 @@ function config($app) {
 function compile($mode, $packageFile, $settingsFile, $configFile) {
     require($packageFile);
 
-    // Initialize app with request and response objects
-    $app = new App(array(new Request, new Response));
+    // Initialize app
+    $app = new App();
 
     // Load and apply settings based on mode
     $settings = require($settingsFile);

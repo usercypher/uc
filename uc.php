@@ -40,20 +40,21 @@ function d($var, $detailed = false) {
 }
 
 class Request {
-    var $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
+    var $globals, $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
 
-    function __construct() {
-        $this->server = $_SERVER;
+    function init($globals, $server, $get, $post, $files, $cookie) {
+        $this->globals = $globals;
+        $this->server = $server;
         $this->data = array();
-        $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-        $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+        $this->uri = isset($server['REQUEST_URI']) ? $server['REQUEST_URI'] : '';
+        $this->method = isset($server['REQUEST_METHOD']) ? $server['REQUEST_METHOD'] : '';
         $this->params = array();
-        $this->get = $_GET;
-        $this->post = $_POST;
-        $this->files = $_FILES;
-        $this->cookies = $_COOKIE;
-        $this->argv = isset($GLOBALS['argv']) ? $GLOBALS['argv'] : array();
-        $this->argc = isset($GLOBALS['argc']) ? $GLOBALS['argc'] : 0;
+        $this->get = $get;
+        $this->post = $post;
+        $this->files = $files;
+        $this->cookies = $cookie;
+        $this->argv = isset($globals['argv']) ? $globals['argv'] : array();
+        $this->argc = isset($globals['argc']) ? $globals['argc'] : 0;
         $this->cli = array('positional' => array(), 'option' => array());
         for ($i = 1; $this->argc > $i; $i++) {
             $arg = $this->argv[$i];
@@ -90,22 +91,13 @@ class Request {
 }
 
 class Response {
-    var $headers, $code, $type, $content, $stderr;
-
-    function __construct() {
-        $this->headers = array();
-        $this->code = 200;
-        $this->type = 'text/html';
-        $this->content = '';
-        $this->stderr = false;
-    }
+    var $headers = array(), $code = 200, $type = 'text/html', $content = '', $stderr = false;
 
     function send() {
         if (SAPI === 'cli') {
             $this->std($this->content, $this->stderr);
-            exit($this->stderr);
         } else {
-            exit($this->http());
+            echo($this->http());
         }
     }
 
@@ -138,15 +130,12 @@ class Response {
 
 class App {
     var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
-    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
+    var $routes = array(), $links = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
-    var $isRunning = false;
 
     // Application Setup
 
-    function __construct($args) {
-        list($request, $response) = $args;
-
+    function __construct($args = array()) {
         $this->ENV['DEBUG'] = false;
 
         $this->ENV['DIR_LOG'] = '';
@@ -170,20 +159,12 @@ class App {
         $this->ENV['LOG_RETENTION_DAYS'] = 7;
         $this->ENV['MAX_LOG_FILES'] = 10;
 
-        $this->unit = array(
-            'App' => array(0, null, null, array(), array(1, 2), true),
-            'Request' => array(1, null, null, array(), array(), true),
-            'Response' => array(2, null, null, array(), array(), true),
-        );
+        $this->unit['App'] = array(0, null, null, array(), array(), true);
 
-        $this->unitList = array('App', 'Request', 'Response');
-        $this->unitListIndex = 3;
+        $this->unitList[0] = 'App';
+        $this->unitListIndex = 1;
 
-        $this->cache = array(
-            'App' => array($this, true),
-            'Request' => array($request, true),
-            'Response' => array($response, true),
-        );
+        $this->cache['App'] = array($this, true);
     }
 
     function setEnv($key, $value) {
@@ -218,28 +199,28 @@ class App {
             echo('Existing file detected. backed up as: ' . $newFileName . EOL);
         }
 
-        $this->write($configFile, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
+        $this->write($configFile, serialize(array($this->routes, $this->links, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
 
         echo('File created: ' . $configFile . EOL);
     }
 
     function load($file) {
         $configFile = ROOT . $file . '.dat';
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($configFile));
+        list($this->routes, $this->links, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($configFile));
     }
 
     // Error Management
 
-    function alert($msg, $http = 500, $errno = E_NOTICE) {
+    function alert($msg, $http = 500, $errno = E_NOTICE, $return = false) {
         $trace = debug_backtrace();
-        $this->error($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line']);
+        return $this->error($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line'], $return);
     }
 
     function shutdown() {
         if (function_exists('error_get_last') && ($error = error_get_last()) !== null) $this->error($error['type'], $error['message'], $error['file'], $error['line']);
     }
 
-    function error($errno, $errstr, $errfile, $errline) {
+    function error($errno, $errstr, $errfile, $errline, $return = false) {
         $http = 500;
         $type = 'text/html';
         $content = '';
@@ -285,6 +266,8 @@ class App {
 
         if (ob_get_level() > 0) ob_end_clean();
 
+        if ($return) return array('code' => $http, 'type' => $type, 'content' => $content);
+
         if (SAPI === 'cli') {
             fwrite(STDERR, $content);
             exit(1);
@@ -301,9 +284,9 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $handler = array('_p' => array(), '_i' => array());
+        $handler = array('_l' => array(), '_i' => array());
 
-        $map = array('pipe' => '_p', 'ignore' => '_i');
+        $map = array('link' => '_l', 'ignore' => '_i');
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $unit) $handler[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
@@ -321,14 +304,14 @@ class App {
     }
 
     function groupRoute($group, $method, $route, $option = array()) {
-        $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
+        $option['link'] = array_merge((isset($group['link_prepend']) ? $group['link_prepend'] : array()), (isset($option['link']) ? $option['link'] : array()), (isset($group['link_append']) ? $group['link_append'] : array()));
         $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
         $this->setRoute($method, (isset($group['prefix']) ? $group['prefix'] : '') . $route, $option);
     }
 
-    function setPipes($pipes) {
-        foreach ($pipes as $key => $p) {
-            foreach ($p as $unit) $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+    function setLinks($links) {
+        foreach ($links as $key => $l) {
+            foreach ($l as $unit) $this->links[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
         }
     }
 
@@ -408,29 +391,24 @@ class App {
 
         if (!isset($current['_h'])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
 
-        $finalPipes = array();
+        $finalLinks = array();
 
         $ignore = array_flip($current['_h']['_i']);
 
-        list($pipes, $length) = isset($ignore[-1]) ? array(array(&$current['_h']['_p']), 1) : array(array(&$this->pipes['prepend'], &$current['_h']['_p'], &$this->pipes['append']), 3);
+        list($links, $length) = isset($ignore[-1]) ? array(array(&$current['_h']['_l']), 1) : array(array(&$this->links['prepend'], &$current['_h']['_l'], &$this->links['append']), 3);
 
         for ($i = 0; $length > $i; $i++) {
-            foreach ($pipes[$i] as $pipe) {
-                if (!isset($ignore[$pipe])) $finalPipes[] = $pipe;
+            foreach ($links[$i] as $link) {
+                if (!isset($ignore[$link])) $finalLinks[] = $link;
             }
         }
 
-        return array('pipe' => $finalPipes, 'params' => $params);
+        return array('link' => $finalLinks, 'params' => $params);
     }
 
     // Request Handling
 
-    function run() {
-        if ($this->isRunning) return;
-        $this->isRunning = true;
-
-        $request = $this->cache['Request'][$this->CACHE_CLASS];
-
+    function run($request, $response) {
         $path = '';
         if (SAPI === 'cli') {
             foreach ($request->cli['positional'] as $positional) $path .= '/' . urlencode($positional);
@@ -444,13 +422,20 @@ class App {
 
         $route = $this->resolveRoute($request->method, $path);
 
-        if (isset($route['error'])) return $this->alert($route['error'], $route['http'], E_ERROR);
+        if (isset($route['error'])) {
+            $result = $this->alert($route['error'], $route['http'], E_ERROR, true);
+            $response->code = $result['code'];
+            $response->type = $result['type'];
+            $response->content = $result['content'];
+            $response->stderr = true;
+
+            return $response;
+        }
 
         $request->params = $route['params'];
-        $response = $this->cache['Response'][$this->CACHE_CLASS];
-        foreach ($route['pipe'] as $p) {
-            $p = $this->getClass($this->unitList[$p]);
-            list($request, $response) = $p->pipe($request, $response);
+        foreach ($route['link'] as $l) {
+            $l = $this->getClass($this->unitList[$l]);
+            if (!$l->link($request, $response)) break;
         }
 
         return $response;
@@ -633,7 +618,7 @@ class App {
     // Utility Functions
 
     function unset($property) {
-        unset($this-> { $property });
+        unset($this->{$property});
     }
 
     function path($option, $path = '') {
@@ -653,12 +638,12 @@ class App {
 
     function url($option, $url = '') {
         switch ($option) {
-            case 'route':
-                return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . $url;
-            case 'web':
-                return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
-            default:
-                return $url;
+        case 'route':
+            return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . $url;
+        case 'web':
+            return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
+        default:
+            return $url;
         }
     }
 

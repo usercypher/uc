@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Cli_Route {
+class Link_Cli_Route {
     private $app;
     private $unitList;
 
@@ -9,7 +9,7 @@ class Pipe_Cli_Route {
         $this->unitList = $this->app->unitList ?? [];
     }
 
-    public function pipe($request, $response) {
+    public function link($request, $response) {
         $routes = $this->app->routes;
         $pipesPrepend = $this->app->pipes['prepend'];
         $pipesAppend = $this->app->pipes['append'];
@@ -38,7 +38,7 @@ class Pipe_Cli_Route {
             $response->std($line . "\n");
         }
 
-        return array($request, $response);
+        return true;
     }
 
     private function flattenRoutesWithMethod(array $tree): array {

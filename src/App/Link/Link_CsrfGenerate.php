@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_CsrfGenerate {
+class Link_CsrfGenerate {
     public $session;
 
     public function __construct($args = array()) {
@@ -9,9 +9,9 @@ class Pipe_CsrfGenerate {
         ) = $args;
     }
 
-    public function pipe($request, $response) {
+    public function link($request, $response) {
         $this->session->set('csrf_token', bin2hex(random_bytes(32)));
 
-        return array($request, $response);
+        return true;
     }
 }

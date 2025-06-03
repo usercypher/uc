@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Cli_Pipe {
+class Link_Cli_Link {
     private $app;
 
     public function __construct($args = array()) {
@@ -9,10 +9,10 @@ class Pipe_Cli_Pipe {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function link($request, $response) {
         if (!isset($request->params['option']) || !isset($request->params['class'])) {
             $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
-            $response->send();
+            return false;
         }
 
         $className = $request->params['class'];
@@ -28,10 +28,10 @@ class Pipe_Cli_Pipe {
                 break;
             default:
                 $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
-                $response->send();
+                return false;
         }
 
-        return array($request, $response);
+        return true;
     }
 
     private function classContent($className, $classDependency) {
@@ -46,9 +46,9 @@ class $className {" . $classVar . "
         " . $classVarList . "
     }
 
-    public function pipe(\$request, \$response) {
+    public function link(\$request, \$response) {
         // code
-        return array(\$request, \$response);
+        return true;
     }
 }";
     }

@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_ValidateFileUpload {
+class Link_ValidateFileUpload {
     public function __construct($args = array()) {}
 
     private $allowedFileTypes = array(
@@ -9,7 +9,7 @@ class Pipe_ValidateFileUpload {
         'application/pdf' => 10 * 1024 * 1024, // PDF files, max 10MB
     );
 
-    public function pipe($request, $response) {
+    public function link($request, $response) {
         if ($request->server->method === 'POST') {
             if (isset($request->files['upload'])) {
                 $file = $request->files['upload'];
@@ -17,13 +17,14 @@ class Pipe_ValidateFileUpload {
                 $validationResult = validateFileUpload($file, $this->allowedFileTypes);
 
                 if ($validationResult !== true) {
-                    trigger_error($validationResult);
-                    exit();
+                    $response->code = 500;
+                    $response->content = $validationResult;
+                    return false;
                 }
             }
         }
 
-        return array($request, $response);
+        return true;
     }
 
     function validateFileUpload($file, $allowedFileTypes) {

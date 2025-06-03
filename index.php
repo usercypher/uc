@@ -7,8 +7,8 @@
  * ------------------------------------------------------------------------
  * Uncomment to enable profiling via TickProfiler.
  */
- declare(ticks=1);
- profiler('TickProfiler');
+// declare(ticks=1);
+// profiler('TickProfiler');
 
 /**
  * Initialize and start the TickProfiler.
@@ -56,7 +56,7 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     require($packageFile);
 
     // Create app instance with request and response handlers
-    $app = new App(array(new Request, new Response));
+    $app = new App();
 
     // Load environment and ini settings
     $settings = require($settingsFile);
@@ -69,8 +69,12 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
 
     // Load application configuration and run the app
     $app->load($configFile);
-    $response = $app->run();
+
+    $request = new Request();
+    $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE);
+
+    $response = $app->run($request, new Response());
 
     // Send the response to the client
-    $response->send();
+    $response->send();    
 }
