@@ -24,11 +24,18 @@ $app->setPipes(array(
  * ------------------------------------------------------------------------
  * Handles dynamic CLI piping through optional route params.
  */
-$group = array();
+$group = array(
+    'ignore' => array('--global')
+);
+
 $app->groupRoute($group, '', 'pipe/{option?}/{class?}', array(
     'pipe' => array('Pipe_Cli_Pipe'),
-    'ignore' => array('--global')
 ));
+
+$app->groupRoute($group, '', 'route', array(
+    'pipe' => array('Pipe_Cli_Route'),
+));
+
 
 
 /**

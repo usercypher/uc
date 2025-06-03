@@ -53,6 +53,7 @@ $group = array(
     'args_prepend' => array('App')
 );
 $app->groupUnit($group, 'Pipe_Cli_Pipe');
+$app->groupUnit($group, 'Pipe_Cli_Route');
 $app->groupUnit($group, 'Pipe_SrcAutoLoader');
 
 /**
