@@ -76,7 +76,7 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     $response = $app->run($request, new Response());
 
     // Send the response to the client
-    $response->send();    
+    $response->send();
 }
 
 class AppError {

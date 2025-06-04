@@ -40,23 +40,20 @@ function d($var, $detailed = false) {
 }
 
 class Request {
-    var $globals, $server, $data, $uri, $method, $path, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
+    var $data = array(), $path = '', $params = array(), $cli = array('positional' => array(), 'option' => array());
+    var $globals, $server, $uri, $method, $get, $post, $files, $cookies, $argv, $argc;
 
     function init($globals, $server, $get, $post, $files, $cookie) {
         $this->globals = $globals;
         $this->server = $server;
-        $this->data = array();
         $this->uri = isset($server['REQUEST_URI']) ? $server['REQUEST_URI'] : '';
         $this->method = isset($server['REQUEST_METHOD']) ? $server['REQUEST_METHOD'] : '';
-        $this->path = '';
-        $this->params = array();
         $this->get = $get;
         $this->post = $post;
         $this->files = $files;
         $this->cookies = $cookie;
         $this->argv = isset($globals['argv']) ? $globals['argv'] : array();
         $this->argc = isset($globals['argc']) ? $globals['argc'] : 0;
-        $this->cli = array('positional' => array(), 'option' => array());
         for ($i = 1; $this->argc > $i; $i++) {
             $arg = $this->argv[$i];
             if (substr($arg, 0, 2) === '--') {
