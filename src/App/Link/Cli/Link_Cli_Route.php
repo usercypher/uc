@@ -11,8 +11,8 @@ class Link_Cli_Route {
 
     public function link($request, $response) {
         $routes = $this->app->routes;
-        $pipesPrepend = $this->app->pipes['prepend'];
-        $pipesAppend = $this->app->pipes['append'];
+        $linksPrepend = $this->app->links['prepend'];
+        $linksAppend = $this->app->links['append'];
 
         $routes = $this->flattenRoutesWithMethod($routes);
 
@@ -22,7 +22,7 @@ class Link_Cli_Route {
             $parts = [];
 
             if (!empty($route['run'])) {
-                $run = array_map(fn($i) => $this->unitList[$i] ?? "[unit:$i]", array_merge($pipesPrepend, $route['run'], $pipesAppend));
+                $run = array_map(fn($i) => $this->unitList[$i] ?? "[unit:$i]", array_merge($linksPrepend, $route['run'], $linksAppend));
                 $parts[] = "run: " . implode(' > ', $run);
             }
 
@@ -59,7 +59,7 @@ class Link_Cli_Route {
         $routes = [];
 
         foreach ($tree as $segment => $children) {
-            if ($segment === '_h' || $segment === '_i') {
+            if ($segment === '*' || $segment === '_i') {
                 continue;
             }
 
@@ -67,17 +67,17 @@ class Link_Cli_Route {
 
             if (is_array($children)) {
                 $childKeys = array_keys($children);
-                $onlyMeta = empty(array_diff($childKeys, ['_h']));
+                $onlyMeta = empty(array_diff($childKeys, ['*']));
 
                 if ($onlyMeta) {
                     $route = ['path' => '"' . $currentPath . '"'];
 
-                    if (isset($children['_h']['_p'])) {
-                        $route['run'] = $children['_h']['_p'];
+                    if (isset($children['*']['_l'])) {
+                        $route['run'] = $children['*']['_l'];
                     }
 
-                    if (isset($children['_h']['_i'])) {
-                        $route['ignore'] = $children['_h']['_i'];
+                    if (isset($children['*']['_i'])) {
+                        $route['ignore'] = $children['*']['_i'];
                     }
 
                     $routes[] = $route;

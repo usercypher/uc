@@ -284,12 +284,12 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $handler = array('_l' => array(), '_i' => array());
+        $end = array('_l' => array(), '_i' => array());
 
         $map = array('link' => '_l', 'ignore' => '_i');
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
-                foreach ($option[$key] as $unit) $handler[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
+                foreach ($option[$key] as $unit) $end[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
             }
         }
 
@@ -300,7 +300,7 @@ class App {
             $node = &$node[$segment];
         }
 
-        $node['_h'] = $handler;
+        $node['*'] = $end;
     }
 
     function groupRoute($group, $method, $route, $option = array()) {
@@ -354,7 +354,7 @@ class App {
                         $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
                         $current = $value;
                         $matched = true;
-                        if (isset($current['_h'])) break 2;
+                        if (isset($current['*'])) break 2;
                         break;
                     }
                     $matches = array($pathSegment);
@@ -371,7 +371,7 @@ class App {
             if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
-        while (!isset($current['_h'])) {
+        while (!isset($current['*'])) {
             $matched = false;
 
             foreach ($current as $key => $value) {
@@ -389,16 +389,16 @@ class App {
             if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
-        if (!isset($current['_h'])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+        if (!isset($current['*'])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
 
         $finalLinks = array();
 
-        $ignore = array_flip($current['_h']['_i']);
+        $ignore = array_flip($current['*']['_i']);
 
-        list($links, $length) = isset($ignore[-1]) ? array(array(&$current['_h']['_l']), 1) : array(array(&$this->links['prepend'], &$current['_h']['_l'], &$this->links['append']), 3);
+        $linkGroup = isset($ignore[-1]) ? array(&$current['*']['_l']) : array(&$this->links['prepend'], &$current['*']['_l'], &$this->links['append']);
 
-        for ($i = 0; $length > $i; $i++) {
-            foreach ($links[$i] as $link) {
+        foreach ($linkGroup as $links) {
+            foreach ($links as $link) {
                 if (!isset($ignore[$link])) $finalLinks[] = $link;
             }
         }
@@ -618,7 +618,7 @@ class App {
     // Utility Functions
 
     function unset($property) {
-        unset($this->{$property});
+        unset($this-> {$property});
     }
 
     function path($option, $path = '') {
@@ -638,12 +638,12 @@ class App {
 
     function url($option, $url = '') {
         switch ($option) {
-        case 'route':
-            return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . $url;
-        case 'web':
-            return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
-        default:
-            return $url;
+            case 'route':
+                return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . $url;
+            case 'web':
+                return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
+            default:
+                return $url;
         }
     }
 
