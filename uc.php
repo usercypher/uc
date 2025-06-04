@@ -211,16 +211,18 @@ class App {
 
     // Error Management
 
-    function alert($msg, $http = 500, $errno = E_NOTICE, $return = false) {
-        $trace = debug_backtrace();
-        return $this->error($errno, ($http . '|' . $msg), $trace[0]['file'], $trace[0]['line'], $return);
-    }
-
     function shutdown() {
         if (function_exists('error_get_last') && ($error = error_get_last()) !== null) $this->error($error['type'], $error['message'], $error['file'], $error['line']);
     }
 
-    function error($errno, $errstr, $errfile, $errline, $return = false) {
+    function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
+        if ($this->ENV['DEBUG']) {
+            echo($errstr);
+            return;
+        }
+
+        if (!(error_reporting() & $errno)) return;
+
         $http = 500;
         $type = 'text/html';
         $content = '';
@@ -231,14 +233,7 @@ class App {
             $errstr = $parts[1];
         }
 
-        if ($this->ENV['DEBUG']) {
-            echo($errstr);
-            return;
-        }
-
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
-
-        if (!(error_reporting() & $errno)) return;
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
@@ -246,7 +241,7 @@ class App {
         } else {
             if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
                 $traceOutput = 'Stack trace: ' . EOL;
-                $trace = debug_backtrace();
+                $trace = array_merge(debug_backtrace(), $trace);
                 $count = count($trace);
                 for ($i = 0; $count > $i; $i++) $traceOutput .= '#' . $i . ' ' . (isset($trace[$i]['file']) ? $trace[$i]['file'] : '[internal function]') . ' (' . ((isset($trace[$i]['line']) ? $trace[$i]['line'] : 'no line')) . '): ' . (isset($trace[$i]['class']) ? $trace[$i]['class'] . (isset($trace[$i]['type']) ? $trace[$i]['type'] : '') : '') . (isset($trace[$i]['function']) ? $trace[$i]['function'] . '()' : '[unknown function]') . EOL;
                 $type = 'text/plain';
@@ -270,15 +265,15 @@ class App {
 
         if (SAPI === 'cli') {
             fwrite(STDERR, $content);
-            exit(1);
+        } else {
+            if (!headers_sent()) {
+                header('HTTP/1.1 ' . $http);
+                header('Content-Type: ' . $type);
+            }
+            echo($content);
         }
 
-        if (!headers_sent()) {
-            header('HTTP/1.1 ' . $http);
-            header('Content-Type: ' . $type);
-        }
-
-        exit($content);
+        if (!$exception) exit(1);
     }
 
     // Route Management
@@ -423,7 +418,7 @@ class App {
         $route = $this->resolveRoute($request->method, $path);
 
         if (isset($route['error'])) {
-            $result = $this->alert($route['error'], $route['http'], E_ERROR, true);
+            $result = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
             $response->code = $result['code'];
             $response->type = $result['type'];
             $response->content = $result['content'];
@@ -469,7 +464,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) return $this->alert('Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', 500, E_ERROR);
+                    if (isset($this->unit[$unit])) trigger_error('500|Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -522,7 +517,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) return $this->alert('Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500, E_ERROR);
+            if (isset($stackSet[$unit])) trigger_error('500|Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
@@ -577,7 +572,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) return $this->alert('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, 500, E_ERROR);
+            if (isset($stackSet[$unit])) trigger_error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
@@ -617,7 +612,7 @@ class App {
 
     // Utility Functions
 
-    function unset($property) {
+    function clear($property) {
         unset($this-> {$property});
     }
 

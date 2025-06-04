@@ -63,9 +63,9 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    // Set error and shutdown handlers
-    set_error_handler(array($app, 'error'));
-    register_shutdown_function(array($app, 'shutdown'));
+    // Set error handler
+    $error = new AppError(array($app));
+    $error->setup();
 
     // Load application configuration and run the app
     $app->load($configFile);
@@ -77,4 +77,31 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
 
     // Send the response to the client
     $response->send();    
+}
+
+class AppError {
+    var $app;
+
+    function __construct($args = array()) {
+        list($this->app) = $args;
+    }
+
+    function setup($exception = false) {
+        if ($exception) {
+            set_error_handler(array($this, 'errorThrow'));
+            set_exception_handler(array($this, 'exception'));
+        } else {
+            set_error_handler(array($this->app, 'error'));
+        }
+
+        register_shutdown_function(array($this->app, 'shutdown'));
+    }
+
+    function exception($e) {
+        $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, ($e->getCode() === 0 ? 1 : $e->getCode()). '|' . $e->getMessage(), $e->getFile(), $e->getLine(), false, true, $e->getTrace());
+    }
+
+    function errorThrow($errno, $errstr, $errfile, $errline) {
+        throw new ErrorException($errstr, 500, $errno, $errfile, $errline);
+    }
 }
