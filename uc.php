@@ -40,7 +40,7 @@ function d($var, $detailed = false) {
 }
 
 class Request {
-    var $globals, $server, $data, $uri, $method, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
+    var $globals, $server, $data, $uri, $method, $path, $params, $get, $post, $files, $cookies, $argv, $argc, $cli;
 
     function init($globals, $server, $get, $post, $files, $cookie) {
         $this->globals = $globals;
@@ -48,6 +48,7 @@ class Request {
         $this->data = array();
         $this->uri = isset($server['REQUEST_URI']) ? $server['REQUEST_URI'] : '';
         $this->method = isset($server['REQUEST_METHOD']) ? $server['REQUEST_METHOD'] : '';
+        $this->path = '';
         $this->params = array();
         $this->get = $get;
         $this->post = $post;
@@ -404,18 +405,17 @@ class App {
     // Request Handling
 
     function run($request, $response) {
-        $path = '';
         if (SAPI === 'cli') {
-            foreach ($request->cli['positional'] as $positional) $path .= '/' . urlencode($positional);
+            foreach ($request->cli['positional'] as $positional) $request->path .= '/' . urlencode($positional);
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($request->uri, '?');
-            $path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
-        } else {
-            $path = isset($request->get['route']) ? $request->get['route'] : '';
+            $request->path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
+        } elseif (isset($request->get['route'])) {
+            $request->path = $request->get['route'];
         }
 
-        $route = $this->resolveRoute($request->method, $path);
+        $route = $this->resolveRoute($request->method, $request->path);
 
         if (isset($route['error'])) {
             $result = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
