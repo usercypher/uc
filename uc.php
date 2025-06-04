@@ -89,7 +89,15 @@ class Request {
 }
 
 class Response {
-    var $headers = array(), $code = 200, $type = 'text/html', $content = '', $stderr = false;
+    var $headers, $code, $type, $content, $stderr;
+
+    function init($headers, $code, $type, $content, $stderr) {
+        $this->headers = $headers;
+        $this->code = $code;
+        $this->type = $type;
+        $this->content = $content;
+        $this->stderr = $stderr;
+    }
 
     function send() {
         if (SAPI === 'cli') {
@@ -133,7 +141,7 @@ class App {
 
     // Application Setup
 
-    function __construct($args = array()) {
+    function init() {
         $this->ENV['DEBUG'] = false;
 
         $this->ENV['DIR_LOG'] = '';
@@ -158,10 +166,8 @@ class App {
         $this->ENV['MAX_LOG_FILES'] = 10;
 
         $this->unit['App'] = array(0, null, null, array(), array(), true);
-
         $this->unitList[0] = 'App';
         $this->unitListIndex = 1;
-
         $this->cache['App'] = array($this, true);
     }
 
@@ -169,8 +175,8 @@ class App {
         $this->ENV[$key] = $value;
     }
 
-    function setEnvs($keys) {
-        foreach ($keys as $key => $value) $this->ENV[$key] = $value;
+    function setEnvs($env) {
+        foreach ($env as $key => $value) $this->ENV[$key] = $value;
     }
 
     function getEnv($key, $default = null) {
@@ -181,8 +187,8 @@ class App {
         if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
     }
 
-    function setInis($keys) {
-        foreach ($keys as $key => $value) {
+    function setInis($ini) {
+        foreach ($ini as $key => $value) {
             if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
         }
     }
@@ -282,7 +288,7 @@ class App {
         $map = array('link' => '_l', 'ignore' => '_i');
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
-                foreach ($option[$key] as $unit) $end[$value][] = ($unit === '--global' && $key === 'ignore') ? -1 : $this->unit[$unit][$this->UNIT_LIST_INDEX];
+                foreach ($option[$key] as $tmpUnit) $end[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
             }
         }
 
@@ -401,7 +407,7 @@ class App {
 
     // Request Handling
 
-    function run($request, $response) {
+    function dispatch($request, $response) {
         if (SAPI === 'cli') {
             foreach ($request->cli['positional'] as $positional) $request->path .= '/' . urlencode($positional);
             $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
@@ -415,11 +421,8 @@ class App {
         $route = $this->resolveRoute($request->method, $request->path);
 
         if (isset($route['error'])) {
-            $result = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
-            $response->code = $result['code'];
-            $response->type = $result['type'];
-            $response->content = $result['content'];
-            $response->stderr = true;
+            $e = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
+            $response->init($response->headers, $e['code'], $e['type'], $e['content'], true);
 
             return $response;
         }
@@ -483,12 +486,11 @@ class App {
     function setUnit($unit, $option) {
         $test = $this->unit[$unit];
 
-        if (isset($option['args'])) {
-            foreach ($option['args'] as $arg) $this->unit[$unit][$this->UNIT_ARGS][] = $this->unit[$arg][$this->UNIT_LIST_INDEX];
-        }
-
-        if (isset($option['load'])) {
-            foreach ($option['load'] as $load) $this->unit[$unit][$this->UNIT_LOAD][] = $this->unit[$load][$this->UNIT_LIST_INDEX];
+        $map = array('args' => $this->UNIT_ARGS, 'load' => $this->UNIT_LOAD);
+        foreach ($map as $key => $value) {
+            if (isset($option[$key])) {
+                foreach ($option[$key] as $tmpUnit) $this->unit[$unit][$value][] = $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
+            }
         }
 
         $this->unit[$unit][$this->UNIT_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CACHE]);

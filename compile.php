@@ -39,6 +39,7 @@ function compile($mode, $packageFile, $settingsFile, $configFile) {
 
     // Initialize app
     $app = new App();
+    $app->init();
 
     // Load and apply settings based on mode
     $settings = require($settingsFile);

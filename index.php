@@ -57,6 +57,7 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
 
     // Create app instance with request and response handlers
     $app = new App();
+    $app->init();
 
     // Load environment and ini settings
     $settings = require($settingsFile);
@@ -64,8 +65,8 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     $app->setEnvs($settings['env'][$mode]);
 
     // Set error handler
-    $error = new AppError(array($app));
-    $error->setup();
+    set_error_handler(array($app, 'error'));
+    register_shutdown_function(array($app, 'shutdown'));
 
     // Load application configuration and run the app
     $app->load($configFile);
@@ -73,35 +74,11 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     $request = new Request();
     $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE);
 
-    $response = $app->run($request, new Response());
+    $response = new Response();
+    $response->init(array(), 200, 'text/html', '', false);
+
+    $response = $app->dispatch($request, $response);
 
     // Send the response to the client
     $response->send();
-}
-
-class AppError {
-    var $app;
-
-    function __construct($args = array()) {
-        list($this->app) = $args;
-    }
-
-    function setup($exception = false) {
-        if ($exception) {
-            set_error_handler(array($this, 'errorThrow'));
-            set_exception_handler(array($this, 'exception'));
-        } else {
-            set_error_handler(array($this->app, 'error'));
-        }
-
-        register_shutdown_function(array($this->app, 'shutdown'));
-    }
-
-    function exception($e) {
-        $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, ($e->getCode() === 0 ? 1 : $e->getCode()). '|' . $e->getMessage(), $e->getFile(), $e->getLine(), false, true, $e->getTrace());
-    }
-
-    function errorThrow($errno, $errstr, $errfile, $errline) {
-        throw new ErrorException($errstr, 500, $errno, $errfile, $errline);
-    }
 }
