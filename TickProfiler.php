@@ -13,7 +13,7 @@ class TickProfiler {
         $this->memoryTotal = 0;
         $this->timeTotal = 0;
 
-        $this->includeStart = count(get_included_files());
+        $this->includeStart = 0;
         $this->memoryStart = 0;
         $this->timeStart = $this->microtime(true);
 
