@@ -69,6 +69,14 @@ class Request {
         }
     }
 
+    function setData($key, $value) {
+        $this->data[$key] = $value;
+    }
+
+    function getData($key, $default = null) {
+        return isset($this->data[$key]) ? $this->data[$key] : $default;
+    }
+
     function std($mark = '') {
         if (SAPI !== 'cli') return '';
         if ($mark === '' && ($line = fgets(STDIN))) return $line ? rtrim($line) : '';
@@ -77,14 +85,6 @@ class Request {
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
 
         return implode(EOL, $lines);
-    }
-
-    function setData($key, $value) {
-        $this->data[$key] = $value;
-    }
-
-    function getData($key, $default = null) {
-        return isset($this->data[$key]) ? $this->data[$key] : $default;
     }
 }
 
@@ -128,8 +128,8 @@ class Response {
         $this->content = ob_get_clean();
     }
 
-    function redirect($url) {
-        $this->code = 302;
+    function redirect($url, $code = 302) {
+        $this->code = $code;
         $this->headers['Location'] = $url;
     }
 }
