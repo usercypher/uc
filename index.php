@@ -7,7 +7,6 @@
  * ------------------------------------------------------------------------
  * Uncomment to enable profiling via TickProfiler.
  */
-// declare(ticks=1);
 // profiler('TickProfiler');
 
 /**
@@ -17,6 +16,7 @@
  * @return TickProfiler
  */
 function profiler($name) {
+    declare(ticks=1);
     require($name . '.php');
     $tickProfiler = new TickProfiler();
     $tickProfiler->init($name . '.log');
@@ -39,7 +39,7 @@ function profiler($name) {
  */
 index(
     'dev',                  // Mode (e.g., dev, prod)
-    'uc.php',               // Package/autoload file
+    'uc.php',               // Package file
     'settings.php',         // Environment and ini settings
     'var/data/app/config'   // Application configuration directory/file
 );
@@ -48,7 +48,7 @@ index(
  * Application entry point.
  *
  * @param string $mode          Application mode (dev, prod, etc.)
- * @param string $packageFile   File to require for package/autoload setup
+ * @param string $packageFile   File to require for package setup
  * @param string $settingsFile  Settings file with env and ini configurations
  * @param string $configFile    Application config file or directory to load
  */
@@ -59,17 +59,17 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
     $app = new App();
     $app->init();
 
+    // Register error and shutdown handlers
+    set_error_handler(array($app, 'error'));
+    register_shutdown_function(array($app, 'shutdown'));
+
+    // Load application configuration
+    $app->load($configFile);
+
     // Load environment and ini settings
     $settings = require($settingsFile);
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
-
-    // Set error handler
-    set_error_handler(array($app, 'error'));
-    register_shutdown_function(array($app, 'shutdown'));
-
-    // Load application configuration and run the app
-    $app->load($configFile);
 
     $request = new Request();
     $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE);

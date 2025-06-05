@@ -155,9 +155,9 @@ class App {
         $this->ENV['URL_DIR_WEB'] = '';
         $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
 
-        $this->ENV['ERROR_HTML_FILE'] = '';
+        $this->ENV['ERROR_HTML_FILE'] = 'error.php';
         $this->ENV['ERROR_LOG_FILE'] = 'error';
-        $this->ENV['SHOW_ERRORS'] = true;
+        $this->ENV['SHOW_ERRORS'] = false;
         $this->ENV['LOG_ERRORS'] = true;
 
         $this->ENV['LOG_SIZE_LIMIT_MB'] = 5;

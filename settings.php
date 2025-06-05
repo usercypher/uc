@@ -1,4 +1,5 @@
 <?php
+// settings.php
 
 return array(
     'env' => array(
