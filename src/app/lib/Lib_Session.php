@@ -25,14 +25,8 @@ class Lib_Session {
     }
 
     public function start() {
-        if (version_compare(phpversion(),'5.4.0','>')){
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
-        } else{
-            if(session_id() == '') {
-                session_start();
-            }
+        if(session_id() == '') {
+            session_start();
         }
     }
 
