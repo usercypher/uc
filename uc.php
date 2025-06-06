@@ -131,7 +131,7 @@ class Response {
 }
 
 class App {
-    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_LOAD = 2, $UNIT_ARGS = 3, $UNIT_CACHE = 4, $CACHE_CLASS = 0, $CACHE_PATH = 1;
+    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
     var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
 
@@ -161,7 +161,7 @@ class App {
         $this->ENV['LOG_RETENTION_DAYS'] = 7;
         $this->ENV['MAX_LOG_FILES'] = 10;
 
-        $this->unit['App'] = array(0, null, array(), array(), true);
+        $this->unit['App'] = array(0, null, null, array(), array(), true);
         $this->unitList[0] = 'App';
         $this->unitListIndex = 1;
         $this->cache['App'] = array($this, true);
@@ -458,9 +458,10 @@ class App {
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
-                    $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . substr($file, 0, -4)) : substr($file, 0, -4);
+                    $unitFile = substr($file, 0, -4);
+                    $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . (($pos = strrpos($unit, '\\')) !== false ? substr($unit, $pos + 1) : $unit) . '.php', E_USER_WARNING);
+                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -470,7 +471,7 @@ class App {
                         $this->pathListCache[$path] = $pathListIndex;
                     }
 
-                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, array(), array(), false);
+                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), array(), false);
                     $this->unitList[$this->unitListIndex] = $unit;
                     ++$this->unitListIndex;
                 }
@@ -535,7 +536,7 @@ class App {
 
             unset($stackSet[$unitParent]);
 
-            require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . (($pos = strrpos($unit, '\\')) !== false ? substr($unit, $pos + 1) : $unit) . '.php');
+            require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
             $this->cache[$unit][$this->CACHE_PATH] = true;
         }
     }
