@@ -11,7 +11,7 @@
  *  - 'ignore' => [...]   // Patterns/files to ignore
  *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
  */
-$app->scanUnits('src'.DS.'app'.DS, array('max' => 2));
+$app->scanUnits('src'.DS.'app'.DS, array());
 
 /**
  * ------------------------------------------------------------------------
