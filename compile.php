@@ -8,7 +8,6 @@
  * Bootstraps and compiles the app configuration for the given mode.
  */
 compile(
-    'dev',                  // Mode (dev, prod, etc.)
     'uc.php',               // Package file
     'settings.php',         // Environment and ini settings
     'var/data/app/config'   // Output config directory/file
@@ -29,12 +28,11 @@ function config($app) {
 /**
  * Compile the app configuration.
  *
- * @param string $mode          Application mode (dev, prod, etc.)
  * @param string $packageFile   File to require for package setup
  * @param string $settingsFile  Settings file with env and ini configurations
  * @param string $configFile    Output config file or directory to save
  */
-function compile($mode, $packageFile, $settingsFile, $configFile) {
+function compile($packageFile, $settingsFile, $configFile) {
     require($packageFile);
 
     // Initialize app
@@ -47,6 +45,7 @@ function compile($mode, $packageFile, $settingsFile, $configFile) {
 
     // Load and apply settings based on mode
     $settings = require($settingsFile);
+    $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 

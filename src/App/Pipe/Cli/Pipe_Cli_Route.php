@@ -16,8 +16,9 @@ class Pipe_Cli_Route {
 
         $routes = $this->flattenRoutesWithMethod($routes);
 
-        foreach ($routes as $route) {
-            $line = "{$route['method']} {$route['path']}";
+        foreach ($routes as $no => $route) {
+            $no++;
+            $line = " - {$route['method']} {$route['path']}";
 
             $parts = [];
 

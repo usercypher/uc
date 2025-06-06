@@ -2,6 +2,10 @@
 // settings.php
 
 return array(
+    'mode' => array(
+        'index.php' => 'dev',
+        'compile.php' => 'dev',
+    ),
     'env' => array(
         'dev' => array(
             // Environment Settings

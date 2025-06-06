@@ -38,7 +38,6 @@ function profiler($name) {
  * Bootstraps the application with environment and configuration files.
  */
 index(
-    'dev',                  // Mode (e.g., dev, prod)
     'uc.php',               // Package file
     'settings.php',         // Environment and ini settings
     'var/data/app/config'   // Application configuration directory/file
@@ -47,12 +46,11 @@ index(
 /**
  * Application entry point.
  *
- * @param string $mode          Application mode (dev, prod, etc.)
  * @param string $packageFile   File to require for package setup
  * @param string $settingsFile  Settings file with env and ini configurations
  * @param string $configFile    Application config file or directory to load
  */
-function index($mode, $packageFile, $settingsFile, $configFile) {
+function index($packageFile, $settingsFile, $configFile) {
     require($packageFile);
 
     // Create app instance with request and response handlers
@@ -68,6 +66,7 @@ function index($mode, $packageFile, $settingsFile, $configFile) {
 
     // Load environment and ini settings
     $settings = require($settingsFile);
+    $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
