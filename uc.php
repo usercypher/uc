@@ -439,7 +439,7 @@ class App {
 
     // Class Management
 
-    function scanUnits($path, $option) {
+    function scanUnits($path, $option = array()) {
         if (!isset($option['depth'])) $option['depth'] = 0;
         if (!isset($option['max'])) $option['max'] = -1;
         if (!isset($option['ignore'])) $option['ignore'] = array();
