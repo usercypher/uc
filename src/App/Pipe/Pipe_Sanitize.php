@@ -4,6 +4,8 @@ class Pipe_Sanitize {
     public function __construct($args = array()) {}
 
     public function pipe($request, $response) {
+        $break = false;
+
         if (isset($request->post)) {
             $this->sanitize($request->post);
         }
@@ -16,7 +18,7 @@ class Pipe_Sanitize {
             $this->sanitize($request->params);
         }
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 
     public function sanitize(&$array) {

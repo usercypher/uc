@@ -10,6 +10,8 @@ class Pipe_ValidateFileUpload {
     );
 
     public function pipe($request, $response) {
+        $break = false;
+
         if ($request->server->method === 'POST') {
             if (isset($request->files['upload'])) {
                 $file = $request->files['upload'];
@@ -19,13 +21,12 @@ class Pipe_ValidateFileUpload {
                 if ($validationResult !== true) {
                     $response->code = 500;
                     $response->content = $validationResult;
-                    $response->send();
-                    return array($request, $response);
+                    $break = true;
                 }
             }
         }
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 
     function validateFileUpload($file, $allowedFileTypes) {

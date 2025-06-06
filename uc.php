@@ -85,7 +85,7 @@ class Request {
 }
 
 class Response {
-    var $headers, $code, $type, $content, $stderr, $sent = false;
+    var $headers, $code, $type, $content, $stderr;
 
     function init($headers, $code, $type, $content, $stderr) {
         $this->headers = $headers;
@@ -96,15 +96,11 @@ class Response {
     }
 
     function send() {
-        if ($this->sent) return false;
-
         if (SAPI === 'cli') {
             $this->std($this->content, $this->stderr);
         } else {
             echo($this->http());
         }
-
-        return $this->sent = true;
     }
 
     function http() {
@@ -430,8 +426,8 @@ class App {
         $request->params = $route['params'];
         foreach ($route['pipe'] as $p) {
             $p = $this->getClass($this->unitList[$p]);
-            list($request, $response) = $p->pipe($request, $response);
-            if ($response->sent) break;
+            list($request, $response, $break) = $p->pipe($request, $response);
+            if ($break) break;
         }
 
         return $response;

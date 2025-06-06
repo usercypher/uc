@@ -13,6 +13,8 @@ class Pipe_Book_Edit {
     } 
 
     public function pipe($request, $response) {
+        $break = false;
+
         $data = $request->params;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
 
@@ -23,6 +25,6 @@ class Pipe_Book_Edit {
             'book' => $this->bookModel->first('id = ?', array($bookId))
         ));
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 }

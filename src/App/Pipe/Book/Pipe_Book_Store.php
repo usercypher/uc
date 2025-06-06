@@ -13,6 +13,8 @@ class Pipe_Book_Store {
     } 
 
     public function pipe($request, $response) {
+        $break = false;
+
         $data = $request->post;
 
         $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
@@ -21,6 +23,6 @@ class Pipe_Book_Store {
 
         $response->redirect($this->app->url('route', $route));
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 }

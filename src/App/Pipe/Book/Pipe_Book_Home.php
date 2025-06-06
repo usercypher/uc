@@ -13,6 +13,8 @@ class Pipe_Book_Home {
     } 
 
     public function pipe($request, $response) {
+        $break = false;
+
         $response->html($this->app->path('res', 'html/home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
@@ -20,6 +22,6 @@ class Pipe_Book_Home {
             'books' => $this->bookModel->all(),
         ));
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 }

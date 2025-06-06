@@ -13,6 +13,8 @@ class Pipe_Book_Update {
     } 
 
     public function pipe($request, $response) {
+        $break = false;
+
         $data = $request->post;
 
         $this->bookModel->validateAndUpdate($data);
@@ -21,6 +23,6 @@ class Pipe_Book_Update {
 
         $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 }

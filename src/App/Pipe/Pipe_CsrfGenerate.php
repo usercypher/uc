@@ -10,8 +10,10 @@ class Pipe_CsrfGenerate {
     }
 
     public function pipe($request, $response) {
+        $break = false;
+
         $this->session->set('csrf_token', bin2hex(random_bytes(32)));
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 }

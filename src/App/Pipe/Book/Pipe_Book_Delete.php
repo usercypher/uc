@@ -13,6 +13,8 @@ class Pipe_Book_Delete {
     } 
 
     public function pipe($request, $response) {
+        $break = false;
+
         $data = $request->post;
 
         $this->bookModel->validateAndDelete($data);
@@ -21,6 +23,6 @@ class Pipe_Book_Delete {
 
         $response->redirect($this->app->url('route', 'home'));
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 }
