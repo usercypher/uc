@@ -1,6 +1,6 @@
 <?php
 
-class Link_Cli_Link {
+class Pipe_Cli_Pipe {
     private $app;
 
     public function __construct($args = array()) {
@@ -9,10 +9,12 @@ class Link_Cli_Link {
         ) = $args;
     } 
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         if (!isset($request->params['option']) || !isset($request->params['class'])) {
-            $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
-            return false;
+            $response->stderr = true;
+            $response->content = 'Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL;
+            $response->send();
+            return array($request, $response);
         }
 
         $className = $request->params['class'];
@@ -27,11 +29,13 @@ class Link_Cli_Link {
                 $response->std(EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL);
                 break;
             default:
-                $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
-                return false;
+                $response->stderr = true;
+                $response->content = 'Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL;
+                $response->send();
+                return array($request, $response);
         }
 
-        return true;
+        return array($request, $response);
     }
 
     private function classContent($className, $classDependency) {
@@ -46,9 +50,9 @@ class $className {" . $classVar . "
         " . $classVarList . "
     }
 
-    public function link(\$request, \$response) {
+    public function pipe(\$request, \$response) {
         // code
-        return true;
+        return array(\$request, \$response);
     }
 }";
     }

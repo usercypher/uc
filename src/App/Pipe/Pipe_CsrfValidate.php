@@ -1,6 +1,6 @@
 <?php
 
-class Link_CsrfValidate {
+class Pipe_CsrfValidate {
     public $session;
 
     public function __construct($args = array()) {
@@ -9,26 +9,29 @@ class Link_CsrfValidate {
         ) = $args;
     }
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         if (!isset($request->post['csrf_token'])) {
             $response->code = 403;
             $response->content = 'Invalid CSRF token';
-            return false;
+            $response->send();
+            return array($request, $response);
         }
 
         $csrfToken = $this->session->get('csrf_token');
         if (!$csrfToken) {
             $response->code = 403;
             $response->content = 'Invalid CSRF token';
-            return false;
+            $response->send();
+            return array($request, $response);
         }
 
         if ($request->post['csrf_token'] !== $csrfToken) {
             $response->code = 403;
             $response->content = 'Invalid CSRF token';
-            return false;
+            $response->send();
+            return array($request, $response);
         }
 
-        return true;
+        return array($request, $response);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-class Link_Book_Update {
+class Pipe_Book_Store {
     private $app, $session;
     private $bookModel;
 
@@ -12,15 +12,15 @@ class Link_Book_Update {
         ) = $args;
     } 
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         $data = $request->post;
 
-        $this->bookModel->validateAndUpdate($data);
+        $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
+        $response->redirect($this->app->url('route', $route));
 
-        return true;
+        return array($request, $response);
     }
 }

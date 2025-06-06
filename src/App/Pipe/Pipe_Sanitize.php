@@ -1,9 +1,9 @@
 <?php
 
-class Link_Sanitize {
+class Pipe_Sanitize {
     public function __construct($args = array()) {}
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         if (isset($request->post)) {
             $this->sanitize($request->post);
         }
@@ -16,7 +16,7 @@ class Link_Sanitize {
             $this->sanitize($request->params);
         }
 
-        return true;
+        return array($request, $response);
     }
 
     public function sanitize(&$array) {

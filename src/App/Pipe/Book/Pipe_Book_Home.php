@@ -1,6 +1,6 @@
 <?php
 
-class Link_Book_Home {
+class Pipe_Book_Home {
     private $app, $session;
     private $bookModel;
 
@@ -12,7 +12,7 @@ class Link_Book_Home {
         ) = $args;
     } 
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         $response->html($this->app->path('res', 'html/home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
@@ -20,6 +20,6 @@ class Link_Book_Home {
             'books' => $this->bookModel->all(),
         ));
 
-        return true;
+        return array($request, $response);
     }
 }

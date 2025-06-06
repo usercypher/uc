@@ -31,12 +31,8 @@ function init() {
 }
 
 function d($var, $detailed = false) {
-    if (!headers_sent()) header('Content-Type: text/plain');
-    if ($detailed) {
-        var_dump($var);
-    } else {
-        print_r($var);
-    }
+    if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
+    $detailed ? var_dump($var) : print_r($var);
 }
 
 class Request {
@@ -89,7 +85,7 @@ class Request {
 }
 
 class Response {
-    var $headers, $code, $type, $content, $stderr;
+    var $headers, $code, $type, $content, $stderr, $sent = false;
 
     function init($headers, $code, $type, $content, $stderr) {
         $this->headers = $headers;
@@ -100,11 +96,15 @@ class Response {
     }
 
     function send() {
+        if ($this->sent) return false;
+
         if (SAPI === 'cli') {
             $this->std($this->content, $this->stderr);
         } else {
             echo($this->http());
         }
+
+        return $this->sent = true;
     }
 
     function http() {
@@ -136,7 +136,7 @@ class Response {
 
 class App {
     var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
-    var $routes = array(), $links = array('prepend' => array(), 'append' => array());
+    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
 
     // Application Setup
@@ -203,14 +203,14 @@ class App {
             echo('Existing file detected. backed up as: ' . $newFileName . EOL);
         }
 
-        $this->write($configFile, serialize(array($this->routes, $this->links, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
+        $this->write($configFile, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
 
         echo('File created: ' . $configFile . EOL);
     }
 
     function load($file) {
         $configFile = ROOT . $file . '.dat';
-        list($this->routes, $this->links, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($configFile));
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($configFile));
     }
 
     // Error Management
@@ -283,9 +283,9 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $end = array('_l' => array(), '_i' => array());
+        $end = array('_p' => array(), '_i' => array());
 
-        $map = array('link' => '_l', 'ignore' => '_i');
+        $map = array('pipe' => '_p', 'ignore' => '_i');
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $tmpUnit) $end[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
@@ -303,14 +303,14 @@ class App {
     }
 
     function groupRoute($group, $method, $route, $option = array()) {
-        $option['link'] = array_merge((isset($group['link_prepend']) ? $group['link_prepend'] : array()), (isset($option['link']) ? $option['link'] : array()), (isset($group['link_append']) ? $group['link_append'] : array()));
+        $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
         $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
         $this->setRoute($method, (isset($group['prefix']) ? $group['prefix'] : '') . $route, $option);
     }
 
-    function setLinks($links) {
-        foreach ($links as $key => $l) {
-            foreach ($l as $unit) $this->links[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+    function setPipes($pipes) {
+        foreach ($pipes as $key => $p) {
+            foreach ($p as $unit) $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
         }
     }
 
@@ -390,19 +390,19 @@ class App {
 
         if (!isset($current['*'])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
 
-        $finalLinks = array();
+        $finalPipes = array();
 
         $ignore = array_flip($current['*']['_i']);
 
-        $linkGroup = isset($ignore[-1]) ? array(&$current['*']['_l']) : array(&$this->links['prepend'], &$current['*']['_l'], &$this->links['append']);
+        $pipeGroup = isset($ignore[-1]) ? array(&$current['*']['_p']) : array(&$this->pipes['prepend'], &$current['*']['_p'], &$this->pipes['append']);
 
-        foreach ($linkGroup as $links) {
-            foreach ($links as $link) {
-                if (!isset($ignore[$link])) $finalLinks[] = $link;
+        foreach ($pipeGroup as $pipes) {
+            foreach ($pipes as $pipe) {
+                if (!isset($ignore[$pipe])) $finalPipes[] = $pipe;
             }
         }
 
-        return array('link' => $finalLinks, 'params' => $params);
+        return array('pipe' => $finalPipes, 'params' => $params);
     }
 
     // Request Handling
@@ -428,9 +428,10 @@ class App {
         }
 
         $request->params = $route['params'];
-        foreach ($route['link'] as $l) {
-            $l = $this->getClass($this->unitList[$l]);
-            if (!$l->link($request, $response)) break;
+        foreach ($route['pipe'] as $p) {
+            $p = $this->getClass($this->unitList[$p]);
+            list($request, $response) = $p->pipe($request, $response);
+            if ($response->sent) break;
         }
 
         return $response;
@@ -464,7 +465,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) trigger_error('500|Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
+                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -516,7 +517,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) trigger_error('500|Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($stackSet[$unit])) return trigger_error('500|Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
@@ -571,7 +572,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) trigger_error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($stackSet[$unit])) return trigger_error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {

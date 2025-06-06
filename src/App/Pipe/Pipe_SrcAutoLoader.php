@@ -1,6 +1,6 @@
 <?php
 
-class Link_SrcAutoLoader {
+class Pipe_SrcAutoLoader {
     private $src, $app;
 
     public function __construct($args = array()) {
@@ -9,11 +9,11 @@ class Link_SrcAutoLoader {
         ) = $args;
     }
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         $this->src = $this->app->path('root', 'src' . DS);
         spl_autoload_register(array($this, 'autoLoader'));
 
-        return true;
+        return array($request, $response);
     }
 
     public function autoLoader($class) {

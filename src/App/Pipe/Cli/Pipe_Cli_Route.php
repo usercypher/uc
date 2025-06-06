@@ -1,6 +1,6 @@
 <?php
 
-class Link_Cli_Route {
+class Pipe_Cli_Route {
     private $app;
     private $unitList;
 
@@ -9,10 +9,10 @@ class Link_Cli_Route {
         $this->unitList = $this->app->unitList ?? [];
     }
 
-    public function link($request, $response) {
+    public function pipe($request, $response) {
         $routes = $this->app->routes;
-        $linksPrepend = $this->app->links['prepend'];
-        $linksAppend = $this->app->links['append'];
+        $pipesPrepend = $this->app->pipes['prepend'];
+        $pipesAppend = $this->app->pipes['append'];
 
         $routes = $this->flattenRoutesWithMethod($routes);
 
@@ -22,7 +22,7 @@ class Link_Cli_Route {
             $parts = [];
 
             if (!empty($route['run'])) {
-                $run = array_map(fn($i) => $this->unitList[$i] ?? "[unit:$i]", array_merge($linksPrepend, $route['run'], $linksAppend));
+                $run = array_map(fn($i) => $this->unitList[$i] ?? "[unit:$i]", array_merge($pipesPrepend, $route['run'], $pipesAppend));
                 $parts[] = "run: " . implode(' > ', $run);
             }
 
@@ -38,7 +38,7 @@ class Link_Cli_Route {
             $response->std($line . "\n");
         }
 
-        return true;
+        return array($request, $response);
     }
 
     private function flattenRoutesWithMethod(array $tree): array {
@@ -72,8 +72,8 @@ class Link_Cli_Route {
                 if ($onlyMeta) {
                     $route = ['path' => '"' . $currentPath . '"'];
 
-                    if (isset($children['*']['_l'])) {
-                        $route['run'] = $children['*']['_l'];
+                    if (isset($children['*']['_p'])) {
+                        $route['run'] = $children['*']['_p'];
                     }
 
                     if (isset($children['*']['_i'])) {

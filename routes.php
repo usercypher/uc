@@ -3,24 +3,24 @@
 
 /**
  * ------------------------------------------------------------------------
- * Global Links
+ * Global Pipes
  * ------------------------------------------------------------------------
  * These are applied to all routes automatically.
  */
-$app->setLinks(array(
+$app->setPipes(array(
     'prepend' => array(
-        'Link_Sanitize',         // Sanitize all incoming data
-        'Link_CsrfGenerate',     // Generate CSRF token for GET requests
+        'Pipe_Sanitize',         // Sanitize all incoming data
+        'Pipe_CsrfGenerate',     // Generate CSRF token for GET requests
     ),
     'append' => array(
-        // No global append links
+        // No global append pipes
     )
 ));
 
 
 /**
  * ------------------------------------------------------------------------
- * CLI Link Route
+ * CLI Pipe Route
  * ------------------------------------------------------------------------
  * Handles dynamic CLI piping through optional route params.
  */
@@ -28,12 +28,12 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', 'link/{option?}/{class?}', array(
-    'link' => array('Link_Cli_Link'),
+$app->groupRoute($group, '', 'pipe/{option?}/{class?}', array(
+    'pipe' => array('Pipe_Cli_Pipe'),
 ));
 
 $app->groupRoute($group, '', 'route', array(
-    'link' => array('Link_Cli_Route'),
+    'pipe' => array('Pipe_Cli_Route'),
 ));
 
 
@@ -44,7 +44,7 @@ $app->groupRoute($group, '', 'route', array(
  * ------------------------------------------------------------------------
  */
 $app->setRoute('GET', '', array(
-    'link' => array('Link_Book_Home', 'Link_ResponseCompression')
+    'pipe' => array('Pipe_Book_Home', 'Pipe_ResponseCompression')
 ));
 
 
@@ -52,30 +52,30 @@ $app->setRoute('GET', '', array(
  * ------------------------------------------------------------------------
  * Basic GET Routes: /home, /create, /edit
  * ------------------------------------------------------------------------
- * These routes share response compression via group link_append.
+ * These routes share response compression via group pipe_append.
  */
 $group = array(
-    'link_append' => array('Link_ResponseCompression')
+    'pipe_append' => array('Pipe_ResponseCompression')
 );
 
 // GET /home
 $app->groupRoute($group, 'GET', 'home', array(
-    'link' => array('Link_Book_Home')
+    'pipe' => array('Pipe_Book_Home')
 ));
 
 // GET /create
 $app->groupRoute($group, 'GET', 'create', array(
-    'link' => array('Link_Book_Create')
+    'pipe' => array('Pipe_Book_Create')
 ));
 
 // GET /edit/{title-id}
 $app->groupRoute($group, 'GET', 'edit/{title_id:([a-zA-Z0-9-]+)-([0-9]+)}', array(
-    'link' => array('Link_Book_Edit')
+    'pipe' => array('Pipe_Book_Edit')
 ));
 
 // GET /edit/{id}
 $app->groupRoute($group, 'GET', 'edit/{id:[0-9]+}', array(
-    'link' => array('Link_Book_Edit')
+    'pipe' => array('Pipe_Book_Edit')
 ));
 
 
@@ -87,21 +87,21 @@ $app->groupRoute($group, 'GET', 'edit/{id:[0-9]+}', array(
  */
 $group = array(
     'prefix' => 'book/',
-    'link_prepend' => array('Link_CsrfValidate'),
-    'ignore' => array('Link_CsrfGenerate')
+    'pipe_prepend' => array('Pipe_CsrfValidate'),
+    'ignore' => array('Pipe_CsrfGenerate')
 );
 
 // POST /book/store
 $app->groupRoute($group, 'POST', 'store', array(
-    'link' => array('Link_Book_Store')
+    'pipe' => array('Pipe_Book_Store')
 ));
 
 // POST /book/update
 $app->groupRoute($group, 'POST', 'update', array(
-    'link' => array('Link_Book_Update')
+    'pipe' => array('Pipe_Book_Update')
 ));
 
 // POST /book/delete
 $app->groupRoute($group, 'POST', 'delete', array(
-    'link' => array('Link_Book_Delete')
+    'pipe' => array('Pipe_Book_Delete')
 ));
