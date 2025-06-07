@@ -241,9 +241,7 @@ class App {
         } else {
             if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
                 $traceOutput = 'Stack trace: ' . EOL;
-                $trace = array_merge(debug_backtrace(), $trace);
-                $count = count($trace);
-                for ($i = 0; $count > $i; $i++) $traceOutput .= '#' . $i . ' ' . (isset($trace[$i]['file']) ? $trace[$i]['file'] : '[internal function]') . ' (' . ((isset($trace[$i]['line']) ? $trace[$i]['line'] : 'no line')) . '): ' . (isset($trace[$i]['class']) ? $trace[$i]['class'] . (isset($trace[$i]['type']) ? $trace[$i]['type'] : '') : '') . (isset($trace[$i]['function']) ? $trace[$i]['function'] . '()' : '[unknown function]') . EOL;
+                foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] . '(' . implode(', ',array_map('gettype', $frame['args'])) . ')' : '[unknown function]') . EOL;
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
