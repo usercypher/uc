@@ -242,7 +242,7 @@ class App {
         } else {
             if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
                 $traceOutput = 'Stack trace: ' . EOL;
-                foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] . (isset($frame['args']) && $this->ENV['ERROR_TRACE_VERBOSE'] ? EOL . substr(print_r($frame['args'], true), 6) : '()') : '[unknown function]') . EOL;
+                foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] . (isset($frame['args']) && $this->ENV['ERROR_TRACE_VERBOSE'] ? substr(print_r($frame['args'], true), 5) : '()') : '[unknown function]') . EOL;
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
