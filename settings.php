@@ -16,6 +16,7 @@ return array(
             // Error Settings
             'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
             'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
+            'ERROR_TRACE_VERBOSE' => 0, // Enable (1) or disable (0) detailed trace
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
             'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
             // Routing Configuration
@@ -68,6 +69,7 @@ return array(
             // Error Settings
             'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
             'ERROR_LOG_FILE' => 'app'.DS.'error',
+            'ERROR_TRACE_VERBOSE' => 0,
             'SHOW_ERRORS' => 0,
             'LOG_ERRORS' => 1,
             // Routing Configuration
