@@ -37,6 +37,11 @@ class Pipe_Cli_Route {
         }
         $result = $this->app->resolveRoute($request->cli['option']['type'], $request->cli['option']['path']);
 
+        if (isset($result['error'])) {
+            $response->std('Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL, true);
+            return array($request, $response);
+        }
+
         $output['pipe'] = array();
         foreach ($result['pipe'] as $index) {
             $output['pipe'][] = $this->unitList[$index];
