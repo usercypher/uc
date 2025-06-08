@@ -3,7 +3,7 @@
 class Pipe_Book_Create {
     private $app, $session;
 
-    public function __construct($args = array()) {
+    public function args($args) {
         list(
             $this->app, 
             $this->session, 

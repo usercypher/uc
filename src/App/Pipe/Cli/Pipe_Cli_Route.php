@@ -4,9 +4,11 @@ class Pipe_Cli_Route {
     private $app;
     private $unitList;
 
-    public function __construct($args = array()) {
-        list($this->app) = $args;
-        $this->unitList = $this->app->unitList ?? [];
+    public function args($args) {
+        list(
+            $this->app
+        ) = $args;
+        $this->unitList = isset($this->app->unitList) ? : $this->app->unitList : array();
     }
 
     public function pipe($request, $response) {
@@ -22,7 +24,7 @@ class Pipe_Cli_Route {
             $no++;
             $line = " - {$route['method']} {$route['path']}";
 
-            $parts = [];
+            $parts = array();
 
             if (!empty($route['run'])) {
                 $run = array_map(fn($i) => $this->unitList[$i] ?? "[unit:$i]", array_merge($pipesPrepend, $route['run'], $pipesAppend));
@@ -45,7 +47,7 @@ class Pipe_Cli_Route {
     }
 
     private function flattenRoutesWithMethod(array $tree): array {
-        $routes = [];
+        $routes = array();
 
         foreach ($tree as $method => $branches) {
             $paths = $this->flattenRoutes($branches);
@@ -59,7 +61,7 @@ class Pipe_Cli_Route {
     }
 
     private function flattenRoutes(array $tree, string $prefix = ''): array {
-        $routes = [];
+        $routes = array();
 
         foreach ($tree as $segment => $children) {
             if ($segment === '*' || $segment === '_i') {

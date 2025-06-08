@@ -3,7 +3,7 @@
 class AppException {
     private $app;
 
-    public function __construct($args = array()) {
+    public function args($args) {
         list($this->app) = $args;
     }
 

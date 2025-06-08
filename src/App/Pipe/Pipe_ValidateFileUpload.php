@@ -1,8 +1,6 @@
 <?php
 
 class Pipe_ValidateFileUpload {
-    public function __construct($args = array()) {}
-
     private $allowedFileTypes = array(
         'image/jpeg' => 5 * 1024 * 1024,       // JPEG files, max 5MB
         'image/png'  => 5 * 1024 * 1024,       // PNG files, max 5MB

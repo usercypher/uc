@@ -4,7 +4,7 @@ class Lib_Database {
     private $app;
     private $host, $port, $name, $user, $pass, $pdo, $time;
 
-    public function __construct($args = array()) {
+    public function args($args) {
         list(
             $this->app
         ) = $args;

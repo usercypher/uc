@@ -3,7 +3,7 @@
 class Pipe_Cli_Pipe {
     private $app;
 
-    public function __construct($args = array()) {
+    public function args($args) {
         list(
             $this->app,
         ) = $args;
@@ -42,7 +42,7 @@ class Pipe_Cli_Pipe {
         return "<?php
 
 class $className {" . $classVar . "
-    public function __construct(\$args = array()) {
+    public function args(\$args) {
         // add dependency-only class
         " . $classVarList . "
     }

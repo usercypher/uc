@@ -4,8 +4,6 @@ class Lib_Model {
     private $flash = array();
     private $table, $conn, $primaryColumn = 'id';
 
-    public function __construct($args = array()) {}
-
     public function setConn($conn) {
         $this->conn = $conn;
     }

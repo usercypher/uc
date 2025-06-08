@@ -1,7 +1,7 @@
 <?php
 
 class Lib_Session {
-    public function __construct($args = array()) {
+    public function __construct() {
         $this->start();
     }
 

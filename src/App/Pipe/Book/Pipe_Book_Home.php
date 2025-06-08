@@ -4,7 +4,7 @@ class Pipe_Book_Home {
     private $app, $session;
     private $bookModel;
 
-    public function __construct($args = array()) {
+    public function args($args) {
         list(
             $this->app, 
             $this->session, 

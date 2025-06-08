@@ -3,7 +3,7 @@
 class Pipe_CsrfValidate {
     public $session;
 
-    public function __construct($args = array()) {
+    public function args($args) {
         list(
             $this->session
         ) = $args;

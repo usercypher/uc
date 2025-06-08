@@ -153,7 +153,7 @@ class App {
 
         $this->ENV['ERROR_HTML_FILE'] = 'error.php';
         $this->ENV['ERROR_LOG_FILE'] = 'error';
-        $this->ENV['ERROR_TRACE_VERBOSE'] = false;
+        $this->ENV['ERROR_TRACE_IGNORE_ARGS'] = false;
         $this->ENV['SHOW_ERRORS'] = false;
         $this->ENV['LOG_ERRORS'] = true;
 
@@ -242,7 +242,7 @@ class App {
         } else {
             if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
                 $traceOutput = 'Stack trace: ' . EOL;
-                foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] . (isset($frame['args']) && $this->ENV['ERROR_TRACE_VERBOSE'] ? substr(print_r($frame['args'], true), 5) : '()') : '[unknown function]') . EOL;
+                foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . (!$this->ENV['ERROR_TRACE_IGNORE_ARGS'] && isset($frame['args']) ? substr(print_r($frame['args'], true), 5) : '()') . EOL;
                 $type = 'text/plain';
                 $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
             } else {
@@ -594,7 +594,8 @@ class App {
 
             $this->loadUnit($unit);
 
-            $class = new $unit(isset($resolved[$unit]) ? $resolved[$unit] : array());
+            $class = new $unit;
+            if (isset($resolved[$unit])) $class->args($resolved[$unit]);
             unset($resolved[$unit]);
 
             if ($cache) $this->cache[$unit][$this->CACHE_CLASS] = $class;
