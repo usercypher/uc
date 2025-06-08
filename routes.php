@@ -32,7 +32,7 @@ $app->groupRoute($group, '', 'pipe/{option?}/{class?}', array(
     'pipe' => array('Pipe_Cli_Pipe'),
 ));
 
-$app->groupRoute($group, '', 'route', array(
+$app->groupRoute($group, '', 'route/{option?}', array(
     'pipe' => array('Pipe_Cli_Route'),
 ));
 

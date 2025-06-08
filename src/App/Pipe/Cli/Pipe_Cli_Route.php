@@ -8,12 +8,47 @@ class Pipe_Cli_Route {
         list(
             $this->app
         ) = $args;
-        $this->unitList = isset($this->app->unitList) ? : $this->app->unitList : array();
+        $this->unitList = isset($this->app->unitList) ? $this->app->unitList : array();
     }
 
     public function pipe($request, $response) {
         $break = false;
 
+        $option = isset($request->params['option']) ? $request->params['option'] : null;
+
+        switch ($option) {
+            case 'print':
+                list($request, $response) = $this->print($request, $response);
+                break;
+            case 'resolve':
+                list($request, $response) = $this->resolve($request, $response);
+                break;
+            default:
+                $response->std('Error: Usage - php [file] route [option:eg. print, resolve]' . EOL, true);
+        }
+
+        return array($request, $response, $break);
+    }
+
+    private function resolve($request, $response) {
+        if (!isset($request->cli['option']['type']) || !isset($request->cli['option']['path'])) {
+            $response->std('Error: Required - --type=[value: GET, POST, eg.] --path=[value]' . EOL, true);
+            return array($request, $response);
+        }
+        $result = $this->app->resolveRoute($request->cli['option']['type'], $request->cli['option']['path']);
+
+        $output['pipe'] = array();
+        foreach ($result['pipe'] as $index) {
+            $output['pipe'][] = $this->unitList[$index];
+        }
+        $output['dynamic_url_parameter'] = $result['params'];
+
+        $response->std(print_r($output, true));
+
+        return array($request, $response);
+    }
+
+    private function print($request, $response) {
         $routes = $this->app->routes;
         $pipesPrepend = $this->app->pipes['prepend'];
         $pipesAppend = $this->app->pipes['append'];
@@ -43,7 +78,7 @@ class Pipe_Cli_Route {
             $response->std($line . "\n");
         }
 
-        return array($request, $response, $break);
+        return array($request, $response);
     }
 
     private function flattenRoutesWithMethod(array $tree): array {

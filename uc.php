@@ -193,21 +193,13 @@ class App {
     // Config Management
 
     function save($file) {
-        $configFile = ROOT . $file . '.dat';
-        if (file_exists($configFile)) {
-            $newFileName = ROOT . $file . '_' . date('Y-m-d_H-i-s', filectime($configFile)) . '.dat';
-            rename($configFile, $newFileName);
-            echo('Existing file detected. backed up as: ' . $newFileName . EOL);
-        }
-
-        $this->write($configFile, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
-
-        echo('File created: ' . $configFile . EOL);
+        $file = ROOT . $file . '.dat';
+        $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
+        echo('File created: ' . $file . EOL);
     }
 
     function load($file) {
-        $configFile = ROOT . $file . '.dat';
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($configFile));
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read(ROOT . $file . '.dat'));
     }
 
     // Error Management
@@ -449,7 +441,7 @@ class App {
                     if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
                 }
 
-                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
+                if ((0 > $option['max'] || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
