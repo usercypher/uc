@@ -286,6 +286,8 @@ class App {
             $node = &$node[$segment];
         }
 
+        if (isset($node['*'])) trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
+
         $node['*'] = $end;
     }
 
@@ -448,7 +450,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit key detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
+                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -500,7 +502,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) return trigger_error('500|Circular load found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($stackSet[$unit])) return trigger_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
@@ -555,7 +557,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) return trigger_error('Circular dependency found: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($stackSet[$unit])) return trigger_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {

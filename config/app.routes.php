@@ -1,15 +1,6 @@
 <?php
 // app.routes.php
 
-/**
- * ------------------------------------------------------------------------
- * Default Route (Homepage)
- * ------------------------------------------------------------------------
- */
-$app->setRoute('GET', '', array(
-    'pipe' => array('Pipe_Book_Home', 'Pipe_ResponseCompression')
-));
-
 
 /**
  * ------------------------------------------------------------------------
@@ -20,6 +11,11 @@ $app->setRoute('GET', '', array(
 $group = array(
     'pipe_append' => array('Pipe_ResponseCompression')
 );
+
+// GET /
+$app->groupRoute($group, 'GET', '', array(
+    'pipe' => array('Pipe_Book_Home')
+));
 
 // GET /home
 $app->groupRoute($group, 'GET', 'home', array(
