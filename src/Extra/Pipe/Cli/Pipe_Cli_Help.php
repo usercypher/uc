@@ -15,6 +15,9 @@ class Pipe_Cli_Help {
         $output = 'No route \'' . trim(urldecode(str_replace('/', ' ', $request->path))) . '\' found, list:'. EOL;
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
+
+        sort($routes);
+
         $seen = array();
         foreach ($routes as $route) {
             $pathParts = explode('/', $route['path']);

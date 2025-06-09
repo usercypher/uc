@@ -19,6 +19,8 @@ class Pipe_Cli_Route_Print {
 
         $routes = $this->flattenRoutesWithMethod($routes);
 
+        sort($routes);
+
         $response->std("ROUTES" . EOL);
 
         foreach ($routes as $no => $route) {
