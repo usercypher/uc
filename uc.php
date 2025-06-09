@@ -15,20 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-init();
-
-function init() {
-    $os = strtolower(PHP_OS);
-    if (strpos($os, 'win') !== false) {
-        define('DS', '\\');
-        define('EOL', "\r\n");
-    } else {
-        define('DS', '/');
-        define('EOL', "\n");
-    }
-    define('SAPI', php_sapi_name());
-    define('ROOT', dirname(__FILE__) . DS);
+if (strpos(strtolower(PHP_OS), 'win') !== false) {
+    define('DS', '\\');
+    define('EOL', "\r\n");
+} else {
+    define('DS', '/');
+    define('EOL', "\n");
 }
+
+define('ROOT', dirname(__FILE__) . DS);
+define('SAPI', php_sapi_name());
 
 function d($var, $detailed = false) {
     if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
