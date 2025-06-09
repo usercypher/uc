@@ -82,7 +82,7 @@ class Pipe_Cli_Route {
 
         foreach ($routes as $no => $route) {
             $no++;
-            $line = '  \'' . str_pad($route['method'], 6) . '\' \'' . $route['path'] . '\'';
+            $line = '  ' . str_pad('\'' . $route['method'] . '\'', 6) . ' \'' . $route['path'] . '\'';
 
             $parts = array();
 
