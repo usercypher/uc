@@ -331,22 +331,19 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
-                    $paramParts = explode(':', substr($key, 1, -1), 2);
-                    $paramName = $paramParts[0];
-                    $paramRegex = (isset($paramParts[1])) ? $paramParts[1] : '.*';
-                    $paramModifier = substr($paramName, -1);
+                if ($key[0] === '{' && substr($key, -1) === '}') {
+                    list($paramName, $paramModifier, $paramRegex) = explode(':', substr($key, 1, -1), 3);
                     if ($paramModifier === '*') {
-                        $params[substr($paramName, 0, -1)] = array_slice($pathSegments, $index);
+                        $params[$paramName] = array_slice($pathSegments, $index);
                         $current = $value;
-                        $matched = true;
                         if (isset($current['*'])) break 2;
+                        $matched = true;
                         break;
                     }
                     $matches = array($pathSegment);
-                    if ($paramRegex === '.*' || preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                    if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
                         foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
-                        $params[($paramModifier === '?' ? substr($paramName, 0, -1) : $paramName)] = (count($matches) === 1) ? $matches[0] : $matches;
+                        $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
@@ -361,10 +358,9 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
-                    $paramParts = explode(':', substr($key, 1, -1), 2);
-                    $paramModifier = substr($paramParts[0], -1);
-                    if ($paramModifier === '*' || $paramModifier === '?') {
+                if ($key[0] === '{' && substr($key, -1) === '}') {
+                    list($paramName, $paramModifier) = explode(':', substr($key, 1, -1), 3);
+                    if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
                         $current = $value;
                         $matched = true;
                         break;
@@ -441,7 +437,7 @@ class App {
                     if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
                 }
 
-                if ((0 > $option['max'] || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
+                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';

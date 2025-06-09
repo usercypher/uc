@@ -28,14 +28,17 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', 'pipe/{option?}/{class?}', array(
+$app->groupRoute($group, '', 'pipe/{option:=default:}/{class:=default:}', array(
     'pipe' => array('Pipe_Cli_Pipe'),
 ));
 
-$app->groupRoute($group, '', 'route/{option?}', array(
+$app->groupRoute($group, '', 'route/{option:=print:}', array(
     'pipe' => array('Pipe_Cli_Route'),
 ));
 
+$app->groupRoute($group, '', '{onUnknownRoute:*:}', array(
+    'pipe' => array('Pipe_Cli_Landing'),
+));
 
 
 /**
@@ -69,12 +72,12 @@ $app->groupRoute($group, 'GET', 'create', array(
 ));
 
 // GET /edit/{title-id}
-$app->groupRoute($group, 'GET', 'edit/{title_id:([a-zA-Z0-9-]+)-([0-9]+)}', array(
+$app->groupRoute($group, 'GET', 'edit/{title_id::([a-zA-Z0-9-]+)-([0-9]+)}', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
 
 // GET /edit/{id}
-$app->groupRoute($group, 'GET', 'edit/{id:[0-9]+}', array(
+$app->groupRoute($group, 'GET', 'edit/{id::[0-9]+}', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
 

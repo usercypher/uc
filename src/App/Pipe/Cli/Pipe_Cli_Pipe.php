@@ -12,9 +12,29 @@ class Pipe_Cli_Pipe {
     public function pipe($request, $response) {
         $break = false;
 
-        if (!isset($request->params['option']) || !isset($request->params['class'])) {
-            $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
-            return array($request, $response, $break);
+        $option = isset($request->params['option']) ? $request->params['option'] : null;
+
+        switch ($option) {
+            case 'create':
+                list($request, $response) = $this->create($request, $response);
+                break;
+            default:
+                $output = 'Error: Missing or unknown option \'' . $option . '\'.'. EOL;
+                $output .= 'Usage: php [file] pipe [option]' . EOL;
+                $output .= 'Options:' . EOL;
+                $output .= '  create [name]   create pipe using --path=[value] --args=[value]' . EOL;
+                $response->std($output, true);
+        }
+
+        return array($request, $response, $break);
+    }
+    private function create($request, $response) {
+        $output = '';
+        if (!isset($request->params['class'])) {
+            $output .= 'Error: Missing required parameters.' . EOL;
+            $output .= 'Usage: php [file] pipe create [name]' . EOL;
+            $response->std($output, true);
+            return array($request, $response);
         }
 
         $className = $request->params['class'];
@@ -23,16 +43,17 @@ class Pipe_Cli_Pipe {
 
         $classContent = $this->classContent($className, $classDeps);
 
-        switch ($request->params['option']) {
-            case 'create':
-                file_put_contents($this->app->path('src', $classPath) , $classContent);
-                $response->std(EOL . $request->params['class'] . ' created successfully! in ' . $this->app->path('src', $classPath) . EOL);
-                break;
-            default:
-                $response->std('Error: Usage - php [file] pipe [option:eg. create] [class] --path=[value] --args=[value]' . EOL, true);
+        $fullPath = $this->app->path('src', $classPath);
+        if (file_put_contents($fullPath , $classContent) !== false) {
+            $output .= EOL . $className . ' created successfully!' . EOL;
+            $output .= 'Location: ' . $fullPath . EOL;
+        } else {
+            $output = 'Error: Failed to write file at ' . $fullPath . EOL;
         }
 
-        return array($request, $response, $break);
+        $response->std($output);
+
+        return array($request, $response);
     }
 
     private function classContent($className, $classDependency) {
