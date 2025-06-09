@@ -282,7 +282,7 @@ class App {
             $node = &$node[$segment];
         }
 
-        if (isset($node['*'])) trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
+        if (isset($node['*'])) return trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
 
         $node['*'] = $end;
     }
