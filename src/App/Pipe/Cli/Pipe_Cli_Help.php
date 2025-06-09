@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Cli_Landing {
+class Pipe_Cli_Help {
     private $app;
 
     public function args($args) {
@@ -15,8 +15,12 @@ class Pipe_Cli_Landing {
         $output = 'No route \'' . trim(urldecode(str_replace('/', ' ', $request->path))) . '\' found, list:'. EOL;
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
+        $seen = array();
         foreach ($routes as $route) {
-            if ($route['method'] === '') $output .= ' Route \'' . str_replace('/', ' ', $route['path']) . '\'' . EOL;
+            $pathParts = explode('/', $route['path']);
+            if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === '{') continue;
+            $seen[$pathParts[0]] = true;
+            if ($route['method'] === '') $output .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . EOL;
         }
 
         $response->std($output, true);

@@ -1,77 +1,18 @@
 <?php
 
-class Pipe_Cli_Route {
+class Pipe_Cli_Route_Print {
     private $app;
-    private $unitList;
 
     public function args($args) {
         list(
             $this->app
         ) = $args;
-        $this->unitList = isset($this->app->unitList) ? $this->app->unitList : array();
     }
 
     public function pipe($request, $response) {
         $break = false;
 
-        $option = isset($request->params['option']) ? $request->params['option'] : null;
-
-        switch ($option) {
-            case 'print':
-                list($request, $response) = $this->print($request, $response);
-                break;
-            case 'resolve':
-                list($request, $response) = $this->resolve($request, $response);
-                break;
-            default:
-                $output = 'Error: Missing or unknown option \'' . $option . '\'.'. EOL;
-                $output .= 'Usage: php [file] route [option]' . EOL;
-                $output .= 'Options:' . EOL;
-                $output .= '  print    Show all defined routes' . EOL;
-                $output .= '  resolve  Simulate resolving a request using --type and --path' . EOL;
-                $response->std($output, true);
-        }
-
-        return array($request, $response, $break);
-    }
-
-    private function resolve($request, $response) {
-        $output = '';
-        if (!isset($request->cli['option']['type']) || !isset($request->cli['option']['path'])) {
-            $output .= 'Error: Missing required parameters.' . EOL;
-            $output .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
-            $response->std($output, true);
-            return array($request, $response);
-        }
-        $result = $this->app->resolveRoute($request->cli['option']['type'], $request->cli['option']['path']);
-
-        if (isset($result['error'])) {
-            $output .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
-            return array($request, $response);
-        }
-        $output .= 'RESOLVED ROUTE' . EOL;
-        $output .= '  Method : ' . $request->cli['option']['type'] . EOL;
-        $output .= '  Path   : ' . $request->cli['option']['path'] . EOL;
-
-        $output .= '  Pipe   :' . EOL;
-        foreach ($result['pipe'] as $i => $index) {
-            $output .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $this->unitList[$index] . EOL;
-        }
-
-        // Show dynamic params if any
-        if (!empty($result['params'])) {
-            $output .= '  Params :' . EOL;
-            foreach ($result['params'] as $key => $value) {
-                $output .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? print_r($value, true) : $value) . EOL;
-            }
-        }
-
-        $response->std($output);
-
-        return array($request, $response);
-    }
-
-    private function print($request, $response) {
+        $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
         $routes = $this->app->routes;
         $pipesPrepend = $this->app->pipes['prepend'];
         $pipesAppend = $this->app->pipes['append'];
@@ -89,7 +30,7 @@ class Pipe_Cli_Route {
             if (!empty($pipesPrepend)) {
                 $prepend = array();
                 foreach (array_merge($pipesPrepend) as $i) {
-                    $prepend[] = $this->unitList[$i];
+                    $prepend[] = $unitList[$i];
                 }
 
                 $parts[] = 'prepend: ' . implode(' > ', $prepend);
@@ -98,7 +39,7 @@ class Pipe_Cli_Route {
             if (!empty($pipesAppend)) {
                 $prepend = array();
                 foreach (array_merge($pipesAppend) as $i) {
-                    $append[] = $this->unitList[$i];
+                    $append[] = $unitList[$i];
                 }
 
                 $parts[] = 'append: ' . implode(' > ', $append);
@@ -107,7 +48,7 @@ class Pipe_Cli_Route {
             if (!empty($route['pipe'])) {
                 $pipe = array();
                 foreach ($route['pipe'] as $i) {
-                    $pipe[] = $this->unitList[$i];
+                    $pipe[] = $unitList[$i];
                 }
 
                 $parts[] = 'pipe: ' . implode(' > ', $pipe);
@@ -116,7 +57,7 @@ class Pipe_Cli_Route {
             if (!empty($route['ignore'])) {
                 $ignore = [];
                 foreach ($route['ignore'] as $i) {
-                    $ignore[] = isset($this->unitList[$i]) ? $this->unitList[$i] : '--global';
+                    $ignore[] = isset($unitList[$i]) ? $unitList[$i] : '--global';
                 }
 
                 $parts[] = 'ignore: ' . implode(' > ', $ignore);
@@ -129,7 +70,7 @@ class Pipe_Cli_Route {
             $response->std($line . EOL);
         }
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 
     private function flattenRoutesWithMethod($tree) {

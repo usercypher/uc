@@ -1,19 +1,21 @@
 <?php
 
 class test {
-    private $a;
-    private $b;
+    private $az;
+    private $x;
     private $c;
-    private $d;
+    private $v;
+    private $s;
     private $e;
 
     public function args($args) {
         // add dependency-only class
         list(
-            $this->a,
-            $this->b,
+            $this->az,
+            $this->x,
             $this->c,
-            $this->d,
+            $this->v,
+            $this->s,
             $this->e,
         ) = $args;
     }

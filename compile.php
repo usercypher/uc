@@ -20,8 +20,22 @@ compile(
  * @return App
  */
 function config($app) {
-    require('units.php');
-    require('routes.php');
+    require('config' . DS . '.scan.php');
+
+    if ($files = glob(ROOT . 'config/*.units.php')) {
+        foreach ($files as $file) {
+            require($file);
+        }
+    }
+
+    require('config' . DS . '.pipes.php');    
+
+    if ($files = glob(ROOT . 'config/*.routes.php')) {
+        foreach ($files as $file) {
+            require($file);
+        }
+    }
+
     return $app;
 }
 

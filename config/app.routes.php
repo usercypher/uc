@@ -1,45 +1,5 @@
 <?php
-// routes.php
-
-/**
- * ------------------------------------------------------------------------
- * Global Pipes
- * ------------------------------------------------------------------------
- * These are applied to all routes automatically.
- */
-$app->setPipes(array(
-    'prepend' => array(
-        'Pipe_Sanitize',         // Sanitize all incoming data
-        'Pipe_CsrfGenerate',     // Generate CSRF token for GET requests
-    ),
-    'append' => array(
-        // No global append pipes
-    )
-));
-
-
-/**
- * ------------------------------------------------------------------------
- * CLI Pipe Route
- * ------------------------------------------------------------------------
- * Handles dynamic CLI piping through optional route params.
- */
-$group = array(
-    'ignore' => array('--global')
-);
-
-$app->groupRoute($group, '', 'pipe/{option:=default:}/{class:=default:}', array(
-    'pipe' => array('Pipe_Cli_Pipe'),
-));
-
-$app->groupRoute($group, '', 'route/{option:=print:}', array(
-    'pipe' => array('Pipe_Cli_Route'),
-));
-
-$app->groupRoute($group, '', '{onUnknownRoute:*:}', array(
-    'pipe' => array('Pipe_Cli_Landing'),
-));
-
+// app.routes.php
 
 /**
  * ------------------------------------------------------------------------

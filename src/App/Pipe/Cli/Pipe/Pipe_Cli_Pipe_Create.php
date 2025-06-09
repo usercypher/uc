@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Cli_Pipe {
+class Pipe_Cli_Pipe_Create {
     private $app;
 
     public function args($args) {
@@ -12,29 +12,12 @@ class Pipe_Cli_Pipe {
     public function pipe($request, $response) {
         $break = false;
 
-        $option = isset($request->params['option']) ? $request->params['option'] : null;
-
-        switch ($option) {
-            case 'create':
-                list($request, $response) = $this->create($request, $response);
-                break;
-            default:
-                $output = 'Error: Missing or unknown option \'' . $option . '\'.'. EOL;
-                $output .= 'Usage: php [file] pipe [option]' . EOL;
-                $output .= 'Options:' . EOL;
-                $output .= '  create [name]   create pipe using --path=[value] --args=[value]' . EOL;
-                $response->std($output, true);
-        }
-
-        return array($request, $response, $break);
-    }
-    private function create($request, $response) {
         $output = '';
         if (!isset($request->params['class'])) {
             $output .= 'Error: Missing required parameters.' . EOL;
             $output .= 'Usage: php [file] pipe create [name]' . EOL;
             $response->std($output, true);
-            return array($request, $response);
+            return array($request, $response, $break);
         }
 
         $className = $request->params['class'];
@@ -53,21 +36,23 @@ class Pipe_Cli_Pipe {
 
         $response->std($output);
 
-        return array($request, $response);
+        return array($request, $response, $break);
     }
 
     private function classContent($className, $classDependency) {
         // Handling empty dependencies
         $classVar = empty($classDependency) ? '' : EOL . "    private $" . implode(";" . EOL . "    private $", $classDependency) . ";" . EOL;
         $classVarList = empty($classDependency) ? "//list() = \$args;" : "list(" . EOL . "            \$this->" . implode("," . EOL . "            \$this->", $classDependency) . "," . EOL . "        ) = \$args;";
-        return "<?php
-
-class $className {" . $classVar . "
+        $functionArgs = empty($classDependency) ? "" : "
     public function args(\$args) {
         // add dependency-only class
         " . $classVarList . "
     }
+";
 
+        return "<?php
+
+class $className {" . $classVar . $functionArgs . "
     public function pipe(\$request, \$response) {
         \$break = false;
         // code

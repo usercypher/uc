@@ -1,17 +1,5 @@
 <?php
-// units.php
-
-/**
- * ------------------------------------------------------------------------
- * Auto-load Units
- * ------------------------------------------------------------------------
- * Automatically scan and load units from the 'src/app/' directory.
- * Options:
- *  - 'max' => 2          // Max directory depth to scan (-1 = unlimited)
- *  - 'ignore' => [...]   // Patterns/files to ignore
- *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
- */
-$app->scanUnits('src'.DS.'app'.DS, array());
+// app.units.php
 
 /**
  * ------------------------------------------------------------------------
@@ -42,20 +30,6 @@ $group = array(
     'load_prepend' => array('Lib_Model')      // Load 'Lib_Model' before 'Model_Book'
 );
 $app->groupUnit($group, 'Model_Book');
-
-/**
- * ------------------------------------------------------------------------
- * CLI and Source AutoLoader Pipes
- * ------------------------------------------------------------------------
- * Define pipe units handling CLI and source auto-loading.
- */
-$group = array(
-    'args_prepend' => array('App')
-);
-$app->groupUnit($group, 'Pipe_Cli_Landing');
-$app->groupUnit($group, 'Pipe_Cli_Pipe');
-$app->groupUnit($group, 'Pipe_Cli_Route');
-$app->groupUnit($group, 'Pipe_SrcAutoLoader');
 
 /**
  * ------------------------------------------------------------------------
