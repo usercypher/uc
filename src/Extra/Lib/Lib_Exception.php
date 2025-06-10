@@ -1,6 +1,6 @@
 <?php
 
-class AppException {
+class Lib_Exception {
     private $app;
 
     public function args($args) {

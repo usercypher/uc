@@ -58,8 +58,8 @@ function index($packageFile, $settingsFile, $configFile) {
     $app->init();
 
     // Register error and shutdown handlers
-    set_error_handler(array($app, 'error'));
-    register_shutdown_function(array($app, 'shutdown'));
+    //set_error_handler(array($app, 'error'));
+    //register_shutdown_function(array($app, 'shutdown'));
 
     // Load application configuration
     $app->load($configFile);

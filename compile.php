@@ -22,7 +22,7 @@ compile(
 function config($app) {
     require('config' . DS . '.scan.php');
 
-    if ($files = glob(ROOT . 'config/*.units.php')) {
+    if ($files = glob(ROOT . 'config' . DS . '*.units.php')) {
         foreach ($files as $file) {
             require($file);
         }
@@ -30,7 +30,7 @@ function config($app) {
 
     require('config' . DS . '.pipes.php');    
 
-    if ($files = glob(ROOT . 'config/*.routes.php')) {
+    if ($files = glob(ROOT . 'config' . DS . '*.routes.php')) {
         foreach ($files as $file) {
             require($file);
         }
