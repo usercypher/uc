@@ -92,21 +92,15 @@ class Response {
     }
 
     function send() {
-        if (SAPI === 'cli') {
-            $this->std($this->content, $this->stderr);
-        } else {
-            echo($this->http());
-        }
-    }
+        if (SAPI === 'cli') return $this->std($this->content, $this->stderr);
 
-    function http() {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
             if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
         }
 
-        return isset($this->headers['Location']) ? '' : $this->content;
+        echo(isset($this->headers['Location']) ? '' : $this->content);
     }
 
     function std($msg, $err = false) {
@@ -282,7 +276,7 @@ class App {
             $node = &$node[$segment];
         }
 
-        if (isset($node['*'])) return trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
+        if (isset($node['*'])) return user_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
 
         $node['*'] = $end;
     }
@@ -446,7 +440,7 @@ class App {
                     $unitFile = substr($file, 0, -4);
                     $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
 
-                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
+                    if (isset($this->unit[$unit])) return user_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
 
                     $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
@@ -498,7 +492,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) return trigger_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($stackSet[$unit])) return user_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
                 if (empty($stack)) return;
@@ -553,7 +547,7 @@ class App {
             $unitParent = end($stack);
             $stackSet[$unitParent] = true;
 
-            if (isset($stackSet[$unit])) return trigger_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($stackSet[$unit])) return user_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
