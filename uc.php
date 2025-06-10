@@ -540,7 +540,7 @@ class App {
         $stackSet = array();
         $md = array();
         $resolved = array();
-        $class = null;
+        $class = false;
 
         while (!empty($stack)) {
             $unit = array_pop($stack);
