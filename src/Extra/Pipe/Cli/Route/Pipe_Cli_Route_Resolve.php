@@ -19,13 +19,13 @@ class Pipe_Cli_Route_Resolve {
             $output .= 'Error: Missing required parameters.' . EOL;
             $output .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
             $response->std($output, true);
-            return array($request, $response);
+            return array($request, $response, $break);
         }
         $result = $this->app->resolveRoute($request->cli['option']['type'], $request->cli['option']['path']);
 
         if (isset($result['error'])) {
             $output .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
-            return array($request, $response);
+            return array($request, $response, $break);
         }
         $output .= 'RESOLVED ROUTE' . EOL;
         $output .= '  Method : ' . $request->cli['option']['type'] . EOL;
