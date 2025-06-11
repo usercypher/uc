@@ -93,7 +93,7 @@ class Pipe_Cli_Route_Print {
         $routes = array();
 
         foreach ($tree as $segment => $children) {
-            if ($segment === '*' || $segment === '_i') {
+            if ($segment === '*' || $segment === $this->app->ROUTE_IGNORE) {
                 continue;
             }
 
@@ -106,12 +106,12 @@ class Pipe_Cli_Route_Print {
                 if ($onlyMeta) {
                     $route = array('path' => $currentPath);
 
-                    if (isset($children['*']['_p'])) {
-                    $route['pipe'] = $children['*']['_p'];
+                    if (isset($children['*'][$this->app->ROUTE_PIPE])) {
+                    $route['pipe'] = $children['*'][$this->app->ROUTE_PIPE];
                     }
 
-                    if (isset($children['*']['_i'])) {
-                        $route['ignore'] = $children['*']['_i'];
+                    if (isset($children['*'][$this->app->ROUTE_IGNORE])) {
+                        $route['ignore'] = $children['*'][$this->app->ROUTE_IGNORE];
                     }
 
                     $routes[] = $route;

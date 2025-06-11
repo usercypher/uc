@@ -121,7 +121,7 @@ class Response {
 }
 
 class App {
-    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1;
+    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_PIPE = 0, $ROUTE_IGNORE = 1;
     var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
 
@@ -271,9 +271,9 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $end = array('_p' => array(), '_i' => array());
+        $end = array($this->ROUTE_PIPE => array(), $this->ROUTE_IGNORE => array());
 
-        $map = array('pipe' => '_p', 'ignore' => '_i');
+        $map = array('pipe' => $this->ROUTE_PIPE, 'ignore' => $this->ROUTE_IGNORE);
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $tmpUnit) $end[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
@@ -378,9 +378,9 @@ class App {
 
         $finalPipes = array();
 
-        $ignore = array_flip($current['*']['_i']);
+        $ignore = array_flip($current['*'][$this->ROUTE_IGNORE]);
 
-        $pipeGroup = isset($ignore[-1]) ? array(&$current['*']['_p']) : array(&$this->pipes['prepend'], &$current['*']['_p'], &$this->pipes['append']);
+        $pipeGroup = isset($ignore[-1]) ? array(&$current['*'][$this->ROUTE_PIPE]) : array(&$this->pipes['prepend'], &$current['*'][$this->ROUTE_PIPE], &$this->pipes['append']);
 
         foreach ($pipeGroup as $pipes) {
             foreach ($pipes as $pipe) {
