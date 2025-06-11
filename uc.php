@@ -144,7 +144,7 @@ class App {
         $this->ENV['ERROR_HTML_FILE'] = 'error.php';
         $this->ENV['ERROR_LOG_FILE'] = 'error';
         $this->ENV['ERROR_IGNORE_ARGS'] = false;
-        $this->ENV['ERROR_STRING_LIMIT'] = 30;
+        $this->ENV['ERROR_STRING_LIMIT'] = 15;
         $this->ENV['SHOW_ERRORS'] = false;
         $this->ENV['LOG_ERRORS'] = true;
 
@@ -222,22 +222,32 @@ class App {
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
-        } else {
-            if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
-                $traceOutput = 'Stack trace: ' . EOL;
-                foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(' . (!$this->ENV['ERROR_IGNORE_ARGS'] && isset($frame['args']) ? implode(', ', array_map(array($this, 'formatBacktraceArg'), $frame['args'])) : '') . ')' . EOL;
-                $type = 'text/plain';
-                $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
-            } else {
-                $file = ROOT . $this->ENV['ERROR_HTML_FILE'];
-                if (file_exists($file)) {
-                    $data = array('app' => $this, 'http' => $http);
-                    ob_start();
-                    include($file);
-                    $content = ob_get_clean();
-                } else {
-                    $content = 'An unexpected error occurred. Please try again later.' . EOL;
+        } elseif ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
+            $traceOutput = 'Stack trace: ' . EOL;
+            $limit = $this->ENV['ERROR_STRING_LIMIT'];
+            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) {
+                $args = array();
+                foreach (((!$this->ENV['ERROR_IGNORE_ARGS'] && isset($frame['args'])) ? $frame['args'] : array()) as $arg) {
+                    if (is_null($arg)) $arg = 'NULL';
+                    elseif (is_bool($arg)) $arg = $arg ? 'true' : 'false';
+                    elseif (is_array($arg)) $arg = 'array';
+                    elseif (is_object($arg)) $arg = 'object(' . get_class($arg) . ')';
+                    elseif (is_string($arg)) $arg = '\'' .  (strlen($arg) > $limit ? substr($arg, 0, $limit) . '...' : $arg) . '\' (' . strlen($arg) . ')';
+                    $args[] = (string) $arg;
                 }
+                $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(' . implode(', ', $args) . ')' . EOL;
+            }
+            $type = 'text/plain';
+            $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
+        } else {
+            $file = ROOT . $this->ENV['ERROR_HTML_FILE'];
+            if (file_exists($file)) {
+                $data = array('app' => $this, 'http' => $http);
+                ob_start();
+                include($file);
+                $content = ob_get_clean();
+            } else {
+                $content = 'An unexpected error occurred. Please try again later.' . EOL;
             }
         }
 
@@ -256,18 +266,6 @@ class App {
         }
 
         if (!$exception) exit(1);
-    }
-
-    function formatBacktraceArg($arg) {
-        $stringLimit = $this->ENV['ERROR_STRING_LIMIT'];
-        if (is_null($arg)) return 'NULL';
-        if (is_bool($arg)) return 'bool(' . ($arg ? 'true' : 'false') . ')';
-        if (is_string($arg)) return 'string(' . strlen($arg) . ') "' .  (strlen($arg) > $stringLimit ? substr($arg, 0, $stringLimit) . '...' : $arg) . '"';
-        if (is_int($arg) || is_float($arg)) return (is_int($arg) ? 'int' : 'float') . '(' . ((string) $arg) . ')';
-        if (is_array($arg)) return 'array';
-        if (is_object($arg)) return 'object(' . get_class($arg) . ')';
-        if (is_resource($arg)) return 'resource(' . get_resource_type($arg) . ')';
-        return 'Unknown';
     }
 
     // Route Management

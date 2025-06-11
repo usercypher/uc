@@ -17,7 +17,7 @@ return array(
             'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
             'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
             'ERROR_IGNORE_ARGS' => 0, // Enable (1) or disable (0) ignore args
-            'ERROR_STRING_LIMIT' => 30, // limit string args
+            'ERROR_STRING_LIMIT' => 15, // limit string args
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
             'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
             // Routing Configuration
@@ -71,7 +71,7 @@ return array(
             'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
             'ERROR_LOG_FILE' => 'app'.DS.'error',
             'ERROR_IGNORE_ARGS' => 1,
-            'ERROR_STRING_LIMIT' => 30,
+            'ERROR_STRING_LIMIT' => 15,
             'SHOW_ERRORS' => 0,
             'LOG_ERRORS' => 1,
             // Routing Configuration
