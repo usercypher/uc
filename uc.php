@@ -337,7 +337,7 @@ class App {
                 if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
                     list($paramName, $paramModifier, $paramRegex) = explode(':', substr($key, 1, -1), 3);
                     if ($paramModifier === '*') {
-                        $params[$paramName] = array_slice($pathSegments, $index);
+                        $params[$paramName] = array_slice($pathSegments, $index + $decrement);
                         $current = $value;
                         if (isset($current['*'])) break 2;
                         $matched = true;
