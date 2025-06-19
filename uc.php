@@ -33,9 +33,9 @@ function d($var, $detailed = false) {
 
 class Request {
     var $data = array(), $path = '', $params = array(), $cli = array('positional' => array(), 'option' => array());
-    var $globals, $server, $uri, $method, $get, $post, $files, $cookies, $argv, $argc;
+    var $globals, $server, $uri, $method, $get, $post, $files, $cookies, $content, $argv, $argc;
 
-    function init($globals, $server, $get, $post, $files, $cookie) {
+    function init($globals, $server, $get, $post, $files, $cookie, $content) {
         $this->globals = $globals;
         $this->server = $server;
         $this->uri = isset($server['REQUEST_URI']) ? $server['REQUEST_URI'] : '';
@@ -44,6 +44,7 @@ class Request {
         $this->post = $post;
         $this->files = $files;
         $this->cookies = $cookie;
+        $this->content = $content;
         $this->argv = isset($globals['argv']) ? $globals['argv'] : array();
         $this->argc = isset($globals['argc']) ? $globals['argc'] : 0;
         for ($i = 1; $this->argc > $i; $i++) {
@@ -642,11 +643,12 @@ class App {
 
     function read($file) {
         if ($fp = fopen($file, 'r')) {
-            $fs = fstat($fp);
-            $content = fread($fp, $fs['size']);
+            $content = '';
+            while (!feof($fp)) $content .= fread($fp, 8192);
             fclose($fp);
             return $content;
         }
+        return false;
     }
 
     function log($msg, $file) {

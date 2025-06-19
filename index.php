@@ -71,7 +71,7 @@ function index($packageFile, $settingsFile, $configFile) {
     $app->setEnvs($settings['env'][$mode]);
 
     $request = new Request();
-    $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE);
+    $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $app->read('php://input'));
 
     $response = new Response();
     $response->init(array(), 200, 'text/html', '', false);
