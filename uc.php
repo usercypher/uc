@@ -220,7 +220,7 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        if ($this->getEnv('XMLHTTPREQUEST')) {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } elseif ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
@@ -233,7 +233,7 @@ class App {
                     elseif (is_bool($arg)) $arg = $arg ? 'true' : 'false';
                     elseif (is_array($arg)) $arg = 'array';
                     elseif (is_object($arg)) $arg = 'object(' . get_class($arg) . ')';
-                    elseif (is_string($arg)) $arg = '\'' .  (strlen($arg) > $limit ? substr($arg, 0, $limit) . '...' : $arg) . '\' (' . strlen($arg) . ')';
+                    elseif (is_string($arg)) $arg = '\'' .  (strlen($arg) > $limit && $limit !== -1 ? substr($arg, 0, $limit) . '...' : $arg) . '\' (' . strlen($arg) . ')';
                     $args[] = (string) $arg;
                 }
                 $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(' . implode(', ', $args) . ')' . EOL;

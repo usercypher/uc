@@ -53,7 +53,7 @@ index(
 function index($packageFile, $settingsFile, $configFile) {
     require($packageFile);
 
-    // Create app instance with request and response handlers
+    // Create app instance
     $app = new App();
     $app->init();
 
@@ -72,6 +72,8 @@ function index($packageFile, $settingsFile, $configFile) {
 
     $request = new Request();
     $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $app->read('php://input'));
+
+    $app->setEnv('XMLHTTPREQUEST', isset($request->server['HTTP_X_REQUESTED_WITH']) && strtolower($request->server['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
 
     $response = new Response();
     $response->init(array(), 200, 'text/html', '', false);
