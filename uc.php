@@ -140,7 +140,7 @@ class App {
         $this->ENV['ROUTE_FILE'] = 'index.php';
         $this->ENV['ROUTE_REWRITE'] = false;
         $this->ENV['URL_DIR_WEB'] = '';
-        $this->ENV['URL_BASE'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '127.0.0.1') . '/';
+        $this->ENV['URL_BASE'] = '/';
 
         $this->ENV['ERROR_HTML_FILE'] = 'error.php';
         $this->ENV['ERROR_LOG_FILE'] = 'error';
