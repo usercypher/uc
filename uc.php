@@ -492,9 +492,6 @@ class App {
     }
 
     function loadUnit($unit) {
-        $INDEX = 0;
-        $COUNT = 1;
-
         $stack = array($unit);
         $seen = array();
         $md = array();
@@ -517,10 +514,10 @@ class App {
             if ($load) {
                 if (!isset($md[$unit])) $md[$unit] = array(0, count($load));
 
-                if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
+                if ($md[$unit][1] > $md[$unit][0]) {
                     $stack[] = $unit;
-                    $stack[] = $this->unitList[$load[$md[$unit][$INDEX]]];
-                    ++$md[$unit][$INDEX];
+                    $stack[] = $this->unitList[$load[$md[$unit][0]]];
+                    ++$md[$unit][0];
                     continue;
                 }
                 unset($md[$unit]);
@@ -533,22 +530,7 @@ class App {
         }
     }
 
-    function newClass($unit) {
-        $mode = $this->unit[$unit][$this->UNIT_CACHE];
-        $this->unit[$unit][$this->UNIT_CACHE] = false;
-        $class = $this->getClass($unit);
-        $this->unit[$unit][$this->UNIT_CACHE] = $mode;
-        return $class;
-    }
-
-    function resetClass($unit) {
-        $this->cache[$unit][$this->CACHE_CLASS] = null;
-    }
-
     function getClass($unit) {
-        $INDEX = 0;
-        $COUNT = 1;
-
         $stack = array($unit);
         $seen = array();
         $md = array();
@@ -575,10 +557,10 @@ class App {
             if ($args) {
                 if (!isset($md[$unit])) $md[$unit] = array(0, count($args));
 
-                if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
+                if ($md[$unit][1] > $md[$unit][0]) {
                     $stack[] = $unit;
-                    $stack[] = $this->unitList[$args[$md[$unit][$INDEX]]];
-                    ++$md[$unit][$INDEX];
+                    $stack[] = $this->unitList[$args[$md[$unit][0]]];
+                    ++$md[$unit][0];
                     continue;
                 }
                 unset($md[$unit]);
@@ -589,8 +571,10 @@ class App {
             $this->loadUnit($unit);
 
             $class = new $unit;
-            if (isset($resolvedArgs[$unit])) $class->args($resolvedArgs[$unit]);
-            unset($resolvedArgs[$unit]);
+            if (isset($resolvedArgs[$unit])) {
+                $class->args($resolvedArgs[$unit]);
+                unset($resolvedArgs[$unit]);
+            }
 
             if ($cache) $this->cache[$unit][$this->CACHE_CLASS] = $class;
 
@@ -598,6 +582,18 @@ class App {
         }
 
         return $class;
+    }
+
+    function newClass($unit) {
+        $mode = $this->unit[$unit][$this->UNIT_CACHE];
+        $this->unit[$unit][$this->UNIT_CACHE] = false;
+        $class = $this->getClass($unit);
+        $this->unit[$unit][$this->UNIT_CACHE] = $mode;
+        return $class;
+    }
+
+    function resetClass($unit) {
+        $this->cache[$unit][$this->CACHE_CLASS] = null;
     }
 
     // Utility Functions
