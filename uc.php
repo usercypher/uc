@@ -496,36 +496,37 @@ class App {
         $COUNT = 1;
 
         $stack = array($unit);
-        $stackSet = array();
+        $seen = array();
         $md = array();
 
-        while (!empty($stack)) {
+        while ($stack) {
             $unit = array_pop($stack);
-            $unitParent = end($stack);
-            $stackSet[$unitParent] = true;
+            $previousUnit = end($stack);
+            $seen[$previousUnit] = true;
 
-            if (isset($stackSet[$unit])) return user_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($seen[$unit])) return user_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             if (isset($this->cache[$unit][$this->CACHE_PATH])) {
-                if (empty($stack)) return;
+                if (!$stack) return;
 
-                unset($stackSet[$unitParent]);
+                unset($seen[$previousUnit]);
                 continue;
             }
 
-            if ($this->unit[$unit][$this->UNIT_LOAD] !== array()) {
-                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_LOAD]));
+            $load = $this->unit[$unit][$this->UNIT_LOAD];
+            if ($load) {
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($load));
 
                 if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
                     $stack[] = $unit;
-                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_LOAD][$md[$unit][$INDEX]]];
+                    $stack[] = $this->unitList[$load[$md[$unit][$INDEX]]];
                     ++$md[$unit][$INDEX];
                     continue;
                 }
                 unset($md[$unit]);
             }
 
-            unset($stackSet[$unitParent]);
+            unset($seen[$previousUnit]);
 
             require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
             $this->cache[$unit][$this->CACHE_PATH] = true;
@@ -549,50 +550,51 @@ class App {
         $COUNT = 1;
 
         $stack = array($unit);
-        $stackSet = array();
+        $seen = array();
         $md = array();
-        $resolved = array();
+        $resolvedArgs = array();
         $class = null;
 
-        while (!empty($stack)) {
+        while ($stack) {
             $unit = array_pop($stack);
-            $unitParent = end($stack);
-            $stackSet[$unitParent] = true;
+            $previousUnit = end($stack);
+            $seen[$previousUnit] = true;
 
-            if (isset($stackSet[$unit])) return user_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($seen[$unit])) return user_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
             $cache = $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
-                if (empty($stack)) return $this->cache[$unit][$this->CACHE_CLASS];
+                if (!$stack) return $this->cache[$unit][$this->CACHE_CLASS];
 
-                unset($stackSet[$unitParent]);
-                $resolved[$unitParent][] = $this->cache[$unit][$this->CACHE_CLASS];
+                unset($seen[$previousUnit]);
+                $resolvedArgs[$previousUnit][] = $this->cache[$unit][$this->CACHE_CLASS];
                 continue;
             }
 
-            if ($this->unit[$unit][$this->UNIT_ARGS] !== array()) {
-                if (!isset($md[$unit])) $md[$unit] = array(0, count($this->unit[$unit][$this->UNIT_ARGS]));
+            $args = $this->unit[$unit][$this->UNIT_ARGS];
+            if ($args) {
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($args));
 
                 if ($md[$unit][$COUNT] > $md[$unit][$INDEX]) {
                     $stack[] = $unit;
-                    $stack[] = $this->unitList[$this->unit[$unit][$this->UNIT_ARGS][$md[$unit][$INDEX]]];
+                    $stack[] = $this->unitList[$args[$md[$unit][$INDEX]]];
                     ++$md[$unit][$INDEX];
                     continue;
                 }
                 unset($md[$unit]);
             }
 
-            unset($stackSet[$unitParent]);
+            unset($seen[$previousUnit]);
 
             $this->loadUnit($unit);
 
             $class = new $unit;
-            if (isset($resolved[$unit])) $class->args($resolved[$unit]);
-            unset($resolved[$unit]);
+            if (isset($resolvedArgs[$unit])) $class->args($resolvedArgs[$unit]);
+            unset($resolvedArgs[$unit]);
 
             if ($cache) $this->cache[$unit][$this->CACHE_CLASS] = $class;
 
-            $resolved[$unitParent][] = $class;
+            $resolvedArgs[$previousUnit][] = $class;
         }
 
         return $class;
