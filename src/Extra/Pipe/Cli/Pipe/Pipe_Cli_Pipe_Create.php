@@ -23,8 +23,8 @@ class Pipe_Cli_Pipe_Create {
             return array($input, $output, $break);
         }
 
-        $classPath = $input->getFrom($input->cli['options'], 'class', '') . $className . '.php';
-        $tempDeps = $input->getFrom($input->cli['options'], 'args');
+        $classPath = $input->getFrom($input->options, 'class', '') . $className . '.php';
+        $tempDeps = $input->getFrom($input->options, 'args');
         $classDeps = $tempDeps ? explode(',', $tempDeps) : array();
 
         $classContent = $this->classContent($className, $classDeps);

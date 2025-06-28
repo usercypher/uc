@@ -18,7 +18,7 @@ class Pipe_Cli_Help {
 
         sort($routes);
 
-        $target = $input->getFrom($input->cli['options'], 'autocomplete');
+        $target = $input->getFrom($input->options, 'autocomplete');
 
         $seen = array();
         if (!$target) {

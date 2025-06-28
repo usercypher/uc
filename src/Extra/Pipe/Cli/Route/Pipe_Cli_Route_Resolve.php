@@ -16,8 +16,8 @@ class Pipe_Cli_Route_Resolve {
 
         $message = '';
 
-        $type = $input->getFrom($input->cli['options'], 'type');
-        $path = $input->getFrom($input->cli['options'], 'path');
+        $type = $input->getFrom($input->options, 'type');
+        $path = $input->getFrom($input->options, 'path');
 
         if (!$type || !$path) {
             $message .= 'Error: Missing required parameters.' . EOL;

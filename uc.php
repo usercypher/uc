@@ -61,25 +61,25 @@ function input_from_http() {
 }
 
 function input_from_cli() {
-    global $argv, $argc;
+    global $argc, $argv;
 
     $in = new Input();
     $in->source = 'cli';
 
-    $in->argv = isset($argv) ? $argv : array();
     $in->argc = isset($argc) ? $argc : 0;
+    $in->argv = isset($argv) ? $argv : array();
 
     for ($i = 1; $in->argc > $i; $i++) {
         $arg = $in->argv[$i];
         if (substr($arg, 0, 2) === '--') {
             $eq = strpos($arg, '=');
             if ($eq !== false) {
-                $in->cli['options'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
+                $in->options[substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
             } else {
-                $in->cli['flags'][substr($arg, 2)] = true;
+                $in->flags[substr($arg, 2)] = true;
             }
         } elseif (substr($arg, 0, 1) !== '-') {
-            $in->cli['positional'][] = $arg;
+            $in->positional[] = $arg;
         }
     }
 
@@ -87,7 +87,7 @@ function input_from_cli() {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $argv = array(), $argc = 0, $uri = '', $method = '', $path = '', $content = '', $files = array(), $cookies = array(), $parsed = array(), $headers = array(), $query = array(), $params = array(), $cli = array('positional' => array(), 'options' => array(), 'flags' => array());
+    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $path = '', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array(), $positional = array(), $options = array(), $flags = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -104,7 +104,7 @@ class Input {
 }
 
 class Output {
-    var $headers = array(), $code = 200, $type = 'text/html', $content = '', $stderr = false;
+    var $headers = array(), $content = '', $code = 200, $type = 'text/html', $stderr = false;
 
     function http() {
         if (!headers_sent()) {
@@ -408,8 +408,8 @@ class App {
 
     function dispatch($input, $output) {
         if (SAPI === 'cli') {
-            foreach ($input->cli['positional'] as $positional) $input->path .= '/' . urlencode($positional);
-            $input->method = (isset($input->cli['options']['method']) && $input->cli['options']['method'] !== true) ? $input->cli['options']['method'] : '';
+            foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);
+            $input->method = (isset($input->options['method']) && $input->options['method'] !== true) ? $input->options['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($input->uri, '?');
             $input->path = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
@@ -421,9 +421,9 @@ class App {
 
         if (isset($route['error'])) {
             $e = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
-            $output->code = $e['type'];
-            $output->type = $e['type'];
             $output->content = $e['content'];
+            $output->code = $e['code'];
+            $output->type = $e['type'];
             $output->stderr = true;
 
             return $output;
