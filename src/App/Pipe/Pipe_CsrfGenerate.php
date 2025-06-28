@@ -9,11 +9,11 @@ class Pipe_CsrfGenerate {
         ) = $args;
     }
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
         $this->session->set('csrf_token', bin2hex(random_bytes(32)));
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

@@ -9,34 +9,37 @@ class Pipe_Cli_Pipe_Create {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $output = '';
-        if (!isset($request->params['class'])) {
-            $output .= 'Error: Missing required parameters.' . EOL;
-            $output .= 'Usage: php [file] pipe create [name]' . EOL;
-            $response->std($output, true);
-            return array($request, $response, $break);
+        $message = '';
+
+        $className = $input->getFrom($input->params, 'class');
+
+        if (!$className) {
+            $message .= 'Error: Missing required parameters.' . EOL;
+            $message .= 'Usage: php [file] pipe create [name]' . EOL;
+            $output->std($message, true);
+            return array($input, $output, $break);
         }
 
-        $className = $request->params['class'];
-        $classPath = (isset($request->cli['option']['path']) ? $request->cli['option']['path'] : '') . $className . '.php';
-        $classDeps = empty($request->cli['option']['args']) ? array() : explode(',', $request->cli['option']['args']);
+        $classPath = $input->getFrom($input->cli['options'], 'class', '') . $className . '.php';
+        $tempDeps = $input->getFrom($input->cli['options'], 'args');
+        $classDeps = $tempDeps ? explode(',', $tempDeps) : array();
 
         $classContent = $this->classContent($className, $classDeps);
 
         $fullPath = $this->app->path('src', $classPath);
         if (file_put_contents($fullPath , $classContent) !== false) {
-            $output .= EOL . $className . ' created successfully!' . EOL;
-            $output .= 'Location: ' . $fullPath . EOL;
+            $message .= EOL . $className . ' created successfully!' . EOL;
+            $message .= 'Location: ' . $fullPath . EOL;
         } else {
-            $output = 'Error: Failed to write file at ' . $fullPath . EOL;
+            $message = 'Error: Failed to write file at ' . $fullPath . EOL;
         }
 
-        $response->std($output);
+        $output->std($message);
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 
     private function classContent($className, $classDependency) {
@@ -53,10 +56,10 @@ class Pipe_Cli_Pipe_Create {
         return "<?php
 
 class $className {" . $classVar . $functionArgs . "
-    public function pipe(\$request, \$response) {
+    public function pipe(\$input, \$output) {
         \$break = false;
         // code
-        return array(\$request, \$response, \$break);
+        return array(\$input, \$output, \$break);
     }
 }";
     }

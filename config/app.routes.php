@@ -9,7 +9,7 @@
  * These routes share response compression via group pipe_append.
  */
 $group = array(
-    'pipe_append' => array('Pipe_ResponseCompression')
+    'pipe_append' => array('Pipe_OutputCompression')
 );
 
 // GET /

@@ -70,16 +70,19 @@ function index($packageFile, $settingsFile, $configFile) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    $request = new Request();
-    $request->init($GLOBALS, $_SERVER, $_GET, $_POST, $_FILES, $_COOKIE, $app->read('php://input'));
+    $input = input_from_environment();
 
-    $app->setEnv('XMLHTTPREQUEST', isset($request->server['HTTP_X_REQUESTED_WITH']) && strtolower($request->server['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+    $app->setEnv('XMLHTTPREQUEST', isset($input->headers['x-requested-with']) && strtolower($input->headers['x-requested-with']) === 'xmlhttprequest');
 
-    $response = new Response();
-    $response->init(array(), 200, 'text/html', '', false);
-
-    $response = $app->dispatch($request, $response);
+    $output = $app->dispatch($input, new Output());
 
     // Send the response to the client
-    $response->send();
+    switch ($input->source) {
+        case 'cli':
+            return $output->std($output->content, $output->stderr);
+        case 'http':
+            return $output->http();
+        default:
+            echo('Unknown input source:' . $input->source);
+    }
 }

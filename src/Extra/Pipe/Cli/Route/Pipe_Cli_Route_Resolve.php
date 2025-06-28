@@ -9,43 +9,47 @@ class Pipe_Cli_Route_Resolve {
         ) = $args;
     }
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
 
-        $output = '';
-        if (!isset($request->cli['option']['type']) || !isset($request->cli['option']['path'])) {
-            $output .= 'Error: Missing required parameters.' . EOL;
-            $output .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
-            $response->std($output, true);
-            return array($request, $response, $break);
+        $message = '';
+
+        $type = $input->getFrom($input->cli['options'], 'type');
+        $path = $input->getFrom($input->cli['options'], 'path');
+
+        if (!$type || !$path) {
+            $message .= 'Error: Missing required parameters.' . EOL;
+            $message .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
+            $output->std($message, true);
+            return array($input, $output, $break);
         }
-        $result = $this->app->resolveRoute($request->cli['option']['type'], $request->cli['option']['path']);
+        $result = $this->app->resolveRoute($type, $path);
 
         if (isset($result['error'])) {
-            $output .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
-            return array($request, $response, $break);
+            $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
+            return array($input, $output, $break);
         }
-        $output .= 'RESOLVED ROUTE' . EOL;
-        $output .= '  Method : ' . $request->cli['option']['type'] . EOL;
-        $output .= '  Path   : ' . $request->cli['option']['path'] . EOL;
+        $message .= 'RESOLVED ROUTE' . EOL;
+        $message .= '  Method : ' . $type . EOL;
+        $message .= '  Path   : ' . $path . EOL;
 
-        $output .= '  Pipe   :' . EOL;
+        $message .= '  Pipe   :' . EOL;
         foreach ($result['pipe'] as $i => $index) {
-            $output .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $unitList[$index] . EOL;
+            $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $unitList[$index] . EOL;
         }
 
         // Show dynamic params if any
         if (!empty($result['params'])) {
-            $output .= '  Params :' . EOL;
+            $message .= '  Params :' . EOL;
             foreach ($result['params'] as $key => $value) {
-                $output .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? print_r($value, true) : $value) . EOL;
+                $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? print_r($value, true) : $value) . EOL;
             }
         }
 
-        $response->std($output);
+        $output->std($message);
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

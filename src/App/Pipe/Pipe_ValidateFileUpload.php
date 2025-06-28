@@ -7,24 +7,24 @@ class Pipe_ValidateFileUpload {
         'application/pdf' => 10 * 1024 * 1024, // PDF files, max 10MB
     );
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        if ($request->server->method === 'POST') {
-            if (isset($request->files['upload'])) {
-                $file = $request->files['upload'];
+        if ($input->method === 'POST') {
+            if (isset($input->files['upload'])) {
+                $file = $input->files['upload'];
 
                 $validationResult = validateFileUpload($file, $this->allowedFileTypes);
 
                 if ($validationResult !== true) {
-                    $response->code = 500;
-                    $response->content = $validationResult;
+                    $output->code = 500;
+                    $output->content = $validationResult;
                     $break = true;
                 }
             }
         }
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 
     function validateFileUpload($file, $allowedFileTypes) {

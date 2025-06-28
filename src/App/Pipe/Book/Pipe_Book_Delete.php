@@ -12,17 +12,17 @@ class Pipe_Book_Delete {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $data = $request->post;
+        $data = $input->data;
 
         $this->bookModel->validateAndDelete($data);
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', 'home'));
+        $output->redirect($this->app->url('route', 'home'));
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

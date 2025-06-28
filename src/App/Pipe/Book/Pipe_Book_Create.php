@@ -10,15 +10,15 @@ class Pipe_Book_Create {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $response->html($this->app->path('res', 'html/create.php'), array(
+        $output->html($this->app->path('res', 'html/create.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
         ));
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

@@ -31,47 +31,69 @@ function d($var, $detailed = false) {
     $detailed ? var_dump($var) : print_r($var);
 }
 
-class Request {
-    var $data = array(), $path = '', $params = array(), $cli = array('positional' => array(), 'option' => array());
-    var $globals, $server, $uri, $method, $get, $post, $files, $cookies, $content, $argv, $argc;
+function input_from_environment() {
+    return SAPI === 'cli' ? input_from_cli() : input_from_http();
+}
 
-    function init($globals, $server, $get, $post, $files, $cookie, $content) {
-        $this->globals = $globals;
-        $this->server = $server;
-        $this->uri = isset($server['REQUEST_URI']) ? $server['REQUEST_URI'] : '';
-        $this->method = isset($server['REQUEST_METHOD']) ? $server['REQUEST_METHOD'] : '';
-        $this->get = $get;
-        $this->post = $post;
-        $this->files = $files;
-        $this->cookies = $cookie;
-        $this->content = $content;
-        $this->argv = isset($globals['argv']) ? $globals['argv'] : array();
-        $this->argc = isset($globals['argc']) ? $globals['argc'] : 0;
-        for ($i = 1; $this->argc > $i; $i++) {
-            $arg = $this->argv[$i];
-            if (substr($arg, 0, 2) === '--') {
-                $eq = strpos($arg, '=');
-                if ($eq !== false) {
-                    $this->cli['option'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
-                } else {
-                    $this->cli['option'][substr($arg, 2)] = true;
-                }
-            } elseif (substr($arg, 0, 1) !== '-') {
-                $this->cli['positional'][] = $arg;
-            }
+function input_from_http() {
+    $in = new Input();
+    $in->source = 'http';
+
+    $in->server = $_SERVER;
+    $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+    $in->data = $_POST;
+    $in->query = $_GET;
+    $in->files = $_FILES;
+    $in->cookies = $_COOKIE;
+
+    $contentHeaders = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true, 'CONTENT_MD5' => true);
+
+    foreach ($_SERVER as $key => $value) {
+        if (strpos($key, 'HTTP_') === 0) {
+            $in->headers[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
+        } elseif (isset($contentHeaders[$key])) {
+            $in->headers[str_replace('_', '-', strtolower($key))] = $value;
         }
     }
 
-    function setData($key, $value) {
-        $this->data[$key] = $value;
+    return $in;
+}
+
+function input_from_cli() {
+    global $argv, $argc;
+
+    $in = new Input();
+    $in->source = 'cli';
+
+    $in->argv = isset($argv) ? $argv : array();
+    $in->argc = isset($argc) ? $argc : 0;
+
+    for ($i = 1; $in->argc > $i; $i++) {
+        $arg = $in->argv[$i];
+        if (substr($arg, 0, 2) === '--') {
+            $eq = strpos($arg, '=');
+            if ($eq !== false) {
+                $in->cli['options'][substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
+            } else {
+                $in->cli['flags'][substr($arg, 2)] = true;
+            }
+        } elseif (substr($arg, 0, 1) !== '-') {
+            $in->cli['positional'][] = $arg;
+        }
     }
 
-    function getData($key, $default = null) {
-        return isset($this->data[$key]) ? $this->data[$key] : $default;
+    return $in;
+}
+
+class Input {
+    var $source = '', $data = array(), $server = array(), $argv = array(), $argc = 0, $uri = '', $method = '', $path = '', $content = '', $files = array(), $cookies = array(), $headers = array(), $query = array(), $params = array(), $cli = array('positional' => array(), 'options' => array(), 'flags' => array());
+
+    function getFrom(&$arr, $key, $default = null) {
+        return isset($arr[$key]) ? $arr[$key] : $default;
     }
 
     function std($mark = '') {
-        if (SAPI !== 'cli') return '';
         if ($mark === '' && ($line = fgets(STDIN))) return $line ? rtrim($line) : '';
 
         $lines = array();
@@ -81,43 +103,33 @@ class Request {
     }
 }
 
-class Response {
-    var $headers, $code, $type, $content, $stderr;
+class Output {
+    var $headers = array(), $code = 200, $type = 'text/html', $content = '', $stderr = false;
 
-    function init($headers, $code, $type, $content, $stderr) {
-        $this->headers = $headers;
-        $this->code = $code;
-        $this->type = $type;
-        $this->content = $content;
-        $this->stderr = $stderr;
-    }
-
-    function send() {
-        if (SAPI === 'cli') return $this->std($this->content, $this->stderr);
-
+    function http() {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
+            if (!isset($this->headers['content-type'])) header('content-type: ' . $this->type);
             foreach ($this->headers as $key => $value) header($key . ': ' . $value);
-            if (!isset($this->headers['Content-Type'])) header('Content-Type: ' . $this->type);
         }
 
-        echo(isset($this->headers['Location']) ? '' : $this->content);
+        echo(isset($this->headers['location']) ? '' : $this->content);
     }
 
     function std($msg, $err = false) {
-        if (SAPI === 'cli') fwrite($err ? STDERR : STDOUT, $msg);
+        fwrite($err ? STDERR : STDOUT, $msg);
     }
 
     function html($file, $data) {
-        $this->type = 'text/html';
+        $this->headers['content-type'] = 'text/html';
         ob_start();
         require($file);
         $this->content = ob_get_clean();
     }
 
     function redirect($url, $code = 302) {
+        $this->headers['location'] = $url;
         $this->code = $code;
-        $this->headers['Location'] = $url;
     }
 }
 
@@ -233,7 +245,7 @@ class App {
                     elseif (is_bool($arg)) $arg = $arg ? 'true' : 'false';
                     elseif (is_array($arg)) $arg = 'array';
                     elseif (is_object($arg)) $arg = 'object(' . get_class($arg) . ')';
-                    elseif (is_string($arg)) $arg = '\'' .  (strlen($arg) > $limit && $limit !== -1 ? substr($arg, 0, $limit) . '...' : $arg) . '\' (' . strlen($arg) . ')';
+                    elseif (is_string($arg)) $arg = '\'' . (strlen($arg) > $limit && $limit !== -1 ? substr($arg, 0, $limit) . '...' : $arg) . '\' (' . strlen($arg) . ')';
                     $args[] = (string) $arg;
                 }
                 $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(' . implode(', ', $args) . ')' . EOL;
@@ -394,34 +406,37 @@ class App {
 
     // Request Handling
 
-    function dispatch($request, $response) {
+    function dispatch($input, $output) {
         if (SAPI === 'cli') {
-            foreach ($request->cli['positional'] as $positional) $request->path .= '/' . urlencode($positional);
-            $request->method = (isset($request->cli['option']['method']) && $request->cli['option']['method'] !== true) ? $request->cli['option']['method'] : '';
+            foreach ($input->cli['positional'] as $positional) $input->path .= '/' . urlencode($positional);
+            $input->method = (isset($input->cli['options']['method']) && $input->cli['options']['method'] !== true) ? $input->cli['options']['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
-            $pos = strpos($request->uri, '?');
-            $request->path = ($pos !== false) ? substr($request->uri, 0, $pos) : $request->uri;
-        } elseif (isset($request->get['route'])) {
-            $request->path = $request->get['route'];
+            $pos = strpos($input->uri, '?');
+            $input->path = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
+        } elseif (isset($input->query['route'])) {
+            $input->path = $input->query['route'];
         }
 
-        $route = $this->resolveRoute($request->method, $request->path);
+        $route = $this->resolveRoute($input->method, $input->path);
 
         if (isset($route['error'])) {
             $e = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
-            $response->init($response->headers, $e['code'], $e['type'], $e['content'], true);
+            $output->code = $e['type'];
+            $output->type = $e['type'];
+            $output->content = $e['content'];
+            $output->stderr = true;
 
-            return $response;
+            return $output;
         }
 
-        $request->params = $route['params'];
+        $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {
             $p = $this->getClass($this->unitList[$p]);
-            list($request, $response, $break) = $p->pipe($request, $response);
+            list($input, $output, $break) = $p->pipe($input, $output);
             if ($break) break;
         }
 
-        return $response;
+        return $output;
     }
 
     // Class Management

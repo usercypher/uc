@@ -9,28 +9,28 @@ class Pipe_CsrfValidate {
         ) = $args;
     }
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        if (!isset($request->post['csrf_token'])) {
-            $response->code = 403;
-            $response->content = 'Invalid CSRF token';
+        if (!isset($input->data['csrf_token'])) {
+            $output->code = 403;
+            $output->content = 'Invalid CSRF token';
             $break = true;
         }
 
         $csrfToken = $this->session->get('csrf_token');
         if (!$csrfToken) {
-            $response->code = 403;
-            $response->content = 'Invalid CSRF token';
+            $output->code = 403;
+            $output->content = 'Invalid CSRF token';
             $break = true;
         }
 
-        if ($request->post['csrf_token'] !== $csrfToken) {
-            $response->code = 403;
-            $response->content = 'Invalid CSRF token';
+        if ($input->data['csrf_token'] !== $csrfToken) {
+            $output->code = 403;
+            $output->content = 'Invalid CSRF token';
             $break = true;
         }
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

@@ -12,17 +12,17 @@ class Pipe_Book_Update {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $data = $request->post;
+        $data = $input->data;
 
         $this->bookModel->validateAndUpdate($data);
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
+        $output->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

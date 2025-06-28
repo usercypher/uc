@@ -12,17 +12,17 @@ class Pipe_Book_Store {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $data = $request->post;
+        $data = $input->data;
 
         $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
 
         $this->session->set('flash', $this->bookModel->getFlash());
 
-        $response->redirect($this->app->url('route', $route));
+        $output->redirect($this->app->url('route', $route));
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }

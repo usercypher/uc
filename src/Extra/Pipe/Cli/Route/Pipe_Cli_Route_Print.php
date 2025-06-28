@@ -9,7 +9,7 @@ class Pipe_Cli_Route_Print {
         ) = $args;
     }
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
@@ -21,7 +21,7 @@ class Pipe_Cli_Route_Print {
 
         sort($routes);
 
-        $response->std("ROUTES" . EOL);
+        $output->std("ROUTES" . EOL);
 
         foreach ($routes as $no => $route) {
             $no++;
@@ -69,10 +69,10 @@ class Pipe_Cli_Route_Print {
                 $line .= ' → ' . implode(' | ', $parts);
             }
 
-            $response->std($line . EOL);
+            $output->std($line . EOL);
         }
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 
     private function flattenRoutesWithMethod($tree) {

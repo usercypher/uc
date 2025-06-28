@@ -1,22 +1,22 @@
 <?php
 
 class Pipe_Sanitize {
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        if (isset($request->post)) {
-            $this->sanitize($request->post);
+        if (isset($input->data)) {
+            $this->sanitize($input->data);
         }
 
-        if (isset($request->get)) {
-            $this->sanitize($request->get);
+        if (isset($input->query)) {
+            $this->sanitize($input->query);
         }
 
-        if (isset($request->params)) {
-            $this->sanitize($request->params);
+        if (isset($input->params)) {
+            $this->sanitize($input->params);
         }
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 
     public function sanitize(&$array) {

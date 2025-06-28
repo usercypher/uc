@@ -9,25 +9,25 @@ class Pipe_Cli_Help {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $output = '';
+        $message = '';
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
 
         sort($routes);
 
-        $target = isset($request->cli['option']['autocomplete']) ? $request->cli['option']['autocomplete'] : null;
+        $target = $input->getFrom($input->cli['options'], 'autocomplete');
 
         $seen = array();
-        if (!$target || $target === true) {
-            $output .= 'No route \'' . trim(urldecode(str_replace('/', ' ', $request->path))) . '\' found, list:'. EOL;
+        if (!$target) {
+            $message .= 'No route \'' . trim(urldecode(str_replace('/', ' ', $input->path))) . '\' found, list:'. EOL;
             foreach ($routes as $route) {
                 $pathParts = explode('/', $route['path']);
                 if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === '{') continue;
                 $seen[$pathParts[0]] = true;
-                if ($route['method'] === '') $output .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . EOL;
+                if ($route['method'] === '') $message .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . EOL;
             }
        } else {
             $matched = false;
@@ -36,18 +36,18 @@ class Pipe_Cli_Help {
                 if ($pathParts[0] === $target && isset($pathParts[1])) {
                     if (isset($seen[$pathParts[1]]) || substr($pathParts[1], 0, 1) === '{') continue;
                     $seen[$pathParts[1]] = true;
-                    $output .= ' ' . $pathParts[1] . EOL;
+                    $message .= ' ' . $pathParts[1] . EOL;
                     $matched = true;
                 }
             }
             if (!$matched) {
-                $output .= 'No sub-route found for \'' . $target . '\'' . EOL;
+                $message .= 'No sub-route found for \'' . $target . '\'' . EOL;
             }
         }
 
-        $response->std($output, true);
+        $output->std($message, true);
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 
     private function flattenRoutesWithMethod($tree) {

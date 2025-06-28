@@ -12,19 +12,19 @@ class Pipe_Book_Edit {
         ) = $args;
     } 
 
-    public function pipe($request, $response) {
+    public function pipe($input, $output) {
         $break = false;
 
-        $data = $request->params;
+        $data = $input->params;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
 
-        $response->html($this->app->path('res', 'html/edit.php'), array(
+        $output->html($this->app->path('res', 'html/edit.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
             'book' => $this->bookModel->first('id = ?', array($bookId))
         ));
 
-        return array($request, $response, $break);
+        return array($input, $output, $break);
     }
 }
