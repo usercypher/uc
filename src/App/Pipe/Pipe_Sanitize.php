@@ -4,8 +4,8 @@ class Pipe_Sanitize {
     public function pipe($input, $output) {
         $break = false;
 
-        if (isset($input->data)) {
-            $this->sanitize($input->data);
+        if (isset($input->parsed)) {
+            $this->sanitize($input->parsed);
         }
 
         if (isset($input->query)) {

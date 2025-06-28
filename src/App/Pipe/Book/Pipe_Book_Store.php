@@ -15,7 +15,7 @@ class Pipe_Book_Store {
     public function pipe($input, $output) {
         $break = false;
 
-        $data = $input->data;
+        $data = $input->parsed;
 
         $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
 

@@ -15,7 +15,7 @@ class Pipe_Book_Delete {
     public function pipe($input, $output) {
         $break = false;
 
-        $data = $input->data;
+        $data = $input->parsed;
 
         $this->bookModel->validateAndDelete($data);
 

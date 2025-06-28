@@ -42,7 +42,7 @@ function input_from_http() {
     $in->server = $_SERVER;
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
-    $in->data = $_POST;
+    $in->parsed = $_POST;
     $in->query = $_GET;
     $in->files = $_FILES;
     $in->cookies = $_COOKIE;
@@ -87,7 +87,7 @@ function input_from_cli() {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $argv = array(), $argc = 0, $uri = '', $method = '', $path = '', $content = '', $files = array(), $cookies = array(), $headers = array(), $query = array(), $params = array(), $cli = array('positional' => array(), 'options' => array(), 'flags' => array());
+    var $source = '', $data = array(), $server = array(), $argv = array(), $argc = 0, $uri = '', $method = '', $path = '', $content = '', $files = array(), $cookies = array(), $parsed = array(), $headers = array(), $query = array(), $params = array(), $cli = array('positional' => array(), 'options' => array(), 'flags' => array());
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;

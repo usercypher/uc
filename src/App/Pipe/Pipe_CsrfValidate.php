@@ -12,7 +12,7 @@ class Pipe_CsrfValidate {
     public function pipe($input, $output) {
         $break = false;
 
-        if (!isset($input->data['csrf_token'])) {
+        if (!isset($input->parsed['csrf_token'])) {
             $output->code = 403;
             $output->content = 'Invalid CSRF token';
             $break = true;
@@ -25,7 +25,7 @@ class Pipe_CsrfValidate {
             $break = true;
         }
 
-        if ($input->data['csrf_token'] !== $csrfToken) {
+        if ($input->parsed['csrf_token'] !== $csrfToken) {
             $output->code = 403;
             $output->content = 'Invalid CSRF token';
             $break = true;
