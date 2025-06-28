@@ -121,7 +121,7 @@ class Output {
     }
 
     function html($file, $data) {
-        $this->headers['content-type'] = 'text/html';
+        $this->type = 'text/html';
         ob_start();
         require($file);
         $this->content = ob_get_clean();
