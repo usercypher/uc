@@ -21,7 +21,7 @@ class Pipe_Cli_Route_Print {
 
         sort($routes);
 
-        $output->std("ROUTES" . EOL);
+        $message = "ROUTES" . EOL;
 
         foreach ($routes as $no => $route) {
             $no++;
@@ -69,8 +69,10 @@ class Pipe_Cli_Route_Print {
                 $line .= ' → ' . implode(' | ', $parts);
             }
 
-            $output->std($line . EOL);
+            $message .= $line . EOL;
         }
+
+        $output->content = $message;
 
         return array($input, $output, $break);
     }

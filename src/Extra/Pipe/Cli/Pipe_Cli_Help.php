@@ -45,7 +45,8 @@ class Pipe_Cli_Help {
             }
         }
 
-        $output->std($message, true);
+        $output->content = $message;
+        $output->stderr = true;
 
         return array($input, $output, $break);
     }

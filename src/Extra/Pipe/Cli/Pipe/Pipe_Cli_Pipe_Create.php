@@ -19,7 +19,9 @@ class Pipe_Cli_Pipe_Create {
         if (!$className) {
             $message .= 'Error: Missing required parameters.' . EOL;
             $message .= 'Usage: php [file] pipe create [name]' . EOL;
-            $output->std($message, true);
+            $output->content = $message;
+            $output->stderr = true;
+            $break = true;
             return array($input, $output, $break);
         }
 
@@ -35,9 +37,10 @@ class Pipe_Cli_Pipe_Create {
             $message .= 'Location: ' . $fullPath . EOL;
         } else {
             $message = 'Error: Failed to write file at ' . $fullPath . EOL;
+            $output->stderr = true;
         }
 
-        $output->std($message);
+        $output->content = $message;
 
         return array($input, $output, $break);
     }

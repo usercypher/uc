@@ -10,7 +10,8 @@ class Pipe_Cli_Pipe_Help {
         $message .= 'Usage: php [file] pipe [option]' . EOL;
         $message .= 'Options:' . EOL;
         $message .= '  create [name]   create pipe using --path=[value] --args=[value]' . EOL;
-        $output->std($message, true);
+        $output->content = $message;
+        $output->stderr = true;
 
         return array($input, $output, $break);
     }

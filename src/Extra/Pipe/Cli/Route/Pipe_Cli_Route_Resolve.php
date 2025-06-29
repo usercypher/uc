@@ -22,15 +22,21 @@ class Pipe_Cli_Route_Resolve {
         if (!$type || !$path) {
             $message .= 'Error: Missing required parameters.' . EOL;
             $message .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
-            $output->std($message, true);
+            $output->content = $message;
+            $output->stderr = true;
+            $break = true;
             return array($input, $output, $break);
         }
+
         $result = $this->app->resolveRoute($type, $path);
 
         if (isset($result['error'])) {
             $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
+            $output->content = $message;
+            $output->stderr = true;
             return array($input, $output, $break);
         }
+
         $message .= 'RESOLVED ROUTE' . EOL;
         $message .= '  Method : ' . $type . EOL;
         $message .= '  Path   : ' . $path . EOL;
@@ -44,11 +50,11 @@ class Pipe_Cli_Route_Resolve {
         if (!empty($result['params'])) {
             $message .= '  Params :' . EOL;
             foreach ($result['params'] as $key => $value) {
-                $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? print_r($value, true) : $value) . EOL;
+                $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . EOL;
             }
         }
 
-        $output->std($message);
+        $output->content = $message;
 
         return array($input, $output, $break);
     }

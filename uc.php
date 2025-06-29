@@ -431,7 +431,7 @@ class App {
 
         $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {
-            $p = $this->getClass($this->unitList[$p]);
+            $p = $this->loadClass($this->unitList[$p]);
             list($input, $output, $break) = $p->pipe($input, $output);
             if ($break) break;
         }
@@ -545,7 +545,7 @@ class App {
         }
     }
 
-    function getClass($unit, $new = false) {
+    function loadClass($unit, $new = false) {
         $stack = array($unit);
         $seen = array();
         $md = array();
@@ -599,12 +599,8 @@ class App {
         return $class;
     }
 
-    function newClass($unit) {
-        return $this->getClass($unit, true);
-    }
-
-    function rebuildClass($unit) {
-        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->getClass($unit, true);
+    function reloadClass($unit) {
+        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->loadClass($unit, true);
     }
 
     // Utility Functions
