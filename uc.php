@@ -267,7 +267,7 @@ class App {
         } else {
             if (!headers_sent()) {
                 header('HTTP/1.1 ' . $http);
-                header('Content-Type: ' . $type);
+                header('content-type: ' . $type);
             }
             echo($content);
         }
