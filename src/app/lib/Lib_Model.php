@@ -62,13 +62,14 @@ class Lib_Model {
     }
 
     public function updateBatch($ids, $data) {
-        if (count($ids) !== count($data)) {
-            trigger_error('500|Execute failed: The number of IDs and data elements must match.');
-            exit();
-        }
+        $idCount = count($ids);
         $setClauses = array();
         $values = array();
         foreach ($data as $column => $valuesArray) {
+            if ($idCount !== count($valuesArray)) {
+                trigger_error('500|Execute failed: The number of IDs and data elements must match.');
+                return false;
+            }
             $caseClause = array();
             foreach ($ids as $key => $id) {
                 $caseClause[] = 'WHEN ? THEN ?';
@@ -148,7 +149,7 @@ class Lib_Model {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
             trigger_error('500|Prepare failed: ' . $this->conn->errorInfo()[2]);
-            exit();
+            return false;
         }
         return $stmt;
     }
@@ -174,7 +175,7 @@ class Lib_Model {
 
         if (!$stmt->execute()) {
             trigger_error('500|Execute failed: ' . implode(', ', $stmt->errorInfo()[2]));
-            exit();
+            return false;
         }
 
         return $stmt;
