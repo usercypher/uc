@@ -50,7 +50,6 @@ function input_from_http() {
         }
     }
 
-    $in->content = file_get_contents('php://input');
     $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $in->query = $_GET;
