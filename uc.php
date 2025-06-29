@@ -545,7 +545,7 @@ class App {
         }
     }
 
-    function getClass($unit) {
+    function getClass($unit, $new = false) {
         $stack = array($unit);
         $seen = array();
         $md = array();
@@ -559,7 +559,7 @@ class App {
 
             if (isset($seen[$unit])) return user_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
-            $cache = $this->unit[$unit][$this->UNIT_CACHE];
+            $cache = !$new && $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
                 if (!$stack) return $this->cache[$unit][$this->CACHE_CLASS];
 
@@ -600,15 +600,11 @@ class App {
     }
 
     function newClass($unit) {
-        $mode = $this->unit[$unit][$this->UNIT_CACHE];
-        $this->unit[$unit][$this->UNIT_CACHE] = false;
-        $class = $this->getClass($unit);
-        $this->unit[$unit][$this->UNIT_CACHE] = $mode;
-        return $class;
+        return $this->getClass($unit, true);
     }
 
-    function resetClass($unit) {
-        $this->cache[$unit][$this->CACHE_CLASS] = null;
+    function rebuildClass($unit) {
+        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->getClass($unit, true);
     }
 
     // Utility Functions
