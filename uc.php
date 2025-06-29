@@ -40,15 +40,8 @@ function input_from_http() {
     $in->source = 'http';
 
     $in->server = $_SERVER;
-    $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-    $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
-    $in->parsed = $_POST;
-    $in->query = $_GET;
-    $in->files = $_FILES;
-    $in->cookies = $_COOKIE;
 
     $contentHeaders = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true, 'CONTENT_MD5' => true);
-
     foreach ($_SERVER as $key => $value) {
         if (strpos($key, 'HTTP_') === 0) {
             $in->headers[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
@@ -56,6 +49,14 @@ function input_from_http() {
             $in->headers[str_replace('_', '-', strtolower($key))] = $value;
         }
     }
+
+    $in->content = file_get_contents('php://input');
+    $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+    $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    $in->query = $_GET;
+    $in->cookies = $_COOKIE;
+    $in->files = $_FILES;
+    $in->parsed = $_POST;
 
     return $in;
 }
