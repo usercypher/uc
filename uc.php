@@ -31,12 +31,7 @@ function d($var, $detailed = false) {
     $detailed ? var_dump($var) : print_r($var);
 }
 
-function input_from_environment() {
-    return SAPI === 'cli' ? input_from_cli() : input_from_http();
-}
-
-function input_from_http() {
-    $in = new Input();
+function input_http($in) {
     $in->source = 'http';
 
     $in->server = $_SERVER;
@@ -60,10 +55,9 @@ function input_from_http() {
     return $in;
 }
 
-function input_from_cli() {
+function input_cli($in) {
     global $argc, $argv;
 
-    $in = new Input();
     $in->source = 'cli';
 
     $in->argc = isset($argc) ? $argc : 0;
@@ -104,7 +98,7 @@ class Input {
 }
 
 class Output {
-    var $headers = array(), $content = '', $code = 200, $type = 'text/html', $stderr = false;
+    var $headers = array(), $content = '', $code = 200, $type = 'text/html';
 
     function http() {
         if (!headers_sent()) {
@@ -422,9 +416,8 @@ class App {
         if (isset($route['error'])) {
             $e = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
             $output->content = $e['content'];
-            $output->code = $e['code'];
+            $output->code = SAPI === 'cli' ? 1 : $e['code'];
             $output->type = $e['type'];
-            $output->stderr = true;
 
             return $output;
         }

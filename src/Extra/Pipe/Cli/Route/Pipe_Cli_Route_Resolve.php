@@ -23,7 +23,7 @@ class Pipe_Cli_Route_Resolve {
             $message .= 'Error: Missing required parameters.' . EOL;
             $message .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
             $output->content = $message;
-            $output->stderr = true;
+            $output->code = 1;
             $break = true;
             return array($input, $output, $break);
         }
@@ -33,7 +33,7 @@ class Pipe_Cli_Route_Resolve {
         if (isset($result['error'])) {
             $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
             $output->content = $message;
-            $output->stderr = true;
+            $output->code = 1;
             return array($input, $output, $break);
         }
 

@@ -70,16 +70,20 @@ function index($packageFile, $settingsFile, $configFile) {
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    $input = input_from_environment();
+    $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('XMLHTTPREQUEST', isset($input->headers['x-requested-with']) && strtolower($input->headers['x-requested-with']) === 'xmlhttprequest');
 
-    $output = $app->dispatch($input, new Output());
+    $output = new Output();
+    $output->code = SAPI === 'cli' ? 0 : 200;
+
+    $output = $app->dispatch($input, $output);
 
     // Send the response to the client
     switch ($input->source) {
         case 'cli':
-            return $output->std($output->content, $output->stderr);
+            $output->std($output->content, $output->code > 0);
+            exit($output->code);
         case 'http':
             return $output->http();
         default:

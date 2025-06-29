@@ -11,7 +11,7 @@ class Pipe_Cli_Pipe_Help {
         $message .= 'Options:' . EOL;
         $message .= '  create [name]   create pipe using --path=[value] --args=[value]' . EOL;
         $output->content = $message;
-        $output->stderr = true;
+        $output->code = 1;
 
         return array($input, $output, $break);
     }

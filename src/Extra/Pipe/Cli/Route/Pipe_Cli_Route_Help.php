@@ -12,7 +12,7 @@ class Pipe_Cli_Route_Help {
         $message .= '  print    Show all defined routes' . EOL;
         $message .= '  resolve  Simulate resolving a request using --type and --path' . EOL;
         $output->content = $message;
-        $output->stderr = true;
+        $output->code = 1;
 
         return array($input, $output, $break);
     }
