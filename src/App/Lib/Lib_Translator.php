@@ -34,7 +34,12 @@ class Translator {
         }
 
         if (is_array($value) && $count !== null) {
-            $form = call_user_func($this->pluralRule, $count);
+            list($obj, $func) = $this->pluralRule;
+            $form = $obj-> {$func} ($count);
+            if (!isset($value[$form])) {
+                end($value);
+                $form = key($value);
+            }
             $text = str_replace('{count}', $count, $value[$form]);
         } else {
             $text = $value;
