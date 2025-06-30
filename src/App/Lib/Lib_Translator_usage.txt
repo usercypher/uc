@@ -2,6 +2,8 @@
 
 require 'Translator.php';
 
+$endl = "\n";
+
 $t = new Translator();
 $t->setDefaultPluralRule();
 
@@ -30,45 +32,45 @@ $t->translations = array(
 );
 
 // Test 1: Basic translation
-echo $t->translate('hello') . PHP_EOL;
+echo $t->text('hello') . $endl;
 // Expected: Hello World
 
 // Test 2: Plural (none)
-echo $t->translate('apple', 0) . PHP_EOL;
+echo $t->ntext('apple', 0) . $endl;
 // Expected: There is no apple
 
 // Test 3: Plural (singular)
-echo $t->translate('apple', 1) . PHP_EOL;
+echo $t->ntext('apple', 1) . $endl;
 // Expected: There is 1 apple
 
 // Test 4: Plural (plural)
-echo $t->translate('apple', 5) . PHP_EOL;
+echo $t->ntext('apple', 5) . $endl;
 // Expected: There are 5 apples
 
 // Test 5: Context fallback
-echo $t->translate('button') . PHP_EOL;
+echo $t->text('button') . $endl;
 // Expected: Button
 
 // Test 6: Context-specific
-echo $t->translate('button', null, array(), 'form') . PHP_EOL;
+echo $t->text('button', array(), 'form') . $endl;
 // Expected: Submit
 
 // Test 7: Placeholder replacement
-echo $t->translate('welcome', null, array('name' => 'Alice')) . PHP_EOL;
+echo $t->text('welcome', array('name' => 'Alice')) . $endl;
 // Expected: Welcome, Alice!
 
 // Test 8: Plural + placeholder
-echo $t->translate('gift', 0, array('name' => 'Bob')) . PHP_EOL;
+echo $t->ntext('gift', 0, array('name' => 'Bob')) . $endl;
 // Expected: Bob has no gift
 
 // Test 9: Plural + placeholder
-echo $t->translate('gift', 1, array('name' => 'Bob')) . PHP_EOL;
+echo $t->ntext('gift', 1, array('name' => 'Bob')) . $endl;
 // Expected: Bob has 1 gift
 
-echo $t->translate('gift', 3, array('name' => 'Bob')) . PHP_EOL;
+echo $t->ntext('gift', 3, array('name' => 'Bob')) . $endl;
 // Expected: Bob has 3 gifts
 
 // Test 10: Missing key fallback
-echo $t->translate('not_exist') . PHP_EOL;
+echo $t->text('not_exist') . $endl;
 // Expected: not_exist
 

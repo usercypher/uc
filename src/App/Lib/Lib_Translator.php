@@ -18,7 +18,11 @@ class Translator {
         return ($n == 0) ? 0 : (($n == 1) ? 1 : 2);
     }
 
-    function t($key, $count = null, $placeholders = array(), $context = null) {
+    function text($key, $placeholders = array(), $context = null) {
+        return $this->translate($key, null, $placeholders, $context);
+    }
+
+    function ntext($key, $count, $placeholders = array(), $context = null) {
         return $this->translate($key, $count, $placeholders, $context);
     }
 
@@ -33,7 +37,8 @@ class Translator {
             $value = $key;
         }
 
-        if (is_array($value) && $count !== null) {
+        $isArray = is_array($value);
+        if ($isArray && $count !== null) {
             list($obj, $func) = $this->pluralRule;
             $form = $obj-> {$func} ($count);
             if (!isset($value[$form])) {
@@ -41,6 +46,8 @@ class Translator {
                 $form = key($value);
             }
             $text = str_replace('{count}', $count, $value[$form]);
+        } elseif ($isArray) {
+            $text = $value[1];
         } else {
             $text = $value;
         }
