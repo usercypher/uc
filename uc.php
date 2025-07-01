@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+define('SAPI', php_sapi_name());
+
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
     define('DS', '\\');
     define('EOL', "\r\n");
@@ -22,9 +24,6 @@ if (strpos(strtolower(PHP_OS), 'win') !== false) {
     define('DS', '/');
     define('EOL', "\n");
 }
-
-define('ROOT', dirname(__FILE__) . DS);
-define('SAPI', php_sapi_name());
 
 function d($var, $detailed = false) {
     if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
@@ -137,6 +136,7 @@ class App {
     function init() {
         $this->ENV['DEBUG'] = false;
 
+        $this->ENV['DIR_ROOT'] = '';
         $this->ENV['DIR_LOG'] = '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = '';
         $this->ENV['DIR_RES'] = '';
@@ -191,13 +191,13 @@ class App {
     // Config Management
 
     function save($file) {
-        $file = ROOT . $file . '.dat';
+        $file = $this->ENV['DIR_ROOT'] . $file . '.dat';
         $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
         echo('File created: ' . $file . EOL);
     }
 
     function load($file) {
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read(ROOT . $file . '.dat'));
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->ENV['DIR_ROOT'] . $file . '.dat'));
     }
 
     // Error Management
@@ -247,7 +247,7 @@ class App {
             $type = 'text/plain';
             $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
         } else {
-            $file = ROOT . $this->ENV['ERROR_HTML_FILE'];
+            $file = $this->ENV['DIR_ROOT'] . $this->ENV['ERROR_HTML_FILE'];
             if (file_exists($file)) {
                 $data = array('app' => $this, 'http' => $http);
                 ob_start();
@@ -441,7 +441,7 @@ class App {
         if (!isset($option['namespace'])) $option['namespace'] = '';
         if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
 
-        if ($dp = opendir(ROOT . $path)) {
+        if ($dp = opendir($this->ENV['DIR_ROOT'] . $path)) {
             while (($file = readdir($dp)) !== false) {
                 if ($file === '.' || $file === '..') continue;
 
@@ -449,7 +449,7 @@ class App {
                     if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
                 }
 
-                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir(ROOT . $path . $file)) {
+                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR_ROOT'] . $path . $file)) {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
@@ -533,7 +533,7 @@ class App {
 
             unset($seen[$previousUnit]);
 
-            require(ROOT . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
+            require($this->ENV['DIR_ROOT'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
             $this->cache[$unit][$this->CACHE_PATH] = true;
         }
     }
@@ -605,13 +605,13 @@ class App {
     function path($option, $path = '') {
         switch ($option) {
             case 'root':
-                return ROOT . $path;
+                return $this->ENV['DIR_ROOT'] . $path;
             case 'res':
-                return ROOT . $this->ENV['DIR_RES'] . $path;
+                return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_RES'] . $path;
             case 'web':
-                return ROOT . $this->ENV['DIR_WEB'] . $path;
+                return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_WEB'] . $path;
             case 'src':
-                return ROOT . $this->ENV['DIR_SRC'] . $path;
+                return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_SRC'] . $path;
             default:
                 return $path;
         }
@@ -654,20 +654,20 @@ class App {
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
-        $logFile = ROOT . $this->ENV['DIR_LOG'] . $file . '.log';
+        $logFile = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'] . $file . '.log';
 
         $this->write($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
 
         if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
-            $newLogFile = ROOT . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
-        $timestampFile = ROOT . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
+        $timestampFile = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
         $lastCleanup = file_exists($timestampFile) ? (int) $this->read($timestampFile) : 0;
 
         if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
-            $logFiles = glob(ROOT . $this->ENV['DIR_LOG'] . $file . '_*.log');
+            $logFiles = glob($this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
             $logFilesMTime = array();
 
             foreach ($logFiles as $file) $logFilesMTime[$file] = filemtime($file);

@@ -9,6 +9,7 @@ return array(
     'env' => array(
         'dev' => array(
             // Environment Settings
+            'DIR_ROOT' => dirname(__FILE__).DS, // Root Directory
             'DIR_WEB' => 'web'.DS, // Directory for web access (e.g., public folder)
             'DIR_SRC' => 'src'.DS.'app'.DS, // Source directory for application code
             'DIR_RES' => 'res'.DS, // Resource Directory
@@ -63,6 +64,7 @@ return array(
         ),
         'prod' => array(
             // Environment Settings
+            'DIR_ROOT' => dirname(__FILE__).DS,
             'DIR_WEB' => 'web'.DS,
             'DIR_SRC' => 'src'.DS.'app'.DS,
             'DIR_RES' => 'res'.DS,
