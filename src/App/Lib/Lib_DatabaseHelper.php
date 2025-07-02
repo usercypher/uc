@@ -1,7 +1,7 @@
 <?php
 
-class Lib_Model {
-    private $flash = array();
+class Lib_DatabaseHelper {
+    private $messages = array();
     private $table, $conn, $primaryColumn = 'id';
 
     public function setConn($conn) {
@@ -16,133 +16,164 @@ class Lib_Model {
         $this->primaryColumn = $primaryColumn;
     }
 
-    public function addFlash($type, $message) {
-        $this->flash[] = array(
-            'type' => $type,
-            'message' => $message
-        );
+    public function addMessage($type, $message, $meta = array()) {
+        $this->messages[] = array('type' => $type, 'message' => $message, 'meta' => array('table' => $this->table) + $meta);
     }
 
-    public function getFlash() {
-        return $this->flash;
+    public function getMessages() {
+        return $this->messages;
+    }
+
+    public function beginTransaction() {
+        return $this->conn->beginTransaction();
+    }
+
+    public function commit() {
+        return $this->conn->commit();
+    }
+
+    public function rollBack() {
+        return $this->conn->rollBack();
     }
 
     public function lastInsertId() {
         return $this->conn->lastInsertId();
     }
 
-    public function create($data) {
+    public function insert($data) {
         $columns = implode(', ', array_keys($data));
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
         $stmt = $this->prepare('INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES (' . $placeholders . ')');
-        return $this->execute($stmt, array_values($data), null);
+        return ($this->execute($stmt, array_values($data)) !== false) ? $this->lastInsertId() : false;
     }
 
-    public function createBatch($data) {
-        $columns = implode(', ', array_keys($data[0]));
-        $placeholders = implode(', ', array_fill(0, count($data[0]), '?'));
+    public function insertBatch($rows) {
+        $columns = implode(', ', array_keys($rows[0]));
+        $placeholders = implode(', ', array_fill(0, count($rows[0]), '?'));
         $values = array();
-        foreach ($data as $row) {
+        foreach ($rows as $row) {
             $rowValues = array_values($row);
             foreach ($rowValues as $value) {
                 $values[] = $value;
             }
         }
-        $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES ' . implode(', ', array_fill(0, count($data), '(' . $placeholders . ')'));
+        $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES ' . implode(', ', array_fill(0, count($rows), '(' . $placeholders . ')'));
         $stmt = $this->prepare($query);
-        return $this->execute($stmt, $values, null);
+        return $this->execute($stmt, $values) !== false;
     }
 
     public function update($id, $data) {
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
 
         $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' = ?');
-        return $this->execute($stmt, array_values($data), $id);
+        return $this->execute($stmt, array_merge(array_values($data), array($id))) !== false;
     }
 
-    public function updateBatch($ids, $data) {
-        $idCount = count($ids);
+    public function updateBatch($rows) {
+        $ids = array();
+        foreach ($rows as $row) {
+            $ids[] = $row[$this->primaryColumn];
+        }
+
+        $allColumns = array_keys($rows[0]);
+        $columns = array();
+        foreach ($allColumns as $col) {
+            if ($col !== $this->primaryColumn) {
+                $columns[] = $col;
+            }
+        }
+
         $setClauses = array();
         $values = array();
-        foreach ($data as $column => $valuesArray) {
-            if ($idCount !== count($valuesArray)) {
-                trigger_error('500|Execute failed: The number of IDs and data elements must match.');
-                return false;
-            }
+        foreach ($columns as $column) {
             $caseClause = array();
-            foreach ($ids as $key => $id) {
+            foreach ($rows as $row) {
+                if (!isset($row[$column])) {
+                    trigger_error('500|Execute failed: Missing column "' . $column . '" in some rows.');
+                    return false;
+                }
                 $caseClause[] = 'WHEN ? THEN ?';
-                $values[] = $id;
-                $values[] = $valuesArray[$key];
+                $values[] = $row[$this->primaryColumn];
+                $values[] = $row[$column];
             }
-            $setClauses[] = $column . ' = CASE id ' . implode(' ', $caseClause) . ' ELSE ' . $column . ' END';
+            $setClauses[] = $column . ' = CASE ' . $this->primaryColumn . ' ' . implode(' ', $caseClause) . ' ELSE ' . $column . ' END';
         }
+
         $setClause = implode(', ', $setClauses);
-        $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' IN (' . implode(',', array_fill(0, count($ids), '?')) . ')');
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' IN (' . $placeholders . ')';
+
         $values = array_merge($values, $ids);
-        return $this->execute($stmt, $values, null);
+        $stmt = $this->prepare($sql);
+
+        return $this->execute($stmt, $values) !== false;
     }
 
     public function delete($id) {
         $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
-        return $this->execute($stmt, array(), $id);
+        return $this->execute($stmt, array($id)) !== false;
     }
 
     public function deleteBatch($ids) {
         $placeholders = implode(', ', array_fill(0, count($ids), '?'));
         $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' IN (' . $placeholders . ')');
-        return $this->execute($stmt, $ids, null);
+        return $this->execute($stmt, $ids) !== false;
     }
 
     public function save($data) {
-        if (isset($data['id']) && !empty($data['id'])) {
-            return $this->update($data['id'], $data);
-        } else {
-            return $this->create($data);
-        }
+        return isset($data[$this->primaryColumn]) ? $this->update($data[$this->primaryColumn], $data) : $this->insert($data);
     }
 
     public function find($id, $columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
-        $stmt = $this->execute($stmt, array(), $id);
+        $stmt = $this->execute($stmt, array($id));
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function all($columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table);
-        $stmt = $this->execute($stmt, array(), null);
+        $stmt = $this->execute($stmt, array());
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function first($conditions, $params, $columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1');
-        $stmt = $this->execute($stmt, $params, null);
+        $stmt = $this->execute($stmt, $params);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function where($conditions, $params, $columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions);
-        $stmt = $this->execute($stmt, $params, null);
+        $stmt = $this->execute($stmt, $params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function get($query, $params) {
+    public function query($query, $params) {
         $stmt = $this->prepare($query);
-        $stmt = $this->execute($stmt, $params, null);
+        $stmt = $this->execute($stmt, $params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function count($conditions, $params) {
-        $stmt = $this->prepare('SELECT COUNT(*) FROM ' . $this->table . ' WHERE ' . $conditions);
-        $stmt = $this->execute($stmt, $params, null);
+        $stmt = $this->prepare('SELECT COUNT(*) FROM ' . $this->table . (!empty($conditions) ? ' WHERE ' . $conditions : ''));
+        $stmt = $this->execute($stmt, $params);
         return $stmt->fetchColumn();
     }
 
     public function exists($conditions, $params) {
         $stmt = $this->prepare('SELECT 1 FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1');
-        $stmt = $this->execute($stmt, $params, null);
+        $stmt = $this->execute($stmt, $params);
         return $stmt->fetchColumn() !== false;
+    }
+
+    public function chunk(&$array, $chunkSize) {
+        if (!$array || 0 >= $chunkSize) {
+            return false;
+        }
+        $chunk = array_slice($array, 0, $chunkSize);
+        $array = array_slice($array, $chunkSize);
+        return $chunk;
     }
 
     protected function prepare($query) {
@@ -154,11 +185,11 @@ class Lib_Model {
         return $stmt;
     }
 
-    protected function execute($stmt, $params, $id) {
+    protected function execute($stmt, $params) {
         $typeMap = array(
             'boolean' => PDO::PARAM_BOOL,
             'integer' => PDO::PARAM_INT,
-            'NULL' => PDO::PARAM_NULL,
+            'null' => PDO::PARAM_NULL,
             'resource' => PDO::PARAM_LOB,
         );
 
@@ -169,12 +200,8 @@ class Lib_Model {
             $stmt->bindValue($i++, $value, $type);
         }
 
-        if ($id) {
-            $stmt->bindValue($i, $id, PDO::PARAM_INT);
-        }
-
         if (!$stmt->execute()) {
-            trigger_error('500|Execute failed: ' . implode(', ', $stmt->errorInfo()[2]));
+            trigger_error('500|Execute failed: ' . $stmt->errorInfo()[2]);
             return false;
         }
 

@@ -23,13 +23,13 @@ $app->setUnit('Lib_Session', array(
  * ------------------------------------------------------------------------
  * Model Units with Dependencies
  * ------------------------------------------------------------------------
- * Define 'Model_Book' with dependencies on 'Lib_Model' and 'Lib_Database'.
+ * Define 'Repo_Book' with dependencies on 'Lib_DatabaseHelper' and 'Lib_Database'.
  */
 $group = array(
     'args_prepend' => array('Lib_Database'),  // Inject 'Lib_Database' as first constructor argument
-    'load_prepend' => array('Lib_Model')      // Load 'Lib_Model' before 'Model_Book'
+    'load_prepend' => array('Lib_DatabaseHelper')      // Load 'Lib_DatabaseHelper' before 'Repo_Book'
 );
-$app->groupUnit($group, 'Model_Book');
+$app->groupUnit($group, 'Repo_Book');
 
 /**
  * ------------------------------------------------------------------------
@@ -41,11 +41,11 @@ $group = array(
     'args_prepend' => array('App', 'Lib_Session')
 );
 $app->groupUnit($group, 'Pipe_Book_Create');
-$app->groupUnit($group, 'Pipe_Book_Store', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Update', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Delete', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Edit', array('args' => array('Model_Book')));
-$app->groupUnit($group, 'Pipe_Book_Home', array('args' => array('Model_Book')));
+$app->groupUnit($group, 'Pipe_Book_Store', array('args' => array('Repo_Book')));
+$app->groupUnit($group, 'Pipe_Book_Update', array('args' => array('Repo_Book')));
+$app->groupUnit($group, 'Pipe_Book_Delete', array('args' => array('Repo_Book')));
+$app->groupUnit($group, 'Pipe_Book_Edit', array('args' => array('Repo_Book')));
+$app->groupUnit($group, 'Pipe_Book_Home', array('args' => array('Repo_Book')));
 
 /**
  * ------------------------------------------------------------------------

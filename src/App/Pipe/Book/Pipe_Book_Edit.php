@@ -2,13 +2,13 @@
 
 class Pipe_Book_Edit {
     private $app, $session;
-    private $bookModel;
+    private $bookRepo;
 
     public function args($args) {
         list(
             $this->app, 
             $this->session, 
-            $this->bookModel
+            $this->bookRepo
         ) = $args;
     } 
 
@@ -22,7 +22,7 @@ class Pipe_Book_Edit {
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'book' => $this->bookModel->first('id = ?', array($bookId))
+            'book' => $this->bookRepo->first('id = ?', array($bookId))
         ));
 
         return array($input, $output, $break);

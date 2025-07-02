@@ -2,13 +2,13 @@
 
 class Pipe_Book_Store {
     private $app, $session;
-    private $bookModel;
+    private $bookRepo;
 
     public function args($args) {
         list(
             $this->app, 
             $this->session, 
-            $this->bookModel
+            $this->bookRepo
         ) = $args;
     } 
 
@@ -17,9 +17,9 @@ class Pipe_Book_Store {
 
         $data = $input->parsed;
 
-        $route = $this->bookModel->validateAndCreate($data) ? 'home' : 'create';
+        $route = $this->bookRepo->validateAndInsert($data) ? 'home' : 'create';
 
-        $this->session->set('flash', $this->bookModel->getFlash());
+        $this->session->set('flash', $this->bookRepo->getMessages());
 
         $output->redirect($this->app->url('route', $route));
 

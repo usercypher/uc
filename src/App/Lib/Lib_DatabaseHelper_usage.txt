@@ -1,0 +1,80 @@
+<?php
+
+// Setup PDO and Lib_DatabaseHelper
+$pdo = new PDO('mysql:host=localhost;dbname=testdb', 'root', '');
+$model = new Lib_DatabaseHelper();
+$model->setConn($pdo);
+$model->setTable('users');
+
+// addMessage
+$model->addMessage('success', 'Operation successful');
+
+// getMessages
+$messages = $model->getMessages();
+
+// lastInsertId
+$lastId = $model->lastInsertId();
+
+// find
+$user = $model->find(1);
+
+// all
+$allUsers = $model->all();
+
+// insert
+$data = ['name' => 'John Doe', 'email' => 'johndoe@example.com'];
+$model->insert($data);
+
+// insertBatch (with chunking)
+$dataBatch = [
+    ['name' => 'John', 'email' => 'john@example.com'],
+    ['name' => 'Jane', 'email' => 'jane@example.com'],
+    // ... possibly thousands of records
+];
+while ($chunk = $model->chunk($dataBatch, 200)) {
+    $model->insertBatch($chunk);
+}
+
+// update
+$dataToUpdate = ['name' => 'John Updated', 'email' => 'johnupdated@example.com'];
+$model->update(1, $dataToUpdate);
+
+// updateBatch (with chunking)
+$dataBatchUpdate = [
+    ['id' => 1, 'name' => 'John', 'email' => 'john@example.com'],
+    ['id' => 2, 'name' => 'Jane', 'email' => 'jane@example.com'],
+    // ... potentially more
+];
+while ($chunk = $model->chunk($dataBatchUpdate, 100)) {
+    $model->updateBatch($chunk);
+}
+
+// delete
+$model->delete(1);
+
+// deleteBatch (with chunking)
+$idsToDelete = range(1, 1000); // example large batch
+while ($chunk = $model->chunk($idsToDelete, 300)) {
+    $model->deleteBatch($chunk);
+}
+
+// save
+$dataToSave = ['name' => 'Alice', 'email' => 'alice@example.com'];
+$model->save($dataToSave);
+
+// where
+$users = $model->where('age > ?', [30]);
+
+// query
+$usersByQuery = $model->query('SELECT * FROM users WHERE age > ?', [30]);
+
+// first
+$firstUser = $model->first('age > ?', [30]);
+
+// count
+$userCount = $model->count('age > ?', [30]);
+
+// exists
+$exists = $model->exists('email = ?', ['johndoe@example.com']);
+
+?>

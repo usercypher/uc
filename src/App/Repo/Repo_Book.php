@@ -1,6 +1,6 @@
 <?php
 
-class Model_Book extends Lib_Model {
+class Repo_Book extends Lib_DatabaseHelper {
     private $database;
 
     public function args($args) {
@@ -12,16 +12,16 @@ class Model_Book extends Lib_Model {
         parent::setTable('books');
     }
 
-    public function validateAndCreate($data) {
+    public function validateAndInsert($data) {
         $bookData = $data['book'];
         if ($this->exists('title = ?', array($bookData['title']))) {
-            $this->addFlash('error', 'Title Already Exists.');
+            $this->addMessage('error', 'Title Already Exists.');
             return false;
         }
 
-        $this->create($bookData);
+        $this->insert($bookData);
 
-        $this->addFlash('success', 'Book created successfully.');
+        $this->addMessage('success', 'Book created successfully.');
 
         return true;
     }
@@ -29,7 +29,7 @@ class Model_Book extends Lib_Model {
     public function validateAndUpdate($data) {
         $bookData = $data['book'];
         if ($this->exists('title = ?', array($bookData['title']['new'])) && $bookData['title']['current'] !== $bookData['title']['new']) {
-            $this->addFlash('error', 'Title Already Exists.');
+            $this->addMessage('error', 'Title Already Exists.');
             return false;
         }
 
@@ -42,7 +42,7 @@ class Model_Book extends Lib_Model {
 
         $this->update($book['id'], $book);
 
-        $this->addFlash('success', 'Book updated successfully.');
+        $this->addMessage('success', 'Book updated successfully.');
 
         return true;
     }
@@ -51,13 +51,13 @@ class Model_Book extends Lib_Model {
         $bookData = $data['book'];
 
         if (!$this->exists('id = ?', array($bookData['id']))) {
-            $this->addFlash('error', 'Book not found.');
+            $this->addMessage('error', 'Book not found.');
             return false;
         }
 
         $this->delete($bookData['id']);
 
-        $this->addFlash('success', 'Book deleted successfully.');
+        $this->addMessage('success', 'Book deleted successfully.');
 
         return true;
     }

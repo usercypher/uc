@@ -2,13 +2,13 @@
 
 class Pipe_Book_Update {
     private $app, $session;
-    private $bookModel;
+    private $bookRepo;
 
     public function args($args) {
         list(
             $this->app, 
             $this->session, 
-            $this->bookModel
+            $this->bookRepo
         ) = $args;
     } 
 
@@ -17,9 +17,9 @@ class Pipe_Book_Update {
 
         $data = $input->parsed;
 
-        $this->bookModel->validateAndUpdate($data);
+        $this->bookRepo->validateAndUpdate($data);
 
-        $this->session->set('flash', $this->bookModel->getFlash());
+        $this->session->set('flash', $this->bookRepo->getMessages());
 
         $output->redirect($this->app->url('route', 'edit/' . $data['book']['id']));
 

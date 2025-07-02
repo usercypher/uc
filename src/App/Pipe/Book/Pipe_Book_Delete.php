@@ -2,13 +2,13 @@
 
 class Pipe_Book_Delete {
     private $app, $session;
-    private $bookModel;
+    private $bookRepo;
 
     public function args($args) {
         list(
             $this->app, 
             $this->session, 
-            $this->bookModel
+            $this->bookRepo
         ) = $args;
     } 
 
@@ -17,9 +17,9 @@ class Pipe_Book_Delete {
 
         $data = $input->parsed;
 
-        $this->bookModel->validateAndDelete($data);
+        $this->bookRepo->validateAndDelete($data);
 
-        $this->session->set('flash', $this->bookModel->getFlash());
+        $this->session->set('flash', $this->bookRepo->getMessages());
 
         $output->redirect($this->app->url('route', 'home'));
 
