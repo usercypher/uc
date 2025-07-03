@@ -1,46 +1,46 @@
 <?php
 
 class Lib_DatabaseHelper {
-    private $messages = array();
-    private $table, $conn, $primaryColumn = 'id';
+    var $messages = array();
+    var $conn, $table, $primaryColumn = 'id';
 
-    public function setConn($conn) {
+    function setConn($conn) {
         $this->conn = $conn;
     }
 
-    public function setTable($table) {
+    function setTable($table) {
         $this->table = $table;
     }
 
-    public function setPrimaryColumn($primaryColumn) {
+    function setPrimaryColumn($primaryColumn) {
         $this->primaryColumn = $primaryColumn;
     }
 
-    public function addMessage($type, $message, $meta = array()) {
+    function addMessage($type, $message, $meta = array()) {
         $this->messages[] = array('type' => $type, 'message' => $message, 'meta' => array('table' => $this->table) + $meta);
     }
 
-    public function getMessages() {
+    function getMessages() {
         return $this->messages;
     }
 
-    public function beginTransaction() {
+    function beginTransaction() {
         return $this->conn->beginTransaction();
     }
 
-    public function commit() {
+    function commit() {
         return $this->conn->commit();
     }
 
-    public function rollBack() {
+    function rollBack() {
         return $this->conn->rollBack();
     }
 
-    public function lastInsertId() {
+    function lastInsertId() {
         return $this->conn->lastInsertId();
     }
 
-    public function insert($data) {
+    function insert($data) {
         $columns = implode(', ', array_keys($data));
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
@@ -48,7 +48,7 @@ class Lib_DatabaseHelper {
         return ($this->execute($stmt, array_values($data)) !== false) ? $this->lastInsertId() : false;
     }
 
-    public function insertBatch($rows) {
+    function insertBatch($rows) {
         $columns = implode(', ', array_keys($rows[0]));
         $placeholders = implode(', ', array_fill(0, count($rows[0]), '?'));
         $values = array();
@@ -63,14 +63,14 @@ class Lib_DatabaseHelper {
         return $this->execute($stmt, $values) !== false;
     }
 
-    public function update($id, $data) {
+    function update($id, $data) {
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
 
         $stmt = $this->prepare('UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' = ?');
         return $this->execute($stmt, array_merge(array_values($data), array($id))) !== false;
     }
 
-    public function updateBatch($rows) {
+    function updateBatch($rows) {
         $ids = array();
         foreach ($rows as $row) {
             $ids[] = $row[$this->primaryColumn];
@@ -110,64 +110,64 @@ class Lib_DatabaseHelper {
         return $this->execute($stmt, $values) !== false;
     }
 
-    public function delete($id) {
+    function delete($id) {
         $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
         return $this->execute($stmt, array($id)) !== false;
     }
 
-    public function deleteBatch($ids) {
+    function deleteBatch($ids) {
         $placeholders = implode(', ', array_fill(0, count($ids), '?'));
         $stmt = $this->prepare('DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' IN (' . $placeholders . ')');
         return $this->execute($stmt, $ids) !== false;
     }
 
-    public function save($data) {
+    function save($data) {
         return isset($data[$this->primaryColumn]) ? $this->update($data[$this->primaryColumn], $data) : $this->insert($data);
     }
 
-    public function find($id, $columns = '*') {
+    function find($id, $columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?');
         $stmt = $this->execute($stmt, array($id));
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function all($columns = '*') {
+    function all($columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table);
         $stmt = $this->execute($stmt, array());
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function first($conditions, $params, $columns = '*') {
+    function first($conditions, $params, $columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1');
         $stmt = $this->execute($stmt, $params);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function where($conditions, $params, $columns = '*') {
+    function where($conditions, $params, $columns = '*') {
         $stmt = $this->prepare('SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions);
         $stmt = $this->execute($stmt, $params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function query($query, $params) {
+    function query($query, $params) {
         $stmt = $this->prepare($query);
         $stmt = $this->execute($stmt, $params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function count($conditions, $params) {
+    function count($conditions, $params) {
         $stmt = $this->prepare('SELECT COUNT(*) FROM ' . $this->table . (!empty($conditions) ? ' WHERE ' . $conditions : ''));
         $stmt = $this->execute($stmt, $params);
         return $stmt->fetchColumn();
     }
 
-    public function exists($conditions, $params) {
+    function exists($conditions, $params) {
         $stmt = $this->prepare('SELECT 1 FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1');
         $stmt = $this->execute($stmt, $params);
         return $stmt->fetchColumn() !== false;
     }
 
-    public function chunk(&$array, $chunkSize) {
+    function chunk(&$array, $chunkSize) {
         if (!$array || 0 >= $chunkSize) {
             return false;
         }
@@ -176,16 +176,17 @@ class Lib_DatabaseHelper {
         return $chunk;
     }
 
-    protected function prepare($query) {
+    function prepare($query) {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
-            trigger_error('500|Prepare failed: ' . $this->conn->errorInfo()[2]);
+            $error = $stmt->errorInfo();
+            trigger_error('500|Prepare failed: ' . $error[2]);
             return false;
         }
         return $stmt;
     }
 
-    protected function execute($stmt, $params) {
+    function execute($stmt, $params) {
         $typeMap = array(
             'boolean' => PDO::PARAM_BOOL,
             'integer' => PDO::PARAM_INT,
@@ -201,7 +202,8 @@ class Lib_DatabaseHelper {
         }
 
         if (!$stmt->execute()) {
-            trigger_error('500|Execute failed: ' . $stmt->errorInfo()[2]);
+            $error = $stmt->errorInfo();
+            trigger_error('500|Execute failed: ' . $error[2]);
             return false;
         }
 
