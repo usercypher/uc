@@ -52,10 +52,11 @@ class Translator {
             $text = $value;
         }
 
-        foreach ($placeholders as $ph => $val) {
-            $text = str_replace('{' . $ph . '}', $val, $text);
+        $mapped = array();
+        foreach ($placeholders as $key => $value) {
+            $mapped['{' . $key . '}'] = $value;
         }
 
-        return $text;
+        return strtr($text, $mapped);
     }
 }

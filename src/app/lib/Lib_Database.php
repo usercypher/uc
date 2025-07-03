@@ -26,6 +26,7 @@ class Lib_Database {
                 $this->pdo->exec('SET time_zone = "' . $this->time . '"');
             } catch (PDOException $e) {
                 trigger_error('500|' . $e->getMessage());
+                exit();
             }
         }
         return $this->pdo;
