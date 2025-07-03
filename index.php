@@ -61,14 +61,14 @@ function index($packageFile, $settingsFile, $configFile) {
     set_error_handler(array($app, 'error'));
     register_shutdown_function(array($app, 'shutdown'));
 
-    // Load application configuration
-    $app->load($configFile);
-
     // Load environment and ini settings
     $settings = require($settingsFile);
     $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
+
+    // Load application configuration
+    $app->load($configFile);
 
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 

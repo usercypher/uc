@@ -54,3 +54,25 @@ $app->groupRoute($group, '', '/{onUnknownOption:*:}', array(
 $app->groupRoute($group, '', '/create/{class:?:}/{:*:}', array(
     'pipe' => array('Pipe_Cli_Pipe_Create'),
 ));
+
+/**
+ * ------------------------------------------------------------------------
+ * file
+ * ------------------------------------------------------------------------
+ */
+$group = array(
+    'prefix' => 'file',
+    'ignore' => array('--global')
+);
+
+$app->groupRoute($group, '', '/{onUnknownOption:*:}', array(
+    'pipe' => array('Pipe_Cli_File_Help'),
+));
+
+$app->groupRoute($group, '', '/find/{:*:}', array(
+    'pipe' => array('Pipe_Cli_File_Find'),
+));
+
+$app->groupRoute($group, '', '/find-replace/{:*:}', array(
+    'pipe' => array('Pipe_Cli_File_FindReplace'),
+));

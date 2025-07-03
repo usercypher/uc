@@ -1,6 +1,6 @@
 <?php
 
-class Pipe_Cli_Route_Help {
+class Pipe_Cli_File_Help {
     public function pipe($input, $output) {
         $break = false;
 
@@ -9,10 +9,10 @@ class Pipe_Cli_Route_Help {
             $message = 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
         }
 
-        $message .= 'Usage: php [file] route [option]' . EOL;
+        $message .= 'Usage: php [file] file [option]' . EOL;
         $message .= 'Options:' . EOL;
-        $message .= '  print    Show all defined routes' . EOL;
-        $message .= '  resolve  Simulate resolving a request using --type=[value] and --path=[value]' . EOL;
+        $message .= '  find          find using --search=[value] and --dir=[value]' . EOL;
+        $message .= '  find-replace  find and replace using --search=[value] and --replace=[value] and --dir=[value]' . EOL;
         $output->content = $message;
         $output->code = 1;
 
