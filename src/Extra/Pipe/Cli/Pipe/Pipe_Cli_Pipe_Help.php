@@ -4,9 +4,10 @@ class Pipe_Cli_Pipe_Help {
     public function pipe($input, $output) {
         $break = false;
 
+        $message = '';
         $option = $input->getFrom($input->params, 'onUnknownOption');
         if ($option) {
-            $message = 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
+            $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
         }
 
         $message .= 'Usage: php [file] pipe [option]' . EOL;

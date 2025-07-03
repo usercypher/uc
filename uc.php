@@ -133,10 +133,10 @@ class App {
 
     // Application Setup
 
-    function init() {
+    function setup() {
         $this->ENV['DEBUG'] = false;
 
-        $this->ENV['DIR_ROOT'] = '';
+        $this->ENV['DIR_ROOT'] = dirname(__FILE__) . '/';
         $this->ENV['DIR_LOG'] = '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = '';
         $this->ENV['DIR_RES'] = '';
@@ -639,10 +639,10 @@ class App {
         }
     }
 
-    function read($file) {
+    function read($file, $size = 8192) {
         if ($fp = fopen($file, 'r')) {
             $content = '';
-            while (!feof($fp)) $content .= fread($fp, 8192);
+            while (!feof($fp)) $content .= fread($fp, $size);
             fclose($fp);
             return $content;
         }
@@ -654,12 +654,13 @@ class App {
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
-        $logFile = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'] . $file . '.log';
+        $logDir = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'];
+        $logFile = $logDir . $file . '.log';
 
         $this->write($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
 
         if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
-            $newLogFile = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'] . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = $logDir . $file . '_' . date('Y-m-d_H-i-s') . '.log';
             rename($logFile, $newLogFile);
         }
 
@@ -667,10 +668,10 @@ class App {
         $lastCleanup = file_exists($timestampFile) ? (int) $this->read($timestampFile) : 0;
 
         if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
-            $logFiles = glob($this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'] . $file . '_*.log');
+            $logFiles = glob($logDir . $file . '_*.log');
             $logFilesMTime = array();
 
-            foreach ($logFiles as $file) $logFilesMTime[$file] = filemtime($file);
+            foreach ($logFiles as $lf) $logFilesMTime[$lf] = filemtime($lf);
 
             asort($logFilesMTime);
             $logFiles = array_keys($logFilesMTime);
