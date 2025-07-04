@@ -18,7 +18,7 @@ class Pipe_Book_Edit {
         $data = $input->params;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
 
-        $output->html($this->app->path('res', 'html/edit.php'), array(
+        $output->html($this->app->dirRes('html/edit.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),

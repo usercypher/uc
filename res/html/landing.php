@@ -114,7 +114,7 @@ $app = $data['app'];
     <div id="projects" class="content">
         <h2>Projects</h2>
         <ul>
-            <li><a href="<?php echo $app->url('route', 'home'); ?>">Homepage <span style="color: red; font-weight: bold;">(DEVELOPMENT)</span></a></li>
+            <li><a href="<?php echo $app->urlRoute('home'); ?>">Homepage <span style="color: red; font-weight: bold;">(DEVELOPMENT)</span></a></li>
         </ul>
     </div>
 

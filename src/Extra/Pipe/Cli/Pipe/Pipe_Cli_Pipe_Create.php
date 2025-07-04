@@ -31,7 +31,7 @@ class Pipe_Cli_Pipe_Create {
 
         $classContent = $this->classContent($className, $classDeps);
 
-        $fullPath = $this->app->path('src', $classPath);
+        $fullPath = $this->app->dirSrc($classPath);
         if (file_put_contents($fullPath , $classContent) !== false) {
             $message .= EOL . $className . ' created successfully!' . EOL;
             $message .= 'Location: ' . $fullPath . EOL;

@@ -12,27 +12,25 @@ $group = array(
     'pipe_append' => array('Pipe_OutputCompression')
 );
 
-// GET /
 $app->groupRoute($group, 'GET', '', array(
     'pipe' => array('Pipe_Book_Home')
 ));
 
-// GET /home
 $app->groupRoute($group, 'GET', 'home', array(
     'pipe' => array('Pipe_Book_Home')
 ));
 
-// GET /create
+
 $app->groupRoute($group, 'GET', 'create', array(
     'pipe' => array('Pipe_Book_Create')
 ));
 
-// GET /edit/{title-id}
+// key=edit/{title_id}
 $app->groupRoute($group, 'GET', 'edit/{title_id::([a-zA-Z0-9-]+)-([0-9]+)}', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
 
-// GET /edit/{id}
+// key=edit/{id}
 $app->groupRoute($group, 'GET', 'edit/{id::[0-9]+}', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
@@ -50,17 +48,14 @@ $group = array(
     'ignore' => array('Pipe_CsrfGenerate')
 );
 
-// POST /book/store
 $app->groupRoute($group, 'POST', 'store', array(
     'pipe' => array('Pipe_Book_Store')
 ));
 
-// POST /book/update
 $app->groupRoute($group, 'POST', 'update', array(
     'pipe' => array('Pipe_Book_Update')
 ));
 
-// POST /book/delete
 $app->groupRoute($group, 'POST', 'delete', array(
     'pipe' => array('Pipe_Book_Delete')
 ));

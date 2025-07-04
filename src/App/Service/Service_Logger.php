@@ -12,7 +12,7 @@ class Service_Logger {
         ) = $args;
 
         $this->logger = new Logger('app_logger');
-        $this->logger->pushHandler(new StreamHandler($this->app->path('root', 'var/log/monolog.log'), Logger::DEBUG));
+        $this->logger->pushHandler(new StreamHandler($this->app->dirRoot('var/log/monolog.log'), Logger::DEBUG));
     }
 
     public function get() {

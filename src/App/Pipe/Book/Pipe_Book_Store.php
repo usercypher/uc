@@ -21,7 +21,7 @@ class Pipe_Book_Store {
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->redirect($this->app->url('route', $route));
+        $output->redirect($this->app->urlRoute($route));
 
         return array($input, $output, $break);
     }

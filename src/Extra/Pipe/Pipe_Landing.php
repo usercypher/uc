@@ -12,7 +12,7 @@ class Pipe_Landing {
     public function pipe($input, $output) {
         $break = false;
 
-        $output->html($this->app->path('res', 'html/landing.php'), array(
+        $output->html($this->app->dirRes('html/landing.php'), array(
             'app' => $this->app,
         ));
 

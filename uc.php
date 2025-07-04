@@ -25,9 +25,10 @@ if (strpos(strtolower(PHP_OS), 'win') !== false) {
     define('EOL', "\n");
 }
 
-function d($var, $detailed = false) {
+function d($var, $detailed = false, $exit = false) {
     if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
     $detailed ? var_dump($var) : print_r($var);
+    if ($exit) exit;
 }
 
 function input_http($in) {
@@ -67,7 +68,7 @@ function input_cli($in) {
         if (substr($arg, 0, 2) === '--') {
             $eq = strpos($arg, '=');
             if ($eq !== false) {
-                $in->options[substr($arg, 2, $eq - 2)] = trim(substr($arg, $eq + 1), '"\'');
+                $in->options[substr($arg, 2, $eq - 2)] = substr($arg, $eq + 1);
             } else {
                 $in->flags[substr($arg, 2)] = true;
             }
@@ -368,7 +369,7 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) && substr($key, -1) === '}') {
+                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
                     list($paramName, $paramModifier) = explode(':', substr($key, 1, -1), 3);
                     if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
                         $current = $value;
@@ -602,33 +603,31 @@ class App {
         unset($this-> {$property});
     }
 
-    function path($option, $path = '') {
-        switch ($option) {
-            case 'root':
-                return $this->ENV['DIR_ROOT'] . $path;
-            case 'res':
-                return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_RES'] . $path;
-            case 'web':
-                return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_WEB'] . $path;
-            case 'src':
-                return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_SRC'] . $path;
-            default:
-                return $path;
-        }
+    function dirRoot($s) {
+        return $this->ENV['DIR_ROOT'] . $s;
     }
 
-    function url($option, $url = '') {
-        switch ($option) {
-            case 'route':
-                return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . $url;
-            case 'web':
-                return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . $url;
-            default:
-                return $url;
-        }
+    function dirRes($s) {
+        return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_RES'] . $s;
     }
 
-    function urlSlug($s) {
+    function dirWeb($s) {
+        return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_WEB'] . $s;
+    }
+
+    function dirSrc($s) {
+        return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_SRC'] . $s;
+    }
+
+    function urlRoute($s, $params = array()) {
+        return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . ($params ? strtr($s, $params) : $s);
+    }
+
+    function urlWeb($s, $params = array()) {
+        return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . ($params ? strtr($s, $params) : $s);
+    }
+
+    function strSlug($s) {
         return trim(preg_replace('/[^a-z0-9-]/', '', strtolower(preg_replace('/[\s-]+/', '-', $s))), '-');
     }
 

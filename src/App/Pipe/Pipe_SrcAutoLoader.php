@@ -11,7 +11,7 @@ class Pipe_SrcAutoLoader {
 
     public function pipe($input, $output) {
         $break = false;
-        $this->src = $this->app->path('root', 'src' . DS);
+        $this->src = $this->app->dirRoot('src' . DS);
         spl_autoload_register(array($this, 'autoLoader'));
 
         return array($input, $output, $break);

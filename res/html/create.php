@@ -10,20 +10,20 @@ $csrfToken = $data['csrf_token'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="<?php echo($app->url('web', 'asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->url('web', 'asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->url('web', 'asset/css/general.css')); ?>">
-    <script src="<?php echo($app->url('web', 'asset/js/dialog.js')); ?>"></script>
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/dialog.css')); ?>">
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general-button.css')); ?>">
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general.css')); ?>">
+    <script src="<?php echo($app->urlWeb('asset/js/dialog.js')); ?>"></script>
 </head>
 <body>
     <div class="container">
         <h1>Add Book</h1>
         <ul>
-            <li><a href="<?php echo($app->url('route', 'home')); ?>">Home</a></li>
+            <li><a href="<?php echo($app->urlRoute('home')); ?>">Home</a></li>
         </ul>
         <br>
         <div class='container-form'>
-            <form class="submit-form" action="<?php echo($app->url('route', 'book/store')); ?>" method="post">
+            <form class="submit-form" action="<?php echo($app->urlRoute('book/store')); ?>" method="post">
                 <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
 
                 <label>Title:</label>
@@ -42,6 +42,6 @@ $csrfToken = $data['csrf_token'];
             </form>
         </div>
     </div>
-    <?php require($app->path('view', 'template' . DS . 'script.php')); ?>
+    <?php require($app->dirRes('html/template' . DS . 'script.php')); ?>
 </body>
 </html>

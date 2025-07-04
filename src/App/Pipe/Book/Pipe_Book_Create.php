@@ -13,7 +13,7 @@ class Pipe_Book_Create {
     public function pipe($input, $output) {
         $break = false;
 
-        $output->html($this->app->path('res', 'html/create.php'), array(
+        $output->html($this->app->dirRes('html/create.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),

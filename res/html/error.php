@@ -36,7 +36,7 @@ list($head_title, $title, $description) = isset($httpMap[$http]) ? $httpMap[$htt
 <body>
     <div>
         <h1><?php echo $title; ?></h1>
-        <p><?php echo $description; ?> <a href="<?php echo $app->url('route', ''); ?>">GO BACK</a></p>
+        <p><?php echo $description; ?> <a href="<?php echo $app->urlRoute(''); ?>">GO BACK</a></p>
     </div>
 </body>
 </html>

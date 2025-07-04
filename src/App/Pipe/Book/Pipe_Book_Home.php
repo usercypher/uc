@@ -15,7 +15,7 @@ class Pipe_Book_Home {
     public function pipe($input, $output) {
         $break = false;
 
-        $output->html($this->app->path('res', 'html/home.php'), array(
+        $output->html($this->app->dirRes('html/home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
