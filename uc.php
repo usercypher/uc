@@ -628,7 +628,7 @@ class App {
     }
 
     function strSlug($s) {
-        return trim(preg_replace('/[^a-z0-9-]/', '', strtolower(preg_replace('/[\s-]+/', '-', $s))), '-');
+        return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($s)), '-');
     }
 
     function write($file, $string, $append = false) {
