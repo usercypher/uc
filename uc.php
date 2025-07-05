@@ -670,22 +670,21 @@ class App {
             $logFiles = glob($logDir . $file . '_*.log');
             $logFilesMTime = array();
 
-            foreach ($logFiles as $lf) $logFilesMTime[$lf] = filemtime($lf);
+            foreach ($logFiles as $lf) {
+                $lfmtime = filemtime($lf);
+                if (($time - $lfmtime) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
+                    unlink($lf);
+                    continue;
+                }
+                $logFilesMTime[$lf] = $lfmtime;
+            }
 
             asort($logFilesMTime);
             $logFiles = array_keys($logFilesMTime);
 
             if (count($logFiles) > $this->ENV['MAX_LOG_FILES']) {
-                $filesToDelete = array_slice($logFiles, 0, count($logFiles) - $this->ENV['MAX_LOG_FILES']);
-                foreach ($filesToDelete as $file) {
-                    unlink($file);
-                    unset($logFilesMTime[$file]);
-                }
-                $logFiles = array_keys($logFilesMTime);
-            }
-
-            foreach ($logFiles as $file) {
-                if (($time - $logFilesMTime[$file]) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) unlink($file);
+                $maxIndex = count($logFiles) - $this->ENV['MAX_LOG_FILES'];
+                for ($i = 0; $maxIndex > $i; $i++) unlink($logFiles[$i]);
             }
 
             $this->write($timestampFile, $time);

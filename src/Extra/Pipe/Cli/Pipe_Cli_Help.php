@@ -25,7 +25,7 @@ class Pipe_Cli_Help {
             $message .= 'No route \'' . trim(urldecode(str_replace('/', ' ', $input->path))) . '\' found, list:'. EOL;
             foreach ($routes as $route) {
                 $pathParts = explode('/', $route['path']);
-                if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === '{') continue;
+                if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === ':') continue;
                 $seen[$pathParts[0]] = true;
                 if ($route['method'] === '') $message .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . EOL;
             }
@@ -34,7 +34,7 @@ class Pipe_Cli_Help {
             foreach ($routes as $route) {
                 $pathParts = explode('/', $route['path']);
                 if ($pathParts[0] === $target && isset($pathParts[1])) {
-                    if (isset($seen[$pathParts[1]]) || substr($pathParts[1], 0, 1) === '{') continue;
+                    if (isset($seen[$pathParts[1]]) || substr($pathParts[1], 0, 1) === ':') continue;
                     $seen[$pathParts[1]] = true;
                     $message .= ' ' . $pathParts[1] . EOL;
                     $matched = true;
