@@ -1,19 +1,13 @@
 <?php
 
-// Setup PDO and Lib_DatabaseHelper
-$pdo = new PDO('mysql:host=localhost;dbname=testdb', 'root', '');
 $model = new Lib_DatabaseHelper();
-$model->setConn($pdo);
-$model->setTable('users');
+$model->init($database, 'table', 'id');
 
 // addMessage
 $model->addMessage('success', 'Operation successful');
 
 // getMessages
 $messages = $model->getMessages();
-
-// lastInsertId
-$lastId = $model->lastInsertId();
 
 // find
 $user = $model->find(1);
@@ -23,7 +17,7 @@ $allUsers = $model->all();
 
 // insert
 $data = ['name' => 'John Doe', 'email' => 'johndoe@example.com'];
-$model->insert($data);
+$lastinsertid = $model->insert($data);
 
 // insertBatch (with chunking)
 $dataBatch = [

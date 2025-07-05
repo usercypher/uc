@@ -134,7 +134,7 @@ class App {
 
     // Application Setup
 
-    function setup() {
+    function init() {
         $this->ENV['DEBUG'] = false;
 
         $this->ENV['DIR_ROOT'] = dirname(__FILE__) . '/';

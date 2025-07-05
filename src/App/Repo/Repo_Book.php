@@ -1,15 +1,12 @@
 <?php
 
 class Repo_Book extends Lib_DatabaseHelper {
-    private $database;
-
     public function args($args) {
         list(
-            $this->database,
+            $database,
         ) = $args;
 
-        parent::setConn($this->database->getConnection());
-        parent::setTable('books');
+        parent::init($database, 'books');
     }
 
     public function validateAndInsert($data) {

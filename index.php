@@ -55,7 +55,7 @@ function index($packageFile, $settingsFile, $configFile) {
 
     // Create app instance
     $app = new App();
-    $app->setup();
+    $app->init();
 
     // Register error and shutdown handlers
     set_error_handler(array($app, 'error'));

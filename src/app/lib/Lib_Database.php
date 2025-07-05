@@ -1,8 +1,8 @@
 <?php
 
 class Lib_Database {
-    private $app;
-    private $host, $port, $name, $user, $pass, $pdo, $time;
+    var $app;
+    var $host, $port, $name, $user, $pass, $conn, $time;
 
     public function args($args) {
         list(
@@ -17,23 +17,72 @@ class Lib_Database {
         $this->time = $this->app->getEnv('DB_TIME');
     }
 
-    public function getConnection() {
-        if (!$this->pdo) {
-            try {
-                $this->pdo = new PDO('mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name, $this->user, $this->pass, array(
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING
-                ));
-                $this->pdo->exec('SET time_zone = "' . $this->time . '"');
-            } catch (PDOException $e) {
-                trigger_error('500|' . $e->getMessage());
-                exit();
-            }
+    function connect() {
+        if (!$this->conn) {
+            $this->conn = new PDO('mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name, $this->user, $this->pass, array(
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING
+            ));
+            $this->conn->exec('SET time_zone = "' . $this->time . '"');
         }
-        return $this->pdo;
     }
 
-    public function closeConnection() {
-        $this->pdo = null;
+    function disconnect() {
+        $this->conn = null;
+    }
+
+    function beginTransaction() {
+        return $this->conn->beginTransaction();
+    }
+
+    function commit() {
+        return $this->conn->commit();
+    }
+
+    function rollBack() {
+        return $this->conn->rollBack();
+    }
+
+    function lastInsertId() {
+        return $this->conn->lastInsertId();
+    }
+
+    function query($query, $params) {
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            $error = $this->conn->errorInfo();
+            trigger_error('500|Prepare failed: ' . $error[2]);
+            return false;
+        }
+
+        $typeMap = array(
+            'boolean' => PDO::PARAM_BOOL,
+            'integer' => PDO::PARAM_INT,
+            'null' => PDO::PARAM_NULL,
+            'resource' => PDO::PARAM_LOB,
+        );
+
+        $i = 1;
+
+        foreach ($params as $value) {
+            $type = isset($typeMap[gettype($value)]) ? $typeMap[gettype($value)] : PDO::PARAM_STR;
+            $stmt->bindValue($i++, $value, $type);
+        }
+
+        if (!$stmt->execute()) {
+            $error = $this->conn->errorInfo();
+            trigger_error('500|Execute failed: ' . $error[2]);
+            return false;
+        }
+
+        return $stmt;
+    }
+
+    function fetch($stmt) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    function fetchAll($stmt) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>
