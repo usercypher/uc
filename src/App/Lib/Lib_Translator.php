@@ -10,10 +10,6 @@ class Translator {
         $this->pluralRule = array(&$this, 'simplePlural');
     }
 
-    function setPluralRule($callback) {
-        $this->pluralRule = $callback;
-    }
-
     function simplePlural($n) {
         return ($n == 0) ? 0 : (($n == 1) ? 1 : 2);
     }
@@ -45,18 +41,13 @@ class Translator {
                 end($value);
                 $form = key($value);
             }
-            $text = str_replace('{count}', $count, $value[$form]);
+            $text = $value[$form];
         } elseif ($isArray) {
             $text = $value[1];
         } else {
             $text = $value;
         }
 
-        $mapped = array();
-        foreach ($placeholders as $key => $value) {
-            $mapped['{' . $key . '}'] = $value;
-        }
-
-        return strtr($text, $mapped);
+        return strtr($text, $placeholders);
     }
 }

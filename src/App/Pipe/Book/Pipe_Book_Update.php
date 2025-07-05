@@ -21,7 +21,7 @@ class Pipe_Book_Update {
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->redirect($this->app->urlRoute('edit/{id}', array('{id}' => $data['book']['id'])));
+        $output->redirect($this->app->urlRoute('edit/:id', array(':id' => $data['book']['id'])));
 
         return array($input, $output, $break);
     }

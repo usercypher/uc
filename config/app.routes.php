@@ -25,13 +25,13 @@ $app->groupRoute($group, 'GET', 'create', array(
     'pipe' => array('Pipe_Book_Create')
 ));
 
-// key=edit/{title_id}
-$app->groupRoute($group, 'GET', 'edit/{title_id::([a-zA-Z0-9-]+)-([0-9]+)}', array(
+// key=edit/:title_id
+$app->groupRoute($group, 'GET', 'edit/:title_id::([a-zA-Z0-9-]+)-([0-9]+)', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
 
-// key=edit/{id}
-$app->groupRoute($group, 'GET', 'edit/{id::[0-9]+}', array(
+// key=edit/:id
+$app->groupRoute($group, 'GET', 'edit/:id::[0-9]+', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
 

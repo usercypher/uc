@@ -342,8 +342,8 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
-                    list($paramName, $paramModifier, $paramRegex) = explode(':', substr($key, 1, -1), 3);
+                if (substr($key, 0, 1) === ':') {
+                    list($prefix, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
                     if ($paramModifier === '*') {
                         $params[$paramName] = array_slice($pathSegments, $index + $decrement);
                         $current = $value;
@@ -369,8 +369,8 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) === '{' && substr($key, -1) === '}') {
-                    list($paramName, $paramModifier) = explode(':', substr($key, 1, -1), 3);
+                if (substr($key, 0, 1) === ':') {
+                    list($prefix, $paramName, $paramModifier) = explode(':', $key, 4);
                     if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
                         $current = $value;
                         $matched = true;

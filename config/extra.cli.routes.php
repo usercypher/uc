@@ -11,7 +11,7 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '{onUnknownRoute:*:}', array(
+$app->groupRoute($group, '', ':onUnknownRoute:*:', array(
     'pipe' => array('Pipe_Cli_Help'),
 ));
 
@@ -25,15 +25,15 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/{onUnknownOption:*:}', array(
+$app->groupRoute($group, '', '/:onUnknownOption:*:', array(
     'pipe' => array('Pipe_Cli_Route_Help'),
 ));
 
-$app->groupRoute($group, '', '/print/{:*:}', array(
+$app->groupRoute($group, '', '/print/::*:', array(
     'pipe' => array('Pipe_Cli_Route_Print'),
 ));
 
-$app->groupRoute($group, '', '/resolve/{:*:}', array(
+$app->groupRoute($group, '', '/resolve/::*:', array(
     'pipe' => array('Pipe_Cli_Route_Resolve'),
 ));
 
@@ -47,11 +47,11 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/{onUnknownOption:*:}', array(
+$app->groupRoute($group, '', '/:onUnknownOption:*:', array(
     'pipe' => array('Pipe_Cli_Pipe_Help'),
 ));
 
-$app->groupRoute($group, '', '/create/{class:?:}/{:*:}', array(
+$app->groupRoute($group, '', '/create/:class:?:/::*:', array(
     'pipe' => array('Pipe_Cli_Pipe_Create'),
 ));
 
@@ -65,14 +65,14 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/{onUnknownOption:*:}', array(
+$app->groupRoute($group, '', '/:onUnknownOption:*:', array(
     'pipe' => array('Pipe_Cli_File_Help'),
 ));
 
-$app->groupRoute($group, '', '/find/{:*:}', array(
+$app->groupRoute($group, '', '/find/::*:', array(
     'pipe' => array('Pipe_Cli_File_Find'),
 ));
 
-$app->groupRoute($group, '', '/find-replace/{:*:}', array(
+$app->groupRoute($group, '', '/find-replace/::*:', array(
     'pipe' => array('Pipe_Cli_File_FindReplace'),
 ));

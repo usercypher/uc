@@ -14,8 +14,8 @@ $t->translations = array(
     // Plural forms
     'apple' => array(
         'There is no apple',
-        'There is {count} apple',
-        'There are {count} apples'
+        'There is :count apple',
+        'There are :count apples'
     ),
 
     // Contextual strings
@@ -23,11 +23,11 @@ $t->translations = array(
     'form' . CTX . 'button' => 'Submit',
 
     // With placeholders
-    'welcome' => 'Welcome, {name}!',
+    'welcome' => 'Welcome, :name!',
     'gift' => array(
-        '{name} has no gift', // {name} custom placeholder
-        '{name} has {count} gift', // {count} use internally
-        '{name} has {count} gifts'
+        ':name has no gift', // :name custom placeholder
+        ':name has :count gift', // :count use internally
+        ':name has :count gifts'
     )
 );
 
@@ -36,15 +36,15 @@ echo $t->text('hello') . $endl;
 // Expected: Hello World
 
 // Test 2: Plural (none)
-echo $t->ntext('apple', 0) . $endl;
+echo $t->ntext('apple', 0, array(':count' => 0)) . $endl;
 // Expected: There is no apple
 
 // Test 3: Plural (singular)
-echo $t->ntext('apple', 1) . $endl;
+echo $t->ntext('apple', 1, array(':count' => 1)) . $endl;
 // Expected: There is 1 apple
 
 // Test 4: Plural (plural)
-echo $t->ntext('apple', 5) . $endl;
+echo $t->ntext('apple', 5, array(':count' => 5)) . $endl;
 // Expected: There are 5 apples
 
 // Test 5: Context fallback
@@ -56,18 +56,18 @@ echo $t->text('button', array(), 'form') . $endl;
 // Expected: Submit
 
 // Test 7: Placeholder replacement
-echo $t->text('welcome', array('name' => 'Alice')) . $endl;
+echo $t->text('welcome', array(':name' => 'Alice')) . $endl;
 // Expected: Welcome, Alice!
 
 // Test 8: Plural + placeholder
-echo $t->ntext('gift', 0, array('name' => 'Bob')) . $endl;
+echo $t->ntext('gift', 0, array(':count' => 1, ':name' => 'Bob')) . $endl;
 // Expected: Bob has no gift
 
 // Test 9: Plural + placeholder
-echo $t->ntext('gift', 1, array('name' => 'Bob')) . $endl;
+echo $t->ntext('gift', 1, array(':count' => 1, ':name' => 'Bob')) . $endl;
 // Expected: Bob has 1 gift
 
-echo $t->ntext('gift', 3, array('name' => 'Bob')) . $endl;
+echo $t->ntext('gift', 3, array(':count' => 3, ':name' => 'Bob')) . $endl;
 // Expected: Bob has 3 gifts
 
 // Test 10: Missing key fallback
