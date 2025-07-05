@@ -447,7 +447,7 @@ class App {
                 if ($file === '.' || $file === '..') continue;
 
                 foreach ($option['ignore'] as $pattern) {
-                    if (preg_match('/^' . str_replace('\*', '.*', preg_quote($pattern, '/')) . '$/i', $file)) continue 2;
+                    if (fnmatch(strtolower($pattern), strtolower($file))) continue 2;
                 }
 
                 if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR_ROOT'] . $path . $file)) {
