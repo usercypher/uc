@@ -52,7 +52,8 @@ class Lib_DatabaseHelper {
         $i = 1;
 
         foreach ($params as $value) {
-            $type = isset($typeMap[gettype($value)]) ? $typeMap[gettype($value)] : PDO::PARAM_STR;
+            $type = strtolower(gettype($value));
+            $type = isset($typeMap[$type]) ? $typeMap[$type] : PDO::PARAM_STR;
             $stmt->bindValue($i++, $value, $type);
         }
 
