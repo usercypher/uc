@@ -1,7 +1,8 @@
 <?php
 
 $model = new Lib_DatabaseHelper();
-$model->init($conn, 'table', 'id');
+$model->setConn($conn);
+$model->setTable('table', 'id');
 
 // addMessage
 $model->addMessage('success', 'Operation successful');

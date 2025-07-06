@@ -2,10 +2,13 @@
 
 class Lib_DatabaseHelper {
     var $messages = array();
-    var $conn, $table, $primaryColumn;
+    var $conn, $table, $primaryColumn = 'id';
 
-    function init($conn, $table, $primaryColumn = 'id') {
+    function setConn($conn) {
         $this->conn = $conn;
+    }
+
+    function setTable($table, $primaryColumn = 'id') {
         $this->table = $table;
         $this->primaryColumn = $primaryColumn;
     }

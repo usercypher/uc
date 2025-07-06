@@ -6,7 +6,8 @@ class Repo_Book extends Lib_DatabaseHelper {
             $database
         ) = $args;
 
-        parent::init($database->connect(), 'books');
+        parent::setConn($database->connect());
+        parent::setTable('books');
     }
 
     public function validateAndInsert($data) {
