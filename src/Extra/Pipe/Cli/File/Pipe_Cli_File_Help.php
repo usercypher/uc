@@ -5,7 +5,7 @@ class Pipe_Cli_File_Help {
         $break = false;
 
         $message = '';
-        $option = $input->getFrom($input->params, 'onUnknownOption');
+        $option = $input->getFrom($input->params, 'on-unknown-option');
         if ($option) {
             $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
         }

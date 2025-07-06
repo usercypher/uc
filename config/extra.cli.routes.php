@@ -11,7 +11,7 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', ':onUnknownRoute:*:', array(
+$app->groupRoute($group, '', ':on-unknown-route:*:', array(
     'pipe' => array('Pipe_Cli_Help'),
 ));
 
@@ -25,7 +25,7 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/:onUnknownOption:*:', array(
+$app->groupRoute($group, '', '/:on-unknown-option:*:', array(
     'pipe' => array('Pipe_Cli_Route_Help'),
 ));
 
@@ -47,7 +47,7 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/:onUnknownOption:*:', array(
+$app->groupRoute($group, '', '/:on-unknown-option:*:', array(
     'pipe' => array('Pipe_Cli_Pipe_Help'),
 ));
 
@@ -65,7 +65,7 @@ $group = array(
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/:onUnknownOption:*:', array(
+$app->groupRoute($group, '', '/:on-unknown-option:*:', array(
     'pipe' => array('Pipe_Cli_File_Help'),
 ));
 

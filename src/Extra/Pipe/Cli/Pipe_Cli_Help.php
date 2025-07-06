@@ -22,7 +22,8 @@ class Pipe_Cli_Help {
 
         $seen = array();
         if (!$target) {
-            $message .= 'No route \'' . trim(urldecode(str_replace('/', ' ', $input->path))) . '\' found, list:'. EOL;
+            $route = $input->getFrom($input->params, 'on-unknown-route', array(''));
+            $message .= 'No route \'' . $route[0] . '\' found, list:'. EOL;
             foreach ($routes as $route) {
                 $pathParts = explode('/', $route['path']);
                 if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === ':') continue;
@@ -69,7 +70,7 @@ class Pipe_Cli_Help {
         $routes = array();
 
         foreach ($tree as $segment => $children) {
-            if ($segment === '*' || $segment === $this->app->ROUTE_IGNORE) {
+            if ($segment === $this->app->ROUTE_HANDLER || $segment === $this->app->ROUTE_HANDLER_IGNORE) {
                 continue;
             }
 
@@ -77,17 +78,17 @@ class Pipe_Cli_Help {
 
             if (is_array($children)) {
                 $childKeys = array_keys($children);
-                $onlyMeta = empty(array_diff($childKeys, array('*')));
+                $onlyMeta = empty(array_diff($childKeys, array($this->app->ROUTE_HANDLER)));
 
                 if ($onlyMeta) {
                     $route = array('path' => $currentPath);
 
-                    if (isset($children['*'][$this->app->ROUTE_PIPE])) {
-                    $route['pipe'] = $children['*'][$this->app->ROUTE_PIPE];
+                    if (isset($children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_PIPE])) {
+                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_PIPE];
                     }
 
-                    if (isset($children['*'][$this->app->ROUTE_IGNORE])) {
-                        $route['ignore'] = $children['*'][$this->app->ROUTE_IGNORE];
+                    if (isset($children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_IGNORE])) {
+                        $route['ignore'] = $children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_IGNORE];
                     }
 
                     $routes[] = $route;

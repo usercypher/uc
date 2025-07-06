@@ -2,7 +2,7 @@
 
 class Lib_Database {
     var $app;
-    var $host, $port, $name, $user, $pass, $conn, $time;
+    var $host, $port, $name, $user, $pass, $conn, $time = '+00:00';
 
     public function args($args) {
         list(
@@ -14,7 +14,7 @@ class Lib_Database {
         $this->name = $this->app->getEnv('DB_NAME');
         $this->user = $this->app->getEnv('DB_USER');
         $this->pass = $this->app->getEnv('DB_PASS');
-        $this->time = $this->app->getEnv('DB_TIME');
+        $this->time = $this->app->getEnv('DB_TIME', '+00:00');
     }
 
     function connect() {

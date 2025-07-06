@@ -128,7 +128,7 @@ class Output {
 }
 
 class App {
-    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_PIPE = 0, $ROUTE_IGNORE = 1;
+    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
     var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
 
@@ -279,12 +279,12 @@ class App {
     // Route Management
 
     function setRoute($method, $route, $option) {
-        $end = array($this->ROUTE_PIPE => array(), $this->ROUTE_IGNORE => array());
+        $handler = array($this->ROUTE_HANDLER_PIPE => array(), $this->ROUTE_HANDLER_IGNORE => array());
 
-        $map = array('pipe' => $this->ROUTE_PIPE, 'ignore' => $this->ROUTE_IGNORE);
+        $map = array('pipe' => $this->ROUTE_HANDLER_PIPE, 'ignore' => $this->ROUTE_HANDLER_IGNORE);
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
-                foreach ($option[$key] as $tmpUnit) $end[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
+                foreach ($option[$key] as $tmpUnit) $handler[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
             }
         }
 
@@ -295,9 +295,9 @@ class App {
             $node = &$node[$segment];
         }
 
-        if (isset($node['*'])) return trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
+        if (isset($node[$this->ROUTE_HANDLER])) return trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
 
-        $node['*'] = $end;
+        $node[$this->ROUTE_HANDLER] = $handler;
     }
 
     function groupRoute($group, $method, $route, $option = array()) {
@@ -347,7 +347,7 @@ class App {
                     if ($paramModifier === '*') {
                         $params[$paramName] = array_slice($pathSegments, $index + $decrement);
                         $current = $value;
-                        if (isset($current['*'])) break 2;
+                        if (isset($current[$this->ROUTE_HANDLER])) break 2;
                         $matched = true;
                         break;
                     }
@@ -365,7 +365,7 @@ class App {
             if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
-        while (!isset($current['*'])) {
+        while (!isset($current[$this->ROUTE_HANDLER])) {
             $matched = false;
 
             foreach ($current as $key => $value) {
@@ -382,13 +382,13 @@ class App {
             if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
         }
 
-        if (!isset($current['*'])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+        if (!isset($current[$this->ROUTE_HANDLER])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
 
         $finalPipes = array();
 
-        $ignore = array_flip($current['*'][$this->ROUTE_IGNORE]);
+        $ignore = array_flip($current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_IGNORE]);
 
-        $pipeGroup = isset($ignore[-1]) ? array(&$current['*'][$this->ROUTE_PIPE]) : array(&$this->pipes['prepend'], &$current['*'][$this->ROUTE_PIPE], &$this->pipes['append']);
+        $pipeGroup = isset($ignore[-1]) ? array(&$current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_PIPE]) : array(&$this->pipes['prepend'], &$current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_PIPE], &$this->pipes['append']);
 
         foreach ($pipeGroup as $pipes) {
             foreach ($pipes as $pipe) {
