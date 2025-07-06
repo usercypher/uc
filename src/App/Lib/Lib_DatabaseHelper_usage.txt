@@ -1,7 +1,7 @@
 <?php
 
 $model = new Lib_DatabaseHelper();
-$model->init($database, 'table', 'id');
+$model->init($conn, 'table', 'id');
 
 // addMessage
 $model->addMessage('success', 'Operation successful');
@@ -60,7 +60,7 @@ $model->save($dataToSave);
 $users = $model->where('age > ?', [30]);
 
 // query
-$usersByQuery = $model->query('SELECT * FROM users WHERE age > ?', [30]);
+$usersByQuery = $model->get('SELECT * FROM users WHERE age > ?', [30]);
 
 // first
 $firstUser = $model->first('age > ?', [30]);

@@ -24,65 +24,11 @@ class Lib_Database {
             ));
             $this->conn->exec('SET time_zone = "' . $this->time . '"');
         }
+        return $this->conn;
     }
 
     function disconnect() {
         $this->conn = null;
-    }
-
-    function beginTransaction() {
-        return $this->conn->beginTransaction();
-    }
-
-    function commit() {
-        return $this->conn->commit();
-    }
-
-    function rollBack() {
-        return $this->conn->rollBack();
-    }
-
-    function lastInsertId() {
-        return $this->conn->lastInsertId();
-    }
-
-    function query($query, $params) {
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt) {
-            $error = $this->conn->errorInfo();
-            trigger_error('500|Prepare failed: ' . $error[2]);
-            return false;
-        }
-
-        $typeMap = array(
-            'boolean' => PDO::PARAM_BOOL,
-            'integer' => PDO::PARAM_INT,
-            'null' => PDO::PARAM_NULL,
-            'resource' => PDO::PARAM_LOB,
-        );
-
-        $i = 1;
-
-        foreach ($params as $value) {
-            $type = isset($typeMap[gettype($value)]) ? $typeMap[gettype($value)] : PDO::PARAM_STR;
-            $stmt->bindValue($i++, $value, $type);
-        }
-
-        if (!$stmt->execute()) {
-            $error = $this->conn->errorInfo();
-            trigger_error('500|Execute failed: ' . $error[2]);
-            return false;
-        }
-
-        return $stmt;
-    }
-
-    function fetch($stmt) {
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    function fetchAll($stmt) {
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

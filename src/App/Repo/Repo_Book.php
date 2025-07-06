@@ -3,10 +3,10 @@
 class Repo_Book extends Lib_DatabaseHelper {
     public function args($args) {
         list(
-            $database,
+            $database
         ) = $args;
 
-        parent::init($database, 'books');
+        parent::init($database->connect(), 'books');
     }
 
     public function validateAndInsert($data) {
