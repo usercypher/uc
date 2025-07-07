@@ -2,15 +2,15 @@
 
 class Lib_DatabaseHelper {
     var $messages = array();
-    var $conn, $table, $primaryColumn = 'id';
+    var $conn, $table, $key;
 
     function setConn($conn) {
         $this->conn = $conn;
     }
 
-    function setTable($table, $primaryColumn = 'id') {
+    function setTable($table, $key = 'id') {
         $this->table = $table;
-        $this->primaryColumn = $primaryColumn;
+        $this->key = $key;
     }
 
     function addMessage($type, $message, $meta = array()) {
@@ -90,8 +90,7 @@ class Lib_DatabaseHelper {
         $placeholders = implode(', ', array_fill(0, count($rows[0]), '?'));
         $values = array();
         foreach ($rows as $row) {
-            $rowValues = array_values($row);
-            foreach ($rowValues as $value) {
+            foreach ($row as $value) {
                 $values[] = $value;
             }
         }
@@ -99,23 +98,25 @@ class Lib_DatabaseHelper {
         return $this->query($query, $values) !== false;
     }
 
-    function update($id, $data) {
+    function update($data) {
+        $id = $data[$this->key];
+        unset($data[$this->key]);
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
 
-        $query = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' = ?';
+        $query = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->key . ' = ?';
         return $this->query($query, array_merge(array_values($data), array($id))) !== false;
     }
 
     function updateBatch($rows) {
         $ids = array();
         foreach ($rows as $row) {
-            $ids[] = $row[$this->primaryColumn];
+            $ids[] = $row[$this->key];
         }
 
         $allColumns = array_keys($rows[0]);
         $columns = array();
         foreach ($allColumns as $col) {
-            if ($col !== $this->primaryColumn) {
+            if ($col !== $this->key) {
                 $columns[] = $col;
             }
         }
@@ -130,15 +131,15 @@ class Lib_DatabaseHelper {
                     return false;
                 }
                 $caseClause[] = 'WHEN ? THEN ?';
-                $values[] = $row[$this->primaryColumn];
+                $values[] = $row[$this->key];
                 $values[] = $row[$column];
             }
-            $setClauses[] = $column . ' = CASE ' . $this->primaryColumn . ' ' . implode(' ', $caseClause) . ' ELSE ' . $column . ' END';
+            $setClauses[] = $column . ' = CASE ' . $this->key . ' ' . implode(' ', $caseClause) . ' ELSE ' . $column . ' END';
         }
 
         $setClause = implode(', ', $setClauses);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $query = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->primaryColumn . ' IN (' . $placeholders . ')';
+        $query = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->key . ' IN (' . $placeholders . ')';
 
         $values = array_merge($values, $ids);
 
@@ -146,22 +147,22 @@ class Lib_DatabaseHelper {
     }
 
     function delete($id) {
-        $query = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?';
+        $query = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->key . ' = ?';
         return $this->query($query, array($id)) !== false;
     }
 
     function deleteBatch($ids) {
         $placeholders = implode(', ', array_fill(0, count($ids), '?'));
-        $query = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' IN (' . $placeholders . ')';
+        $query = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->key . ' IN (' . $placeholders . ')';
         return $this->query($query, $ids) !== false;
     }
 
     function save($data) {
-        return isset($data[$this->primaryColumn]) ? $this->update($data[$this->primaryColumn], $data) : $this->insert($data);
+        return isset($data[$this->key]) ? $this->update($data) : $this->insert($data);
     }
 
     function find($id, $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $this->primaryColumn . ' = ?';
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $this->key . ' = ?';
         $stmt = $this->query($query, array($id));
         return $this->fetch($stmt);
     }

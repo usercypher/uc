@@ -31,8 +31,8 @@ while ($chunk = $model->chunk($dataBatch, 200)) {
 }
 
 // update
-$dataToUpdate = ['name' => 'John Updated', 'email' => 'johnupdated@example.com'];
-$model->update(1, $dataToUpdate);
+$dataToUpdate = ['id' => 1, 'name' => 'John Updated', 'email' => 'johnupdated@example.com'];
+$model->update($dataToUpdate);
 
 // updateBatch (with chunking)
 $dataBatchUpdate = [

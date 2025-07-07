@@ -38,7 +38,7 @@ class Repo_Book extends Lib_DatabaseHelper {
         $book['publisher'] = $bookData['publisher'];
         $book['year'] = $bookData['year'];
 
-        $this->update($book['id'], $book);
+        $this->update($book);
 
         $this->addMessage('success', 'Book updated successfully.');
 
