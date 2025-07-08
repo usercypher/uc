@@ -9,13 +9,13 @@ class Pipe_Landing {
         ) = $args;
     }
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $output->html($this->app->dirRes('html/landing.php'), array(
             'app' => $this->app,
         ));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

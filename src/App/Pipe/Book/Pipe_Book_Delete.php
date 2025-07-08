@@ -12,8 +12,8 @@ class Pipe_Book_Delete {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $data = $input->parsed;
 
@@ -23,6 +23,6 @@ class Pipe_Book_Delete {
 
         $output->redirect($this->app->urlRoute('home'));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

@@ -10,8 +10,8 @@ class Pipe_Book_Create {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $output->html($this->app->dirRes('html/create.php'), array(
             'app' => $this->app,
@@ -19,6 +19,6 @@ class Pipe_Book_Create {
             'csrf_token' => $this->session->get('csrf_token'),
         ));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

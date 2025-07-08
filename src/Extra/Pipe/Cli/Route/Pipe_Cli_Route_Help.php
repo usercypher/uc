@@ -1,8 +1,8 @@
 <?php
 
 class Pipe_Cli_Route_Help {
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $message = '';
         $option = $input->getFrom($input->params, 'on-unknown-option');
@@ -17,6 +17,6 @@ class Pipe_Cli_Route_Help {
         $output->content = $message;
         $output->code = 1;
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

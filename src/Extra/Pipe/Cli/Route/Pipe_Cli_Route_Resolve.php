@@ -9,8 +9,8 @@ class Pipe_Cli_Route_Resolve {
         ) = $args;
     }
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
 
@@ -24,8 +24,8 @@ class Pipe_Cli_Route_Resolve {
             $message .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
             $output->content = $message;
             $output->code = 1;
-            $break = true;
-            return array($input, $output, $break);
+            $success = false;
+            return array($input, $output, $success);
         }
 
         $result = $this->app->resolveRoute($type, $path);
@@ -34,7 +34,7 @@ class Pipe_Cli_Route_Resolve {
             $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
             $output->content = $message;
             $output->code = 1;
-            return array($input, $output, $break);
+            return array($input, $output, $success);
         }
 
         $message .= 'RESOLVED ROUTE' . EOL;
@@ -56,6 +56,6 @@ class Pipe_Cli_Route_Resolve {
 
         $output->content = $message;
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

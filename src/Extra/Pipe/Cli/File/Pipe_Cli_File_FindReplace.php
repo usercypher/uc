@@ -1,8 +1,8 @@
 <?php
 
 class Pipe_Cli_File_FindReplace {
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
         $message = '';
 
         $directory = $input->getFrom($input->options, 'dir');
@@ -13,23 +13,23 @@ class Pipe_Cli_File_FindReplace {
         }
 
         $search = $input->getFrom($input->options, 'search');
-        $replace = $input->getFrom($input->options, 'replace');
+        $replace = $input->getFrom($input->options, 'replace');        
 
         if ($search === null || $replace === null) {
             $message .= 'Error: Missing required parameters.' . EOL;
             $message .= 'Usage: php [file] file find-replace --search="searchString" --replace="replaceString" --dir="directoryPath"' . EOL;
             $output->content = $message;
             $output->code = 1;
-            $break = true;
-            return array($input, $output, $break);
+            $success = false;
+            return array($input, $output, $success);
         }
 
         if (!is_dir($directory)) {
             $message .= "Error: Directory does not exist: $directory" . EOL;
             $output->content = $message;
             $output->code = 1;
-            $break = true;
-            return array($input, $output, $break);
+            $success = false;
+            return array($input, $output, $success);
         }
 
         $files = $this->getFilesRecursive($directory);
@@ -51,7 +51,7 @@ class Pipe_Cli_File_FindReplace {
         }
 
         $output->content = $message;
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 
     private function getFilesRecursive($dir) {

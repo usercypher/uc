@@ -12,8 +12,8 @@ class Pipe_Book_Update {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $data = $input->parsed;
 
@@ -23,6 +23,6 @@ class Pipe_Book_Update {
 
         $output->redirect($this->app->urlRoute('edit/:id', array(':id' => $data['book']['id'])));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

@@ -9,8 +9,8 @@ class Pipe_Cli_Pipe_Create {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $message = '';
 
@@ -21,8 +21,8 @@ class Pipe_Cli_Pipe_Create {
             $message .= 'Usage: php [file] pipe create [name]' . EOL;
             $output->content = $message;
             $output->code = 1;
-            $break = true;
-            return array($input, $output, $break);
+            $success = false;
+            return array($input, $output, $success);
         }
 
         $classPath = $input->getFrom($input->options, 'class', '') . $className . '.php';
@@ -42,7 +42,7 @@ class Pipe_Cli_Pipe_Create {
 
         $output->content = $message;
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 
     private function classContent($className, $classDependency) {
@@ -59,10 +59,10 @@ class Pipe_Cli_Pipe_Create {
         return "<?php
 
 class $className {" . $classVar . $functionArgs . "
-    public function pipe(\$input, \$output) {
-        \$break = false;
+    public function process(\$input, \$output) {
+        \$success = true;
         // code
-        return array(\$input, \$output, \$break);
+        return array(\$input, \$output, \$success);
     }
 }";
     }

@@ -426,8 +426,8 @@ class App {
         $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {
             $p = $this->loadClass($this->unitList[$p]);
-            list($input, $output, $break) = $p->pipe($input, $output);
-            if ($break) break;
+            list($input, $output, $success) = $p->process($input, $output);
+            if (!$success) break;
         }
 
         return $output;

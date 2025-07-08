@@ -12,8 +12,8 @@ class Pipe_Book_Home {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $output->html($this->app->dirRes('html/home.php'), array(
             'app' => $this->app,
@@ -22,6 +22,6 @@ class Pipe_Book_Home {
             'books' => $this->bookRepo->all(),
         ));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

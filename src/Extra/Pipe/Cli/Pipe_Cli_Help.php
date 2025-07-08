@@ -9,8 +9,8 @@ class Pipe_Cli_Help {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $message = '';
 
@@ -49,7 +49,7 @@ class Pipe_Cli_Help {
         $output->content = $message;
         $output->code = 1;
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 
     private function flattenRoutesWithMethod($tree) {

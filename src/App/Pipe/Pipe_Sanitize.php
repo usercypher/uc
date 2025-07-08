@@ -1,8 +1,8 @@
 <?php
 
 class Pipe_Sanitize {
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         if (isset($input->parsed)) {
             $this->sanitize($input->parsed);
@@ -16,7 +16,7 @@ class Pipe_Sanitize {
             $this->sanitize($input->params);
         }
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 
     public function sanitize(&$array) {

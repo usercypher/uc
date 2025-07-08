@@ -9,8 +9,8 @@ class Pipe_Cli_Route_Print {
         ) = $args;
     }
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
         $routes = $this->app->routes;
@@ -74,7 +74,7 @@ class Pipe_Cli_Route_Print {
 
         $output->content = $message;
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 
     private function flattenRoutesWithMethod($tree) {

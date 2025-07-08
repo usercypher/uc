@@ -12,8 +12,8 @@ class Pipe_Book_Edit {
         ) = $args;
     } 
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
 
         $data = $input->params;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
@@ -25,6 +25,6 @@ class Pipe_Book_Edit {
             'book' => $this->bookRepo->first('id = ?', array($bookId))
         ));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 }

@@ -9,12 +9,12 @@ class Pipe_SrcAutoLoader {
         ) = $args;
     }
 
-    public function pipe($input, $output) {
-        $break = false;
+    public function process($input, $output) {
+        $success = true;
         $this->src = $this->app->dirRoot('src' . DS);
         spl_autoload_register(array($this, 'autoLoader'));
 
-        return array($input, $output, $break);
+        return array($input, $output, $success);
     }
 
     public function autoLoader($class) {
