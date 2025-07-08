@@ -37,6 +37,10 @@ class Lib_DatabaseHelper {
         return $this->conn->lastInsertId();
     }
 
+    function execute($query) {
+        return $this->conn->exec($query);
+    }
+
     function query($query, $params) {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
@@ -75,6 +79,17 @@ class Lib_DatabaseHelper {
 
     function fetchAll($stmt) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function create($definition, $return = false) {
+        $query = 'CREATE TABLE IF NOT EXISTS ' . $this->table . ' (' . $definition . ')';
+        if ($return) return $query . ';';
+        return $this->execute($query) !== false;
+    }
+
+    function drop() {
+        $query = 'DROP TABLE IF EXISTS ' . $this->table;
+        return $this->execute($query) !== false;
     }
 
     function insert($data) {
