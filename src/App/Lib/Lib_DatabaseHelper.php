@@ -194,7 +194,7 @@ class Lib_DatabaseHelper {
         return $this->fetch($stmt);
     }
 
-    function where($conditions, $params, $columns = '*') {
+    function list($conditions, $params, $columns = '*') {
         $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions;
         $stmt = $this->query($query, $params);
         return $this->fetchAll($stmt);
@@ -205,7 +205,7 @@ class Lib_DatabaseHelper {
         return $this->fetchAll($stmt);
     }
 
-    function count($conditions, $params) {
+    function count($conditions = '', $params = array()) {
         $query = 'SELECT COUNT(*) AS total FROM ' . $this->table . (!empty($conditions) ? ' WHERE ' . $conditions : '');
         $stmt = $this->query($query, $params);
         $result = $this->fetch($stmt);

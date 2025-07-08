@@ -58,7 +58,7 @@ $dataToSave = ['name' => 'Alice', 'email' => 'alice@example.com'];
 $model->save($dataToSave);
 
 // where
-$users = $model->where('age > ?', [30]);
+$users = $model->list('age > ?', [30]);
 
 // query
 $usersByQuery = $model->get('SELECT * FROM users WHERE age > ?', [30]);
