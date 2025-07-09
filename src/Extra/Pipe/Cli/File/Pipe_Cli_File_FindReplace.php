@@ -32,6 +32,7 @@ class Pipe_Cli_File_FindReplace {
             return array($input, $output, $success);
         }
 
+        $output->std("Scanning..." . EOL);
         $files = $this->getFilesRecursive($directory);
         $updatedFiles = [];
 
@@ -40,6 +41,8 @@ class Pipe_Cli_File_FindReplace {
                 $updatedFiles[] = $file;
             }
         }
+
+        $output->std("Done. " . count($files) . " files scanned." . EOL . EOL,);
 
         if ($updatedFiles) {
             $message .= "Updated files:" . EOL;

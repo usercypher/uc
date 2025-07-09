@@ -23,7 +23,6 @@ class Pipe_Cli_File_Find {
             return array($input, $output, $success);
         }
 
-
         if (!is_dir($directory)) {
             $message .= "Error: Directory does not exist: $directory" . EOL;
             $output->content = $message;
@@ -32,14 +31,17 @@ class Pipe_Cli_File_Find {
             return array($input, $output, $success);
         }
 
+        $output->std("Scanning..." . EOL);
         $files = $this->getFilesRecursive($directory);
         $foundFiles = [];
 
-        foreach ($files as $file) {
+        foreach ($files as $i => $file) {
             if ($this->fileContainsString($file, $search)) {
                 $foundFiles[] = $file;
             }
         }
+
+        $output->std("Done. " . count($files) . " files scanned." . EOL . EOL,);
 
         if ($foundFiles) {
             $message .= "Files containing '$search':" . EOL;
@@ -59,6 +61,7 @@ class Pipe_Cli_File_Find {
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
+
         foreach ($iterator as $file) {
             if ($file->isFile()) {
                 $files[] = $file->getPathname();
@@ -82,5 +85,4 @@ class Pipe_Cli_File_Find {
         fclose($handle);
         return false;
     }
-
 }

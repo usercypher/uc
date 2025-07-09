@@ -16,6 +16,7 @@ limitations under the License.
 */
 
 define('SAPI', php_sapi_name());
+define('CR', "\r");
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
     define('DS', '\\');
