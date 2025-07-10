@@ -639,10 +639,10 @@ class App {
         }
     }
 
-    function read($file, $size = 8192) {
+    function read($file) {
         if ($fp = fopen($file, 'rb')) {
             $chunks = array();
-            while (!feof($fp)) $chunks[] = fread($fp, $size);
+            while (!feof($fp)) $chunks[] = fread($fp, 8192);
             fclose($fp);
             return implode('', $chunks);
         }
