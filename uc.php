@@ -633,18 +633,18 @@ class App {
     }
 
     function write($file, $string, $append = false) {
-        if ($fp = fopen($file, (($append) ? 'a' : 'w'))) {
+        if ($fp = fopen($file, (($append) ? 'ab' : 'wb'))) {
             fwrite($fp, (string) $string);
             fclose($fp);
         }
     }
 
     function read($file, $size = 8192) {
-        if ($fp = fopen($file, 'r')) {
-            $content = '';
-            while (!feof($fp)) $content .= fread($fp, $size);
+        if ($fp = fopen($file, 'rb')) {
+            $chunks = array();
+            while (!feof($fp)) $chunks[] = fread($fp, $size);
             fclose($fp);
-            return $content;
+            return implode('', $chunks);
         }
         return false;
     }
