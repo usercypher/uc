@@ -52,6 +52,7 @@ function input_http($in) {
     $in->cookies = $_COOKIE;
     $in->files = $_FILES;
     $in->parsed = $_POST;
+    $in->content = file_get_contents('php://input');
 
     return $in;
 }
