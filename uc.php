@@ -217,7 +217,7 @@ class App {
         if (!(error_reporting() & $errno)) return;
 
         $http = 500;
-        $type = 'text/html';
+        $type = 'text/plain';
         $content = '';
 
         $parts = explode('|', $errstr, 2);
@@ -228,7 +228,8 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        if ($this->getEnv('XMLHTTPREQUEST')) {
+        $accept = $this->getEnv('ACCEPT');
+        if (strpos($accept, 'application/json') !== false) {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
         } elseif ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
@@ -246,11 +247,11 @@ class App {
                 }
                 $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(' . implode(', ', $args) . ')' . EOL;
             }
-            $type = 'text/plain';
             $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
         } else {
             $file = $this->ENV['DIR_ROOT'] . $this->ENV['ERROR_HTML_FILE'];
-            if (file_exists($file)) {
+            if (strpos($accept, 'text/html') !== false && file_exists($file)) {
+                $type = 'text/html';
                 $data = array('app' => $this, 'http' => $http);
                 ob_start();
                 include($file);
