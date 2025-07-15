@@ -57,9 +57,10 @@ function index($packageFile, $settingsFile, $configFile) {
     $app = new App();
     $app->init();
 
-    // Register error and shutdown handlers
-    set_error_handler(array($app, 'error'));
-    register_shutdown_function(array($app, 'shutdown'));
+    require('Lib_Exception.php');
+    $exception = new Lib_Exception();
+    $exception->args(array($app));
+    $exception->init();
 
     // Load environment and ini settings
     $settings = require($settingsFile);

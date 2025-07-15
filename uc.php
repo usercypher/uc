@@ -205,10 +205,6 @@ class App {
 
     // Error Management
 
-    function shutdown() {
-        if (function_exists('error_get_last') && ($error = error_get_last()) !== null) $this->error($error['type'], $error['message'], $error['file'], $error['line']);
-    }
-
     function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
         if ($this->ENV['DEBUG']) {
             echo($errstr);
@@ -229,7 +225,7 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        $accept = $this->getEnv('ACCEPT');
+        $accept = $this->getEnv('ACCEPT', '');
         if (strpos($accept, 'application/json') !== false) {
             $type = 'application/json';
             $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
