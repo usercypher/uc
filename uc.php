@@ -15,6 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+while (ob_get_level() > 0) ob_end_clean();
+ob_start();
+
 define('SAPI', php_sapi_name());
 define('CR', "\r");
 
@@ -206,6 +209,8 @@ class App {
     // Error Management
 
     function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
+        ob_clean();
+
         if ($this->ENV['DEBUG']) {
             echo($errstr);
             return;
@@ -257,8 +262,6 @@ class App {
                 $content = 'An unexpected error occurred. Please try again later.' . EOL;
             }
         }
-
-        if (ob_get_level() > 0) ob_end_clean();
 
         if ($return) return array('code' => $http, 'type' => $type, 'content' => $content);
 
