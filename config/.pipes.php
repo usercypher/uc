@@ -9,7 +9,6 @@
  */
 $app->setPipes(array(
     'prepend' => array(
-        'Pipe_Sanitize',         // Sanitize all incoming data
         'Pipe_CsrfGenerate',     // Generate CSRF token for GET requests
     ),
     'append' => array(

@@ -34,15 +34,15 @@ $books = $data['books'];
             <?php foreach ($books as $book) : ?>
 
             <div class="book-card">
-                <h3><?php echo htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
-                <p><strong>Author:</strong> <?php echo htmlspecialchars($book['author'], ENT_QUOTES, 'UTF-8'); ?></p>
-                <p><strong>Publisher:</strong> <?php echo htmlspecialchars($book['publisher'], ENT_QUOTES, 'UTF-8'); ?></p>
-                <p><strong>Year:</strong> <?php echo htmlspecialchars($book['year'], ENT_QUOTES, 'UTF-8'); ?></p>
+                <h3><?php echo $book['title']; ?></h3>
+                <p><strong>Author:</strong> <?php echo $book['author']; ?></p>
+                <p><strong>Publisher:</strong> <?php echo $book['publisher']; ?></p>
+                <p><strong>Year:</strong> <?php echo $book['year']; ?></p>
 
                 <!-- Actions (Edit & Delete) -->
                 <div class="actions">
                     <a href="<?php echo $app->urlRoute('edit/:title_id', array(':title_id' => $app->strSlug($book['title'] . '-' . $book['id']))); ?>"><button>Edit</button></a>
-                    <form action="<?php echo $app->urlRoute('book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, 'Delete book <?php echo htmlspecialchars($book['title'], ENT_QUOTES, 'UTF-8'); ?>?');">
+                    <form action="<?php echo $app->urlRoute('book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, 'Delete book <?php echo $book['title']; ?>?');">
                         <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
                         <input type="hidden" name="book[id]" value="<?php echo $book['id']; ?>">
                         <input type="submit" value="Delete">

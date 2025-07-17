@@ -1,12 +1,13 @@
 <?php
 
 class Pipe_Book_Create {
-    private $app, $session;
+    private $app, $session, $html;
 
     public function args($args) {
         list(
             $this->app, 
             $this->session, 
+            $this->html
         ) = $args;
     } 
 

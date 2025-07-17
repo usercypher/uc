@@ -1,15 +1,23 @@
 <?php
 
 class Lib_Html {
-    public function encode(&$array, $stripTags = false, $allowedTags = '') {
+    function e($string) {
+        return htmlspecialchars($string, ENT_QUOTES);
+    }
+
+    function d($string) {
+        return html_entity_decode($string);
+    }
+
+    function encode(&$array, $stripTags = false, $allowedTags = '') {
         $this->htmlProcessor($array, true, $stripTags, $allowedTags);
     }
 
-    public function decode(&$array, $stripTags = false, $allowedTags = '') {
+    function decode(&$array, $stripTags = false, $allowedTags = '') {
         $this->htmlProcessor($array, false, $stripTags, $allowedTags);
     }
 
-    public function htmlProcessor(&$array, $encode, $stripTags, $allowedTags) {
+    function htmlProcessor(&$array, $encode, $stripTags, $allowedTags) {
         $stack = array();
         $stack[] = array(&$array);
 
