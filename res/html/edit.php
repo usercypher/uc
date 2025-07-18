@@ -1,6 +1,8 @@
 <?php 
 
 $app = $data['app'];
+$html = $data['html'];
+
 $flash = $data['flash'];
 $csrfToken = $data['csrf_token'];
 $book = $data['book'];
@@ -25,21 +27,21 @@ $book = $data['book'];
         <br>
         <div class='container-form'>
             <form action="<?php echo($app->urlRoute('book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-                <input type="hidden" name="book[id]" value="<?php echo($book['id']); ?>">
-                <input type="hidden" name="book[title][current]" value="<?php echo($book['title']); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo $html->h($csrfToken); ?>">
+                <input type="hidden" name="book[id]" value="<?php echo($html->h($book['id'])); ?>">
+                <input type="hidden" name="book[title][current]" value="<?php echo($html->h($book['title'])); ?>">
 
                 <label>Title:</label>
-                <input type="text" name="book[title][new]" value="<?php echo($book['title']); ?>" required>
+                <input type="text" name="book[title][new]" value="<?php echo($html->h($book['title'])); ?>" required>
 
                 <label>Author:</label>
-                <input type="text" name="book[author]" value="<?php echo($book['author']); ?>">
+                <input type="text" name="book[author]" value="<?php echo($html->h($book['author'])); ?>">
 
                 <label>Publisher:</label>
-                <input type="text" name="book[publisher]" value="<?php echo($book['publisher']); ?>">
+                <input type="text" name="book[publisher]" value="<?php echo($html->h($book['publisher'])); ?>">
 
                 <label>Year:</label>
-                <input type="date" name="book[year]" value="<?php echo($book['year']); ?>">
+                <input type="date" name="book[year]" value="<?php echo($html->h($book['year'])); ?>">
 
                 <input type="submit" value="Update">
             </form>

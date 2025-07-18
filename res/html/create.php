@@ -1,6 +1,8 @@
 <?php 
 
 $app = $data['app'];
+$html = $data['html'];
+
 $flash = $data['flash'];
 $csrfToken = $data['csrf_token'];
 

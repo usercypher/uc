@@ -16,14 +16,12 @@ class Pipe_Book_Home {
     public function process($input, $output) {
         $success = true;
 
-        $books = $this->bookRepo->all();
-        $this->html->encode($books);
-
         $output->html($this->app->dirRes('html/home.php'), array(
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'books' => $books,
+            'html' => $this->html,
+            'books' => $this->bookRepo->all(),
         ));
 
         return array($input, $output, $success);

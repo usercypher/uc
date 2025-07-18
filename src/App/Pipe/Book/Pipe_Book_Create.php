@@ -18,6 +18,7 @@ class Pipe_Book_Create {
             'app' => $this->app,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
+            'html' => $this->html,
         ));
 
         return array($input, $output, $success);
