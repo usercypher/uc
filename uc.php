@@ -126,6 +126,10 @@ class Output {
         $this->content = ob_get_clean();
     }
 
+    function htmlEncode($s) {
+        return htmlspecialchars($s, ENT_QUOTES);
+    }
+
     function redirect($url, $code = 302) {
         $this->headers['location'] = $url;
         $this->code = $code;
@@ -405,7 +409,7 @@ class App {
 
     function dispatch($input, $output) {
         if (SAPI === 'cli') {
-            foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);
+            foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);            
             $input->method = (isset($input->options['method']) && $input->options['method'] !== true) ? $input->options['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($input->uri, '?');

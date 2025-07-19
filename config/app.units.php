@@ -43,9 +43,11 @@ $group = array(
 $app->groupUnit($group, 'Pipe_Book_Store', array('args' => array('Repo_Book')));
 $app->groupUnit($group, 'Pipe_Book_Update', array('args' => array('Repo_Book')));
 $app->groupUnit($group, 'Pipe_Book_Delete', array('args' => array('Repo_Book')));
-$app->groupUnit($group, 'Pipe_Book_Create', array('args' => array('Lib_Html')));
-$app->groupUnit($group, 'Pipe_Book_Edit', array('args' => array('Lib_Html', 'Repo_Book')));
-$app->groupUnit($group, 'Pipe_Book_Home', array('args' => array('Lib_Html', 'Repo_Book')));
+
+// renderer
+$app->groupUnit($group, 'Pipe_Book_Create', array('args' => array()));
+$app->groupUnit($group, 'Pipe_Book_Edit', array('args' => array('Repo_Book')));
+$app->groupUnit($group, 'Pipe_Book_Home', array('args' => array('Repo_Book')));
 
 /**
  * ------------------------------------------------------------------------

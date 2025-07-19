@@ -1,7 +1,7 @@
 <?php 
 
 $app = $data['app'];
-$html = $data['html'];
+$output = $data['output'];
 
 $flash = $data['flash'];
 $csrfToken = $data['csrf_token'];
@@ -36,17 +36,17 @@ $books = $data['books'];
             <?php foreach ($books as $book) : ?>
 
             <div class="book-card">
-                <h3><?php echo $html->h($book['title']); ?></h3>
-                <p><strong>Author:</strong> <?php echo $html->h($book['author']); ?></p>
-                <p><strong>Publisher:</strong> <?php echo $html->h($book['publisher']); ?></p>
-                <p><strong>Year:</strong> <?php echo $html->h($book['year']); ?></p>
+                <h3><?php echo $output->htmlEncode($book['title']); ?></h3>
+                <p><strong>Author:</strong> <?php echo $output->htmlEncode($book['author']); ?></p>
+                <p><strong>Publisher:</strong> <?php echo $output->htmlEncode($book['publisher']); ?></p>
+                <p><strong>Year:</strong> <?php echo $output->htmlEncode($book['year']); ?></p>
 
                 <!-- Actions (Edit & Delete) -->
                 <div class="actions">
-                    <a href="<?php echo $app->urlRoute('edit/:title_id', array(':title_id' => $app->strSlug($book['title'] . '-' . $html->p($book['id'])))); ?>"><button>Edit</button></a>
-                    <form action="<?php echo $app->urlRoute('book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, <?php echo $html->h($html->j('Delete book' . ($book['title']) . '?')); ?>);">
-                        <input type="hidden" name="csrf_token" value="<?php echo $html->h($csrfToken); ?>">
-                        <input type="hidden" name="book[id]" value="<?php echo $html->h($book['id']); ?>">
+                    <a href="<?php echo $app->urlRoute('edit/:title_id', array(':title_id' => $app->strSlug($book['title'] . '-' . rawurlencode($book['id'])))); ?>"><button>Edit</button></a>
+                    <form action="<?php echo $app->urlRoute('book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, <?php echo $output->htmlEncode(json_encode('Delete book' . ($book['title']) . '?')); ?>);">
+                        <input type="hidden" name="csrf_token" value="<?php echo $output->htmlEncode($csrfToken); ?>">
+                        <input type="hidden" name="book[id]" value="<?php echo $output->htmlEncode($book['id']); ?>">
                         <input type="submit" value="Delete">
                     </form>
                 </div>

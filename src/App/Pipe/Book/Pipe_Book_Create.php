@@ -1,13 +1,12 @@
 <?php
 
 class Pipe_Book_Create {
-    private $app, $session, $html;
+    private $app, $session;
 
     public function args($args) {
         list(
             $this->app, 
-            $this->session, 
-            $this->html
+            $this->session
         ) = $args;
     } 
 
@@ -16,9 +15,10 @@ class Pipe_Book_Create {
 
         $output->html($this->app->dirRes('html/create.php'), array(
             'app' => $this->app,
+            'output' => $output,
+
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'html' => $this->html,
         ));
 
         return array($input, $output, $success);

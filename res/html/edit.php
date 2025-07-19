@@ -1,7 +1,7 @@
 <?php 
 
 $app = $data['app'];
-$html = $data['html'];
+$output = $data['output'];
 
 $flash = $data['flash'];
 $csrfToken = $data['csrf_token'];
@@ -27,21 +27,21 @@ $book = $data['book'];
         <br>
         <div class='container-form'>
             <form action="<?php echo($app->urlRoute('book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
-                <input type="hidden" name="csrf_token" value="<?php echo $html->h($csrfToken); ?>">
-                <input type="hidden" name="book[id]" value="<?php echo($html->h($book['id'])); ?>">
-                <input type="hidden" name="book[title][current]" value="<?php echo($html->h($book['title'])); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo $output->htmlEncode($csrfToken); ?>">
+                <input type="hidden" name="book[id]" value="<?php echo($output->htmlEncode($book['id'])); ?>">
+                <input type="hidden" name="book[title][current]" value="<?php echo($output->htmlEncode($book['title'])); ?>">
 
                 <label>Title:</label>
-                <input type="text" name="book[title][new]" value="<?php echo($html->h($book['title'])); ?>" required>
+                <input type="text" name="book[title][new]" value="<?php echo($output->htmlEncode($book['title'])); ?>" required>
 
                 <label>Author:</label>
-                <input type="text" name="book[author]" value="<?php echo($html->h($book['author'])); ?>">
+                <input type="text" name="book[author]" value="<?php echo($output->htmlEncode($book['author'])); ?>">
 
                 <label>Publisher:</label>
-                <input type="text" name="book[publisher]" value="<?php echo($html->h($book['publisher'])); ?>">
+                <input type="text" name="book[publisher]" value="<?php echo($output->htmlEncode($book['publisher'])); ?>">
 
                 <label>Year:</label>
-                <input type="date" name="book[year]" value="<?php echo($html->h($book['year'])); ?>">
+                <input type="date" name="book[year]" value="<?php echo($output->htmlEncode($book['year'])); ?>">
 
                 <input type="submit" value="Update">
             </form>

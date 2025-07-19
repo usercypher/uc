@@ -1,14 +1,13 @@
 <?php
 
 class Pipe_Book_Home {
-    private $app, $session, $html;
+    private $app, $session;
     private $bookRepo;
 
     public function args($args) {
         list(
             $this->app, 
-            $this->session, 
-            $this->html, 
+            $this->session,
             $this->bookRepo
         ) = $args;
     } 
@@ -18,9 +17,10 @@ class Pipe_Book_Home {
 
         $output->html($this->app->dirRes('html/home.php'), array(
             'app' => $this->app,
+            'output' => $output,
+
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'html' => $this->html,
             'books' => $this->bookRepo->all(),
         ));
 

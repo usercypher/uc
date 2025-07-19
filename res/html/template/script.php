@@ -39,5 +39,5 @@
             confirmDialog.show();
         }
 
-        flashMessage(<?php echo $html->j($flash); ?>);
+        flashMessage(<?php echo json_encode($flash); ?>);
     </script>
