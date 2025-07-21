@@ -73,7 +73,7 @@ function index($packageFile, $settingsFile, $configFile) {
 
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
-    $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', 'text/html')));
+    $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;

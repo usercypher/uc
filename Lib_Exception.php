@@ -18,7 +18,7 @@ class Lib_Exception {
     }
 
     public function exception($e) {
-        $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, ($e->getCode() === 0 ? 1 : $e->getCode()). '|' . $e->getMessage(), $e->getFile(), $e->getLine(), false, true, $e->getTrace());
+        $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), false, true, $e->getTrace());
     }
 
     public function shutdown() {

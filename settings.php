@@ -13,12 +13,10 @@ return array(
             'DIR_WEB' => 'web'.DS, // Directory for web access (e.g., public folder)
             'DIR_SRC' => 'src'.DS.'app'.DS, // Source directory for application code
             'DIR_RES' => 'res'.DS, // Resource Directory
+            'DIR_ERROR' => 'res'.DS.'error'.DS, // Error pages Directory
             'URL_DIR_WEB' => 'web/', // URL path for web access
             // Error Settings
-            'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
             'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
-            'ERROR_IGNORE_ARGS' => 0, // Enable (1) or disable (0) ignore args
-            'ERROR_STRING_LIMIT' => 15, // limit string args
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
             'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
             // Routing Configuration
@@ -68,12 +66,10 @@ return array(
             'DIR_WEB' => 'web'.DS,
             'DIR_SRC' => 'src'.DS.'app'.DS,
             'DIR_RES' => 'res'.DS,
+            'DIR_ERROR' => 'res'.DS.'error'.DS,
             'URL_DIR_WEB' => 'web/',
             // Error Settings
-            'ERROR_HTML_FILE' => 'res'.DS.'html'.DS.'error.php', // Error view file
             'ERROR_LOG_FILE' => 'app'.DS.'error',
-            'ERROR_IGNORE_ARGS' => 1,
-            'ERROR_STRING_LIMIT' => 15,
             'SHOW_ERRORS' => 0,
             'LOG_ERRORS' => 1,
             // Routing Configuration

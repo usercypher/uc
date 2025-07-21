@@ -85,6 +85,29 @@ function input_cli($in) {
     return $in;
 }
 
+function http_preferred_mime_types($accept) {
+    $types = explode(',', $accept);
+    $preferences = array();
+
+    foreach ($types as $type) {
+        $parts = array_map('trim', explode(';', $type));
+        $mime = array_shift($parts);
+        $q = 1.0;
+
+        foreach ($parts as $param) {
+            $paramParts = explode('=', trim($param), 2);
+            if (count($paramParts) == 2 && strtolower($paramParts[0]) === 'q') {
+                $q = (float) $paramParts[1];
+            }
+        }
+
+        if ($q !== 0) $preferences[$mime] = $q;
+    }
+
+    arsort($preferences);
+    return array_keys($preferences);
+}
+
 class Input {
     var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $path = '', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array(), $positional = array(), $options = array(), $flags = array();
 
@@ -152,16 +175,14 @@ class App {
         $this->ENV['DIR_RES'] = '';
         $this->ENV['DIR_WEB'] = '';
         $this->ENV['DIR_SRC'] = '';
+        $this->ENV['DIR_ERROR'] = '';
 
         $this->ENV['ROUTE_FILE'] = 'index.php';
         $this->ENV['ROUTE_REWRITE'] = false;
         $this->ENV['URL_DIR_WEB'] = '';
         $this->ENV['URL_BASE'] = '/';
 
-        $this->ENV['ERROR_HTML_FILE'] = 'error.php';
         $this->ENV['ERROR_LOG_FILE'] = 'error';
-        $this->ENV['ERROR_IGNORE_ARGS'] = false;
-        $this->ENV['ERROR_STRING_LIMIT'] = 15;
         $this->ENV['SHOW_ERRORS'] = false;
         $this->ENV['LOG_ERRORS'] = true;
 
@@ -213,7 +234,7 @@ class App {
     // Error Management
 
     function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
-        ob_clean();
+        if (ob_get_level() > 0) ob_clean();
 
         if ($this->ENV['DEBUG']) {
             echo($errstr);
@@ -222,64 +243,57 @@ class App {
 
         if (!(error_reporting() & $errno)) return;
 
-        $http = 500;
+        $code = 500;
         $type = 'text/plain';
         $content = '';
 
         $parts = explode('|', $errstr, 2);
         if (is_numeric($parts[0])) {
-            $http = (int) $parts[0];
+            $code = (int) $parts[0];
             $errstr = $parts[1];
         }
 
-        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        $accept = $this->getEnv('ACCEPT', '');
-        if (strpos($accept, 'application/json') !== false) {
-            $type = 'application/json';
-            $content = $this->ENV['SHOW_ERRORS'] ? '{"error":"[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in ' . $errfile . ':' . $errline . '"}' : '{"error":"An unexpected error occurred. Please try again later."}';
-        } elseif ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
-            $traceOutput = 'Stack trace: ' . EOL;
-            $limit = $this->ENV['ERROR_STRING_LIMIT'];
-            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) {
-                $args = array();
-                foreach (((!$this->ENV['ERROR_IGNORE_ARGS'] && isset($frame['args'])) ? $frame['args'] : array()) as $arg) {
-                    if (is_null($arg)) $arg = 'NULL';
-                    elseif (is_bool($arg)) $arg = $arg ? 'true' : 'false';
-                    elseif (is_array($arg)) $arg = 'array';
-                    elseif (is_object($arg)) $arg = 'object(' . get_class($arg) . ')';
-                    elseif (is_string($arg)) $arg = '\'' . (strlen($arg) > $limit && $limit !== -1 ? substr($arg, 0, $limit) . '...' : $arg) . '\' (' . strlen($arg) . ')';
-                    $args[] = (string) $arg;
-                }
-                $traceOutput .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(' . implode(', ', $args) . ')' . EOL;
-            }
-            $content = '[php error ' . $errno . '] [http ' . $http . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . $traceOutput;
-        } else {
-            $file = $this->ENV['DIR_ROOT'] . $this->ENV['ERROR_HTML_FILE'];
-            if (strpos($accept, 'text/html') !== false && file_exists($file)) {
-                $type = 'text/html';
-                $data = array('app' => $this, 'http' => $http);
-                ob_start();
-                include($file);
-                $content = ob_get_clean();
-            } else {
-                $content = 'An unexpected error occurred. Please try again later.' . EOL;
+        if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
+            $content = '[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . 'Stack trace: ' . EOL;
+
+            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . EOL;
+        }
+
+        $typeExist = false;
+        $file = '';
+        foreach (http_preferred_mime_types($this->getEnv('ACCEPT', '')) as $t) {
+            $file = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_ERROR'] . str_replace('/', '_', $t) . '.php';
+            if ($typeExist = file_exists($file)) {
+                $type = $t;
+                break;
             }
         }
 
-        if ($return) return array('code' => $http, 'type' => $type, 'content' => $content);
+        if ($typeExist) {
+            $data = array('app' => $this, 'code' => $code, 'error' => $content);
+            ob_start();
+            include($file);
+            $content = ob_get_clean();
+        } else {
+            if (SAPI !== 'cli') $code = 406;
+            $content = $this->ENV['SHOW_ERRORS'] ? $content : '';
+        }
+
+        if ($return) return array('code' => $code, 'type' => $type, 'content' => $content);
 
         if (SAPI === 'cli') {
             fwrite(STDERR, $content);
         } else {
             if (!headers_sent()) {
-                header('HTTP/1.1 ' . $http);
+                header('HTTP/1.1 ' . $code);
                 header('content-type: ' . $type);
             }
             echo($content);
         }
 
-        if (!$exception) exit(1);
+        if (!$exception) exit($code > 255 ? 1 : $code);
     }
 
     // Route Management
@@ -409,7 +423,7 @@ class App {
 
     function dispatch($input, $output) {
         if (SAPI === 'cli') {
-            foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);            
+            foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);
             $input->method = (isset($input->options['method']) && $input->options['method'] !== true) ? $input->options['method'] : '';
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($input->uri, '?');
@@ -420,14 +434,7 @@ class App {
 
         $route = $this->resolveRoute($input->method, $input->path);
 
-        if (isset($route['error'])) {
-            $e = $this->error(E_USER_WARNING, $route['http'] . '|' . $route['error'], __FILE__, __LINE__, true);
-            $output->content = $e['content'];
-            $output->code = SAPI === 'cli' ? 1 : $e['code'];
-            $output->type = $e['type'];
-
-            return $output;
-        }
+        if (isset($route['error'])) trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
 
         $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {
@@ -606,7 +613,7 @@ class App {
     // Utility Functions
 
     function clear($property) {
-        unset($this-> {$property});
+        unset($this-> { $property });
     }
 
     function dirRoot($s) {
