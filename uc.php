@@ -85,27 +85,22 @@ function input_cli($in) {
     return $in;
 }
 
-function http_preferred_mime_types($accept) {
-    $types = explode(',', $accept);
-    $preferences = array();
-
-    foreach ($types as $type) {
-        $parts = array_map('trim', explode(';', $type));
-        $mime = array_shift($parts);
+function http_negotiate_type($accept, $offers) {
+    $prefs = array();
+    foreach (explode(',', $accept) as $type) {
+        $parts = explode(';', trim($type));
         $q = 1.0;
-
-        foreach ($parts as $param) {
-            $paramParts = explode('=', trim($param), 2);
-            if (count($paramParts) == 2 && strtolower($paramParts[0]) === 'q') {
-                $q = (float) $paramParts[1];
-            }
+        foreach ($parts as $p) {
+            if (strpos($p, 'q=') === 0) $q = (float)substr($p, 2);
         }
-
-        if ($q !== 0) $preferences[$mime] = $q;
+        if ($q > 0) $prefs[trim($parts[0])] = $q;
     }
-
-    arsort($preferences);
-    return array_keys($preferences);
+    arsort($prefs);
+    foreach (array_keys($prefs) as $p) {
+        foreach ($offers as $o) {
+            if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) return $o;
+        }
+    }
 }
 
 class Input {
@@ -113,6 +108,10 @@ class Input {
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
+    }
+
+    function httpNegotiateType($offers) {
+        return http_negotiate_type($this->getFrom($this->headers, 'Accept', ''), $offers);
     }
 
     function std($mark = '') {
@@ -182,6 +181,7 @@ class App {
         $this->ENV['URL_DIR_WEB'] = '';
         $this->ENV['URL_BASE'] = '/';
 
+        $this->ENV['ERROR_TEMPLATES'] = array();
         $this->ENV['ERROR_LOG_FILE'] = 'error';
         $this->ENV['SHOW_ERRORS'] = false;
         $this->ENV['LOG_ERRORS'] = true;
@@ -243,8 +243,8 @@ class App {
 
         if (!(error_reporting() & $errno)) return;
 
+        $type = http_negotiate_type($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
         $code = 500;
-        $type = 'text/plain';
         $content = '';
 
         $parts = explode('|', $errstr, 2);
@@ -261,22 +261,13 @@ class App {
             foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . EOL;
         }
 
-        $typeExist = false;
-        $file = '';
-        foreach (http_preferred_mime_types($this->getEnv('ACCEPT', '')) as $t) {
-            $file = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_ERROR'] . str_replace('/', '_', $t) . '.php';
-            if ($typeExist = file_exists($file)) {
-                $type = $t;
-                break;
-            }
-        }
-
-        if ($typeExist) {
+        if ($type !== null && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
             $data = array('app' => $this, 'code' => $code, 'error' => $content);
             ob_start();
-            include($file);
+            include($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type]);
             $content = ob_get_clean();
         } else {
+            $type = 'text/plain';
             if (SAPI !== 'cli') $code = 406;
             $content = $this->ENV['SHOW_ERRORS'] ? $content : '';
         }
@@ -434,7 +425,7 @@ class App {
 
         $route = $this->resolveRoute($input->method, $input->path);
 
-        if (isset($route['error'])) trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
+        if (isset($route['error'])) return trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
 
         $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {

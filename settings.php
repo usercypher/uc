@@ -9,13 +9,16 @@ return array(
     'env' => array(
         'dev' => array(
             // Environment Settings
-            'DIR_ROOT' => dirname(__FILE__).DS, // Root Directory
             'DIR_WEB' => 'web'.DS, // Directory for web access (e.g., public folder)
             'DIR_SRC' => 'src'.DS.'app'.DS, // Source directory for application code
             'DIR_RES' => 'res'.DS, // Resource Directory
-            'DIR_ERROR' => 'res'.DS.'error'.DS, // Error pages Directory
             'URL_DIR_WEB' => 'web/', // URL path for web access
             // Error Settings
+            'ERROR_TEMPLATES' => array(
+                'text/plain' => 'res'.DS.'error'.DS.'text_plain.php',
+                'text/html' => 'res'.DS.'error'.DS.'text_html.php',
+                'application/json' => 'res'.DS.'error'.DS.'application_json.php',
+            ),
             'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
             'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
@@ -62,13 +65,16 @@ return array(
         ),
         'prod' => array(
             // Environment Settings
-            'DIR_ROOT' => dirname(__FILE__).DS,
             'DIR_WEB' => 'web'.DS,
             'DIR_SRC' => 'src'.DS.'app'.DS,
             'DIR_RES' => 'res'.DS,
-            'DIR_ERROR' => 'res'.DS.'error'.DS,
             'URL_DIR_WEB' => 'web/',
             // Error Settings
+            'ERROR_TEMPLATES' => array(
+                'text/plain' => 'res'.DS.'error'.DS.'text_plain.php',
+                'text/html' => 'res'.DS.'error'.DS.'text_html.php',
+                'application/json' => 'res'.DS.'error'.DS.'application_json.php',
+            ),
             'ERROR_LOG_FILE' => 'app'.DS.'error',
             'SHOW_ERRORS' => 0,
             'LOG_ERRORS' => 1,
