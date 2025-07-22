@@ -1,7 +1,5 @@
 <?php
 
-define('CTX', "\x04");
-
 class Translator {
     var $translations = array();
     var $pluralRule = null;
@@ -14,20 +12,16 @@ class Translator {
         return ($n == 0) ? 0 : (($n == 1) ? 1 : 2);
     }
 
-    function text($key, $placeholders = array(), $context = null) {
-        return $this->translate($key, null, $placeholders, $context);
+    function t($key, $placeholders = array()) {
+        return $this->translate($key, null, $placeholders);
     }
 
-    function ntext($key, $count, $placeholders = array(), $context = null) {
-        return $this->translate($key, $count, $placeholders, $context);
+    function nt($key, $count, $placeholders = array()) {
+        return $this->translate($key, $count, $placeholders);
     }
 
-    function translate($key, $count = null, $placeholders = array(), $context = null) {
-        $lookupKey = ($context !== null) ? $context . CTX . $key : $key;
-
-        if (isset($this->translations[$lookupKey])) {
-            $value = $this->translations[$lookupKey];
-        } elseif (isset($this->translations[$key])) {
+    function translate($key, $count = null, $placeholders = array()) {
+        if (isset($this->translations[$key])) {
             $value = $this->translations[$key];
         } else {
             $value = $key;

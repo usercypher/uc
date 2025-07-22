@@ -18,10 +18,6 @@ $t->translations = array(
         'There are :count apples'
     ),
 
-    // Contextual strings
-    'button' => 'Button',
-    'form' . CTX . 'button' => 'Submit',
-
     // With placeholders
     'welcome' => 'Welcome, :name!',
     'gift' => array(
@@ -32,45 +28,37 @@ $t->translations = array(
 );
 
 // Test 1: Basic translation
-echo $t->text('hello') . $endl;
+echo $t->t('hello') . $endl;
 // Expected: Hello World
 
 // Test 2: Plural (none)
-echo $t->ntext('apple', 0, array(':count' => 0)) . $endl;
+echo $t->nt('apple', 0, array(':count' => 0)) . $endl;
 // Expected: There is no apple
 
 // Test 3: Plural (singular)
-echo $t->ntext('apple', 1, array(':count' => 1)) . $endl;
+echo $t->nt('apple', 1, array(':count' => 1)) . $endl;
 // Expected: There is 1 apple
 
 // Test 4: Plural (plural)
-echo $t->ntext('apple', 5, array(':count' => 5)) . $endl;
+echo $t->nt('apple', 5, array(':count' => 5)) . $endl;
 // Expected: There are 5 apples
 
-// Test 5: Context fallback
-echo $t->text('button') . $endl;
-// Expected: Button
-
-// Test 6: Context-specific
-echo $t->text('button', array(), 'form') . $endl;
-// Expected: Submit
-
-// Test 7: Placeholder replacement
-echo $t->text('welcome', array(':name' => 'Alice')) . $endl;
+// Test 5: Placeholder replacement
+echo $t->t('welcome', array(':name' => 'Alice')) . $endl;
 // Expected: Welcome, Alice!
 
-// Test 8: Plural + placeholder
-echo $t->ntext('gift', 0, array(':count' => 1, ':name' => 'Bob')) . $endl;
+// Test 6: Plural + placeholder
+echo $t->nt('gift', 0, array(':count' => 1, ':name' => 'Bob')) . $endl;
 // Expected: Bob has no gift
 
-// Test 9: Plural + placeholder
-echo $t->ntext('gift', 1, array(':count' => 1, ':name' => 'Bob')) . $endl;
+// Test 7: Plural + placeholder
+echo $t->nt('gift', 1, array(':count' => 1, ':name' => 'Bob')) . $endl;
 // Expected: Bob has 1 gift
 
-echo $t->ntext('gift', 3, array(':count' => 3, ':name' => 'Bob')) . $endl;
+echo $t->nt('gift', 3, array(':count' => 3, ':name' => 'Bob')) . $endl;
 // Expected: Bob has 3 gifts
 
-// Test 10: Missing key fallback
-echo $t->text('not_exist') . $endl;
+// Test 8: Missing key fallback
+echo $t->t('not_exist') . $endl;
 // Expected: not_exist
 
