@@ -15,9 +15,9 @@ return array(
             'URL_DIR_WEB' => 'web/', // URL path for web access
             // Error Settings
             'ERROR_TEMPLATES' => array(
-                'text/plain' => 'res'.DS.'error'.DS.'text_plain.php',
-                'text/html' => 'res'.DS.'error'.DS.'text_html.php',
-                'application/json' => 'res'.DS.'error'.DS.'application_json.php',
+                'text/plain' => 'res'.DS.'error'.DS.'text.plain.php',
+                'text/html' => 'res'.DS.'error'.DS.'text.html.php',
+                'application/json' => 'res'.DS.'error'.DS.'application.json.php',
             ),
             'ERROR_LOG_FILE' => 'app'.DS.'error', // Error log file
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
@@ -71,9 +71,9 @@ return array(
             'URL_DIR_WEB' => 'web/',
             // Error Settings
             'ERROR_TEMPLATES' => array(
-                'text/plain' => 'res'.DS.'error'.DS.'text_plain.php',
-                'text/html' => 'res'.DS.'error'.DS.'text_html.php',
-                'application/json' => 'res'.DS.'error'.DS.'application_json.php',
+                'text/plain' => 'res'.DS.'error'.DS.'text.plain.php',
+                'text/html' => 'res'.DS.'error'.DS.'text.html.php',
+                'application/json' => 'res'.DS.'error'.DS.'application.json.php',
             ),
             'ERROR_LOG_FILE' => 'app'.DS.'error',
             'SHOW_ERRORS' => 0,

@@ -42,7 +42,7 @@ class Pipe_Cli_File_FindReplace {
             }
         }
 
-        $output->std("Done. " . count($files) . " files scanned." . EOL . EOL,);
+        $output->std("Done. " . count($files) . " files scanned. " . ($updatedFiles ? count($updatedFiles) : 0) . " updated." . EOL . EOL,);
 
         if ($updatedFiles) {
             $message .= "Updated files:" . EOL;

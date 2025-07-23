@@ -13,7 +13,7 @@ class Pipe_Book_Create {
     public function process($input, $output) {
         $success = true;
 
-        $output->html($this->app->dirRes('html/create.php'), array(
+        $output->html($this->app->dirRes('app/create.html.php'), array(
             'app' => $this->app,
             'output' => $output,
 

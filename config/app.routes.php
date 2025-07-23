@@ -20,6 +20,9 @@ $app->groupRoute($group, 'GET', 'home', array(
     'pipe' => array('Pipe_Book_Home')
 ));
 
+$app->groupRoute($group, 'GET', 'books', array(
+    'pipe' => array('Pipe_Book_Home')
+));
 
 $app->groupRoute($group, 'GET', 'create', array(
     'pipe' => array('Pipe_Book_Create')

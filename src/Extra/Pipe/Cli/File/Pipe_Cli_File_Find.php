@@ -41,7 +41,7 @@ class Pipe_Cli_File_Find {
             }
         }
 
-        $output->std("Done. " . count($files) . " files scanned." . EOL . EOL,);
+        $output->std("Done. " . count($files) . " files scanned. " . ($foundFiles ? count($foundFiles) : 0) . " found." . EOL . EOL,);
 
         if ($foundFiles) {
             $message .= "Files containing '$search':" . EOL;

@@ -15,7 +15,8 @@ class Pipe_Book_Home {
     public function process($input, $output) {
         $success = true;
 
-        $output->html($this->app->dirRes('html/home.php'), array(
+        
+        $output->html($this->app->dirRes('app/home.html.php'), array(
             'app' => $this->app,
             'output' => $output,
 

@@ -47,6 +47,6 @@ $book = $data['book'];
             </form>
         </div>
     </div>
-    <?php require($app->dirRes('html/template' . DS . 'script.php')); ?>
+    <?php require($app->dirRes('app/template/script.html.php')); ?>
 </body>
 </html>
