@@ -85,15 +85,18 @@ function input_cli($in) {
     return $in;
 }
 
-function http_negotiate_type($accept, $offers) {
+function http_negotiate($accept, $offers) {
     $prefs = array();
     foreach (explode(',', $accept) as $type) {
         $parts = explode(';', trim($type));
+        $aType = trim(array_shift($parts));
+
         $q = 1.0;
         foreach ($parts as $p) {
-            if (strpos($p, 'q=') === 0) $q = (float)substr($p, 2);
+            $p = explode('=', trim($p));
+            if (isset($p[1]) && strtolower(trim($p[0])) === 'q') $q = (float)trim($p[1]);
         }
-        if ($q > 0) $prefs[trim($parts[0])] = $q;
+        if ($q > 0) $prefs[$aType] = $q;
     }
     arsort($prefs);
     foreach (array_keys($prefs) as $p) {
@@ -110,8 +113,8 @@ class Input {
         return isset($arr[$key]) ? $arr[$key] : $default;
     }
 
-    function httpNegotiateType($offers) {
-        return http_negotiate_type($this->getFrom($this->headers, 'Accept', ''), $offers);
+    function httpNegotiate($accept, $offers) {
+        return http_negotiate($accept, $offers);
     }
 
     function std($mark = '') {
@@ -243,7 +246,7 @@ class App {
 
         if (!(error_reporting() & $errno)) return;
 
-        $type = http_negotiate_type($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
+        $type = http_negotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
         $code = 500;
         $content = '';
 
