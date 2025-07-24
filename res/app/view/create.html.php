@@ -44,6 +44,6 @@ $csrfToken = $data['csrf_token'];
             </form>
         </div>
     </div>
-    <?php require($app->dirRes('app/template/script.html.php')); ?>
+    <?php require($app->dirRoot('res/app/view/template/script.html.php')); ?>
 </body>
 </html>

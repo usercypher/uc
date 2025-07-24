@@ -18,7 +18,7 @@ class Pipe_Book_Edit {
         $data = $input->params;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
 
-        $output->html($this->app->dirRes('app/edit.html.php'), array(
+        $output->html($this->app->dirRoot('res/app/view/edit.html.php'), array(
             'app' => $this->app,
             'output' => $output,
 

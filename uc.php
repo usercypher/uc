@@ -19,7 +19,6 @@ while (ob_get_level() > 0) ob_end_clean();
 ob_start();
 
 define('SAPI', php_sapi_name());
-define('CR', "\r");
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
     define('DS', '\\');
@@ -117,13 +116,13 @@ class Input {
         return http_negotiate($accept, $offers);
     }
 
-    function std($mark = '') {
+    function std($mark = '', $eol = "\n") {
         if ($mark === '' && ($line = fgets(STDIN))) return $line ? rtrim($line) : '';
 
         $lines = array();
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
 
-        return implode(EOL, $lines);
+        return implode($eol, $lines);
     }
 }
 
@@ -172,12 +171,9 @@ class App {
         $this->ENV['DEBUG'] = false;
 
         $this->ENV['DIR_ROOT'] = dirname(__FILE__) . '/';
+        $this->ENV['DIR_WEB'] = '';
         $this->ENV['DIR_LOG'] = '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = '';
-        $this->ENV['DIR_RES'] = '';
-        $this->ENV['DIR_WEB'] = '';
-        $this->ENV['DIR_SRC'] = '';
-        $this->ENV['DIR_ERROR'] = '';
 
         $this->ENV['ROUTE_FILE'] = 'index.php';
         $this->ENV['ROUTE_REWRITE'] = false;
@@ -227,7 +223,7 @@ class App {
     function save($file) {
         $file = $this->ENV['DIR_ROOT'] . $file . '.dat';
         $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
-        echo('File created: ' . $file . EOL);
+        echo('File created: ' . $file . "\n");
     }
 
     function load($file) {
@@ -259,9 +255,9 @@ class App {
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
         if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
-            $content = '[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . EOL . EOL . 'Stack trace: ' . EOL;
+            $content = '[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
 
-            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . EOL;
+            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
 
         if ($type !== null && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
@@ -461,7 +457,7 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
-                    $this->scanUnits($path . $file . DS, $option);
+                    $this->scanUnits($path . $file . '/', $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
@@ -610,24 +606,22 @@ class App {
         unset($this-> { $property });
     }
 
-    function dirRoot($s) {
+    function dir($s) {
+        return str_replace(array('/', '\\'), '/', $s);
+    }
+
+    function dirRoot($s = '') {
         return $this->ENV['DIR_ROOT'] . $s;
     }
 
-    function dirRes($s) {
-        return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_RES'] . $s;
-    }
-
-    function dirWeb($s) {
+    function dirWeb($s = '') {
         return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_WEB'] . $s;
     }
 
-    function dirSrc($s) {
-        return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_SRC'] . $s;
-    }
-
     function urlRoute($s, $params = array()) {
-        return $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/') . ($params ? strtr($s, $params) : $s);
+        $base = $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/');
+        if (!$this->ENV['ROUTE_REWRITE'] && strpos($base, '?') !== false) $s = str_replace('?', '&', $s);
+        return $base . ($params ? strtr($s, $params) : $s);
     }
 
     function urlWeb($s, $params = array()) {
@@ -663,7 +657,7 @@ class App {
         $logDir = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'];
         $logFile = $logDir . $file . '.log';
 
-        $this->write($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . EOL), true);
+        $this->write($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . "\n"), true);
 
         if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
             $newLogFile = $logDir . $file . '_' . date('Y-m-d_H-i-s') . '.log';

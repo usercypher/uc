@@ -12,7 +12,7 @@ class Pipe_Landing {
     public function process($input, $output) {
         $success = true;
 
-        $output->html($this->app->dirRes('app/extra/landing.php'), array(
+        $output->html($this->app->dirRoot('res/app/view/extra/landing.php'), array(
             'app' => $this->app,
         ));
 

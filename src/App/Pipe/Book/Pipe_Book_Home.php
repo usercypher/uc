@@ -16,7 +16,7 @@ class Pipe_Book_Home {
         $success = true;
 
         
-        $output->html($this->app->dirRes('app/home.html.php'), array(
+        $output->html($this->app->dirRoot('res/app/view/home.html.php'), array(
             'app' => $this->app,
             'output' => $output,
 
