@@ -313,7 +313,7 @@ class App {
     function groupRoute($group, $method, $route, $option = array()) {
         $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
         $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
-        $this->setRoute($method, (isset($group['prefix']) ? $group['prefix'] : '') . $route, $option);
+        $this->setRoute($method, $route, $option);
     }
 
     function setPipes($pipes) {
@@ -353,7 +353,7 @@ class App {
 
             foreach ($current as $key => $value) {
                 if (substr($key, 0, 1) === ':') {
-                    list($prefix, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
+                    list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
                     if ($paramModifier === '*') {
                         $params[$paramName] = array_slice($pathSegments, $index + $decrement);
                         $current = $value;
@@ -380,7 +380,7 @@ class App {
 
             foreach ($current as $key => $value) {
                 if (substr($key, 0, 1) === ':') {
-                    list($prefix, $paramName, $paramModifier) = explode(':', $key, 4);
+                    list($none, $paramName, $paramModifier) = explode(':', $key, 4);
                     if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
                         $current = $value;
                         $matched = true;

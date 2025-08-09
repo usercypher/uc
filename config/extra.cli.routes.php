@@ -21,19 +21,18 @@ $app->groupRoute($group, '', ':on-unknown-route:*:', array(
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'prefix' => 'route',
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/:on-unknown-option:*:', array(
+$app->groupRoute($group, '', 'route/:on-unknown-option:*:', array(
     'pipe' => array('Pipe_Cli_Route_Help'),
 ));
 
-$app->groupRoute($group, '', '/print/::*:', array(
+$app->groupRoute($group, '', 'route/print/::*:', array(
     'pipe' => array('Pipe_Cli_Route_Print'),
 ));
 
-$app->groupRoute($group, '', '/resolve/::*:', array(
+$app->groupRoute($group, '', 'route/resolve/::*:', array(
     'pipe' => array('Pipe_Cli_Route_Resolve'),
 ));
 
@@ -43,15 +42,15 @@ $app->groupRoute($group, '', '/resolve/::*:', array(
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'prefix' => 'pipe',
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/:on-unknown-option:*:', array(
+$app->groupRoute($group, '', 'pipe/:on-unknown-option:*:', array(
     'pipe' => array('Pipe_Cli_Pipe_Help'),
 ));
 
-$app->groupRoute($group, '', '/create/:class:?:/::*:', array(
+// route=pipe/create/:class
+$app->groupRoute($group, '', 'pipe/create/:class:?:/::*:', array(
     'pipe' => array('Pipe_Cli_Pipe_Create'),
 ));
 
@@ -61,18 +60,17 @@ $app->groupRoute($group, '', '/create/:class:?:/::*:', array(
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'prefix' => 'file',
     'ignore' => array('--global')
 );
 
-$app->groupRoute($group, '', '/:on-unknown-option:*:', array(
+$app->groupRoute($group, '', 'file/:on-unknown-option:*:', array(
     'pipe' => array('Pipe_Cli_File_Help'),
 ));
 
-$app->groupRoute($group, '', '/find/::*:', array(
+$app->groupRoute($group, '', 'file/find/::*:', array(
     'pipe' => array('Pipe_Cli_File_Find'),
 ));
 
-$app->groupRoute($group, '', '/find-replace/::*:', array(
+$app->groupRoute($group, '', 'file/find-replace/::*:', array(
     'pipe' => array('Pipe_Cli_File_FindReplace'),
 ));
