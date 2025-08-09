@@ -9,7 +9,7 @@ return array(
     'env' => array(
         'dev' => array(
             // Environment Settings
-            'DIR_WEB' => 'web/',
+            'DIR_WEB' => $app->dir('web/'),
             'URL_DIR_WEB' => 'web/', // URL path for web access
             // Error Settings
             'ERROR_TEMPLATES' => array(

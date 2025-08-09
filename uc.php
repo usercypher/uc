@@ -170,7 +170,7 @@ class App {
     function init() {
         $this->ENV['DEBUG'] = false;
 
-        $this->ENV['DIR_ROOT'] = dirname(__FILE__) . '/';
+        $this->ENV['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
         $this->ENV['DIR_WEB'] = '';
         $this->ENV['DIR_LOG'] = '';
         $this->ENV['DIR_LOG_TIMESTAMP'] = '';
