@@ -10,12 +10,6 @@ $model->addMessage('success', 'Operation successful');
 // getMessages
 $messages = $model->getMessages();
 
-// find
-$user = $model->find(1);
-
-// all
-$allUsers = $model->all();
-
 // insert
 $data = ['name' => 'John Doe', 'email' => 'johndoe@example.com'];
 $lastinsertid = $model->insert($data);
@@ -57,19 +51,19 @@ while ($chunk = $model->chunk($idsToDelete, 300)) {
 $dataToSave = ['name' => 'Alice', 'email' => 'alice@example.com'];
 $model->save($dataToSave);
 
-// where
-$users = $model->list('age > ?', [30]);
+// list
+$users = $model->list('WHERE age > ?', [30]);
 
 // query
 $usersByQuery = $model->get('SELECT * FROM users WHERE age > ?', [30]);
 
 // first
-$firstUser = $model->first('age > ?', [30]);
+$firstUser = $model->first('WHERE age > ?', [30]);
 
 // count
-$userCount = $model->count('age > ?', [30]);
+$userCount = $model->count('WHERE age > ?', [30]);
 
 // exists
-$exists = $model->exists('email = ?', ['johndoe@example.com']);
+$exists = $model->exists('WHERE email = ?', ['johndoe@example.com']);
 
 ?>

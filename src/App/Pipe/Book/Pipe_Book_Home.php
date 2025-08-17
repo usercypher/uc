@@ -22,7 +22,7 @@ class Pipe_Book_Home {
 
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'books' => $this->bookRepo->all(),
+            'books' => $this->bookRepo->list(),
         ));
 
         return array($input, $output, $success);

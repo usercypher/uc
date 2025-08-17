@@ -176,45 +176,33 @@ class Lib_DatabaseHelper {
         return isset($data[$this->key]) ? $this->update($data) : $this->insert($data);
     }
 
-    function find($id, $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $this->key . ' = ?';
-        $stmt = $this->query($query, array($id));
-        return $this->fetch($stmt);
-    }
-
-    function all($columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table;
-        $stmt = $this->query($query, array());
-        return $this->fetchAll($stmt);
-    }
-
-    function first($conditions, $params, $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1';
+    function first($conditions = '', $params = array(), $columns = '*') {
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
         $stmt = $this->query($query, $params);
         return $this->fetch($stmt);
     }
 
-    function list($conditions, $params, $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' WHERE ' . $conditions;
+    function list($conditions = '', $params = array(), $columns = '*') {
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions;
         $stmt = $this->query($query, $params);
         return $this->fetchAll($stmt);
     }
 
-    function get($query, $params) {
+    function get($query, $params = array()) {
         $stmt = $this->query($query, $params);
         return $this->fetchAll($stmt);
     }
 
     function count($conditions = '', $params = array()) {
-        $query = 'SELECT COUNT(*) AS total FROM ' . $this->table . (!empty($conditions) ? ' WHERE ' . $conditions : '');
+        $query = 'SELECT COUNT(*) AS total FROM ' . $this->table . ' ' . $conditions;
         $stmt = $this->query($query, $params);
         $result = $this->fetch($stmt);
 
         return $result ? (int) $result['total'] : 0;
     }
 
-    function exists($conditions, $params) {
-        $query = 'SELECT 1 FROM ' . $this->table . ' WHERE ' . $conditions . ' LIMIT 1';
+    function exists($conditions, $params = array()) {
+        $query = 'SELECT 1 FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
         $stmt = $this->query($query, $params);
         return $this->fetch($stmt) !== false;
     }

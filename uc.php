@@ -151,7 +151,7 @@ class Output {
     }
 
     function htmlEncode($s) {
-        return htmlspecialchars($s, ENT_QUOTES);
+        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
     }
 
     function redirect($url, $code = 302) {
