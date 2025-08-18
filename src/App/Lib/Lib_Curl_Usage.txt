@@ -1,0 +1,19 @@
+<?php 
+
+$curl = new Curl();
+$response = $curl->send('https://api.example.com/data', [
+    'method' => 'POST',
+    'headers' => [
+        'Content-Type' => 'application/json',
+        'Authorization' => 'Bearer YOUR_TOKEN'
+    ],
+    'content' => json_encode(['key' => 'value']),
+    'timeout' => 30,
+]);
+
+if ($response->code === 200) {
+    echo $response->content;
+} else {
+    echo "Error: " . $response->code;
+}
+
