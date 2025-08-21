@@ -17,3 +17,15 @@ if ($response->code === 200) {
     echo "Error: " . $response->code;
 }
 
+/*
+
+return:
+
+$response->headers
+$response->content
+$response->code
+$response->type
+$response->error
+$response->info
+
+*/
