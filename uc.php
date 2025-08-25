@@ -416,8 +416,8 @@ class App {
             foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);
             if (isset($input->flags['request'])) {
                 foreach ((isset($input->options['header']) ? explode(';', $input->options['header']) : array()) as $header) {
-                    list($key, $value) = explode(':', $header, 2);
-                    $input->headers[strtolower(trim(str_replace('_', '-', $key)))] = trim($value);
+                    list($k, $v) = explode(':', $header, 2);
+                    $input->headers[strtolower(trim(str_replace('_', '-', $k)))] = trim($v);
                 }
                 $input->content = isset($input->options['content']) ? $input->options['content'] : '';
                 $input->method = isset($input->options['method']) ? $input->options['method'] : 'GET';
