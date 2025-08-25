@@ -414,7 +414,15 @@ class App {
     function dispatch($input, $output) {
         if (SAPI === 'cli') {
             foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);
-            $input->method = (isset($input->options['method']) && $input->options['method'] !== true) ? $input->options['method'] : '';
+            if (isset($input->flags['request'])) {
+                foreach ((isset($input->options['header']) ? explode(';', $input->options['header']) : array()) as $header) {
+                    list($key, $value) = explode(':', $header, 2);
+                    $input->headers[strtolower(trim(str_replace('_', '-', $key)))] = trim($value);
+                }
+                $input->content = isset($input->options['content']) ? $input->options['content'] : '';
+                $input->method = isset($input->options['method']) ? $input->options['method'] : 'GET';
+                if (isset($input->options['query'])) parse_str($input->options['query'], $input->query);
+            }
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($input->uri, '?');
             $input->path = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
