@@ -73,6 +73,7 @@ function index($packageFile, $settingsFile, $configFile) {
 
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
+    $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
     $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
 
     $output = new Output();

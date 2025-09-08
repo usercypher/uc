@@ -106,7 +106,7 @@ function http_negotiate($accept, $offers) {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $path = '', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array(), $positional = array(), $options = array(), $flags = array();
+    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array(), $positional = array(), $options = array(), $flags = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -177,8 +177,8 @@ class App {
 
         $this->ENV['ROUTE_FILE'] = 'index.php';
         $this->ENV['ROUTE_REWRITE'] = false;
-        $this->ENV['URL_DIR_WEB'] = '';
-        $this->ENV['URL_BASE'] = '/';
+        $this->ENV['URL_ROOT'] = '/';
+        $this->ENV['URL_WEB'] = '/';
 
         $this->ENV['ERROR_TEMPLATES'] = array();
         $this->ENV['ERROR_LOG_FILE'] = 'error';
@@ -322,19 +322,19 @@ class App {
         }
     }
 
-    function resolveRoute($method, $path) {
-        if (!isset($this->routes[$method])) return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $path);
+    function resolveRoute($method, $route) {
+        if (!isset($this->routes[$method])) return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $route);
 
         $current = $this->routes[$method];
         $params = array();
-        $pathSegments = explode('/', $path);
+        $routeSegments = explode('/', $route);
         $decrement = 0;
         $foundSegment = false;
-        $last = count($pathSegments) - 1;
+        $last = count($routeSegments) - 1;
 
-        foreach ($pathSegments as $index => $pathSegment) {
-            if ($pathSegment === '' && !(!$foundSegment && $last === $index)) {
-                if (++$decrement > 20) return array('http' => 400, 'error' => 'Empty path segments exceeded limit (20): ' . $path);
+        foreach ($routeSegments as $index => $routeSegment) {
+            if ($routeSegment === '' && !(!$foundSegment && $last === $index)) {
+                if (++$decrement > 20) return array('http' => 400, 'error' => 'Empty route segments exceeded limit (20): ' . $route);
                 continue;
             }
 
@@ -342,10 +342,10 @@ class App {
 
             $index -= $decrement;
 
-            if (strlen($pathSegment) > 255) return array('http' => 400, 'error' => 'Path segment too long (max 255 chars): ' . $pathSegment);
+            if (strlen($routeSegment) > 255) return array('http' => 400, 'error' => 'Route segment too long (max 255 chars): ' . $routeSegment);
 
-            if (isset($current[$pathSegment])) {
-                $current = $current[$pathSegment];
+            if (isset($current[$routeSegment])) {
+                $current = $current[$routeSegment];
                 continue;
             }
 
@@ -355,14 +355,14 @@ class App {
                 if (substr($key, 0, 1) === ':') {
                     list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
                     if ($paramModifier === '*') {
-                        $params[$paramName] = array_slice($pathSegments, $index + $decrement);
+                        $params[$paramName] = array_slice($routeSegments, $index + $decrement);
                         $current = $value;
                         if (isset($current[$this->ROUTE_HANDLER])) break 2;
                         $matched = true;
                         break;
                     }
-                    $matches = array($pathSegment);
-                    if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $pathSegment, $matches)) {
+                    $matches = array($routeSegment);
+                    if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $routeSegment, $matches)) {
                         foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
                         $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
@@ -372,7 +372,7 @@ class App {
                 }
             }
 
-            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
         }
 
         while (!isset($current[$this->ROUTE_HANDLER])) {
@@ -389,10 +389,10 @@ class App {
                 }
             }
 
-            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
         }
 
-        if (!isset($current[$this->ROUTE_HANDLER])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $path);
+        if (!isset($current[$this->ROUTE_HANDLER])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
 
         $finalPipes = array();
 
@@ -413,7 +413,7 @@ class App {
 
     function dispatch($input, $output) {
         if (SAPI === 'cli') {
-            foreach ($input->positional as $positional) $input->path .= '/' . urlencode($positional);
+            foreach ($input->positional as $positional) $input->route .= '/' . urlencode($positional);
             if (isset($input->flags['request'])) {
                 foreach ((isset($input->options['header']) ? explode(';', $input->options['header']) : array()) as $header) {
                     list($k, $v) = explode(':', $header, 2);
@@ -425,12 +425,12 @@ class App {
             }
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($input->uri, '?');
-            $input->path = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
-        } elseif (isset($input->query['route'])) {
-            $input->path = $input->query['route'];
+            $input->route = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
+        } elseif (isset($input->query['route']) && $input->query['route'] !== '') {
+            $input->route = ($input->query['route'][0] === '/' ? '' : '/') . $input->query['route'];
         }
 
-        $route = $this->resolveRoute($input->method, $input->path);
+        $route = $this->resolveRoute($input->method, $input->route);
 
         if (isset($route['error'])) return trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
 
@@ -627,13 +627,13 @@ class App {
     }
 
     function urlRoute($s, $params = array()) {
-        $base = $this->ENV['URL_BASE'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/');
+        $base = $this->ENV['URL_ROOT'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/');
         if (!$this->ENV['ROUTE_REWRITE'] && strpos($base, '?') !== false) $s = str_replace('?', '&', $s);
         return $base . ($params ? strtr($s, $params) : $s);
     }
 
     function urlWeb($s, $params = array()) {
-        return $this->ENV['URL_BASE'] . $this->ENV['URL_DIR_WEB'] . ($params ? strtr($s, $params) : $s);
+        return $this->ENV['URL_WEB'] . ($params ? strtr($s, $params) : $s);
     }
 
     function strSlug($s) {

@@ -10,7 +10,7 @@ return array(
         'dev' => array(
             // Environment Settings
             'DIR_WEB' => 'web/',
-            'URL_DIR_WEB' => 'web/', // URL path for web access
+            'URL_WEB' => 'web/', // URL path for web access
             // Error Settings
             'ERROR_TEMPLATES' => array(
                 'text/plain' => 'res/uc/view/text.plain.php',
@@ -64,7 +64,7 @@ return array(
         'prod' => array(
             // Environment Settings
             'DIR_WEB' => 'web/',
-            'URL_DIR_WEB' => 'web/',
+            'URL_WEB' => 'web/',
             // Error Settings
             'ERROR_TEMPLATES' => array(
                 'text/plain' => 'res/uc/view/text.plain.php',
