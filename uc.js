@@ -449,7 +449,7 @@
         }
     };
     function TagX() {
-        this.globalRefs = [];
+        this.globalRefs = {};
         this.globalVars = {};
         this.tab = {
             first: null,
@@ -460,7 +460,6 @@
     TagX.prototype.register = function(elements, tab = "") {
         var tabRange = tab.split(/\s*:\s*/);
         var elementsLength = elements.length;
-        var globalRefsLength = this.globalRefs.length;
 
         for (var i = 0; i < elementsLength; i++) {
             var el = elements[i];
@@ -468,15 +467,24 @@
             for (var j = 0; j < elAttributesLength; j++) {
                 var attr = el.attributes[j];
                 if (attr.name.substr(0, 6) === "x-ref-") {
+                    var key = attr.name.slice(6);
                     var isDuplicate = false;
+                    if (!this.globalRefs[key]) this.globalRefs[key] = [];
+                    var globalRefsLength = this.globalRefs[key].length;
                     for (var k = 0; k < globalRefsLength; k++) {
-                        if (this.globalRefs[k] === el) {
+                        if (this.globalRefs[key][k] === el) {
                             isDuplicate = true;
                             break;
                         }
                     }
-                    if (!isDuplicate) this.globalRefs.push(el);
-                    if (!this.globalVars[attr.name.slice(6)]) this.globalVars[attr.name.slice(6)] = el.value || el.getAttribute(attr.name);
+                    if (!isDuplicate) this.globalRefs[key].push(el);
+                    if (!this.globalVars.hasOwnProperty(key)) {
+                        if (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) {
+                            this.globalVars[key] = el.checked;
+                        } else {
+                            this.globalVars[key] = el.value || el.getAttribute(attr.name);
+                        }
+                    }
                 }
             }
             if (tabRange.length >= 2) {
@@ -591,15 +599,7 @@
         this.watchers[key].push(callback);
     };
     TagX.prototype.getRefs = function(key) {
-        var refsCollection = [];
-        var globalRefsLength = this.globalRefs.length;
-        for (var i = 0; i < globalRefsLength; i++) {
-            var refEl = this.globalRefs[i];
-            for (var j = 0; j < refEl.attributes.length; j++) {
-                if (refEl.attributes[j].name === "x-ref-" + key) refsCollection.push(refEl);
-            }
-        }
-        return refsCollection;
+        return this.globalRefs[key] || [];
     };
     TagX.prototype.getVar = function (key) {
         return this.globalVars[key];
@@ -625,17 +625,21 @@
         }
     };
     TagX.prototype.clean = function() {
-        var refs = [];
+        var refs = {};
         var vals = {};
-        var globalRefsLength = this.globalRefs.length;
-        for (var i = 0; i < globalRefsLength; i++) {
-            var el = this.globalRefs[i];
-            for (var j = 0; j < el.attributes.length; j++) {
-                var attr = el.attributes[j];
-                if (attr.name.substr(0, 6) === "x-ref-") {
-                    if (document.body.contains(el)) {
-                        refs.push(el);
-                        vals[attr.name.slice(6)] = el.value || (el.children.length === 0 ? el.innerHTML: "");
+        for (var key in this.globalRefs) {
+            var els = this.globalRefs[key];
+            var elsLength = els.length;
+            for (var i = 0; i < elsLength; i++) {
+                var el = els[i];
+                if (!document.body.contains(el)) continue;
+                if (!refs[key]) refs[key] = [];
+                refs[key].push(el);
+                if (!vals.hasOwnProperty(key)) {
+                    if (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) {
+                        vals[key] = el.checked;
+                    } else {
+                        vals[key] = el.value || (el.children.length === 0 ? el.innerHTML : "");
                     }
                 }
             }
@@ -643,6 +647,7 @@
         this.globalRefs = refs;
         this.globalVars = vals;
     };
+
     TagX.prototype.processElement = function(el, elValue) {
         var that = this;
         if (this.isProcessing) {
@@ -702,35 +707,35 @@
             var key = cycles[i];
             var dataState = el.getAttribute("x-cycle-" + key) || "";
             var states = dataState.split(/\s+/);
-            for (var j = 0; j < globalRefsLength; j++) {
-                var refEl = this.globalRefs[j];
-                if (refEl.hasAttribute("x-ref-" + key)) {
-                    var className = refEl.className || "";
-                    var classList = className.split(/\s+/);
-                    var current = refEl.getAttribute('data-simulated-state') || classList[classList.length - 1];
-                    var currentIndex = -1;
-                    for (var k = 0; k < states.length; k++) {
-                        if (current === states[k]) {
-                            currentIndex = k;
-                            break;
-                        }
+            var els = this.globalRefs[key] || [];
+            var elsLength = els.length;
+            for (var j = 0; j < elsLength; j++) {
+                var refEl = els[j];
+                var className = refEl.className || "";
+                var classList = className.split(/\s+/);
+                var current = refEl.getAttribute('data-simulated-state') || classList[classList.length - 1];
+                var currentIndex = -1;
+                for (var k = 0; k < states.length; k++) {
+                    if (current === states[k]) {
+                        currentIndex = k;
+                        break;
                     }
-                    var newState = states[(currentIndex + 1) % states.length] || "_";
-                    if (current !== newState) {
-                        refEl.setAttribute('data-simulated-state', newState);
-                        (function(refEl) {
-                            setTimeout(function() {
-                                var classList = (refEl.className || "").split(/\s+/);
-                                var liveState = classList[classList.length - 1];
-                                var simulated = refEl.getAttribute('data-simulated-state');
-                                if (simulated && simulated !== liveState) {
-                                    classList[classList.length - 1] = simulated;
-                                    refEl.className = classList.join(" ");
-                                    refEl.removeAttribute('data-simulated-state');
-                                }
-                            }, 16);
-                        })(refEl);
-                    }
+                }
+                var newState = states[(currentIndex + 1) % states.length] || "_";
+                if (current !== newState) {
+                    refEl.setAttribute('data-simulated-state', newState);
+                    (function(refEl) {
+                        setTimeout(function() {
+                            var classList = (refEl.className || "").split(/\s+/);
+                            var liveState = classList[classList.length - 1];
+                            var simulated = refEl.getAttribute('data-simulated-state');
+                            if (simulated && simulated !== liveState) {
+                                classList[classList.length - 1] = simulated;
+                                refEl.className = classList.join(" ");
+                                refEl.removeAttribute('data-simulated-state');
+                            }
+                        }, 16);
+                    })(refEl);
                 }
             }
         }
@@ -744,44 +749,44 @@
         var focus = el.getAttribute("x-focus");
         var focusFound = false;
 
-        for (var i = 0; i < globalRefsLength; i++) {
-            var refEl = this.globalRefs[i];
-            var refElAttributesLength = refEl.attributes.length;
-            for (var j = 0; j < refElAttributesLength; j++) {
-                var attr = refEl.attributes[j];
-                if (attr.name.substr(0, 6) === "x-ref-") {
-                    var key = attr.name.slice(6);
-
-                    if (data["x-val-"].hasOwnProperty(key)) {
-                        var val = data["x-val-"][key];
-                        var tag = refEl.tagName.toUpperCase();
-                        if ((tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") && val != refEl.value) {
+        for (var key in this.globalRefs) {
+            var els = this.globalRefs[key];
+            var elsLength = els.length;
+            for (var i = 0; i < elsLength; i++) {
+                var refEl = els[i];
+                if (data["x-val-"].hasOwnProperty(key)) {
+                    var val = data["x-val-"][key];
+                    var tag = refEl.tagName.toUpperCase();
+                    if ((tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") && val != refEl.value) {
+                        if (tag === "INPUT" && (refEl.type === "checkbox" || refEl.type === "radio")) {
+                            refEl.checked = (val === true || val === "true" || val === "1");
+                        } else if (val != refEl.value) {
                             refEl.value = val;
-                        } else if (refEl.children.length === 0 && val != refEl.innerHTML) {
-                            refEl.innerHTML = val;
                         }
+                    } else if (refEl.children.length === 0 && val != refEl.innerHTML) {
+                        refEl.innerHTML = val;
                     }
-                    if (data["x-var-"].hasOwnProperty(key)) {
-                        this.setVar(key, data["x-var-"][key], refEl);
-                    }
-                    if (data["x-run-"].hasOwnProperty(key)) {
-                        var triggers = data["x-run-"][key].split(/\s+/);
-                        var triggersLength = triggers.length;
-                        for (k = 0; k < triggersLength; k++) {
-                            this.run(key, triggers[k]);
-                        }
+                }
+                if (data["x-var-"].hasOwnProperty(key)) {
+                    this.setVar(key, data["x-var-"][key], refEl);
+                }
+                if (data["x-run-"].hasOwnProperty(key)) {
+                    var triggers = data["x-run-"][key].split(/\s+/);
+                    var triggersLength = triggers.length;
+                    for (k = 0; k < triggersLength; k++) {
+                        this.run(key, triggers[k]);
                     }
                 }
             }
 
             if (tabRange.length >= 2) {
-                if (refEl.hasAttribute("x-ref-" + tabRange[0])) this.tab.first = this.globalRefs[i];
-                if (refEl.hasAttribute("x-ref-" + tabRange[1])) this.tab.last = this.globalRefs[i];
+                if (key === tabRange[0]) this.tab.first = refEl;
+                if (key === tabRange[1]) this.tab.last = refEl;
             }
 
             if (focus && !focusFound) {
-                if (refEl.hasAttribute("x-ref-" + focus)) {
-                    var focusRef = this.globalRefs[i];
+                if (key === focus) {
+                    var focusRef = refEl;
                     setTimeout(function() {
                         focusRef.focus();
                     }, 75);
@@ -799,21 +804,21 @@
             var dataState = el.getAttribute("x-attr-" + keyAttr) || "";
             var states = dataState.split(/\s*\|\s*/);
 
-            for (var j = 0; j < globalRefsLength; j++) {
-                if (this.globalRefs[j].hasAttribute("x-ref-" + key)) {
-                    var refEl = this.globalRefs[j]
-                    var current = refEl.getAttribute(attr);
-                    var currentIndex = -1;
-                    for (var k = 0; k < states.length; k++) {
-                        if (current === states[k]) {
-                            currentIndex = k;
-                            break;
-                        }
+            var els = this.globalRefs[key] || [];
+            var elsLength = els.length;
+            for (var j = 0; j < elsLength; j++) {
+                var refEl = els[j];
+                var current = refEl.getAttribute(attr);
+                var currentIndex = -1;
+                for (var k = 0; k < states.length; k++) {
+                    if (current === states[k]) {
+                        currentIndex = k;
+                        break;
                     }
-                    var newState = states[(currentIndex + 1) % states.length] || "_";
-                    var oldState = refEl.getAttribute(attr);
-                    if (oldState != newState) refEl.setAttribute(attr, newState);
                 }
+                var newState = states[(currentIndex + 1) % states.length] || "_";
+                var oldState = refEl.getAttribute(attr);
+                if (oldState != newState) refEl.setAttribute(attr, newState);
             }
         }
     };
