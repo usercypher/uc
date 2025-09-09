@@ -647,18 +647,19 @@
         this.globalRefs = refs;
         this.globalVars = vals;
     };
-
     TagX.prototype.processElement = function(el, elValue) {
         var that = this;
         if (this.isProcessing) {
             return setTimeout(function () {
                 that.processElement(el, elValue);
-            }, 16);
+            }, 1);
         }
         this.isProcessing = true;
         setTimeout(function () {
             that._processElement(el, elValue);
-            that.isProcessing = false;
+            setTimeout(function () {
+                that.isProcessing = false;
+            }, 1);
         }, 0);
     };
     TagX.prototype._processElement = function(el, elValue) {
