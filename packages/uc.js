@@ -501,51 +501,65 @@
         var keyMap = {};
         for (var i = 0; i < elementsLength; i++) {
             var el = elements[i];
-            if (el.hasAttribute("x-click")) {
+            if (el.hasAttribute("x-on-click")) {
                 (function(el) {
                     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', 0);
                     if (!el.onkeydown) {
                         el.onkeydown = function(e) {
                             e = e || window.event;
                             if (e.key === "Enter" || (e.keyCode || e.which) === 13) {
-                                that.processElement(el, el.getAttribute("x-click"));
+                                that.processElement(el, el.getAttribute("x-on-click"));
                             }
                         };
                     }
                     el.onclick = Utils.throttle(function() {
-                        that.processElement(el, el.getAttribute("x-click"));
+                        that.processElement(el, el.getAttribute("x-on-click"));
                     }, 300);
                 })(el);
             }
-            if (el.hasAttribute("x-enter")) {
+            if (el.hasAttribute("x-on-enter")) {
                 (function(el) {
                     el.onmouseenter = function() {
-                        that.processElement(el, el.getAttribute("x-enter"));
+                        that.processElement(el, el.getAttribute("x-on-enter"));
                     };
                 })(el);
             }
-            if (el.hasAttribute("x-leave")) {
+            if (el.hasAttribute("x-on-leave")) {
                 (function(el) {
                     el.onmouseleave = function() {
-                        that.processElement(el, el.getAttribute("x-leave"));
+                        that.processElement(el, el.getAttribute("x-on-leave"));
                     };
                 })(el);
             }
-            if (el.hasAttribute("x-input")) {
+            if (el.hasAttribute("x-on-focus")) {
+                (function(el) {
+                    el.onfocus = function() {
+                        that.processElement(el, el.getAttribute("x-on-focus"));
+                    };
+                })(el);
+            }
+            if (el.hasAttribute("x-on-blur")) {
+                (function(el) {
+                    el.onblur = function() {
+                        that.processElement(el, el.getAttribute("x-on-blur"));
+                    };
+                })(el);
+            }
+            if (el.hasAttribute("x-on-input")) {
                 (function(el) {
                     el.oninput = Utils.debounce(function() {
                         var elAttributesLength = el.attributes.length;
                         for (var j = 0; j < elAttributesLength; j++) {
                             var n = el.attributes[j].name;
-                            if (n.substr(0, 8) === "x-cycle-" || n.substr(0, 7) === "x-attr-" || n.substr(0, 6) === "x-tab-" || n.substr(0, 6) === "x-val-" || n.substr(0, 6) === "x-var-") el.setAttribute(n, this.value);
+                            if (n.substr(0, 6) === "x-val-" || n.substr(0, 6) === "x-var-") el.setAttribute(n, this.value);
                         }
-                        that.processElement(el, el.getAttribute("x-input"));
+                        that.processElement(el, el.getAttribute("x-on-input"));
                     }, 300);
                 })(el);
             }
-            if (el.hasAttribute("x-key")) {
+            if (el.hasAttribute("x-on-key")) {
                 (function(el) {
-                    var keys = (el.getAttribute("x-key")).toLowerCase().split(/\s+/);
+                    var keys = (el.getAttribute("x-on-key")).toLowerCase().split(/\s+/);
                     var keysLength = keys.length;
                     var keysObj = {}
                     for (var j = 0; j < keysLength; j++) {
@@ -556,13 +570,13 @@
                         var key = (e.key ? e.key: String.fromCharCode(e.keyCode || e.which)).toLowerCase();
                         if (keysObj[key]) {
                             e.preventDefault();
-                            that.processElement(el, el.getAttribute("x-key-" + key));
+                            that.processElement(el, el.getAttribute("x-on-key-" + key));
                         }
                     };
                 })(el);
             }
-            if (el.hasAttribute("x-key-window")) {
-                var keys = (el.getAttribute("x-key-window")).toLowerCase().split(/\s+/);
+            if (el.hasAttribute("x-on-key-window")) {
+                var keys = (el.getAttribute("x-on-key-window")).toLowerCase().split(/\s+/);
                 var keysLength = keys.length;
                 for (var j = 0; j < keysLength; j++) {
                     var key = keys[j];

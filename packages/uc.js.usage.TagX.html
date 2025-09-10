@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width  initial-scale=1.0" />
+  <title>TagX – Example Usage</title>
+  <script src="uc.js"></script>
+  <style>
+
+.button.neutral {
+  background-color: #007bff;
+  color: white;
+}
+
+.block {
+  padding: 1em;
+  border: 1px solid #ccc;
+  margin-top: 1em;
+}
+
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
+}
+
+  </style>
+</head>
+<body style="padding: 1em;">
+
+<h1>Control Structure Attribute</h1>
+
+<h2>Triggers</h2>
+<pre>
+
+x-on-click               // all
+x-on-click="name name2"  // only name, name2
+x-on-click="!name name2" // all except name, name2
+
+x-on-input               // all
+x-on-input="name name2"  // only name, name2
+x-on-input="!name name2" // all except name, name2
+
+// hovers
+x-on-enter               // all
+x-on-enter="name name2"  // only name, name2
+x-on-enter="!name name2" // all except name, name2
+
+x-on-leave               // all
+x-on-leave="name name2"  // only name, name2
+x-on-leave="!name name2" // all except name, name2
+
+// focus
+// hovers
+x-on-focus               // all
+x-on-focus="name name2"  // only name, name2
+x-on-focus="!name name2" // all except name, name2
+
+// hovers
+x-on-blur                // all
+x-on-blur="name name2"   // only name, name2
+x-on-blur="!name name2"  // all except name, name2
+
+// scope in element
+x-on-key="key1 key2"
+x-on-key-[key]=""            // (rules applied to key) all
+x-on-key-[key]="name name2"  // (rules applied to key) only name, name2
+x-on-key-[key]="!name name2" // (rules applied to key) all except name, name2
+
+// scope in window
+x-on-key-window="key1 key2"
+x-on-key-window-[key]=""            // (rules applied to key) all
+x-on-key-window-[key]="name name2"  // (rules applied to key) only name, name2
+x-on-key-window-[key]="!name name2" // (rules applied to key) all except name, name2
+
+x-form
+
+</pre>
+
+<h2>Actions</h2>
+<pre>
+x-val-[name]="value"
+x-var-[name]="value"
+x-cycle-[name]="class1 class2"
+x-tab="name:name"                   // tab key range
+x-focus="name"
+x-submit="name"
+x-attr-[name]_[attribute]="value|value"
+x-run-[name]="trigger1 trigger2"    // activate triggers
+
+</pre>
+
+<h2>Target</h2>
+<pre>
+x-ref-[name]
+</pre>
+
+<hr>
+
+<h2>Tab</h2>
+
+<button 
+
+class="button neutral"
+
+x-on-click
+
+x-cycle-tab1="show hide"
+x-cycle-tab2="hide"
+x-cycle-tab3="hide"
+
+x-cycle-button1="neutral _"
+x-cycle-button2=""
+x-cycle-button3=""
+
+x-ref-button1
+
+>tab1</button>
+
+<button 
+
+class="button _"
+
+x-on-click
+
+x-cycle-tab1="hide"
+x-cycle-tab2="show hide"
+x-cycle-tab3="hide"
+
+x-cycle-button1=""
+x-cycle-button2="neutral _"
+x-cycle-button3=""
+
+x-ref-button2
+
+>tab2</button>
+
+<button 
+
+class="button _"
+
+x-on-click
+
+x-cycle-tab1="hide"
+x-cycle-tab2="hide"
+x-cycle-tab3="show hide"
+
+x-cycle-button1=""
+x-cycle-button2=""
+x-cycle-button3="neutral _"
+
+x-ref-button3
+
+>tab3</button>
+
+<div class="block show" x-ref-tab1>tab1</div>
+<div class="block hide" x-ref-tab2>tab2</div>
+<div class="block hide" x-ref-tab3>tab3</div>
+
+<hr>
+
+<span
+
+x-on-key="escape"
+
+x-val-dialog-content=""
+></span>
+
+<h2>Reusable Dialog Box</h2>
+
+<button
+x-on-click
+x-on-key="1"
+
+x-val-dialog-content="dialog1"
+>dialog1</button>
+
+<button
+x-on-click
+x-on-key="2"
+
+x-val-dialog-content="dialog2"
+>dialog2</button>
+
+<button
+x-on-click
+x-on-key="3"
+
+x-val-dialog-content="dialog3"
+>dialog3</button>
+
+<div class="block">
+
+<p x-ref-dialog-content></p>
+
+</div>
+
+<hr>
+<h2>Input binding</h2>
+<p x-ref-name>Alice</p>
+<input x-on-input x-val-name value="Alice"/>
+
+<hr>
+<h2>Attribute</h2>
+<p></p>
+<button
+x-ref-button
+x-on-click
+x-attr-button_x-cycle-box="hide|show"
+x-cycle-box="show"
+>toggle</button>
+
+
+
+<div class="block hide"
+x-ref-box
+>content</div>
+
+<hr>
+
+<h2>Rules</h2>
+<p>Trigger rules (x-[trigger]-[name])</p>
+
+<p><small 
+class="hide"
+x-ref-tooltip
+x-on-enter
+x-on-leave
+x-cycle-tooltip="show hide"
+>im a tooltip!</small></p>
+
+<button
+x-on-enter="tooltip"
+x-on-leave="tooltip"
+x-on-click="!tooltip"
+x-cycle-tooltip="show hide"
+
+x-cycle-list1="show hide"
+x-cycle-list2="show hide"
+x-cycle-list3="show hide"
+>drawer</button>
+
+<div class="block hide" x-ref-list1>list1</div>
+<div class="block hide" x-ref-list2>list2</div>
+<div class="block hide" x-ref-list3>list3</div>
+
+<hr>
+
+<h2>Var</h2>
+
+
+<input type="number" x-cycle-tooltip="show hide" x-on-input="price" x-var-price placeholder="price"/>
+<select  x-on-input x-var-qty>
+    <option value="1">1x</option>
+    <option value="2">2x</option>
+    <option value="3">3x</option>
+</select>
+
+<p><b x-ref-qty="1" x-ref-price x-ref-total></b></p>
+
+<hr>
+  <!-- Load Script -->
+  <script>
+    var tagx = new TagX();
+    tagx.register(document.getElementsByTagName("*"));
+
+    tagx.watch("*", function (key, valOld, refEl) {
+        if (key == "qty" || key == "price") {
+            tagx.getRefs("total").forEach(el => {
+                el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
+            });
+        }
+    });
+
+  </script>
+</body>
+</html>

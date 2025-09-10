@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modal Demo</title>
+    <link rel="stylesheet" href="uc.css" />
+    <script src="uc.js"></script>
+    <style>
+        body {
+            padding: 1em;
+        }
+
+        .modal {
+            display: flex;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            padding: 8%;
+            overflow-y: auto;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.125s ease, visibility 0.125s ease;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+            margin: auto;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .modal-content.small {
+            transition: transform 0.125s ease;
+            transform: scale(0.9);
+        }
+
+        .modal-content-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #5c636a;
+        }
+    </style>
+</head>
+<body>
+
+    <button
+        x-ref--login-open
+        x-on-click
+        x-cycle--login-modal=""
+        x-cycle--login-modal-content=""
+        x-focus="-login-username"
+        x-tab="-login-tab-first:-login-tab-last"
+        x-val--login-title="Login"
+        x-val--login-hint="Input your account credentials to login."
+        x-val--login-username="lloydbersabe@gmail.com"
+    >
+        Open Modal
+    </button>
+
+    <div class="modal hidden" x-ref--login-modal>
+        <span class="modal-content-overlay" tabindex="-1" x-on-key-window="escape" x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open"></span>
+
+        <div class="modal-content small" x-ref--login-modal-content>
+            <span class="modal-close" x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">&times;</span>
+
+            <h2 x-ref--login-title>Title</h2>
+            <p x-ref--login-hint>Hint text</p>
+
+            <p><input x-ref--login-tab-first x-ref--login-username type="text" placeholder="Email" /></p>
+            <p><input x-on-click type="password" placeholder="Password" /></p>
+
+            <span class="button" x-ref--login-ok x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">OK</span>
+            <span class="button" x-ref--login-tab-last x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">Cancel</span>
+        </div>
+    </div>
+    <script>
+        var tagx = new TagX();
+        tagx.register(document.getElementsByTagName("*"), "-login-open:-login-open");
+    </script>
+</body>
+</html>
