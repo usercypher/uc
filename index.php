@@ -39,7 +39,7 @@ function profiler($name) {
  */
 index(
     'uc.php',               // Package file
-    'settings.php',         // Environment and ini settings
+    'config/.settings.php', // Environment and ini settings
     'var/data/app/config'   // Application configuration directory/file
 );
 
@@ -57,10 +57,8 @@ function index($packageFile, $settingsFile, $configFile) {
     $app = new App();
     $app->init();
 
-    require('Lib_Exception.php');
-    $exception = new Lib_Exception();
-    $exception->args(array($app));
-    $exception->init();
+    // Set error handler
+    set_error_handler(array($app, 'error'));
 
     // Load environment and ini settings
     $settings = require($settingsFile);
@@ -75,6 +73,8 @@ function index($packageFile, $settingsFile, $configFile) {
 
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
     $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
+
+    $app = require($app->dirRoot('config/.extension.php'));
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;

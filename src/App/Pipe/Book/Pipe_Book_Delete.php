@@ -17,11 +17,13 @@ class Pipe_Book_Delete {
 
         $data = $input->parsed;
 
+        $route = trim($input->getFrom($input->query, 'redirect', ''), '/');
+
         $this->bookRepo->validateAndDelete($data);
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->redirect($this->app->urlRoute('home'));
+        $output->redirect($this->app->urlRoute($route));
 
         return array($input, $output, $success);
     }

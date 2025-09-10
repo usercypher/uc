@@ -21,7 +21,7 @@ class Pipe_Book_Edit {
         $output->html($this->app->dirRoot('res/app/view/edit.html.php'), array(
             'app' => $this->app,
             'output' => $output,
-
+            'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
             'book' => $this->bookRepo->first('WHERE id = ?', array($bookId)),

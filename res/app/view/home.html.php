@@ -2,8 +2,9 @@
 
 $app = $data['app'];
 $output = $data['output'];
+$currentRoute = $data['current_route'];
 
-$flash = $data['flash'];
+$flash = isset($data['flash']) ? $data['flash'] : array();
 $csrfToken = $data['csrf_token'];
 $books = $data['books'];
 
@@ -12,49 +13,69 @@ $books = $data['books'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general.css')); ?>">
-    <script src="<?php echo($app->urlWeb('asset/js/dialog.js')); ?>"></script>
+    <title>Book - Home</title>
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/uc.css')); ?>">
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/style.css')); ?>">
+    <script src="<?php echo($app->urlWeb('asset/js/uc.js')); ?>"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Books</h1>
-        <ul>
-            <li><a href="<?php echo($app->urlRoute('home')); ?>">Refresh</a></li>
-        </ul>
-        <br>
+    <h1>Books</h1>
+    <ul>
+        <li><a href="<?php echo($app->urlRoute('home')); ?>">Refresh</a></li>
+        <li><a href="<?php echo($app->urlRoute('create')); ?>">Add Book</a></li>
+    </ul>
 
-        <a href="<?php echo($app->urlRoute('create')); ?>">
-            <button class="add">Add Book</button>
-        </a>
-        <br><br>
+    <hr>
+    <!-- Display books here -->
+    <?php foreach ($books as $i => $book) : ?>
 
-        <div class="book-grid">
-            <!-- Display books here -->
-            <?php foreach ($books as $book) : ?>
+    <div class="block">
+        <h3><?php echo $output->htmlEncode($book['title']); ?></h3>
+        <p><strong>Author:</strong> <?php echo $output->htmlEncode($book['author']); ?></p>
+        <p><strong>Publisher:</strong> <?php echo $output->htmlEncode($book['publisher']); ?></p>
+        <p><strong>Year:</strong> <?php echo $output->htmlEncode($book['year']); ?></p>
 
-            <div class="book-card">
-                <h3><?php echo $output->htmlEncode($book['title']); ?></h3>
-                <p><strong>Author:</strong> <?php echo $output->htmlEncode($book['author']); ?></p>
-                <p><strong>Publisher:</strong> <?php echo $output->htmlEncode($book['publisher']); ?></p>
-                <p><strong>Year:</strong> <?php echo $output->htmlEncode($book['year']); ?></p>
-
-                <!-- Actions (Edit & Delete) -->
-                <div class="actions">
-                    <a href="<?php echo $app->urlRoute('edit/:title_id', array(':title_id' => $app->strSlug($book['title'] . '-' . rawurlencode($book['id'])))); ?>"><button>Edit</button></a>
-                    <form action="<?php echo $app->urlRoute('book/delete'); ?>" method="post" style="display:inline;" onsubmit="return submitWithConfirm(event, <?php echo $output->htmlEncode(json_encode('Delete book' . ($book['title']) . '?')); ?>);">
-                        <input type="hidden" name="csrf_token" value="<?php echo $output->htmlEncode($csrfToken); ?>">
-                        <input type="hidden" name="book[id]" value="<?php echo $output->htmlEncode($book['id']); ?>">
-                        <input type="submit" value="Delete">
-                    </form>
-                </div>
-            </div>
-            <?php endforeach; ?>
-
+        <!-- Actions (Edit & Delete) -->
+        <div class="actions">
+            <a class="button" href="<?php echo $app->urlRoute('edit/:title_id', array(':title_id' => $app->strSlug($book['title'] . '-' . rawurlencode($book['id'])))); ?>">Edit</a>
+            <button
+                type="button"
+                class="button negative"
+                x-ref--book-delete-open-<?= $i ?>
+                x-on-click
+                x-cycle--book-delete=""
+                x-cycle--book-delete-content=""
+                x-focus="-book-delete-tab-last"
+                x-tab="-book-delete-tab-first:-book-delete-tab-last"
+                x-attr-window_x-on-key-window-escape="-book-delete-close"
+                x-attr-window_x-run--book-delete-close="x-on-click"
+                x-attr--book-delete-close_x-focus="-book-delete-open-<?= $i ?>"
+                x-val-book_id="<?= $output->htmlEncode($book['id']) ?>"
+                x-val-book_title="<?= $output->htmlEncode($book['title']) ?>"
+            >
+                Delete
+            </button>
         </div>
     </div>
-    <?php require($app->dirRoot('res/app/view/template/script.html.php')); ?>
+    <?php endforeach; ?>
+
+    <div class="modal hidden" x-ref--book-delete>
+        <span class="modal-content-overlay" tabindex="-1" x-on-click x-run--book-delete-close="x-on-click"></span>
+
+        <div class="modal-content small" x-ref--book-delete-content>
+            <span class="modal-close" x-ref--book-delete-close x-on-click x-cycle--book-delete="hidden" x-cycle--book-delete-content="small" x-focus="-book-delete-open">&times;</span>
+            <h2>Delete</h2>
+            <p>Do you want to delete book "<span x-ref-book_title></span>"?</p>
+            <form method="POST" action="<?php echo $app->urlRoute('book/delete?redirect=:redirect', array(':redirect' => $currentRoute)); ?>">
+                <input type="hidden" name="csrf_token" value="<?= $output->htmlEncode($csrfToken) ?>"/>
+                <input type="hidden" name="book[id]" value="" required x-ref-book_id>
+
+                <button type="submit" class="button negative" x-ref--book-delete-tab-first>Delete</button>
+                <button type="button" class="button neutral" x-ref--book-delete-tab-last x-on-click x-run--book-delete-close="x-on-click">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>
 </body>
 </html>

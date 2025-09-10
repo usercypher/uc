@@ -16,7 +16,7 @@ class Pipe_Book_Create {
         $output->html($this->app->dirRoot('res/app/view/create.html.php'), array(
             'app' => $this->app,
             'output' => $output,
-
+            'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
         ));

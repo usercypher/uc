@@ -12,4 +12,4 @@
  *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
  */
 $app->scanUnits('src/App/', array());
-$app->scanUnits('src/Extra/', array());
+$app->scanUnits('src/Uc/', array());

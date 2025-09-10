@@ -9,8 +9,8 @@
  */
 compile(
     'uc.php',               // Package file
-    'settings.php',         // Environment and ini settings
-    'var/data/app/config'   // Output config directory/file
+    'config/.settings.php', // Environment and ini settings
+    'var/data/app/config'   // Application configuration directory/file
 );
 
 /**
@@ -53,10 +53,8 @@ function compile($packageFile, $settingsFile, $configFile) {
     $app = new App();
     $app->init();
 
-    require('Lib_Exception.php');
-    $exception = new Lib_Exception();
-    $exception->args(array($app));
-    $exception->init();
+    // Set error handler
+    set_error_handler(array($app, 'error'));
 
     // Load and apply settings based on mode
     $settings = require($settingsFile);

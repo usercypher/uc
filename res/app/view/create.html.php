@@ -2,8 +2,9 @@
 
 $app = $data['app'];
 $output = $data['output'];
+$currentRoute = $data['current_route'];
 
-$flash = $data['flash'];
+$flash = isset($data['flash']) ? $data['flash'] : array();
 $csrfToken = $data['csrf_token'];
 
 ?>
@@ -11,39 +12,48 @@ $csrfToken = $data['csrf_token'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general.css')); ?>">
-    <script src="<?php echo($app->urlWeb('asset/js/dialog.js')); ?>"></script>
+    <title>Book - Create</title>
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/uc.css')); ?>">
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/style.css')); ?>">
+    <script src="<?php echo($app->urlWeb('asset/js/uc.js')); ?>"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Add Book</h1>
-        <ul>
-            <li><a href="<?php echo($app->urlRoute('home')); ?>">Home</a></li>
-        </ul>
-        <br>
-        <div class='container-form'>
-            <form class="submit-form" action="<?php echo($app->urlRoute('book/store')); ?>" method="post">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+    <h1>Add Book</h1>
+    <ul>
+        <li><a href="<?php echo($app->urlRoute('home')); ?>">Home</a></li>
+    </ul>
+    <hr>
+    <form class="submit-form" action="<?php echo($app->urlRoute('book/store?redirect=:redirect', array(':redirect' => $currentRoute))); ?>" method="post">
+        <fieldset>
+            <legend>Book Information</legend>
 
-                <label>Title:</label>
+            <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+
+            <label>Title:</label>
+            <p>
                 <input type="text" name="book[title]" required>
+            </p>
 
-                <label>Author:</label>
+            <label>Author:</label>
+            <p>
                 <input type="text" name="book[author]">
+            </p>
 
-                <label>Publisher:</label>
+            <label>Publisher:</label>
+            <p>
                 <input type="text" name="book[publisher]">
+            </p>
 
-                <label>Year:</label>
+            <label>Year:</label>
+            <p>
                 <input type="date" name="book[year]">
+            </p>
 
-                <input type="submit" value="Create">
-            </form>
-        </div>
-    </div>
-    <?php require($app->dirRoot('res/app/view/template/script.html.php')); ?>
+            <hr>
+
+            <input type="submit" value="Create">      
+        </fieldset>
+    </form>
+    <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>
 </body>
 </html>

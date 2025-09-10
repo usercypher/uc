@@ -2,8 +2,9 @@
 
 $app = $data['app'];
 $output = $data['output'];
+$currentRoute = $data['current_route'];
 
-$flash = $data['flash'];
+$flash = isset($data['flash']) ? $data['flash'] : array();
 $csrfToken = $data['csrf_token'];
 $book = $data['book'];
 
@@ -12,41 +13,50 @@ $book = $data['book'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/dialog.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general-button.css')); ?>">
-    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/general.css')); ?>">
-    <script src="<?php echo($app->urlWeb('asset/js/dialog.js')); ?>"></script>
+    <title>Book - Edit</title>
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/uc.css')); ?>">
+    <link rel="stylesheet" href="<?php echo($app->urlWeb('asset/css/style.css')); ?>">
+    <script src="<?php echo($app->urlWeb('asset/js/uc.js')); ?>"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Edit Book</h1>
-        <ul>
-            <li><a href="<?php echo($app->urlRoute('home')); ?>">Home</a></li>
-        </ul>
-        <br>
-        <div class='container-form'>
-            <form action="<?php echo($app->urlRoute('book/update')); ?>" method="post" onsubmit="return submitWithConfirm(event);">
-                <input type="hidden" name="csrf_token" value="<?php echo $output->htmlEncode($csrfToken); ?>">
-                <input type="hidden" name="book[id]" value="<?php echo($output->htmlEncode($book['id'])); ?>">
-                <input type="hidden" name="book[title][current]" value="<?php echo($output->htmlEncode($book['title'])); ?>">
+    <h1>Edit Book</h1>
+    <ul>
+        <li><a href="<?php echo($app->urlRoute('home')); ?>">Home</a></li>
+    </ul>
+    <hr>
+    <form action="<?php echo($app->urlRoute('book/update?redirect=:redirect', array(':redirect' => $currentRoute))); ?>" method="post">
+        <fieldset>
+            <legend>Book Information</legend>
 
-                <label>Title:</label>
+            <input type="hidden" name="csrf_token" value="<?php echo $output->htmlEncode($csrfToken); ?>">
+            <input type="hidden" name="book[id]" value="<?php echo($output->htmlEncode($book['id'])); ?>">
+            <input type="hidden" name="book[title][current]" value="<?php echo($output->htmlEncode($book['title'])); ?>">
+
+            <label>Title:</label>
+            <p>
                 <input type="text" name="book[title][new]" value="<?php echo($output->htmlEncode($book['title'])); ?>" required>
+            </p>
 
-                <label>Author:</label>
+            <label>Author:</label>
+            <p>
                 <input type="text" name="book[author]" value="<?php echo($output->htmlEncode($book['author'])); ?>">
+            </p>
 
-                <label>Publisher:</label>
+            <label>Publisher:</label>
+            <p>
                 <input type="text" name="book[publisher]" value="<?php echo($output->htmlEncode($book['publisher'])); ?>">
+            </p>
 
-                <label>Year:</label>
+            <label>Year:</label>
+            <p>
                 <input type="date" name="book[year]" value="<?php echo($output->htmlEncode($book['year'])); ?>">
+            </p>
 
-                <input type="submit" value="Update">
-            </form>
-        </div>
-    </div>
-    <?php require($app->dirRoot('res/app/view/template/script.html.php')); ?>
+            <hr>
+
+            <input type="submit" value="Update">
+        </fieldset>
+    </form>
+    <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>
 </body>
 </html>

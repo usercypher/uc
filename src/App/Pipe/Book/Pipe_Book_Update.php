@@ -17,11 +17,13 @@ class Pipe_Book_Update {
 
         $data = $input->parsed;
 
+        $route = trim($input->getFrom($input->query, 'redirect', ''), '/');
+
         $this->bookRepo->validateAndUpdate($data);
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->redirect($this->app->urlRoute('edit/:id', array(':id' => $data['book']['id'])));
+        $output->redirect($this->app->urlRoute($route));
 
         return array($input, $output, $success);
     }

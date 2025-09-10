@@ -1,5 +1,5 @@
 <?php
-// settings.php
+// .settings.php
 
 return array(
     'mode' => array(

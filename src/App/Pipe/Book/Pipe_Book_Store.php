@@ -17,7 +17,9 @@ class Pipe_Book_Store {
 
         $data = $input->parsed;
 
-        $route = $this->bookRepo->validateAndInsert($data) ? 'home' : 'create';
+        $route = trim($input->getFrom($input->query, 'redirect', ''), '/');
+
+        $route = $this->bookRepo->validateAndInsert($data) ? 'home' : $route;
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 

@@ -1,7 +1,0 @@
-<?php
-// extra.routes.php
-
-$app->setRoute('GET', '', array(
-    'pipe' => array('Pipe_Landing'),
-    'ignore' => array('--global')
-));

@@ -1,10 +1,11 @@
 <?php
 
 class Pipe_CsrfGenerate {
-    public $session;
+    public $app, $session;
 
     public function args($args) {
         list(
+            $this->app,
             $this->session
         ) = $args;
     }
