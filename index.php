@@ -39,18 +39,16 @@ function profiler($name) {
  */
 index(
     'uc.php',               // Package file
-    'uc.settings.php', // Environment and ini settings
-    'var/data/app/config'   // Application configuration directory/file
+    'var/data/app/config'   // Application configuration file
 );
 
 /**
  * Application entry point.
  *
  * @param string $packageFile   File to require for package setup
- * @param string $settingsFile  Settings file with env and ini configurations
  * @param string $configFile    Application config file or directory to load
  */
-function index($packageFile, $settingsFile, $configFile) {
+function index($packageFile, $configFile) {
     require($packageFile);
 
     // Create app instance
@@ -61,7 +59,7 @@ function index($packageFile, $settingsFile, $configFile) {
     set_error_handler(array($app, 'error'));
 
     // Load environment and ini settings
-    $settings = require($settingsFile);
+    $settings = require($app->dirRoot('settings.php'));
     $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
@@ -74,7 +72,7 @@ function index($packageFile, $settingsFile, $configFile) {
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
     $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
 
-    $app = require($app->dirRoot('uc.extension.php'));
+    $app = require($app->dirRoot('extension.php'));
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;

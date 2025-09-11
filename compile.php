@@ -9,8 +9,7 @@
  */
 compile(
     'uc.php',               // Package file
-    'uc.settings.php', // Environment and ini settings
-    'var/data/app/config'   // Application configuration directory/file
+    'var/data/app/config'   // Application configuration file
 );
 
 /**
@@ -43,10 +42,9 @@ function config($app) {
  * Compile the app configuration.
  *
  * @param string $packageFile   File to require for package setup
- * @param string $settingsFile  Settings file with env and ini configurations
  * @param string $configFile    Output config file or directory to save
  */
-function compile($packageFile, $settingsFile, $configFile) {
+function compile($packageFile, $configFile) {
     require($packageFile);
 
     // Initialize app
@@ -56,8 +54,8 @@ function compile($packageFile, $settingsFile, $configFile) {
     // Set error handler
     set_error_handler(array($app, 'error'));
 
-    // Load and apply settings based on mode
-    $settings = require($settingsFile);
+    // Load environment and ini settings
+    $settings = require($app->dirRoot('settings.php'));
     $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
