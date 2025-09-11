@@ -1,20 +1,8 @@
 <?php
-// index.php
 
-/**
- * ------------------------------------------------------------------------
- * Optional Profiling Setup
- * ------------------------------------------------------------------------
- * Uncomment to enable profiling via TickProfiler.
- */
-// profiler('TickProfiler');
+// Uncomment to enable profiling via TickProfiler.
+//profiler('TickProfiler');
 
-/**
- * Initialize and start the TickProfiler.
- *
- * @param string $name Profiler class and log filename prefix.
- * @return TickProfiler
- */
 function profiler($name) {
     declare(ticks=1);
     require($name . '.php');
@@ -23,48 +11,29 @@ function profiler($name) {
     return $tickProfiler;
 }
 
-/**
- * ------------------------------------------------------------------------
- * Initial Setup (Optional)
- * ------------------------------------------------------------------------
- * Uncomment to generate configuration or run compile script.
- */
-// require('compile.php');  // Generates config and exits script
+// Uncomment to generate configuration or run compile script.
+//require('compile.php');  // Generates config and exits script
 
-/**
- * ------------------------------------------------------------------------
- * Run Application
- * ------------------------------------------------------------------------
- * Bootstraps the application with environment and configuration files.
- */
 index(
-    'uc.php',               // Package file
-    'var/data/app/config'   // Application configuration file
+    'uc.php',
+    'settings.php',
+    'extension.php',
+    'var/data/app/config'
 );
 
-/**
- * Application entry point.
- *
- * @param string $packageFile   File to require for package setup
- * @param string $configFile    Application config file or directory to load
- */
-function index($packageFile, $configFile) {
+function index($packageFile, $settingsFile, $extensionFile, $configFile) {
     require($packageFile);
 
-    // Create app instance
     $app = new App();
     $app->init();
 
-    // Set error handler
     set_error_handler(array($app, 'error'));
 
-    // Load environment and ini settings
-    $settings = require($app->dirRoot('settings.php'));
+    $settings = require($app->dirRoot($settingsFile));
     $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    // Load application configuration
     $app->load($configFile);
 
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
@@ -72,14 +41,13 @@ function index($packageFile, $configFile) {
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
     $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
 
-    $app = require($app->dirRoot('extension.php'));
+    $app = require($app->dirRoot($extensionFile));
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;
 
     $output = $app->dispatch($input, $output);
 
-    // Send the response to the client
     switch ($input->source) {
         case 'cli':
             $output->std($output->content, $output->code > 0);

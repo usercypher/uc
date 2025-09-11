@@ -1,12 +1,13 @@
 <?php
-// app.routes.php
 
 /**
  * ------------------------------------------------------------------------
- * Basic GET Routes: /home, /create, /edit
+ * BOOK
  * ------------------------------------------------------------------------
- * These routes share response compression via group pipe_append.
  */
+
+// GET
+// ==========
 $group = array(
     'pipe_append' => array('Pipe_OutputCompression')
 );
@@ -37,13 +38,8 @@ $app->groupRoute($group, 'GET', 'edit/:id::[0-9]+', array(
     'pipe' => array('Pipe_Book_Edit')
 ));
 
-
-/**
- * ------------------------------------------------------------------------
- * POST Routes (Protected with CSRF Validation)
- * ------------------------------------------------------------------------
- * All routes under 'book/' prefix require CSRF token validation.
- */
+// POST
+// ==========
 $group = array(
     'pipe_prepend' => array('Pipe_CsrfValidate'),
     'ignore' => array('Pipe_CsrfGenerate')

@@ -1,17 +1,15 @@
 <?php
-// .pipes.php
 
 /**
  * ------------------------------------------------------------------------
  * Global Pipes
  * ------------------------------------------------------------------------
- * These are applied to all routes automatically.
  */
 $app->setPipes(array(
     'prepend' => array(
-        'Pipe_CsrfGenerate',     // Generate CSRF token for GET requests
+        'Pipe_CsrfGenerate',
     ),
     'append' => array(
-        // No global append pipes
+        
     )
 ));
