@@ -1,3 +1,4 @@
 *_log
 *.log
-tests
+tests/
+var/log/**
