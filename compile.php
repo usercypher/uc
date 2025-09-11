@@ -9,7 +9,7 @@
  */
 compile(
     'uc.php',               // Package file
-    'config/.settings.php', // Environment and ini settings
+    'uc.settings.php', // Environment and ini settings
     'var/data/app/config'   // Application configuration directory/file
 );
 
@@ -20,17 +20,17 @@ compile(
  * @return App
  */
 function config($app) {
-    require('config' . DS . '.scan.php');
+    require('config' . DS . 'scan.php');
 
-    if ($files = glob($app->getEnv('DIR_ROOT') . 'config' . DS . '*.units.php')) {
+    if ($files = glob($app->getEnv('DIR_ROOT') . 'config/*/*.units.php')) {
         foreach ($files as $file) {
             require($file);
         }
     }
 
-    require('config' . DS . '.pipes.php');    
+    require('config' . DS . 'pipes.php');    
 
-    if ($files = glob($app->getEnv('DIR_ROOT') . 'config' . DS . '*.routes.php')) {
+    if ($files = glob($app->getEnv('DIR_ROOT') . 'config/*/*.routes.php')) {
         foreach ($files as $file) {
             require($file);
         }

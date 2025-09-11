@@ -252,7 +252,9 @@ class App {
             $errstr = $parts[1];
         }
 
-        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+        $code = SAPI === 'cli' && $code > 255 ? 1 : $code;
+
+        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
         if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
             $content = '[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
