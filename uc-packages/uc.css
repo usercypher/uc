@@ -152,7 +152,7 @@ caption {
     text-align: left;
 }
 
-input, textarea, select, button {
+input, textarea, select, button, .button {
     font-family: inherit;
     font-size: 1em;
     line-height: 1.5;
@@ -162,6 +162,19 @@ input, textarea, select {
     padding: 0.5em 0.75em;
     border: 1px solid #ccc;
     background: #fff;
+}
+
+input[type="date"], input[type="time"], select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    padding: 0.5em 2.5em 0.5em 0.75em;
+
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1 L5 5 L9 1' fill='%23ccc'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.75em center;
+    background-size: 1em;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -181,7 +194,6 @@ button, input[type="submit"], input[type="button"], input[type="reset"], .button
     border: 1px solid transparent;
     padding: 0.5em 1em;
     cursor: pointer;
-    font-size: 0.875em;
     font-weight: 500;
 }
 
