@@ -181,10 +181,10 @@ input, textarea, select {
 }
 
 input[type="date"], input[type="time"], select {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 16 6'><path d='M1 1 L5 5 L9 1' fill='%23ccc' /></svg>");    
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 16 6'><path d='M1 1 L5 5 L9 1' fill='%23ccc' /></svg>");
     background-position: right center;
     background-repeat: no-repeat;
-    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    padding: 0.5em 0.5em 0.5em 0.75em;
 
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -199,6 +199,7 @@ textarea {
 
 button, input[type="submit"], input[type="button"], input[type="reset"], .button {
     background: #0055aa;
+    border: 0;
     color: #fff;
     cursor: pointer;
     font-weight: 500;
@@ -271,7 +272,6 @@ img {
 .button.caution:hover {
     background: #8a5500;
 }
-
 
 .button.neutral {
     background: #666;
