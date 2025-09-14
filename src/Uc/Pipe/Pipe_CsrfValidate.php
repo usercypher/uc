@@ -21,7 +21,7 @@ class Pipe_CsrfValidate {
             $success = false;
         }
 
-        $csrfToken = $this->session->get('csrf_token');
+        $csrfToken = $this->session->unset('csrf_token');
 
         if (!$csrfToken) {
             $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));

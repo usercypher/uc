@@ -1,28 +1,9 @@
 
-<!-- 
-
-ids: 
-- load-time
-- ttfb
-
--->
-
-<div id="perf-stats" style="
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background: #000;
-    opacity: 0.75;
-    color: #fff;
-    font-family: monospace;
-    font-size: 12px;
-    padding: 8px 12px;
-    z-index: 10000;
-">
-    <div><strong>Load:</strong> <span id="load-time">--</span> s</div>
-    <div><strong>TTFB:</strong> <span id="ttfb">--</span> s</div>
+<div>
+    <h3>Quick Speed Test</h3>
+    <p><strong>Page Load Time:</strong> <span id="load-time">--</span> seconds</p>
+    <p><strong>Time To First Byte (TTFB):</strong> <span id="ttfb">--</span> seconds</p>
 </div>
-
 <script>
     window.addEventListener('load', function() {
         const timing = performance.timing;
