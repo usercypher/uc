@@ -133,10 +133,16 @@ class Output {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             if (!isset($this->headers['content-type'])) header('content-type: ' . $this->type);
-            foreach ($this->headers as $key => $value) header($key . ': ' . $value);
+            foreach ($this->headers as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $v) header($key . ': ' . $v, false);
+                } else {
+                    header($key . ': ' . $value);
+                }
+            }
         }
 
-        echo(isset($this->headers['location']) ? '' : $this->content);
+        if (!isset($this->headers['location'])) echo $this->content;
     }
 
     function std($msg, $err = false) {
