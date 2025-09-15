@@ -17,7 +17,7 @@ return array(
                 'text/html' => 'res/uc/view/text.html.php',
                 'application/json' => 'res/uc/view/application.json.php',
             ),
-            'ERROR_LOG_FILE' => 'app/error', // Error log file
+            'ERROR_LOG_FILE' => 'error', // Error log file
             'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
             'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
             // Routing Configuration
@@ -71,7 +71,7 @@ return array(
                 'text/html' => 'res/uc/view/text.html.php',
                 'application/json' => 'res/uc/view/application.json.php',
             ),
-            'ERROR_LOG_FILE' => 'app/error',
+            'ERROR_LOG_FILE' => 'error',
             'SHOW_ERRORS' => 0,
             'LOG_ERRORS' => 1,
             // Routing Configuration
