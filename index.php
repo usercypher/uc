@@ -1,5 +1,8 @@
 <?php
 
+define('START_TIME', microtime(true));
+define('START_MEMORY', memory_get_usage());
+
 // Uncomment to enable profiling via TickProfiler.
 //profiler('TickProfiler');
 
@@ -53,6 +56,12 @@ function index($packageFile, $settingsFile, $extensionFile, $configFile) {
             $output->std($output->content, $output->code > 0);
             exit($output->code);
         case 'http':
+            $executionTimeMs = number_format((microtime(true) - START_TIME) * 1000, 2);
+            $memoryUsedKb = number_format((memory_get_usage() - START_MEMORY) / 1024, 2);
+
+            $output->headers['set-cookie'][] = "server_speed={$executionTimeMs}; Path=/; Max-Age=3600;";
+            $output->headers['set-cookie'][] = "server_memory={$memoryUsedKb}; Path=/; Max-Age=3600;";
+
             return $output->http();
         default:
             echo('Unknown input source:' . $input->source);
