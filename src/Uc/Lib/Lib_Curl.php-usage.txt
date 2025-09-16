@@ -9,6 +9,8 @@ $response = $curl->send('https://api.example.com/data', [
     ],
     'content' => json_encode(['key' => 'value']),
     'timeout' => 30,
+    'verify_ssl' => true,
+    'ca_info' => '/path/to/cacert.pem',
 ]);
 
 if ($response->code === 200) {
