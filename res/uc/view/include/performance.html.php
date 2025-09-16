@@ -1,10 +1,9 @@
-
 <div>
     <h3>Quick Speed Test</h3>
     <p><strong>Page Load Time:</strong> <span id="load-time">--</span> seconds</p>
     <p><strong>Time To First Byte (TTFB):</strong> <span id="ttfb">--</span> seconds</p>
-    <p><strong>Server Processing Time:</strong> <span id="server-speed">--</span> ms</p>
-    <p><strong>Server Memory Usage:</strong> <span id="server-memory">--</span> KB</p>
+    <p><strong>App Execution Time:</strong> <span id="app-exec-time-ms">--</span> ms</p>
+    <p><strong>App Memory Usage:</strong> <span id="app-memory-kb">--</span> KB</p>
 </div>
 
 <script>
@@ -31,11 +30,11 @@
             document.getElementById('load-time').textContent = loadTime.toFixed(2);
             document.getElementById('ttfb').textContent = ttfb.toFixed(2);
 
-            const serverSpeed = getCookieValue('server_speed');
-            const serverMemory = getCookieValue('server_memory');
+            const appExecTimeMs = getCookieValue('app_exec_time_ms');
+            const appMemoryKb = getCookieValue('app_memory_kb');
 
-            document.getElementById('server-speed').textContent = serverSpeed ? `${serverSpeed}` : '--';
-            document.getElementById('server-memory').textContent = serverMemory ? `${serverMemory}` : '--';
+            document.getElementById('app-exec-time-ms').textContent = appExecTimeMs ? appExecTimeMs : '--';
+            document.getElementById('app-memory-kb').textContent = appMemoryKb ? appMemoryKb : '--';
         }
 
         updateMetrics();
