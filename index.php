@@ -56,8 +56,8 @@ function index($packageFile, $settingsFile, $extensionFile, $configFile) {
             $output->std($output->content, $output->code > 0);
             exit($output->code);
         case 'http':
-            setcookie('app_exec_time_ms', number_format((microtime(true) - START_TIME) * 1000, 2), time() + 3600, '/');
-            setcookie('app_memory_kb', number_format((memory_get_usage() - START_MEMORY) / 1024, 2), time() + 3600, '/');            
+            setcookie('server_exec_time_ms', number_format((microtime(true) - START_TIME) * 1000, 2), time() + 3600, '/');
+            setcookie('server_memory_usage_kb', number_format((memory_get_usage() - START_MEMORY) / 1024, 2), time() + 3600, '/');
 
             return $output->http();
         default:
