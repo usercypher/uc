@@ -1,34 +1,35 @@
 <?php
 
 class Lib_Database {
-    var $app;
-    var $host, $port, $name, $user, $pass, $conn, $time = '+00:00';
+    var $conn = array();
 
-    public function args($args) {
-        list(
-            $this->app
-        ) = $args;
+    function connect($config = array(), $key = '_') {
+        if (!isset($this->conn[$key])) {
+            $host = isset($config['host']) ? $config['host'] : 'localhost';
+            $port = isset($config['port']) ? $config['port'] : 3306;
+            $name = isset($config['name']) ? $config['name'] : '';
+            $user = isset($config['user']) ? $config['user'] : '';
+            $pass = isset($config['pass']) ? $config['pass'] : '';
+            $time = isset($config['time']) ? $config['time'] : '+00:00';
 
-        $this->host = $this->app->getEnv('DB_HOST');
-        $this->port = $this->app->getEnv('DB_PORT');
-        $this->name = $this->app->getEnv('DB_NAME');
-        $this->user = $this->app->getEnv('DB_USER');
-        $this->pass = $this->app->getEnv('DB_PASS');
-        $this->time = $this->app->getEnv('DB_TIME', '+00:00');
-    }
-
-    function connect() {
-        if (!$this->conn) {
-            $this->conn = new PDO('mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name, $this->user, $this->pass, array(
+            $this->conn[$key] = new PDO('mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name, $user, $pass, array(
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING
             ));
-            $this->conn->exec('SET time_zone = "' . $this->time . '"');
+            $this->conn[$key]->exec('SET time_zone = "' . $time . '"');
         }
-        return $this->conn;
+        return $this->conn[$key];
     }
 
-    function disconnect() {
-        $this->conn = null;
+    function disconnect($key = '_') {
+        if (isset($this->conn[$key])) unset($this->conn[$key]);
+    }
+
+    function disconnectAll() {
+        $this->conn = array();
+    }
+
+    function hasConnection($key = '_') {
+        return isset($this->conn[$key]);
     }
 }
 ?>

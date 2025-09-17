@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'args_prepend' => array('Lib_Database'),
+    'args_prepend' => array('App', 'Lib_Database'),
     'load_prepend' => array('Lib_DatabaseHelper')
 );
 $app->groupUnit($group, 'Repo_Book');
