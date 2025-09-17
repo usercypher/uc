@@ -338,7 +338,7 @@ class App {
 
         $current = $this->routes[$method];
         $params = array();
-        $routeSegments = explode('/', trim($route, '/'));
+        $routeSegments = explode('/', $route);
         $decrement = 0;
         $foundSegment = false;
         $last = count($routeSegments) - 1;
