@@ -1,19 +1,19 @@
 <?php
 
 class Lib_Session {
-    public function __construct() {
+    function __construct() {
         $this->start();
     }
 
-    public function set($key, $value) {
+    function set($key, $value) {
         $_SESSION[$key] = $value;
     }
 
-    public function get($key) {
+    function get($key) {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
 
-    public function unset($key) {
+    function unset($key) {
         $value = null;
 
         if (isset($_SESSION[$key])) {
@@ -24,26 +24,26 @@ class Lib_Session {
         return $value;
     }
 
-    public function start() {
-        if(session_id() == '') {
+    function start() {
+        if (session_id() == '') {
             session_start();
         }
     }
 
-    public function destroy() {
+    function destroy() {
         session_unset();
         session_destroy();
     }
 
-    public function regenerate() {
+    function regenerate() {
         session_regenerate_id(true);
     }
 
-    public function close() {
+    function close() {
         session_write_close();
     }
 
-    public function id() {
+    function id() {
         return session_id();
     }
 }

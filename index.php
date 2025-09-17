@@ -1,50 +1,40 @@
 <?php
 
-define('START_TIME', microtime(true));
-define('START_MEMORY', memory_get_usage());
-
-// Uncomment to enable profiling via TickProfiler.
-//profiler('TickProfiler');
-
-function profiler($name) {
-    declare(ticks=1);
-    require($name . '.php');
-    $tickProfiler = new TickProfiler();
-    $tickProfiler->init($name . '.log');
-    return $tickProfiler;
-}
-
 // Uncomment to generate configuration or run compile script.
 //require('compile.php');  // Generates config and exits script
 
+define('SCRIPT_START_TIME', microtime(true));
+define('SCRIPT_START_MEMORY', memory_get_usage());
+
 index(
     'uc.php',
-    'settings.php',
-    'extension.php',
-    'var/data/app/config'
+    'uc.config.php',
+    'var/compiled/app.state'
 );
 
-function index($packageFile, $settingsFile, $extensionFile, $configFile) {
-    require($packageFile);
+function index($coreFile, $coreConfigFile, $appStateFile) {
+    require($coreFile);
 
     $app = new App();
     $app->init();
 
     set_error_handler(array($app, 'error'));
 
-    $settings = require($app->dirRoot($settingsFile));
+    require($app->dirRoot($coreConfigFile));
+
+    $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
     $app->setInis($settings['ini'][$mode]);
     $app->setEnvs($settings['env'][$mode]);
 
-    $app->load($configFile);
+    $app->load($appStateFile);
 
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
     $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
 
-    $app = require($app->dirRoot($extensionFile));
+    $app = extension($app);
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;
@@ -56,8 +46,8 @@ function index($packageFile, $settingsFile, $extensionFile, $configFile) {
             $output->std($output->content, $output->code > 0);
             exit($output->code);
         case 'http':
-            setcookie('server_exec_time_ms', number_format((microtime(true) - START_TIME) * 1000, 2), time() + 3600, '/');
-            setcookie('server_memory_usage_kb', number_format((memory_get_usage() - START_MEMORY) / 1024, 2), time() + 3600, '/');
+            $output->headers['set-cookie'][] = 'server_exec_time_ms=' . number_format((microtime(true) - SCRIPT_START_TIME) * 1000, 2) . '; Max-Age=3600; Path=/';
+            $output->headers['set-cookie'][] = 'server_memory_usage_kb=' . number_format((memory_get_usage() - SCRIPT_START_MEMORY) / 1024, 2) . '; Max-Age=3600; Path=/';
 
             return $output->http();
         default:

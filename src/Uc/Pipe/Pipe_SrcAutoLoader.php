@@ -5,7 +5,7 @@ class Pipe_SrcAutoLoader {
 
     public function args($args) {
         list(
-            $this->app, 
+            $this->app,
         ) = $args;
     }
 

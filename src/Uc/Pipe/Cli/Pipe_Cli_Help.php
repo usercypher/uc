@@ -7,7 +7,7 @@ class Pipe_Cli_Help {
         list(
             $this->app,
         ) = $args;
-    } 
+    }
 
     public function process($input, $output) {
         $success = true;
@@ -30,7 +30,7 @@ class Pipe_Cli_Help {
                 $seen[$pathParts[0]] = true;
                 if ($route['method'] === '') $message .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . EOL;
             }
-       } else {
+        } else {
             $matched = false;
             foreach ($routes as $route) {
                 $pathParts = explode('/', $route['path']);

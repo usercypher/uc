@@ -13,7 +13,7 @@ class Pipe_Cli_File_FindReplace {
         }
 
         $search = $input->getFrom($input->options, 'search');
-        $replace = $input->getFrom($input->options, 'replace');        
+        $replace = $input->getFrom($input->options, 'replace');
 
         if ($search === null || $replace === null) {
             $message .= 'Error: Missing required parameters.' . EOL;

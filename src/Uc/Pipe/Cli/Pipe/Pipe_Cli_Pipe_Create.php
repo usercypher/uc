@@ -7,7 +7,7 @@ class Pipe_Cli_Pipe_Create {
         list(
             $this->app,
         ) = $args;
-    } 
+    }
 
     public function process($input, $output) {
         $success = true;
@@ -32,7 +32,7 @@ class Pipe_Cli_Pipe_Create {
         $classContent = $this->classContent($className, $classDeps);
 
         $fullPath = $this->app->dirRoot('src/' . $classPath);
-        if (file_put_contents($fullPath , $classContent) !== false) {
+        if (file_put_contents($fullPath, $classContent) !== false) {
             $message .= EOL . $className . ' created successfully!' . EOL;
             $message .= 'Location: ' . $fullPath . EOL;
         } else {
@@ -54,7 +54,7 @@ class Pipe_Cli_Pipe_Create {
         // add dependency-only class
         " . $classVarList . "
     }
-";
+        ";
 
         return "<?php
 

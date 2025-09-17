@@ -2,12 +2,26 @@
 
 compile(
     'uc.php',
-    'settings.php',
-    'var/data/app/config'
+    'uc.config.php',
+    'var/compiled/app.state'
 );
 
-function config($app) {
-    require('config' . DS . 'scan.php');
+function compile($coreFile, $coreConfigFile, $appStateFile) {
+    require($coreFile);
+
+    $app = new App();
+    $app->init();
+
+    set_error_handler(array($app, 'error'));
+
+    require($app->dirRoot($coreConfigFile));
+
+    $settings = settings();
+    $mode = $settings['mode'][basename(__FILE__)];
+    $app->setInis($settings['ini'][$mode]);
+    $app->setEnvs($settings['env'][$mode]);
+
+    require('config/scan.php');
 
     if ($files = glob($app->getEnv('DIR_ROOT') . 'config/*/*.units.php')) {
         foreach ($files as $file) {
@@ -15,7 +29,7 @@ function config($app) {
         }
     }
 
-    require('config' . DS . 'pipes.php');    
+    require('config/pipes.php');
 
     if ($files = glob($app->getEnv('DIR_ROOT') . 'config/*/*.routes.php')) {
         foreach ($files as $file) {
@@ -23,31 +37,7 @@ function config($app) {
         }
     }
 
-    return $app;
-}
+    $app->save($appStateFile);
 
-function compile($packageFile, $settingsFile, $configFile) {
-    require($packageFile);
-
-    // Initialize app
-    $app = new App();
-    $app->init();
-
-    // Set error handler
-    set_error_handler(array($app, 'error'));
-
-    // Load environment and ini settings
-    $settings = require($app->dirRoot($settingsFile));
-    $mode = $settings['mode'][basename(__FILE__)];
-    $app->setInis($settings['ini'][$mode]);
-    $app->setEnvs($settings['env'][$mode]);
-
-    // Configure app units and routes
-    $app = config($app);
-
-    // Save compiled configuration
-    $app->save($configFile);
-
-    // Exit after compilation
     exit;
 }

@@ -21,7 +21,7 @@ class Lib_DatabaseHelper {
         return $this->messages;
     }
 
-   function beginTransaction() {
+    function beginTransaction() {
         return $this->conn->beginTransaction();
     }
 

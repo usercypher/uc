@@ -8,7 +8,7 @@ class Lib_Curl {
         $this->headersRaw = array();
         $ch = curl_init();
 
-        $method  = isset($options['method']) ? strtoupper($options['method']) : 'GET';
+        $method = isset($options['method']) ? strtoupper($options['method']) : 'GET';
         $headers = isset($options['headers']) ? $options['headers'] : array();
         $timeout = isset($options['timeout']) ? (int)$options['timeout'] : 30;
         $content = isset($options['content']) ? $options['content'] : '';

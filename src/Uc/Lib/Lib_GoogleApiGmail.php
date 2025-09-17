@@ -4,7 +4,6 @@ class Lib_GoogleApiGmail {
     var $curl;
 
     function args($args) {
-        // add dependency-only class
         list(
             $this->curl,
         ) = $args;

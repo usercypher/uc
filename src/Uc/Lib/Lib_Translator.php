@@ -30,7 +30,9 @@ class Translator {
         $isArray = is_array($value);
         if ($isArray && $count !== null) {
             list($obj, $func) = $this->pluralRule;
-            $form = $obj-> {$func} ($count);
+            $form = $obj-> {
+                $func
+            } ($count);
             if (!isset($value[$form])) {
                 end($value);
                 $form = key($value);

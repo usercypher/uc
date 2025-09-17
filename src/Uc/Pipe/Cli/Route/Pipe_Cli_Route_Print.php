@@ -54,7 +54,7 @@ class Pipe_Cli_Route_Print {
                 }
 
                 $parts[] = 'pipe: ' . implode(' > ', $pipe);
-            }            
+            }
 
             if (!empty($route['ignore'])) {
                 $ignore = [];

@@ -2,8 +2,8 @@
 
 class Pipe_ValidateFileUpload {
     private $allowedFileTypes = array(
-        'image/jpeg' => 5 * 1024 * 1024,       // JPEG files, max 5MB
-        'image/png'  => 5 * 1024 * 1024,       // PNG files, max 5MB
+        'image/jpeg' => 5 * 1024 * 1024, // JPEG files, max 5MB
+        'image/png' => 5 * 1024 * 1024, // PNG files, max 5MB
         'application/pdf' => 10 * 1024 * 1024, // PDF files, max 10MB
     );
 
@@ -33,8 +33,8 @@ class Pipe_ValidateFileUpload {
         }
 
         $fileTmpPath = $file['tmp_name'];
-        $fileType = mime_content_type($fileTmpPath);  // MIME type (e.g., image/jpeg)
-        $fileSize = $file['size'];                    // File size in bytes
+        $fileType = mime_content_type($fileTmpPath); // MIME type (e.g., image/jpeg)
+        $fileSize = $file['size']; // File size in bytes
 
         if (!array_key_exists($fileType, $allowedFileTypes)) {
             return "Invalid file type. Allowed types are: JPEG, PNG, PDF.";

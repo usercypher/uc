@@ -263,23 +263,25 @@ class App {
 
         $code = SAPI === 'cli' && $code > 255 ? 1 : $code;
 
-        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
-            $content = '[php error ' . $errno . '] [' . (SAPI === 'cli' ? 'cli' : 'http') . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
+        $showErrors = $this->ENV['SHOW_ERRORS'] || SAPI === 'cli';
+        if ($showErrors) {
+            $content = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
 
             foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
 
-        if ($type !== null && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
+        $errorTemplate = $this->ENV['DIR_ROOT'] . (isset($this->ENV['ERROR_TEMPLATES'][$type]) ? $this->ENV['ERROR_TEMPLATES'][$type] : '');
+        if ($type !== null && file_exists($errorTemplate)) {
             $data = array('app' => $this, 'code' => $code, 'error' => $content);
             ob_start();
-            include($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type]);
+            include($errorTemplate);
             $content = ob_get_clean();
         } else {
             $type = 'text/plain';
             if (SAPI !== 'cli') $code = 406;
-            $content = $this->ENV['SHOW_ERRORS'] ? $content : '';
+            $content = $showErrors ? $content : '';
         }
 
         if ($return) return array('code' => $code, 'type' => $type, 'content' => $content);
@@ -622,7 +624,7 @@ class App {
     // Utility Functions
 
     function clear($property) {
-        unset($this-> { $property });
+        unset($this-> {$property});
     }
 
     function dir($s) {
