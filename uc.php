@@ -142,7 +142,10 @@ class Output {
             }
         }
 
-        if (!isset($this->headers['location'])) echo $this->content;
+        if (!isset($this->headers['location'])) {
+            ob_clean();
+            echo $this->content;
+        }
     }
 
     function std($msg, $err = false) {
@@ -307,7 +310,7 @@ class App {
         }
 
         $node = &$this->routes[$method];
-        $routeSegments = explode('/', $route);
+        $routeSegments = explode('/', trim($route, '/'));
         foreach ($routeSegments as $segment) {
             if (!isset($node[$segment])) $node[$segment] = array();
             $node = &$node[$segment];
@@ -335,7 +338,7 @@ class App {
 
         $current = $this->routes[$method];
         $params = array();
-        $routeSegments = explode('/', $route);
+        $routeSegments = explode('/', trim($route, '/'));
         $decrement = 0;
         $foundSegment = false;
         $last = count($routeSegments) - 1;
