@@ -267,23 +267,20 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
-        $showErrors = $this->ENV['SHOW_ERRORS'] || SAPI === 'cli';
-        if ($showErrors) {
+        if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
             $content = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
 
             foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
-
-        $errorTemplate = $this->ENV['DIR_ROOT'] . (isset($this->ENV['ERROR_TEMPLATES'][$type]) ? $this->ENV['ERROR_TEMPLATES'][$type] : '');
-        if ($type !== null && file_exists($errorTemplate)) {
+ 
+        if ($type !== null && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
             $data = array('app' => $this, 'code' => $code, 'error' => $content);
             ob_start();
-            include($errorTemplate);
+            include($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type]);
             $content = ob_get_clean();
-        } else {
+        } else if (SAPI !== 'cli') {
             $type = 'text/plain';
-            if (SAPI !== 'cli') $code = 406;
-            $content = $showErrors ? $content : '';
+            $code = 406;
         }
 
         if ($return) return array('code' => $code, 'type' => $type, 'content' => $content);
@@ -430,9 +427,9 @@ class App {
         if (SAPI === 'cli') {
             foreach ($input->positional as $positional) $input->route .= '/' . urlencode($positional);
             if (isset($input->flags['request'])) {
-                foreach ((isset($input->options['header']) ? explode(';', $input->options['header']) : array()) as $header) {
+                foreach ((isset($input->options['header']) ? explode("\n", $input->options['header']) : array()) as $header) {
                     list($k, $v) = explode(':', $header, 2);
-                    $input->headers[strtolower(trim(str_replace('_', '-', $k)))] = trim($v);
+                    $input->headers[strtolower(trim($k))] = trim($v);
                 }
                 $input->content = isset($input->options['content']) ? $input->options['content'] : '';
                 $input->method = isset($input->options['method']) ? $input->options['method'] : 'GET';
