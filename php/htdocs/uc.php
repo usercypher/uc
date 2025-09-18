@@ -340,19 +340,17 @@ class App {
         $current = $this->routes[$method];
         $params = array();
         $routeSegments = explode('/', $route);
-        $decrement = 0;
+        $emptySegmentsCount = 0;
         $foundSegment = false;
         $last = count($routeSegments) - 1;
 
         foreach ($routeSegments as $index => $routeSegment) {
             if ($routeSegment === '' && !(!$foundSegment && $last === $index)) {
-                if (++$decrement > 20) return array('http' => 400, 'error' => 'Empty route segments exceeded limit (20): ' . $route);
+                if (++$emptySegmentsCount > 20) return array('http' => 400, 'error' => 'Empty route segments exceeded limit (20): ' . $route);
                 continue;
             }
 
             $foundSegment = true;
-
-            $index -= $decrement;
 
             if (strlen($routeSegment) > 255) return array('http' => 400, 'error' => 'Route segment too long (max 255 chars): ' . $routeSegment);
 
@@ -367,7 +365,7 @@ class App {
                 if (substr($key, 0, 1) === ':') {
                     list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
                     if ($paramModifier === '*') {
-                        $params[$paramName] = array_slice($routeSegments, $index + $decrement);
+                        $params[$paramName] = array_slice($routeSegments, $index);
                         $current = $value;
                         if (isset($current[$this->ROUTE_HANDLER])) break 2;
                         $matched = true;
