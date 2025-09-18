@@ -203,6 +203,8 @@ class App {
         $this->unitList[0] = 'App';
         $this->unitListIndex = 1;
         $this->cache['App'] = array($this, true);
+
+        set_error_handler(array($this, 'error'));
     }
 
     function setEnv($key, $value) {

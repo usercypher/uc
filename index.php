@@ -18,8 +18,6 @@ function index($coreFile, $coreConfigFile, $appStateFile) {
     $app = new App();
     $app->init();
 
-    set_error_handler(array($app, 'error'));
-
     require($app->dirRoot($coreConfigFile));
 
     $settings = settings();
