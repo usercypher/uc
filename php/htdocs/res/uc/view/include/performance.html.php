@@ -1,8 +1,8 @@
 <div>
     <h3>Quick Speed Test</h3>
 
-    <p><strong>Page Load Time (browser):</strong> <span id="client-load-time">--</span> seconds</p>
-    <p><strong>Time To First Byte (browser):</strong> <span id="client-ttfb">--</span> seconds</p>
+    <p><strong>Page Load Time (client):</strong> <span id="client-load-time">--</span> seconds</p>
+    <p><strong>Time To First Byte (client):</strong> <span id="client-ttfb">--</span> seconds</p>
 
     <p><strong>Execution Time (php):</strong> <span id="php-exec-time">--</span> ms</p>
     <p><strong>Memory Usage (php):</strong> <span id="php-memory-usage">--</span> KB</p>
