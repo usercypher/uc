@@ -1,11 +1,11 @@
 <div>
     <h3>Quick Speed Test</h3>
 
-    <p><strong>Page Load Time (Client):</strong> <span id="client-load-time">--</span> seconds</p>
-    <p><strong>Time To First Byte (Client):</strong> <span id="client-ttfb">--</span> seconds</p>
+    <p><strong>Page Load Time (browser):</strong> <span id="client-load-time">--</span> seconds</p>
+    <p><strong>Time To First Byte (browser):</strong> <span id="client-ttfb">--</span> seconds</p>
 
-    <p><strong>Execution Time (Server):</strong> <span id="server-exec-time">--</span> ms</p>
-    <p><strong>Memory Usage (Server):</strong> <span id="server-memory-usage">--</span> KB</p>
+    <p><strong>Execution Time (php):</strong> <span id="php-exec-time">--</span> ms</p>
+    <p><strong>Memory Usage (php):</strong> <span id="php-memory-usage">--</span> KB</p>
 </div>
 
 
@@ -33,11 +33,11 @@
             document.getElementById('client-load-time').textContent = loadTime.toFixed(2);
             document.getElementById('client-ttfb').textContent = ttfb.toFixed(2);
     
-            const serverExecTime = getCookieValue('server_exec_time_ms');
-            const serverMemory = getCookieValue('server_memory_usage_kb');
+            const serverExecTime = getCookieValue('php_exec_time_ms');
+            const serverMemory = getCookieValue('php_memory_usage_kb');
     
-            document.getElementById('server-exec-time').textContent = serverExecTime ?? '--';
-            document.getElementById('server-memory-usage').textContent = serverMemory ?? '--';
+            document.getElementById('php-exec-time').textContent = serverExecTime ?? '--';
+            document.getElementById('php-memory-usage').textContent = serverMemory ?? '--';
         }
     
         updateMetrics();
