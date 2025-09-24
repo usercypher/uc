@@ -288,18 +288,18 @@ x-cycle-list3="show hide"
     var tagx = new TagX();
     tagx.register(document.getElementsByTagName("*"));
 
-    tagx.watch("*", function (key, valOld, refEl) {
+    tagx.watch("*", Utils.debounce(function (old, current, key) {
         if (key == "qty" || key == "price") {
             tagx.getRefs("total").forEach(el => {
                 el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
             });
-        } 
+        }
         if (key == "volume") {
             tagx.getRefs("volume").forEach(el => {
                 console.log(el.getAttribute("aria-valuenow"));
-            });
-        } 
-    });
+            }); 
+        }
+    }, 300));
 
   </script>
 </body>
