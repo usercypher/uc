@@ -24,9 +24,10 @@ class Lib_GoogleApiGmail {
         ));
     }
 
-    function send($access_token, $to, $subject, $body) {
+    function send($access_token, $from, $to, $subject, $body) {
         // Step 1: Create raw email message (RFC 2822)
-        $rawMessage = "To: $to\r\n";
+        $rawMessage = "From: $from\r\n";
+        $rawMessage .= "To: $to\r\n";
         $rawMessage .= "Subject: $subject\r\n";
         $rawMessage .= "\r\n";
         $rawMessage .= "$body";
