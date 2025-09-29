@@ -35,6 +35,14 @@ const throttledFn = Utils.throttle(() => console.log("Run"), 300);
 throttledFn();
 throttledFn.cancel(); // cancel scheduled call
 
+// run(funcCondition, funcCallback, options)
+// options - {interval: 100, timeout: 5000}
+Utils.run(function () {
+    // usefull to check dependency like return tagx && Utils;
+    return true;
+}, function {
+    // code
+}, { interval: 100, timeout: 5000 });
 /**************************************************************
  * 🔗 Url – Usage Examples
  **************************************************************/
@@ -106,6 +114,27 @@ req.addCallback((request, response) => {
   const headers = response.headers;
   // Do something with response
 });
+
+/**************************************************************
+ * 🧩 Script – Usage Examples
+ **************************************************************/
+
+<button onclick="loadFeature()">Load Feature</button>
+
+<script>
+    var script = new Script();
+
+    function loadFeature() {
+        // load(options, callback(init))
+        // options - {src: "", type: ""}
+        // init - it check if it first load
+        script.load({ src : 'feature.js' }, function (init) {
+            if (typeof initFeature === 'function') {
+                initFeature();
+            }
+        });
+    }
+</script>
 
 /**************************************************************
  * 🧩 Tag – Usage Examples

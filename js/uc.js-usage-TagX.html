@@ -288,7 +288,7 @@ x-cycle-list3="show hide"
     var tagx = new TagX();
     tagx.register(document.getElementsByTagName("*"));
 
-    tagx.watch("*", Utils.debounce(function (old, current, key) {
+    tagx.watch("*", Utils.debounce(function (key, old, current, el) {
         if (key == "qty" || key == "price") {
             tagx.getRefs("total").forEach(el => {
                 el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
