@@ -63,7 +63,7 @@ x-on-blur="name name2"   // only name, name2
 x-on-blur="!name name2"  // all except name, name2
 
 // scope in element
-x-on-key="key1 key2 ctrl-key"  // support combo key for "ctrl", "alt", "shift" combine using "-"
+12="key1 key2 ctrl-key"  // support combo key for "ctrl", "alt", "shift" combine using "-"
 x-on-key-[key]=""              // (rules applied to key) all
 x-on-key-[key]="name name2"    // (rules applied to key) only name, name2
 x-on-key-[key]="!name name2"   // (rules applied to key) all except name, name2
@@ -161,7 +161,7 @@ x-ref-button3
 
 <span
 
-x-on-key="escape"
+x-on-key-window="escape"
 
 x-val-dialog-content=""
 ></span>
@@ -170,21 +170,21 @@ x-val-dialog-content=""
 
 <button
 x-on-click
-x-on-key="1"
+x-on-key-window="ctrl-1"
 
 x-val-dialog-content="dialog1"
 >dialog1</button>
 
 <button
 x-on-click
-x-on-key="2"
+x-on-key-window="ctrl-2"
 
 x-val-dialog-content="dialog2"
 >dialog2</button>
 
 <button
 x-on-click
-x-on-key="3"
+x-on-key-window="ctrl-3"
 
 x-val-dialog-content="dialog3"
 >dialog3</button>
@@ -288,7 +288,7 @@ x-cycle-list3="show hide"
     var tagx = new TagX();
     tagx.register(document.getElementsByTagName("*"));
     // tagx.clean(); // clean dead references
-    // tagx.isMutating() // check if internal properties are mutating
+    // tagx.isMutating() // check if internal properties are mutating1232231313121
 
     tagx.watch("*", Utils.debounce(function (key, old, current, el) {
         if (key == "qty" || key == "price") {
