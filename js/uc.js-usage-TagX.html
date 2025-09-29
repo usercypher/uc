@@ -287,6 +287,8 @@ x-cycle-list3="show hide"
   <script>
     var tagx = new TagX();
     tagx.register(document.getElementsByTagName("*"));
+    // tagx.clean(); // clean dead references
+    // tagx.isMutating() // check if internal properties are mutating
 
     tagx.watch("*", Utils.debounce(function (key, old, current, el) {
         if (key == "qty" || key == "price") {
