@@ -65,25 +65,6 @@ limitations under the License.
             }
             return size;
         },
-        run: function (condition, callback, options = {}) {
-            var startTime = new Date().getTime();
-            interval = options.interval || 100;
-            timeout = options.timeout || 5000;
-            var intervalId = setInterval(function () {
-                try {
-                    if (condition()) {
-                        clearInterval(intervalId);
-                        callback();
-                    } else if (new Date().getTime() - startTime >= timeout) {
-                        clearInterval(intervalId);
-                        console.warn('Utils.run: timeout reached without condition being true.');
-                    }
-                } catch (e) {
-                    clearInterval(intervalId);
-                    console.error('Utils.run: error in condition or callback:', e);
-                }
-            }, interval);
-        },
         debounce: function (callback, time) {
             if (typeof time !== 'number' || typeof callback !== 'function') {
                 console.error('Utils.debounce: Invalid arguments');
@@ -461,7 +442,7 @@ limitations under the License.
         var loaded = self.loadedScripts[src];
 
         if (loaded === true) {
-            if (callback) callback(false);
+            if (callback) (function(cb) { setTimeout(function () { cb(false); }, 0); })(callback);
             return;
         }
 
@@ -479,7 +460,7 @@ limitations under the License.
             if (!script.readyState || /loaded|complete/.test(script.readyState)) {
                 var cbs = self.loadedScripts[src];
                 for (var i = 0; i < cbs.length; i++) {
-                    if (typeof cbs[i] === 'function') cbs[i](true);
+                    if (typeof cbs[i] === 'function') (function(cb) { setTimeout(function () { cb(true); }, 0); })(cbs[i]);
                 }
                 self.loadedScripts[src] = true;
 
@@ -536,16 +517,20 @@ limitations under the License.
     function TagX() {
         this.globalRefs = {};
         this.globalVars = {};
+        this.globalKeys = {};
         this.tab = {
             first: null,
             last: null
         };
         this.watchers = {};
-        this.registerDepth = 0;
+        this.mutationDepth = 0;
     };
-    TagX.prototype.register = function(elements, tab = "") {
-        this.registerDepth++;
-        var tabRange = tab.split(/\s*:\s*/);
+    TagX.prototype.isMutating = function() {
+        return this.mutationDepth > 0;
+    };
+    TagX.prototype.register = function(elements, tab) {
+        this.mutationDepth++;
+        var tabRange = tab ? tab.split(/\s*:\s*/) : "";
         var elementsLength = elements.length;
 
         for (var i = 0; i < elementsLength; i++) {
@@ -585,21 +570,28 @@ limitations under the License.
         }
 
         var that = this;
-        var keyMap = {};
         for (var i = 0; i < elementsLength; i++) {
             var el = elements[i];
             if (el.hasAttribute("x-on-click")) {
                 (function(el) {
                     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', 0);
+                    var propagate = !el.hasAttribute('x-no-prop');
                     if (!el.onkeydown) {
                         el.onkeydown = function(e) {
                             e = e || window.event;
                             if (e.key === "Enter" || (e.keyCode || e.which) === 13) {
+                                if (!propagate) {
+                                    that.stopPropagation(e);
+                                }
                                 that.processElement(el, el.getAttribute("x-on-click"));
                             }
                         };
                     }
-                    el.onclick = function() {
+                    el.onclick = function(e) {
+                        e = e || window.event;
+                        if (!propagate) {
+                            that.stopPropagation(e);
+                        }
                         that.processElement(el, el.getAttribute("x-on-click"));
                     };
                 })(el);
@@ -652,11 +644,15 @@ limitations under the License.
                     for (var j = 0; j < keysLength; j++) {
                         keysObj[keys[j]] = true;
                     }
+                    var propagate = !el.hasAttribute('x-no-prop');
                     el.onkeydown = function(e) {
                         e = e || window.event;
                         var key = that.getComboKey(e);
                         if (keysObj[key]) {
-                            e.preventDefault();
+                            if (!propagate) {
+                                that.stopPropagation(e);
+                            }
+                            that.preventDefault(e);
                             that.processElement(el, el.getAttribute("x-on-key-" + key));
                         }
                     };
@@ -667,8 +663,8 @@ limitations under the License.
                 var keysLength = keys.length;
                 for (var j = 0; j < keysLength; j++) {
                     var key = keys[j];
-                    if (!keyMap[key]) keyMap[key] = [];
-                    keyMap[key].push(el);
+                    if (!that.globalKeys[key]) that.globalKeys[key] = [];
+                    that.globalKeys[key].push(el);
                 }
             }
         }
@@ -676,8 +672,8 @@ limitations under the License.
         window.onkeydown = function(e) {
             e = e || window.event;
             var key = that.getComboKey(e);
-            if (keyMap[key]) {
-                var keys = keyMap[key];
+            if (that.globalKeys[key]) {
+                var keys = that.globalKeys[key];
                 var keysLength = keys.length;
                 for (var i = 0; i < keysLength; i++) {
                     that.processElement(keys[i], keys[i].getAttribute("x-on-key-window-" + key));
@@ -685,16 +681,30 @@ limitations under the License.
             }
             if (key === "tab") {
                 if (e.shiftKey && document.activeElement === that.tab.first) {
-                    e.preventDefault();
+                    that.preventDefault(e);
                     that.tab.last.focus();
                 }
                 if (!e.shiftKey && document.activeElement === that.tab.last) {
-                    e.preventDefault();
+                    that.preventDefault(e);
                     that.tab.first.focus();
                 }
             }
         };
-        this.registerDepth--;
+        this.mutationDepth--;
+    };
+    TagX.prototype.preventDefault = function(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        } else {
+            e.returnValue = false;
+        }
+    };
+    TagX.prototype.stopPropagation = function(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        } else {
+            e.cancelBubble = true;
+        }
     };
     TagX.prototype.getComboKey = function (e) {
         var modifiers = [];
@@ -713,7 +723,8 @@ limitations under the License.
     TagX.prototype.getVar = function (key) {
         return this.globalVars[key];
     };
-    TagX.prototype.setVar = function (key, value, el = null) {
+    TagX.prototype.setVar = function (key, value, el) {
+        el = el || null;
         var valOld = this.globalVars[key];
         this.globalVars[key] = value;
         if (this.watchers[key]) {
@@ -734,12 +745,14 @@ limitations under the License.
         }
     };
     TagX.prototype.clean = function() {
+        this.mutationDepth++;
+        var body = document.body;
         for (var key in this.globalRefs) {
             var els = this.globalRefs[key];
             var elsLength = els.length;
             var filteredEls = [];
 
-            for (var i = 0; i < elsLength; i++) if (document.body.contains(els[i])) filteredEls.push(els[i]);
+            for (var i = 0; i < elsLength; i++) if (body.contains(els[i])) filteredEls.push(els[i]);
 
             if (filteredEls.length > 0) {
                 this.globalRefs[key] = filteredEls;
@@ -749,9 +762,23 @@ limitations under the License.
                 if (this.watchers && this.watchers[key]) delete this.watchers[key];
             }
         }
+        for (var key in this.globalKeys) {
+            var els = this.globalKeys[key];
+            var elsLength = els.length;
+            var filteredEls = [];
+
+            for (var i = 0; i < elsLength; i++) if (body.contains(els[i])) filteredEls.push(els[i]);
+
+            if (filteredEls.length > 0) {
+                this.globalKeys[key] = filteredEls;
+            } else {
+                delete this.globalKeys[key];
+            }
+        }
+        this.mutationDepth--;
     };
     TagX.prototype.processElement = function(el, elValue) {
-        if (this.registerDepth > 0) return;
+        if (this.mutationDepth > 0) return;
         var that = this;
         if (this.isProcessing) {
             return setTimeout(function () {
@@ -923,7 +950,7 @@ limitations under the License.
                     var focusRef = refEl;
                     setTimeout(function() {
                         focusRef.focus();
-                    }, 75);
+                    }, 50);
                     focusFound = true;
                 }
             }

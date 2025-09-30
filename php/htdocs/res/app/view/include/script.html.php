@@ -17,10 +17,8 @@
     </span>
 
     <!-- Flash Messages Modal -->
-    <div class="modal hidden" x-ref--flash>
-        <span class="modal-content-overlay" tabindex="-1" x-on-key="escape" x-on-click x-run--flash-close="x-on-click"></span>
-
-        <div class="form-container modal-content small" x-ref--flash-content>
+    <div class="modal hidden" x-ref--flash x-on-key="escape" x-on-click x-run--flash-close="x-on-click">
+        <div class="form-container modal-content small" x-ref--flash-content x-on-click x-no-prop>
             <span class="modal-close" x-ref--flash-close x-on-click x-cycle--flash="hidden" x-cycle--flash-content="small">&times;</span>
             <h2>Notification</h2>
             <ul>

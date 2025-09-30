@@ -59,10 +59,8 @@ $books = $data['books'];
     </div>
     <?php endforeach; ?>
 
-    <div class="modal hidden" x-ref--book-delete>
-        <span class="modal-content-overlay" tabindex="-1" x-on-click x-run--book-delete-close="x-on-click"></span>
-
-        <div class="modal-content small" x-ref--book-delete-content>
+    <div class="modal hidden" x-ref--book-delete x-on-click x-run--book-delete-close="x-on-click">
+        <div class="modal-content small" x-ref--book-delete-content x-on-click x-no-prop>
             <span class="modal-close" x-ref--book-delete-close x-on-click x-cycle--book-delete="hidden" x-cycle--book-delete-content="small" x-focus="-book-delete-open">&times;</span>
             <h2>Delete</h2>
             <p>Do you want to delete book "<span x-ref-book_title></span>"?</p>

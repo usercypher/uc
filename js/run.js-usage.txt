@@ -1,0 +1,8 @@
+run(function() {
+    return typeof window.jQuery !== "undefined";
+}, function() {
+    alert("jQuery loaded!");
+}, {
+    interval: 100,
+    timeout: 5000
+});
