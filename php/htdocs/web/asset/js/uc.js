@@ -205,9 +205,6 @@ limitations under the License.
         this.hash = value;
         return this;
     };
-    Url.prototype.getHash = function () {
-        return this.hash;
-    };
     Url.prototype.setQuery = function (key, value) {
         this.query[key] = value;
         return this;
@@ -218,9 +215,6 @@ limitations under the License.
     };
     Url.prototype.getQuery = function (key) {
         return this.query[key];
-    };
-    Url.prototype.getAllQuery = function () {
-        return this.query;
     };
     Url.prototype.toString = function () {
         var q = Utils.objectToQuery(this.query);
@@ -630,7 +624,7 @@ limitations under the License.
                         var elAttributesLength = el.attributes.length;
                         for (var j = 0; j < elAttributesLength; j++) {
                             var n = el.attributes[j].name;
-                            if (n.substr(0, 8) === "x-cycle-" || n.substr(0, 7) === "x-attr-" || n.substr(0, 6) === "x-val-" || n.substr(0, 6) === "x-var-" || n.substr(0, 6) === "x-run-") el.setAttribute(n, Utils.htmlEncode(this.value));
+                            if (n.substr(0, 8) === "x-cycle-" || n.substr(0, 7) === "x-attr-" || n.substr(0, 6) === "x-val-" || n.substr(0, 6) === "x-var-" || n.substr(0, 6) === "x-run-") el.setAttribute(n, this.value);
                         }
                         that.processElement(el, el.getAttribute("x-on-input"));
                     };
@@ -920,10 +914,10 @@ limitations under the License.
                         if (tag === "INPUT" && (refEl.type === "checkbox" || refEl.type === "radio")) {
                             refEl.checked = (val === true || val === "true" || val === "1");
                         } else if (val != refEl.value) {
-                            refEl.value = Utils.htmlDecode(val);
+                            refEl.value = val;
                         }
                     } else if (refEl.children.length === 0 && val != refEl.innerHTML) {
-                        refEl.innerHTML = val;
+                        refEl.innerHTML = Utils.htmlEncode(val);
                     }
                 }
             }
@@ -964,4 +958,5 @@ limitations under the License.
     global.Script = Script;
     global.Tag = Tag;
     global.TagX = TagX;
+    global.uc = true;
 })();
