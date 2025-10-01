@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width  initial-scale=1.0" />
   <title>TagX – Example Usage</title>
-  <script src="uc.js"></script>
+  <script src="uc.js" defer></script>
   <style>
 
 .button.neutral {
@@ -286,33 +286,28 @@ x-cycle-list3="show hide"
 </select>
 
 <p><b x-ref-qty="1" x-ref-price x-ref-total></b></p>
-
-<hr>
-
-
-<div x-ref-test x-on-click x-val-test="<b>ok</b>">test</div>
-
+   
   <!-- Load Script -->
   <script>
-      console.log(new Url().base);
-    var tagx = new TagX();
-    tagx.register(document.getElementsByTagName("*"));
-    // tagx.clean(); // clean dead references
-    // tagx.isMutating() // check if internal properties are mutating1232231313121
-
-    tagx.watch("*", Utils.debounce(function (key, old, current, el) {
-        if (key == "qty" || key == "price") {
-            tagx.getRefs("total").forEach(el => {
-                el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
-            });
-        }
-        if (key == "volume") {
-            tagx.getRefs("volume").forEach(el => {
-                console.log(el.getAttribute("aria-valuenow"));
-            }); 
-        }
-    }, 300));
-
+    (window.init = window.init || []).push(function () {
+        var tagx = new TagX();
+        tagx.register(document.getElementsByTagName("*"));
+        // tagx.clean(); // clean dead references
+        // tagx.isMutating() // check if internal properties are mutating
+    
+        tagx.watch("*", Utils.debounce(function (key, old, current, el) {
+            if (key == "qty" || key == "price") {
+                tagx.getRefs("total").forEach(el => {
+                    el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
+                });
+            }
+            if (key == "volume") {
+                tagx.getRefs("volume").forEach(el => {
+                    console.log(el.getAttribute("aria-valuenow"));
+                }); 
+            }
+        }, 300));
+    });    
   </script>
 </body>
 </html>

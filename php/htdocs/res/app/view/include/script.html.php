@@ -31,7 +31,7 @@
     </div>
 
     <script>
-        (function() {
+        (window.init = window.init || []).push(function () {
             window.onload = function() {
                 var isFlash = <?= empty($flash) ? 'false' : 'true' ?>;
                 var tagx = new TagX();
