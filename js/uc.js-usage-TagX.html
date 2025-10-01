@@ -90,7 +90,7 @@ x-var-[name]="value"
 x-cycle-[name]="class1 class2"
 x-tab="name:name"                   // tab key range
 x-focus="name"
-x-attr-[name]_[attribute]="value|value"
+x-attr-[name].[attribute]="value|value"
 x-run-[name]="trigger1 trigger2"    // activate triggers
 
 </pre>
@@ -214,7 +214,7 @@ x-val-dialog-content="dialog3"
 <input
   x-ref-volume
   x-on-input
-  x-attr-volume_aria-valuenow
+  x-attr-volume.aria-valuenow
   x-val-volume-label
   x-var-volume
   type="range"
@@ -235,7 +235,7 @@ x-val-dialog-content="dialog3"
 <button
 x-ref-button
 x-on-click
-x-attr-button_x-cycle-box="hide|show"
+x-attr-button.x-cycle-box="hide|show"
 x-cycle-box="show"
 >toggle</button>
 

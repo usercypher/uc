@@ -47,9 +47,9 @@ $books = $data['books'];
                 x-cycle--book-delete-content=""
                 x-focus="-book-delete-tab-last"
                 x-tab="-book-delete-tab-first:-book-delete-tab-last"
-                x-attr-window_x-on-key-window-escape="-book-delete-close"
-                x-attr-window_x-run--book-delete-close="x-on-click"
-                x-attr--book-delete-close_x-focus="-book-delete-open-<?= $i ?>"
+                x-attr-window.x-on-key-window-escape="-book-delete-close"
+                x-attr-window.x-run--book-delete-close="x-on-click"
+                x-attr--book-delete-close.x-focus="-book-delete-open-<?= $i ?>"
                 x-val-book_id="<?= $output->htmlEncode($book['id']) ?>"
                 x-val-book_title="<?= $output->htmlEncode($book['title']) ?>"
             >
