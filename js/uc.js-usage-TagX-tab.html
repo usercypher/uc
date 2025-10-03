@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width  initial-scale=1.0" />
+  <title>TagX – Example Usage</title>
+  <script src="uc.js" defer></script>
+  <style>
+
+.button.neutral {
+  background-color: #007bff;
+  color: white;
+}
+
+.block {
+  padding: 1em;
+  border: 1px solid #ccc;
+  margin-top: 1em;
+}
+
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
+}
+
+  </style>
+</head>
+<body style="padding: 1em;" x-on-click>
+    
+<button x-ref-tab-default-first x-on-click x-focus="button-1" x-tab="button-1:button-2">activate tab</button>
+
+<div>
+    <button x-ref-button-1 x-on-click x-tab-reset x-focus="tab-default-first">button 1</button>
+    <button x-ref-button-2 x-on-click x-tab-reset x-focus="tab-default-first">button 2</button>
+</div>
+
+<button x-ref-tab-default-last>random tab</button>
+  <!-- Load Script -->
+  <script>
+    (window.init = window.init || []).push(function () {
+        var tagx = new TagX();
+        tagx.register(document.getElementsByTagName("*"), "tab-default-first:tab-default-last");
+    });    
+  </script>
+</body>
+</html>

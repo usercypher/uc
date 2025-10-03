@@ -87,10 +87,10 @@ x-val-[name]="value"
 x-var-[name]="value"
 x-cycle-[name]="class1 class2"
 x-tab="name:name"                   // tab key range
+x-tab-reset                         // reset tab to default (default set by register)
 x-focus="name"
 x-attr-[name].[attribute]="value|value"
 x-run-[name]="trigger1 trigger2"    // activate triggers
-
 </pre>
 
 <h2>Target</h2>
@@ -289,7 +289,7 @@ x-cycle-list3="show hide"
   <script>
     (window.init = window.init || []).push(function () {
         var tagx = new TagX();
-        tagx.register(document.getElementsByTagName("*"));
+        tagx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
         // tagx.clean(); // clean dead references
         // tagx.isMutating() // check if internal properties are mutating
     
