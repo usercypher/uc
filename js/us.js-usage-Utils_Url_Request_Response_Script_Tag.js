@@ -125,15 +125,11 @@ req.addCallback((request, response) => {
     var script = new Script();
 
     function loadFeature() {
-        // load(options, callback(init))
-        // options - {src: "", type: ""}
-        // init - it check if it first load
-        script.load({ src : 'feature.js' }, function (init) {
-            if (typeof initFeature === 'function') {
-                initFeature();
-            }
+        // load(srcs, successCallback, failureCallback)
+        script.load(['lib.js', 'feature.js'], function () {
+            initFeature();
         });
-    }
+    };
 </script>
 
 /**************************************************************
