@@ -11,8 +11,8 @@
         x-cycle--flash-content=""
         x-focus="-flash-tab-last"
         x-tab="-flash-tab-last:-flash-tab-last"
-        x-attr-window_x-on-key-window-escape="-flash-close"
-        x-attr-window_x-run--flash-close="x-on-click"
+        x-set-window_x-on-key-window-escape="-flash-close"
+        x-set-window_x-run--flash-close="x-on-click"
     >
     </span>
 

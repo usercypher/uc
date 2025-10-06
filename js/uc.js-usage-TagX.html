@@ -89,7 +89,7 @@ x-cycle-[name]="class1 class2"
 x-tab="name:name"                   // tab key range
 x-tab-reset                         // reset tab to default (default set by register)
 x-focus="name"
-x-attr-[name].[attribute]="value|value"
+x-set-[name].[attribute]="value|value"
 x-run-[name]="trigger1 trigger2"    // activate triggers
 </pre>
 
@@ -212,7 +212,7 @@ x-val-dialog-content="dialog3"
 <input
   x-ref-volume
   x-on-input
-  x-attr-volume.aria-valuenow
+  x-set-volume.aria-valuenow
   x-val-volume-label
   x-var-volume
   type="range"
@@ -231,10 +231,10 @@ x-val-dialog-content="dialog3"
 <h2>Attribute</h2>
 <p></p>
 <button
-x-ref-button
+
 x-on-click
-x-attr-button.x-cycle-box="hide|show"
 x-cycle-box="show"
+x-set-.x-cycle-box="hide|show"
 >toggle</button>
 
 
