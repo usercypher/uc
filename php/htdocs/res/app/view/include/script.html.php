@@ -7,19 +7,19 @@
     <span
         x-ref--flash-open
         x-on-click
-        x-cycle--flash=""
-        x-cycle--flash-content=""
+        x-rot--flash=""
+        x-rot--flash-content=""
         x-focus="-flash-tab-last"
         x-tab="-flash-tab-last:-flash-tab-last"
-        x-set-window_x-on-key-window-escape="-flash-close"
-        x-set-window_x-run--flash-close="x-on-click"
+        x-set-window.x-on-key-window-escape="-flash-close"
+        x-set-window.x-run--flash-close="x-on-click"
     >
     </span>
 
     <!-- Flash Messages Modal -->
     <div class="modal hidden" x-ref--flash x-on-key="escape" x-on-click x-run--flash-close="x-on-click">
         <div class="form-container modal-content small" x-ref--flash-content x-on-click x-no-prop>
-            <span class="modal-close" x-ref--flash-close x-on-click x-cycle--flash="hidden" x-cycle--flash-content="small">&times;</span>
+            <span class="modal-close" x-ref--flash-close x-on-click x-rot--flash="hidden" x-rot--flash-content="small">&times;</span>
             <h2>Notification</h2>
             <ul>
             <?php foreach ($flash as $f) : ?>

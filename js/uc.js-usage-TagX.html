@@ -85,7 +85,7 @@ x-no-prop   // prevent propagation x-on-click & x-on-key only.
 <pre>
 x-val-[name]="value"
 x-var-[name]="value"
-x-cycle-[name]="class1 class2"
+x-rot-[name]="class1 class2"
 x-tab="name:name"                   // tab key range
 x-tab-reset                         // reset tab to default (default set by register)
 x-focus="name"
@@ -108,13 +108,13 @@ class="button neutral"
 
 x-on-click
 
-x-cycle-tab1="show hide"
-x-cycle-tab2="hide"
-x-cycle-tab3="hide"
+x-rot-tab1="show hide"
+x-rot-tab2="hide"
+x-rot-tab3="hide"
 
-x-cycle-button1="neutral _"
-x-cycle-button2=""
-x-cycle-button3=""
+x-rot-button1="neutral _"
+x-rot-button2=""
+x-rot-button3=""
 
 x-ref-button1
 
@@ -126,13 +126,13 @@ class="button _"
 
 x-on-click
 
-x-cycle-tab1="hide"
-x-cycle-tab2="show hide"
-x-cycle-tab3="hide"
+x-rot-tab1="hide"
+x-rot-tab2="show hide"
+x-rot-tab3="hide"
 
-x-cycle-button1=""
-x-cycle-button2="neutral _"
-x-cycle-button3=""
+x-rot-button1=""
+x-rot-button2="neutral _"
+x-rot-button3=""
 
 x-ref-button2
 
@@ -144,13 +144,13 @@ class="button _"
 
 x-on-click
 
-x-cycle-tab1="hide"
-x-cycle-tab2="hide"
-x-cycle-tab3="show hide"
+x-rot-tab1="hide"
+x-rot-tab2="hide"
+x-rot-tab3="show hide"
 
-x-cycle-button1=""
-x-cycle-button2=""
-x-cycle-button3="neutral _"
+x-rot-button1=""
+x-rot-button2=""
+x-rot-button3="neutral _"
 
 x-ref-button3
 
@@ -233,8 +233,8 @@ x-val-dialog-content="dialog3"
 <button
 
 x-on-click
-x-cycle-box="show"
-x-set-.x-cycle-box="hide|show"
+x-rot-box="show"
+x-set-.x-rot-box="hide|show"
 >toggle</button>
 
 
@@ -253,18 +253,18 @@ class="hide"
 x-ref-tooltip
 x-on-enter
 x-on-leave
-x-cycle-tooltip="show hide"
+x-rot-tooltip="show hide"
 >im a tooltip!</small></p>
 
 <button
 x-on-enter="tooltip"
 x-on-leave="tooltip"
 x-on-click="!tooltip"
-x-cycle-tooltip="show hide"
+x-rot-tooltip="show hide"
 
-x-cycle-list1="show hide"
-x-cycle-list2="show hide"
-x-cycle-list3="show hide"
+x-rot-list1="show hide"
+x-rot-list2="show hide"
+x-rot-list3="show hide"
 >drawer</button>
 
 <div class="block hide" x-ref-list1>list1</div>
@@ -276,7 +276,7 @@ x-cycle-list3="show hide"
 <h2>Var</h2>
 
 
-<input type="number" x-cycle-tooltip="show hide" x-on-input="price" x-var-price placeholder="price"/>
+<input type="number" x-rot-tooltip="show hide" x-on-input="price" x-var-price placeholder="price"/>
 <select  x-on-input x-var-qty>
     <option value="1">1x</option>
     <option value="2">2x</option>
@@ -291,7 +291,6 @@ x-cycle-list3="show hide"
         var tagx = new TagX();
         tagx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
         // tagx.clean(); // clean dead references
-        // tagx.isMutating() // check if internal properties are mutating
     
         tagx.watch("*", Utils.debounce(function (key, old, current, el) {
             if (key == "qty" || key == "price") {

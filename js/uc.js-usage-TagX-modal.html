@@ -64,10 +64,11 @@
 <body>
 
     <button
+    style="width: 200px; height: 50px;"
         x-ref--login-open
         x-on-click
-        x-cycle--login-modal=""
-        x-cycle--login-modal-content=""
+        x-rot--login-modal=""
+        x-rot--login-modal-content=""
         x-focus="-login-username"
         x-tab="-login-tab-first:-login-tab-last"
         x-val--login-title="Login"
@@ -77,9 +78,9 @@
         Open Modal
     </button>
 
-    <div class="modal hidden" x-ref--login-modal tabindex="-1" x-on-key-window="escape" x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">
+    <div class="modal hidden" x-ref--login-modal tabindex="-1" x-on-key-window="escape" x-on-click x-rot--login-modal="hidden" x-rot--login-modal-content="small" x-focus="-login-open">
         <div class="modal-content small" x-ref--login-modal-content x-on-click x-no-prop>
-            <span class="modal-close" x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">&times;</span>
+            <span class="modal-close" x-on-click x-rot--login-modal="hidden" x-rot--login-modal-content="small" x-focus="-login-open">&times;</span>
 
             <h2 x-ref--login-title>Title</h2>
             <p x-ref--login-hint>Hint text</p>
@@ -87,8 +88,8 @@
             <p><input x-ref--login-tab-first x-ref--login-username type="text" placeholder="Email" /></p>
             <p><input x-on-click type="password" placeholder="Password" /></p>
 
-            <span class="button" x-ref--login-ok x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">OK</span>
-            <span class="button" x-ref--login-tab-last x-on-click x-cycle--login-modal="hidden" x-cycle--login-modal-content="small" x-focus="-login-open">Cancel</span>
+            <span class="button" x-ref--login-ok x-on-click x-rot--login-modal="hidden" x-rot--login-modal-content="small" x-focus="-login-open">OK</span>
+            <span class="button" x-ref--login-tab-last x-on-click x-rot--login-modal="hidden" x-rot--login-modal-content="small" x-focus="-login-open">Cancel</span>
         </div>
     </div>
     <script>

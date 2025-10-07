@@ -43,8 +43,8 @@ $books = $data['books'];
                 class="button negative"
                 x-ref--book-delete-open-<?= $i ?>
                 x-on-click
-                x-cycle--book-delete=""
-                x-cycle--book-delete-content=""
+                x-rot--book-delete=""
+                x-rot--book-delete-content=""
                 x-focus="-book-delete-tab-last"
                 x-tab="-book-delete-tab-first:-book-delete-tab-last"
                 x-set-window.x-on-key-window-escape="-book-delete-close"
@@ -61,7 +61,7 @@ $books = $data['books'];
 
     <div class="modal hidden" x-ref--book-delete x-on-click x-run--book-delete-close="x-on-click">
         <div class="modal-content small" x-ref--book-delete-content x-on-click x-no-prop>
-            <span class="modal-close" x-ref--book-delete-close x-on-click x-cycle--book-delete="hidden" x-cycle--book-delete-content="small" x-focus="-book-delete-open">&times;</span>
+            <span class="modal-close" x-ref--book-delete-close x-on-click x-rot--book-delete="hidden" x-rot--book-delete-content="small" x-focus="-book-delete-open">&times;</span>
             <h2>Delete</h2>
             <p>Do you want to delete book "<span x-ref-book_title></span>"?</p>
             <form method="POST" action="<?php echo $app->urlRoute('book/delete?redirect=:redirect', array(':redirect' => $currentRoute)); ?>">
