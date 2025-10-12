@@ -249,40 +249,27 @@ x-ref-box
 <h2>Rules</h2>
 <p>Trigger rules</p>
 
-
-
-
-
-<button
-    style="position: relative;"
-
-    x-on-enter="tooltip"
-    x-on-leave="tooltip"
-    x-rot-tooltip="show hide"
-
-    x-on-click="!tooltip"
-    x-rot-list1="show hide"
-    x-rot-list2="show hide"
-    x-rot-list3="show hide"
+<p 
+class="tooltip hide" 
+x-ref-tooltip
+x-on-enter
+x-on-leave
+x-rot-tooltip="show hide"
 >
-    <div 
-        style="
-            position: absolute;
-            top: -40px;
-            background-color: black;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 14px;
-            white-space: nowrap;
-            z-index: 1000;
-        "
-        class="tooltip hide" 
-        x-ref-tooltip
-    >
-        I'm a tooltip!
-    </div>
-    Drawer
+I'm a tooltip!
+</p>
+<button
+
+x-on-enter="tooltip"
+x-on-leave="tooltip"
+x-rot-tooltip="show hide"
+
+x-on-click="!tooltip"
+x-rot-list1="show hide"
+x-rot-list2="show hide"
+x-rot-list3="show hide"
+>
+Drawer
 </button>
 
 

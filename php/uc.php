@@ -1,4 +1,4 @@
-
+<?php
 /*
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -14,903 +14,699 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-(function() {
-    var global = (typeof window !== "undefined") ? window: this;
 
-    var Utils = {
-        run: function(condition, callback, options) {
-            options = options || {};
-            var startTime = new Date().getTime();
-            var interval = options.interval || 100;
-            var timeout = options.timeout || 30000;
-            var intervalId = setInterval(function () {
-                try {
-                    if (condition()) {
-                        clearInterval(intervalId);
-                        callback();
-                    } else if (new Date().getTime() - startTime >= timeout) {
-                        clearInterval(intervalId);
-                        console.log("Utils.run: timeout reached without condition being true.");
-                    }
-                } catch (e) {
-                    clearInterval(intervalId);
-                    console.log("Utils.run: error in condition or callback: " + e);
-                }
-            }, interval);
-        },
-        htmlEncode: function (str) {
-            return str.replace(/[&<>"']/g, function(match) { switch (match) { case "&": return "&amp;"; case "<": return "&lt;"; case ">": return "&gt;"; case "\"": return "&quot;"; case "'": return "&#39;"; } });
-        },
-        htmlDecode: function htmlDecode(str) {
-            return str.replace(/&(amp|lt|gt|quot|#39);/g, function(match, entity) { switch (entity) { case "amp":  return "&"; case "lt":   return "<"; case "gt":   return ">"; case "quot": return "\""; case "#39":  return "'"; } });
-        },
-        trim: function (s) {
-            var start = 0;
-            var end = s.length - 1;
-            while (start <= end && (s.charAt(start) === " " || s.charAt(start) === "\t")) { start++; }
-            while (end >= start && (s.charAt(end) === " " || s.charAt(end) === "\t")) { end--; }
-            return s.substring(start, end + 1);
-        },
-        strReplace: function (s, data) {
-            var keys = [];
-            for (var k in data) {
-                if (data.hasOwnProperty(k)) { keys.push(k.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, "\\$&")); }
-            }
-            return s.replace(new RegExp(keys.join("|"), "g"), function(matched) {
-                return data[matched];
-            });
-        },
-        strSizeOf: function (s) {
-            var size = 0;
-            for (var i = 0; i < s.length; i++) {
-                var code = s.charCodeAt(i);
-                if (code >= 0xD800 && code <= 0xDBFF) {
-                    var next = s.charCodeAt(i + 1);
-                    if (next >= 0xDC00 && next <= 0xDFFF) {
-                        size += 4;
-                        i++;
-                        continue;
-                    }
-                    size += 3;
-                    continue;
-                }
-                if (code <= 0x007F) {
-                    size += 1;
-                } else if (code <= 0x07FF) {
-                    size += 2;
-                } else {
-                    size += 3;
-                }
-            }
-            return size;
-        },
-        debounce: function (callback, time) {
-            if (typeof time !== "number" || typeof callback !== "function") {
-                console.error("Utils.debounce: Invalid arguments");
-                return function () {};
-            }
-            var timer;
-            function debounced() {
-                var context = this;
-                var args = arguments;
-                clearTimeout(timer);
-                timer = setTimeout(function () { callback.apply(context, args); }, time);
-            }
-            debounced.cancel = function () { clearTimeout(timer); };
-            return debounced;
-        },
-        throttle: function (callback, time) {
-            if (typeof time !== "number" || typeof callback !== "function") {
-                console.error("Utils.throttle: Invalid arguments");
-                return function () {};
-            }
-            var lastCall = 0;
-            var timeout = null;
-            function throttled() {
-                var context = this;
-                var args = arguments;
-                var now = new Date().getTime();
-                var remaining = time - (now - lastCall);
-                if (remaining <= 0) {
-                    lastCall = now;
-                    callback.apply(context, args);
-                } else if (!timeout) {
-                    timeout = setTimeout(function () {
-                        lastCall = new Date().getTime();
-                        timeout = null;
-                        callback.apply(context, args);
-                    }, remaining);
-                }
-            }
-            throttled.cancel = function () {
-                clearTimeout(timeout);
-                timeout = null;
-            };
-            return throttled;
-        },
-        objectToQuery: function(data) {
-            function buildQuery(obj, prefix) {
-                var query = [];
-                for (var key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        var value = obj[key];
-                        var k = prefix ? prefix + "[" + key + "]": key;
-                        if (value === null || value === undefined) {
-                            continue;
-                        } else if (Object.prototype.toString.call(value) === "[object Array]") {
-                            for (var i = 0; i < value.length; i++) {
-                                var v = value[i];
-                                if (typeof v === "object") {
-                                    query.push(buildQuery(v, k + "[]"));
-                                } else {
-                                    query.push(k + "[]=" + encodeURIComponent(v));
-                                }
-                            }
-                        } else if (typeof value === "object") {
-                            query.push(buildQuery(value, k));
-                        } else {
-                            query.push(k + "=" + encodeURIComponent(value));
-                        }
-                    }
-                }
-                return query.join("&");
-            }
-            return buildQuery(data, null);
-        },
-        queryToObject: function(queryString) {
-            var query = {};
-            if (!queryString) { return query; }
-            function setDeep(obj, keys, value) {
-                var key = keys.shift();
-                if (keys.length === 0) {
-                    if (key === "") {
-                        if (Object.prototype.toString.call(obj) !== "[object Array]") obj = [];
-                        obj.push(value);
-                    } else if (obj[key] === undefined) {
-                        obj[key] = value;
-                    } else if (Object.prototype.toString.call(obj[key]) === "[object Array]") {
-                        obj[key].push(value);
-                    } else {
-                        obj[key] = [obj[key], value];
-                    }
-                    return obj;
-                }
-                if (key === "") {
-                    if (Object.prototype.toString.call(obj) !== "[object Array]") { obj = []; }
-                    if (obj.length === 0 || typeof obj[obj.length - 1] !== "object") { obj.push({}); }
-                    obj[obj.length - 1] = setDeep(obj[obj.length - 1], keys, value);
-                } else {
-                    if (!obj[key]) { obj[key] = {}; }
-                    obj[key] = setDeep(obj[key], keys, value);
-                }
-                return obj;
-            }
-            var parts = queryString.split("&");
-            for (var i = 0; i < parts.length; i++) {
-                var part = parts[i];
-                if (!part) { continue; }
-                var kv = part.split("=");
-                var rawKey = decodeURIComponent(kv[0]);
-                var val = kv.length > 1 ? decodeURIComponent(kv[1]): "";
-                var keys = [];
-                var keyRegex = /([^\[\]]+)|(\[\])/g;
-                var match;
-                while ((match = keyRegex.exec(rawKey)) !== null) {
-                    if (match[1]) {
-                        keys.push(match[1]);
-                    } else {
-                        keys.push("");
-                    }
-                }
-                query = setDeep(query, keys, val);
-            }
-            return query;
+while (ob_get_level() > 0) ob_end_clean();
+ob_start();
+
+define('SAPI', php_sapi_name());
+
+if (strpos(strtolower(PHP_OS), 'win') !== false) {
+    define('DS', '\\');
+    define('EOL', "\r\n");
+} else {
+    define('DS', '/');
+    define('EOL', "\n");
+}
+
+function d($var, $detailed = false, $exit = false) {
+    if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
+    $detailed ? var_dump($var) : print_r($var);
+    if ($exit) exit;
+}
+
+function input_http($in) {
+    $in->source = 'http';
+
+    $in->server = $_SERVER;
+
+    $contentHeaders = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true, 'CONTENT_MD5' => true);
+    foreach ($_SERVER as $key => $value) {
+        if (strpos($key, 'HTTP_') === 0) {
+            $in->headers[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
+        } elseif (isset($contentHeaders[$key])) {
+            $in->headers[str_replace('_', '-', strtolower($key))] = $value;
         }
-    };
-    function Url(baseUrl) {
-        this.url = baseUrl || (global.location && global.location.href) || "";
-        var parts = this.url.split("#");
-        this.hash = "";
-        if (parts[1]) { this.hash = parts[1]; }
-        parts = parts[0].split("?");
-        this.base = parts[0];
-        this.query = parts[1] ? Utils.queryToObject(parts[1]): {};
     }
-    Url.prototype.setHash = function (value) {
-        this.hash = value;
-        return this;
-    };
-    Url.prototype.setQuery = function (key, value) {
-        this.query[key] = value;
-        return this;
-    };
-    Url.prototype.removeQuery = function (key) {
-        delete this.query[key];
-        return this;
-    };
-    Url.prototype.getQuery = function (key) {
-        return this.query[key];
-    };
-    Url.prototype.toString = function () {
-        var q = Utils.objectToQuery(this.query);
-        return (q !== "" ? this.base + "?" + q: this.base) + (this.hash ? "#" + this.hash: "");
-    };
-    Url.prototype.sync = function (replace) {
-        replace = replace || false;
-        var url = this.toString();
-        if (history && history.pushState) {
-            history[replace ? "replaceState": "pushState"]({}, "", url);
-        } else {
-            location.href = url;
+
+    $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+    $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    $in->query = $_GET;
+    $in->cookies = $_COOKIE;
+    $in->files = $_FILES;
+    $in->parsed = $_POST;
+    $in->content = file_get_contents('php://input');
+
+    return $in;
+}
+
+function input_cli($in) {
+    global $argc, $argv;
+
+    $in->source = 'cli';
+
+    $in->argc = isset($argc) ? $argc : 0;
+    $in->argv = isset($argv) ? $argv : array();
+
+    for ($i = 1; $in->argc > $i; $i++) {
+        $arg = $in->argv[$i];
+        if (substr($arg, 0, 2) === '--') {
+            $eq = strpos($arg, '=');
+            if ($eq !== false) {
+                $in->options[substr($arg, 2, $eq - 2)] = substr($arg, $eq + 1);
+            } else {
+                $in->flags[substr($arg, 2)] = true;
+            }
+        } elseif (substr($arg, 0, 1) !== '-') {
+            $in->positional[] = $arg;
         }
-    };
-    function Request(xhr) {
-        this.xhr = xhr;
-        this.callstack = [];
-        this.callstackDone = [];
-        this.lastCall = null;
-        this.cacheEnabled = false;
-        this.cache = {};
-        this.cacheSizeLimit = -1;
-        this.cacheTotalSize = 0;
-        this.cacheTTL = -1;
-        this.data = {};
     }
-    Request.prototype.send = function (url, option) {
-        var method = option.method || "GET";
-        var headers = option.headers || {};
-        var content = option.content || "";
-        var timeout = option.timeout || -1;
-        var timeoutId;
-        var self = this;
-        var cached = this.cacheEnabled ? this.getCacheEntry(url): null;
-        if (cached) {
-            this.nextCallback(this, new Response( {
-                "status": 200,
-                "responseText": cached,
-                "getAllResponseHeaders": function () { return "X-Cache: HIT"; }
-            }));
+
+    return $in;
+}
+
+function http_negotiate($accept, $offers) {
+    $prefs = array();
+    foreach (explode(',', $accept) as $type) {
+        $parts = explode(';', trim($type));
+        $aType = trim(array_shift($parts));
+
+        $q = 1.0;
+        foreach ($parts as $p) {
+            $p = explode('=', trim($p));
+            if (isset($p[1]) && strtolower(trim($p[0])) === 'q') $q = (float)trim($p[1]);
+        }
+        if ($q > 0) $prefs[$aType] = $q;
+    }
+    arsort($prefs);
+    foreach (array_keys($prefs) as $p) {
+        foreach ($offers as $o) {
+            if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) return $o;
+        }
+    }
+}
+
+class Input {
+    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array(), $positional = array(), $options = array(), $flags = array();
+
+    function getFrom(&$arr, $key, $default = null) {
+        return isset($arr[$key]) ? $arr[$key] : $default;
+    }
+
+    function httpNegotiate($accept, $offers) {
+        return http_negotiate($accept, $offers);
+    }
+
+    function std($mark = '', $eol = "\n") {
+        if ($mark === '' && ($line = fgets(STDIN))) return $line ? rtrim($line) : '';
+
+        $lines = array();
+        while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
+
+        return implode($eol, $lines);
+    }
+}
+
+class Output {
+    var $headers = array(), $content = '', $code = 200, $type = 'text/html';
+
+    function http() {
+        if (!headers_sent()) {
+            header('HTTP/1.1 ' . $this->code);
+            if (!isset($this->headers['content-type'])) header('content-type: ' . $this->type);
+            foreach ($this->headers as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $v) header($key . ': ' . $v, false);
+                } else {
+                    header($key . ': ' . $value);
+                }
+            }
+        }
+
+        if (!isset($this->headers['location'])) {
+            ob_clean();
+            echo $this->content;
+        }
+    }
+
+    function std($msg, $err = false) {
+        fwrite($err ? STDERR : STDOUT, $msg);
+    }
+
+    function html($file, $data) {
+        $this->type = 'text/html';
+        ob_start();
+        require($file);
+        $this->content = ob_get_clean();
+    }
+
+    function htmlEncode($s) {
+        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
+    }
+
+    function redirect($url, $code = 302) {
+        $this->headers['location'] = $url;
+        $this->code = $code;
+    }
+}
+
+class App {
+    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
+    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
+    var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
+
+    // Application Setup
+
+    function init() {
+        $this->ENV['DEBUG'] = false;
+
+        $this->ENV['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
+        $this->ENV['DIR_WEB'] = '';
+        $this->ENV['DIR_LOG'] = '';
+        $this->ENV['DIR_LOG_TIMESTAMP'] = '';
+
+        $this->ENV['ROUTE_FILE'] = 'index.php';
+        $this->ENV['ROUTE_REWRITE'] = false;
+        $this->ENV['URL_ROOT'] = '/';
+        $this->ENV['URL_WEB'] = '/';
+
+        $this->ENV['ERROR_TEMPLATES'] = array();
+        $this->ENV['ERROR_LOG_FILE'] = 'error';
+        $this->ENV['SHOW_ERRORS'] = false;
+        $this->ENV['LOG_ERRORS'] = true;
+
+        $this->ENV['LOG_SIZE_LIMIT_MB'] = 5;
+        $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = 1;
+        $this->ENV['LOG_RETENTION_DAYS'] = 7;
+        $this->ENV['MAX_LOG_FILES'] = 10;
+
+        $this->unit['App'] = array(0, null, null, array(), array(), true);
+        $this->unitList[0] = 'App';
+        $this->unitListIndex = 1;
+        $this->cache['App'] = array($this, true);
+
+        set_error_handler(array($this, 'error'));
+    }
+
+    function setEnv($key, $value) {
+        $this->ENV[$key] = $value;
+    }
+
+    function setEnvs($env) {
+        foreach ($env as $key => $value) $this->ENV[$key] = $value;
+    }
+
+    function getEnv($key, $default = null) {
+        return isset($this->ENV[$key]) ? $this->ENV[$key] : $default;
+    }
+
+    function setIni($key, $value) {
+        if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
+    }
+
+    function setInis($ini) {
+        foreach ($ini as $key => $value) {
+            if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
+        }
+    }
+
+    // Config Management
+
+    function save($file) {
+        $file = $this->ENV['DIR_ROOT'] . $file . '.dat';
+        $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
+        echo('File created: ' . $file . "\n");
+    }
+
+    function load($file) {
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->ENV['DIR_ROOT'] . $file . '.dat'));
+    }
+
+    // Error Management
+
+    function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
+        if (ob_get_level() > 0) ob_clean();
+
+        if ($this->ENV['DEBUG']) {
+            echo($errstr);
             return;
         }
-        this.xhr.open(method, url, true);
-        this.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-        for (var key in headers) {
-            if (headers.hasOwnProperty(key)) { this.xhr.setRequestHeader(key, headers[key]); }
-        }
-        if (timeout !== -1) {
-            timeoutId = setTimeout(function () {
-                self.xhr.abort();
-                console.error("Request Error: Request timed out and was aborted.");
-                self.nextCallback(self, new Response( {
-                    "status": 408,
-                    "responseText": "",
-                    "getAllResponseHeaders": function () { return "X-Timeout: true"; }
-                }));
-            }, timeout * 1000);
-        }
-        this.xhr.onreadystatechange = function () {
-            if (self.xhr.readyState === 4) {
-                if (typeof timeoutId !== "undefined") { clearTimeout(timeoutId); }
-                var response = new Response(self.xhr);
-                if (response.code >= 200 && response.code < 300) {
-                    if (response.content) {
-                        if (self.cacheEnabled) { self.setCacheEntry(url, response.content); }
-                    }
-                }
-                self.nextCallback(self, response);
-            }
-        };
-        this.xhr.send(content);
-    };
-    Request.prototype.abort = function () {
-        if (this.xhr && this.xhr.readyState !== 4) {
-            this.xhr.abort();
-            this.nextCallback(this, new Response(this.xhr));
-            console.error("Request Error: Request aborted.");
-        }
-    };
-    Request.prototype.retry = function () {
-        if (this.lastCall) {
-            this.callstack.unshift(this.lastCall);
-            this.lastCall = null;
-        }
-        return this;
-    };
-    Request.prototype.retryAll = function () {
-        this.callstack = this.callstackDone.concat(this.callstack);
-        this.callstackDone = [];
-        return this;
-    };
-    Request.prototype.addCallback = function (callback) {
-        this.callstack.push(callback);
-        return this;
-    };
-    Request.prototype.nextCallback = function (request, response) {
-        if (this.callstack.length > 0) {
-            var callback = this.callstack.shift();
-            this.lastCall = callback;
-            this.callstackDone.push(callback);
-            callback(request, response);
-        }
-    };
-    Request.prototype.resetCallstack = function () {
-        this.callstack = [];
-    };
-    Request.prototype.setCache = function (newCacheEnabled) {
-        this.cacheEnabled = newCacheEnabled;
-        return this;
-    };
-    Request.prototype.setCacheSize = function (newCacheSize) {
-        this.cacheSizeLimit = newCacheSize === -1 ? -1: newCacheSize * 1024 * 1024;
-        return this;
-    };
-    Request.prototype.setCacheTTL = function (seconds) {
-        this.cacheTTL = seconds === -1 ? -1: seconds * 1000;
-        return this;
-    };
-    Request.prototype.setCacheEntry = function (key, value) {
-        var now = new Date().getTime();
-        var oldEntry = this.cache[key];
-        if (oldEntry) { this.cacheTotalSize -= Utils.strSizeOf(oldEntry.value); }
-        this.cache[key] = {
-            value: value,
-            timestamp: now
-        };
-        var size = Utils.strSizeOf(value);
-        this.cacheTotalSize += size;
-        this.cleanCache();
-    };
-    Request.prototype.getCacheEntry = function (key) {
-        var entry = this.cache[key];
-        if (!entry) { return null; }
-        var now = new Date().getTime();
-        if (now - entry.timestamp > this.cacheTTL && this.cacheTTL !== -1) {
-            delete this.cache[key];
-            return null;
-        }
-        return entry.value;
-    };
-    Request.prototype.removeCacheEntry = function (key) {
-        delete this.cache[key];
-    };
-    Request.prototype.cleanCache = function () {
-        if (this.cacheTotalSize <= this.cacheSizeLimit) { return; }
-        var keys = [];
-        for (var key in this.cache) {
-            if (this.cache.hasOwnProperty(key)) { keys.push(key); }
-        }
-        while (this.cacheTotalSize > this.cacheSizeLimit && keys.length > 0 && this.cacheSizeLimit !== -1) {
-            var oldestKey = keys.shift();
-            var entry = this.cache[oldestKey];
-            var defaultContentSize = Utils.strSizeOf(entry.value);
-            delete this.cache[oldestKey];
-            this.cacheTotalSize -= defaultContentSize;
-        }
-    };
-    Request.prototype.clearCache = function () {
-        this.cache = {};
-        this.cacheTotalSize = 0;
-    };
-    Request.prototype.setData = function (key, value) {
-        this.data[key] = value;
-        return this;
-    };
-    Request.prototype.getData = function (key, defaultValue) {
-        return Object.prototype.hasOwnProperty.call(this.data, key) ? this.data[key]: (defaultValue !== undefined ? defaultValue: null);
-    };
-    function Response(xhr) {
-        this.headers = {};
-        var headerStr = xhr.getAllResponseHeaders();
 
-        if (headerStr) {
-            var headerPairs = headerStr.split(/\r?\n/);
-            for (var i = 0; i < headerPairs.length; i++) {
-                var line = headerPairs[i];
-                if (line === "") { continue; }
-                var colonPos = -1;
-                for (var j = 0; j < line.length; j++) {
-                    if (line.charAt(j) === ":") {
-                        colonPos = j;
+        if (!(error_reporting() & $errno)) return;
+
+        $type = http_negotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
+        $code = 500;
+        $content = '';
+
+        $parts = explode('|', $errstr, 2);
+        if (is_numeric($parts[0])) {
+            $code = (int) $parts[0];
+            $errstr = $parts[1];
+        }
+
+        $code = SAPI === 'cli' && $code > 255 ? 1 : $code;
+
+        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+
+        if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
+            $content = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
+
+            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
+        }
+ 
+        if ($type !== null && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
+            $data = array('app' => $this, 'code' => $code, 'error' => $content);
+            ob_start();
+            include($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type]);
+            $content = ob_get_clean();
+        } else if (SAPI !== 'cli') {
+            $type = 'text/plain';
+            $code = 406;
+        }
+
+        if ($return) return array('code' => $code, 'type' => $type, 'content' => $content);
+
+        if (SAPI === 'cli') {
+            fwrite(STDERR, $content);
+        } else {
+            if (!headers_sent()) {
+                header('HTTP/1.1 ' . $code);
+                header('content-type: ' . $type);
+            }
+            echo($content);
+        }
+
+        if (!$exception) exit($code > 255 ? 1 : $code);
+    }
+
+    // Route Management
+
+    function setRoute($method, $route, $option) {
+        $handler = array($this->ROUTE_HANDLER_PIPE => array(), $this->ROUTE_HANDLER_IGNORE => array());
+
+        $map = array('pipe' => $this->ROUTE_HANDLER_PIPE, 'ignore' => $this->ROUTE_HANDLER_IGNORE);
+        foreach ($map as $key => $value) {
+            if (isset($option[$key])) {
+                foreach ($option[$key] as $tmpUnit) $handler[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
+            }
+        }
+
+        $node = &$this->routes[$method];
+        $routeSegments = explode('/', trim($route, '/'));
+        foreach ($routeSegments as $segment) {
+            if (!isset($node[$segment])) $node[$segment] = array();
+            $node = &$node[$segment];
+        }
+
+        if (isset($node[$this->ROUTE_HANDLER])) return trigger_error('500|Duplicate route detected: ' . $route, E_USER_WARNING);
+
+        $node[$this->ROUTE_HANDLER] = $handler;
+    }
+
+    function groupRoute($group, $method, $route, $option = array()) {
+        $option['pipe'] = array_merge((isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array()), (isset($option['pipe']) ? $option['pipe'] : array()), (isset($group['pipe_append']) ? $group['pipe_append'] : array()));
+        $option['ignore'] = array_merge((isset($group['ignore']) ? $group['ignore'] : array()), (isset($option['ignore']) ? $option['ignore'] : array()));
+        $this->setRoute($method, $route, $option);
+    }
+
+    function setPipes($pipes) {
+        foreach ($pipes as $key => $p) {
+            foreach ($p as $unit) $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+        }
+    }
+
+    function resolveRoute($method, $route) {
+        if (!isset($this->routes[$method])) return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $route);
+
+        $current = $this->routes[$method];
+        $params = array();
+        $routeSegments = explode('/', $route);
+        $emptySegmentsCount = 0;
+        $foundSegment = false;
+        $last = count($routeSegments) - 1;
+
+        foreach ($routeSegments as $index => $routeSegment) {
+            if ($routeSegment === '' && !(!$foundSegment && $last === $index)) {
+                if (++$emptySegmentsCount > 20) return array('http' => 400, 'error' => 'Empty route segments exceeded limit (20): ' . $route);
+                continue;
+            }
+
+            $foundSegment = true;
+
+            if (strlen($routeSegment) > 255) return array('http' => 400, 'error' => 'Route segment too long (max 255 chars): ' . $routeSegment);
+
+            if (isset($current[$routeSegment])) {
+                $current = $current[$routeSegment];
+                continue;
+            }
+
+            $matched = false;
+
+            foreach ($current as $key => $value) {
+                if (substr($key, 0, 1) === ':') {
+                    list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
+                    if ($paramModifier === '*') {
+                        $params[$paramName] = array_slice($routeSegments, $index);
+                        $current = $value;
+                        if (isset($current[$this->ROUTE_HANDLER])) break 2;
+                        $matched = true;
+                        break;
+                    }
+                    $matches = array($routeSegment);
+                    if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $routeSegment, $matches)) {
+                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
+                        $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
+                        $current = $value;
+                        $matched = true;
                         break;
                     }
                 }
-                if (colonPos === -1) { continue; }
+            }
 
-                var key = Utils.trim(line.substring(0, colonPos)).toLowerCase();
-                if (key === "") { continue; }
-                var value = Utils.trim(line.substring(colonPos + 1));
-                this.headers[key] = value;
+            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
+        }
+
+        while (!isset($current[$this->ROUTE_HANDLER])) {
+            $matched = false;
+
+            foreach ($current as $key => $value) {
+                if (substr($key, 0, 1) === ':') {
+                    list($none, $paramName, $paramModifier) = explode(':', $key, 4);
+                    if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
+                        $current = $value;
+                        $matched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
+        }
+
+        if (!isset($current[$this->ROUTE_HANDLER])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
+
+        $finalPipes = array();
+
+        $ignore = array_flip($current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_IGNORE]);
+
+        $pipeGroup = isset($ignore[-1]) ? array(&$current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_PIPE]) : array(&$this->pipes['prepend'], &$current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_PIPE], &$this->pipes['append']);
+
+        foreach ($pipeGroup as $pipes) {
+            foreach ($pipes as $pipe) {
+                if (!isset($ignore[$pipe])) $finalPipes[] = $pipe;
             }
         }
 
-        this.code = xhr.status;
-        this.content = xhr.responseText;
+        return array('pipe' => $finalPipes, 'params' => $params);
     }
-    function Script() {
-        this.loadedScripts = {};
+
+    // Request Handling
+
+    function dispatch($input, $output) {
+        if (SAPI === 'cli') {
+            foreach ($input->positional as $positional) $input->route .= '/' . urlencode($positional);
+            if (isset($input->flags['request'])) {
+                foreach ((isset($input->options['header']) ? explode("\n", $input->options['header']) : array()) as $header) {
+                    list($k, $v) = explode(':', $header, 2);
+                    $input->headers[strtolower(trim($k))] = trim($v);
+                }
+                $input->content = isset($input->options['content']) ? $input->options['content'] : '';
+                $input->method = isset($input->options['method']) ? $input->options['method'] : 'GET';
+                if (isset($input->options['query'])) parse_str($input->options['query'], $input->query);
+            }
+        } elseif ($this->ENV['ROUTE_REWRITE']) {
+            $pos = strpos($input->uri, '?');
+            $input->route = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
+        } elseif (isset($input->query['route']) && $input->query['route'] !== '') {
+            $input->route = ($input->query['route'][0] === '/' ? '' : '/') . $input->query['route'];
+        }
+
+        $route = $this->resolveRoute($input->method, $input->route);
+
+        if (isset($route['error'])) return trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
+
+        $input->params = $route['params'];
+        foreach ($route['pipe'] as $p) {
+            $p = $this->loadClass($this->unitList[$p]);
+            list($input, $output, $success) = $p->process($input, $output);
+            if (!$success) break;
+        }
+
+        return $output;
     }
-    Script.prototype.load = function(urls, successCallback, failureCallback) {
-        failureCallback = failureCallback || function () {};
-        var that = this;
-        var toLoad = [];
-        var loadedCount = 0;
-        var hasError = false;
 
-        for (var i = 0; i < urls.length; i++) {
-            if (!that.loadedScripts[urls[i]]) {
-                toLoad.push(urls[i]);
-            } else {
-                loadedCount++;
-            }
-        }
-        if (loadedCount === urls.length) {
-            successCallback();
-            return;
-        }
-        function onLoad() {
-            loadedCount++;
-            if (loadedCount === urls.length && !hasError) { successCallback(); }
-        }
-        function onError() {
-            if (!hasError) {
-                hasError = true;
-                failureCallback();
-            }
-        }
-        for (var j = 0; j < toLoad.length; j++) {
-            (function(url, that, onLoad, onError) {
-                var script = document.createElement("script");
-                script.setAttribute("type", "text/javascript");
-                script.setAttribute("src", url);
-                script.setAttribute("defer", "");
-                script.onload = script.onreadystatechange = function () {
-                    if (!that.loadedScripts[url] && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
-                        script.onload = script.onreadystatechange = null;
-                        that.loadedScripts[url] = true;
-                        onLoad();
+    // Class Management
+
+    function scanUnits($path, $option) {
+        if (!isset($option['depth'])) $option['depth'] = 0;
+        if (!isset($option['max'])) $option['max'] = -1;
+        if (!isset($option['ignore'])) $option['ignore'] = array();
+        if (!isset($option['namespace'])) $option['namespace'] = '';
+        if (!isset($option['dir_as_namespace'])) $option['dir_as_namespace'] = false;
+
+        if ($dp = opendir($this->ENV['DIR_ROOT'] . $path)) {
+            while (($file = readdir($dp)) !== false) {
+                if ($file === '.' || $file === '..') continue;
+
+                foreach ($option['ignore'] as $pattern) {
+                    if (fnmatch(strtolower($pattern), strtolower($file))) continue 2;
+                }
+
+                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR_ROOT'] . $path . $file)) {
+                    ++$option['depth'];
+                    $namespace = $option['namespace'];
+                    $option['namespace'] .= $file . '\\';
+                    $this->scanUnits($path . $file . '/', $option);
+                    $option['namespace'] = $namespace;
+                    --$option['depth'];
+                } else if (substr($file, -4) === '.php') {
+                    $unitFile = substr($file, 0, -4);
+                    $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
+
+                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
+
+                    $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
+                    if ($pathListIndex === false) {
+                        $pathListIndex = $this->pathListIndex;
+                        $this->pathList[$this->pathListIndex] = $path;
+                        ++$this->pathListIndex;
+                        $this->pathListCache[$path] = $pathListIndex;
                     }
-                };
-                script.onerror = onError;
-                document.getElementsByTagName("head")[0].appendChild(script);
-            })(toLoad[j], that, onLoad, onError);
-        }
-    };
-    function Tag(id) {
-        this.tag = document.getElementById(id);
-        if (!this.tag) {
-            console.error("Tag element not found: #" + id);
-            return;
-        }
-        this.lastContent = "";
-        this.isLastContentSaved = false;
-    }
-    Tag.prototype._handleTemp = function (isTemp) {
-        if (this.isLastContentSaved) {
-            this.tag.innerHTML = this.lastContent;
-            this.lastContent = "";
-            this.isLastContentSaved = false;
-        }
-        if (isTemp) {
-            this.lastContent = this.tag.innerHTML;
-            this.isLastContentSaved = true;
-        }
-    };
-    Tag.prototype.set = function (content, isTemp) {
-        this._handleTemp(isTemp);
-        this.tag.innerHTML = content;
-    };
-    Tag.prototype.prepend = function (content, isTemp) {
-        this._handleTemp(isTemp);
-        this.tag.insertAdjacentHTML("afterbegin", content);
-    };
-    Tag.prototype.append = function (content, isTemp) {
-        this._handleTemp(isTemp);
-        this.tag.insertAdjacentHTML("beforeend", content);
-    };
-    Tag.prototype.remove = function () {
-        if (this.tag && this.tag.parentNode) { this.tag.parentNode.removeChild(this.tag); }
-    };
-    function TagX() {
-        this.globalRefs = {};
-        this.globalVars = {};
-        this.globalKeys = {};
-        this.watchers = {};
-        this.tab = {
-            first: null,
-            last: null,
-            default_first: "",
-            default_last: ""
-        };
 
-        this.mutationDepth = 0;
-        this.queue = [];
-    }
-    TagX.prototype.register = function(elements, tab) {
-        this.mutationDepth++;
-        var tabRange = (tab || this.tab.default_first + ":" + this.tab.default_last).split(/\s*:\s*/);
-        var elementsLength = elements.length;
-
-        for (var i = 0; i < elementsLength; i++) {
-            var el = elements[i];
-            var elAttributesLength = el.attributes.length;
-            for (var j = 0; j < elAttributesLength; j++) {
-                var attr = el.attributes[j];
-                if (attr.name.slice(0, 6) === "x-ref-") {
-                    var key = attr.name.slice(6);
-                    var isDuplicate = false;
-                    if (!this.globalRefs[key]) { this.globalRefs[key] = []; }
-                    var globalRefsLength = this.globalRefs[key].length;
-                    for (var k = 0; k < globalRefsLength; k++) {
-                        if (this.globalRefs[key][k] === el) {
-                            isDuplicate = true;
-                            break;
-                        }
-                    }
-                    if (!isDuplicate) { this.globalRefs[key].push(el); }
-                    if (!this.globalVars.hasOwnProperty(key)) {
-                        if (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) {
-                            this.globalVars[key] = el.checked;
-                        } else {
-                            this.globalVars[key] = el.value || el.getAttribute(attr.name);
-                        }
-                    }
+                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), array(), false);
+                    $this->unitList[$this->unitListIndex] = $unit;
+                    ++$this->unitListIndex;
                 }
             }
-            if (tabRange.length >= 2) {
-                if (el.getAttribute("x-ref-" + tabRange[0])) {
-                    this.tab.first = el;
-                    this.tab.default_first = tabRange[0];
-                }
-                if (el.getAttribute("x-ref-" + tabRange[1])) {
-                    this.tab.last = el;
-                    this.tab.default_last = tabRange[1];
-                }
-            }
-        }
-
-        var that = this;
-        for (var i = 0; i < elementsLength; i++) {
-            var el = elements[i];
-            (function(el, that) {
-                if (el.getAttribute("x-on-click")) {
-                    if (!el.getAttribute("tabindex")) { el.setAttribute("tabindex", 0); }
-                    if (!el.onkeydown) {
-                        el.onkeydown = function(e) {
-                            e = e || window.event;
-                            if (e.key === "Enter" || (e.keyCode || e.which) === 13) { return that.processElement(el, el.getAttribute("x-on-click"), e); }
-                        };
-                    }
-                    el.onclick = function(e) { return that.processElement(el, el.getAttribute("x-on-click"), e || window.event); };
-                }
-                if (el.getAttribute("x-on-enter")) {
-                    el.onmouseenter = function() { that.processElement(el, el.getAttribute("x-on-enter")); };
-                }
-                if (el.getAttribute("x-on-leave")) {
-                    el.onmouseleave = function() { that.processElement(el, el.getAttribute("x-on-leave")); };
-                }
-                if (el.getAttribute("x-on-focus")) {
-                    el.onfocus = function() { that.processElement(el, el.getAttribute("x-on-focus")); };
-                }
-                if (el.getAttribute("x-on-blur")) {
-                    el.onblur = function() { that.processElement(el, el.getAttribute("x-on-blur")); };
-                }
-                if (el.getAttribute("x-on-submit")) {
-                    el.onsubmit = function(e) { return that.processElement(el, el.getAttribute("x-on-submit"), e || window.event); };
-                }
-                if (el.getAttribute("x-on-input")) {
-                    el.oninput = function(e) {
-                        var elAttributesLength = el.attributes.length;
-                        for (var j = 0; j < elAttributesLength; j++) {
-                            var n = el.attributes[j].name;
-                            var prefix = n.slice(0, 6);
-                            if (prefix === "x-set-" || prefix === "x-rot-" || prefix === "x-val-" || prefix === "x-var-" || prefix === "x-run-") { el.setAttribute(n, el.value); }
-                        }
-                        return that.processElement(el, el.getAttribute("x-on-input"), e || window.event);
-                    };
-                }
-                if (el.getAttribute("x-on-key")) {
-                    var keys = (el.getAttribute("x-on-key")).toLowerCase().split(/\s+/);
-                    var keysLength = keys.length;
-                    var keysObj = {};
-                    for (var j = 0; j < keysLength; j++) { keysObj[keys[j]] = true; }
-                    el.onkeydown = function(e) {
-                        e = e || window.event;
-                        var key = that.getComboKey(e);
-                        if (keysObj[key]) {
-                            that.processElement(el, el.getAttribute("x-on-key-" + key), e);
-                            return false;
-                        }
-                    };
-                }
-            })(el, that);
-
-            if (el.getAttribute("x-on-key-window")) {
-                var keys = (el.getAttribute("x-on-key-window")).toLowerCase().split(/\s+/);
-                var keysLength = keys.length;
-                for (var j = 0; j < keysLength; j++) {
-                    var key = keys[j];
-                    if (!that.globalKeys[key]) { that.globalKeys[key] = []; }
-                    that.globalKeys[key].push(el);
-                }
-            }
-        }
-
-        window.onkeydown = function(e) {
-            e = e || window.event;
-            var key = that.getComboKey(e);
-            if (that.globalKeys[key]) {
-                var keys = that.globalKeys[key];
-                var keysLength = keys.length;
-                for (var i = 0; i < keysLength; i++) { that.processElement(keys[i], keys[i].getAttribute("x-on-key-window-" + key)); }
-            }
-            if (key === "tab") {
-                if (e.shiftKey && document.activeElement === that.tab.first) {
-                    that.tab.last.focus();
-                    return false;
-                }
-                if (!e.shiftKey && document.activeElement === that.tab.last) {
-                    that.tab.first.focus();
-                    return false;
-                }
-            }
-        };
-        this.mutationDepth--;
-    };
-    TagX.prototype.getComboKey = function (e) {
-        var modifiers = [];
-        if (e.ctrlKey) { modifiers.push("ctrl"); }
-        if (e.altKey) { modifiers.push("alt"); }
-        if (e.shiftKey) { modifiers.push("shift"); }
-        return (modifiers.length ? modifiers.join("-") + "-" : "") + ((e.key ? e.key: String.fromCharCode(e.keyCode || e.which)).toLowerCase());
-    };
-    TagX.prototype.watch = function(key, callback) {
-        if (!this.watchers[key]) { this.watchers[key] = []; }
-        this.watchers[key].push(callback);
-    };
-    TagX.prototype.getRefs = function(key) {
-        return this.globalRefs[key] || [];
-    };
-    TagX.prototype.getVar = function (key) {
-        return this.globalVars[key];
-    };
-    TagX.prototype.setVar = function (key, value, el) {
-        el = el || null;
-        var valOld = this.globalVars[key];
-        this.globalVars[key] = value;
-        if (this.watchers[key]) {
-            for (var w = 0; w < this.watchers[key].length; w++) { this.watchers[key][w](valOld, value, el); }
-        }
-        if (this.watchers["*"]) {
-            for (var w = 0; w < this.watchers["*"].length; w++) { this.watchers["*"][w](key, valOld, value, el); }
-        }
-    };
-    TagX.prototype.run = function(key, trigger) {
-        var refs = this.globalRefs[key] || [];
-        for (var i = 0; i < refs.length; i++) {
-            (function (that, ref, trigger) {
-                setTimeout(function () { that.processElement(ref, ref.getAttribute(trigger)); }, 0);
-            })(this, refs[i], trigger);
-        }
-    };
-    TagX.prototype.clean = function() {
-        this.mutationDepth++;
-        var body = document.body;
-        for (var key in this.globalRefs) {
-            if (this.globalRefs.hasOwnProperty(key)) {
-                var els = this.globalRefs[key];
-                var elsLength = els.length;
-                var filteredEls = [];
-                for (var i = 0; i < elsLength; i++) {
-                    if (body.contains(els[i])) { filteredEls.push(els[i]); }
-                }
-                if (filteredEls.length > 0) {
-                    this.globalRefs[key] = filteredEls;
-                } else {
-                    delete this.globalRefs[key];
-                    delete this.globalVars[key];
-                    if (this.watchers && this.watchers[key]) { delete this.watchers[key]; }
-                }
-            }
-        }
-        for (var key in this.globalKeys) {
-            if (this.globalKeys.hasOwnProperty(key)) {
-                var els = this.globalKeys[key];
-                var elsLength = els.length;
-                var filteredEls = [];
-                for (var i = 0; i < elsLength; i++) {
-                    if (body.contains(els[i])) { filteredEls.push(els[i]); }
-                }
-                if (filteredEls.length > 0) {
-                    this.globalKeys[key] = filteredEls;
-                } else {
-                    delete this.globalKeys[key];
-                }
-            }
-        }
-        this.mutationDepth--;
-    };
-    TagX.prototype.processElement = function(el, elValue, e) {
-        if (this.mutationDepth > 0) { return; }
-
-        this.queue.push([el, elValue]);
-
-        if (!this.queueTimer) {
-            this.queueTimer = true;
-            while (this.queue.length) {
-                var item = this.queue.shift();
-                this._processElement(item[0], item[1]);
-            }
-            this.queueTimer = null;
-        }
-
-        if (e && el.getAttribute("x-stop")) {
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            } else {
-                e.cancelBubble = true;
-            }
-         }
-
-        return !(e && el.getAttribute("x-prevent"));
-    };
-    TagX.prototype._processElement = function(el, elValue) {
-        var mode = "";
-        var rules = [];
-        var rulesObj = {};
-
-        elValue = Utils.trim(elValue || "");
-        if (elValue === "") {
-            mode = "*";
-        } else if (elValue[0] === "!") {
-            mode = "!";
-            rules = elValue.slice(1).split(/\s+/);
-        } else {
-            rules = elValue.split(/\s+/);
-        }
-
-        var rulesLength = rules.length;
-        for (var i = 0; i < rulesLength; i++) { rulesObj[rules[i]] = true; }
-
-        var elAttributesLength = el.attributes.length;
-        for (var i = 0; i < elAttributesLength; i++) {
-            var attr = el.attributes[i];
-            var prefix = attr.name.slice(0, 6);
-            var keyAttrArr = attr.name.slice(6).split(".");
-            var key = keyAttrArr[0];
-
-            if (!(mode === "*" || (mode === "!" && !rulesObj.hasOwnProperty(key)) || (mode === "" && rulesObj.hasOwnProperty(key)))) { continue; }
-
-            if (prefix === "x-rot-") {
-                var dataState = attr.value || "";
-                var states = dataState.split(/\s+/);
-                var els = (key == "") ? [el] : (this.globalRefs[key] || []);
-                var elsLength = els.length;
-                for (var j = 0; j < elsLength; j++) {
-                    var refEl = els[j];
-                    var className = refEl.className || "";
-                    var classList = className.split(/\s+/);
-                    var current = refEl.getAttribute("data-simulated-state") || classList[classList.length - 1];
-                    var currentIndex = -1;
-                    for (var k = 0; k < states.length; k++) {
-                        if (current === states[k]) {
-                            currentIndex = k;
-                            break;
-                        }
-                    }
-                    var newState = states[(currentIndex + 1) % states.length] || "_";
-                    if (current !== newState) {
-                        refEl.setAttribute("data-simulated-state", newState);
-                        (function(refEl) {
-                            setTimeout(function() {
-                                var classList = (refEl.className || "").split(/\s+/);
-                                var liveState = classList[classList.length - 1];
-                                var simulated = refEl.getAttribute("data-simulated-state");
-                                if (simulated && simulated !== liveState) {
-                                    classList[classList.length - 1] = simulated;
-                                    refEl.className = classList.join(" ");
-                                    refEl.removeAttribute("data-simulated-state");
-                                }
-                            }, 4);
-                        })(refEl);
-                    }
-                }
-            }
-
-            else if (prefix === "x-set-") {
-                var set = keyAttrArr.slice(1).join(".");
-                var dataState = attr.value || "";
-                var states = dataState.split(/\s*\|\s*/);
-                var els = (key == "") ? [el] : (this.globalRefs[key] || []);
-                var elsLength = els.length;
-                for (var j = 0; j < elsLength; j++) {
-                    var refEl = els[j];
-                    var current = refEl.getAttribute(set) ? refEl.getAttribute(set) : "null";
-                    var currentIndex = -1;
-                    for (var k = 0; k < states.length; k++) {
-                        if (current === states[k]) {
-                            currentIndex = k;
-                            break;
-                        }
-                    }
-                    var newState = states[(currentIndex + 1) % states.length] || "";
-                    if (newState === "null") { refEl.removeAttribute(set); }
-                    else if (current !== newState) { refEl.setAttribute(set, newState); }
-                }
-            }
-
-            else if (prefix === "x-val-") {
-                var els = (key == "") ? [el] : (this.globalRefs[key] || []);
-                var elsLength = els.length;
-                for (var j = 0; j < elsLength; j++) {
-                    var refEl = els[j];
-                    var val = attr.value;
-                    var tag = refEl.tagName.toUpperCase();
-                    if ((tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") && val != refEl.value) {
-                        if (tag === "INPUT" && (refEl.type === "checkbox" || refEl.type === "radio")) {
-                            refEl.checked = (val === true || val === "true" || val === "1");
-                        } else if (val != refEl.value) {
-                            refEl.value = val;
-                        }
-                    } else if (refEl.children.length === 0 && val != refEl.innerHTML) {
-                        refEl.innerHTML = Utils.htmlEncode(val);
-                    }
-                }
-            }
-
-            else if (prefix === "x-var-") { this.setVar(key, attr.value, el); }
-
-            else if (prefix === "x-run-") {
-                var triggers = attr.value.split(/\s+/);
-                var triggersLength = triggers.length;
-                for (var j = 0; j < triggersLength; j++) { this.run(key, triggers[j]); }
-            }
-        }
-
-        var tabRange = [];
-        if (el.getAttribute("x-tab-reset")) {
-            tabRange = [this.tab.default_first, this.tab.default_last];
-            this.tab.first = null;
-            this.tab.last = null;
-        } else if (el.getAttribute("x-tab")) {
-            tabRange = el.getAttribute("x-tab").split(/\s*:\s*/);
-        }
-        if (tabRange.length === 2) {
-            if (this.globalRefs[tabRange[0]]) { this.tab.first = this.globalRefs[tabRange[0]][0]; }
-            if (this.globalRefs[tabRange[1]]) { this.tab.last = this.globalRefs[tabRange[1]][0]; }
-        }
-
-        var focus = el.getAttribute("x-focus");
-        if (focus && this.globalRefs[focus]) {
-            if (this.isFocusing) clearTimeout(this.isFocusing);
-            var focusRef = this.globalRefs[focus][0];
-            this.isFocusing = setTimeout(function() { focusRef.focus(); }, 50);
-        }
-    };
-
-    global.Utils = Utils;
-    global.Url = Url;
-    global.Request = Request;
-    global.Response = Response;
-    global.Script = Script;
-    global.Tag = Tag;
-    global.TagX = TagX;
-
-    var init = global.init || [];
-    global.init = {
-        push: function (fn) {
-            try {
-                fn();
-            } catch (e) {
-                console.error("init queue error:", e);
-            }
-        }
-    };
-    var initLength = init.length;
-    for (var i = 0; i < initLength; i++) {
-        try {
-            init[i]();
-        } catch (e) {
-            console.error("init queue error:", e);
+            closedir($dp);
         }
     }
-})();
+
+    function setUnit($unit, $option) {
+        $test = $this->unit[$unit];
+
+        $map = array('args' => $this->UNIT_ARGS, 'load' => $this->UNIT_LOAD);
+        foreach ($map as $key => $value) {
+            if (isset($option[$key])) {
+                foreach ($option[$key] as $tmpUnit) $this->unit[$unit][$value][] = $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
+            }
+        }
+
+        $this->unit[$unit][$this->UNIT_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CACHE]);
+    }
+
+    function groupUnit($group, $unit, $option = array()) {
+        $option['args'] = array_merge((isset($group['args_prepend']) ? $group['args_prepend'] : array()), (isset($option['args']) ? $option['args'] : array()), (isset($group['args_append']) ? $group['args_append'] : array()));
+        $option['load'] = array_merge((isset($group['load_prepend']) ? $group['load_prepend'] : array()), (isset($option['load']) ? $option['load'] : array()), (isset($group['load_append']) ? $group['load_append'] : array()));
+        $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : false);
+        $this->setUnit($unit, $option);
+    }
+
+    function loadUnit($unit) {
+        $stack = array($unit);
+        $seen = array();
+        $md = array();
+
+        while ($stack) {
+            $unit = array_pop($stack);
+            $previousUnit = end($stack);
+            $seen[$previousUnit] = true;
+
+            if (isset($seen[$unit])) return trigger_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+
+            if (isset($this->cache[$unit][$this->CACHE_PATH])) {
+                if (!$stack) return;
+
+                unset($seen[$previousUnit]);
+                continue;
+            }
+
+            $load = $this->unit[$unit][$this->UNIT_LOAD];
+            if ($load) {
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($load));
+
+                if ($md[$unit][1] > $md[$unit][0]) {
+                    $stack[] = $unit;
+                    $stack[] = $this->unitList[$load[$md[$unit][0]]];
+                    ++$md[$unit][0];
+                    continue;
+                }
+                unset($md[$unit]);
+            }
+
+            unset($seen[$previousUnit]);
+
+            require($this->ENV['DIR_ROOT'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
+            $this->cache[$unit][$this->CACHE_PATH] = true;
+        }
+    }
+
+    function loadClass($unit, $new = false) {
+        $stack = array($unit);
+        $seen = array();
+        $md = array();
+        $resolvedArgs = array();
+        $class = null;
+
+        while ($stack) {
+            $unit = array_pop($stack);
+            $previousUnit = end($stack);
+            $seen[$previousUnit] = true;
+
+            if (isset($seen[$unit])) return trigger_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+
+            $cache = !$new && $this->unit[$unit][$this->UNIT_CACHE];
+            if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
+                if (!$stack) return $this->cache[$unit][$this->CACHE_CLASS];
+
+                unset($seen[$previousUnit]);
+                $resolvedArgs[$previousUnit][] = $this->cache[$unit][$this->CACHE_CLASS];
+                continue;
+            }
+
+            $args = $this->unit[$unit][$this->UNIT_ARGS];
+            if ($args) {
+                if (!isset($md[$unit])) $md[$unit] = array(0, count($args));
+
+                if ($md[$unit][1] > $md[$unit][0]) {
+                    $stack[] = $unit;
+                    $stack[] = $this->unitList[$args[$md[$unit][0]]];
+                    ++$md[$unit][0];
+                    continue;
+                }
+                unset($md[$unit]);
+            }
+
+            unset($seen[$previousUnit]);
+
+            $this->loadUnit($unit);
+
+            $class = new $unit;
+            if (isset($resolvedArgs[$unit])) {
+                $class->args($resolvedArgs[$unit]);
+                unset($resolvedArgs[$unit]);
+            }
+
+            if ($cache) $this->cache[$unit][$this->CACHE_CLASS] = $class;
+
+            $resolvedArgs[$previousUnit][] = $class;
+        }
+
+        return $class;
+    }
+
+    function reloadClass($unit) {
+        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->loadClass($unit, true);
+    }
+
+    // Utility Functions
+
+    function clear($property) {
+        unset($this-> {$property});
+    }
+
+    function dir($s) {
+        return str_replace(array('/', '\\'), '/', $s);
+    }
+
+    function dirRoot($s = '') {
+        return $this->ENV['DIR_ROOT'] . $s;
+    }
+
+    function dirWeb($s = '') {
+        return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_WEB'] . $s;
+    }
+
+    function urlRoute($s, $params = array()) {
+        $base = $this->ENV['URL_ROOT'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/');
+        if (!$this->ENV['ROUTE_REWRITE'] && strpos($base, '?') !== false) $s = str_replace('?', '&', $s);
+        return $base . ($params ? strtr($s, $params) : $s);
+    }
+
+    function urlWeb($s, $params = array()) {
+        return $this->ENV['URL_WEB'] . ($params ? strtr($s, $params) : $s);
+    }
+
+    function strSlug($s) {
+        return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($s)), '-');
+    }
+
+    function write($file, $string, $append = false) {
+        if ($fp = fopen($file, (($append) ? 'ab' : 'wb'))) {
+            fwrite($fp, (string) $string);
+            fclose($fp);
+        }
+    }
+
+    function read($file) {
+        if ($fp = fopen($file, 'rb')) {
+            $chunks = array();
+            while (!feof($fp)) $chunks[] = fread($fp, 8192);
+            fclose($fp);
+            return implode('', $chunks);
+        }
+        return false;
+    }
+
+    function log($msg, $file) {
+        $mt = explode(' ', microtime());
+        $micro = (float) $mt[0];
+        $time = (int) $mt[1];
+
+        $logDir = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG'];
+        $logFile = $logDir . $file . '.log';
+
+        $this->write($logFile, ('[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . "\n"), true);
+
+        if (filesize($logFile) >= ($this->ENV['LOG_SIZE_LIMIT_MB'] * 1048576)) {
+            $newLogFile = $logDir . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            rename($logFile, $newLogFile);
+        }
+
+        $timestampFile = $this->ENV['DIR_ROOT'] . $this->ENV['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
+        $lastCleanup = file_exists($timestampFile) ? (int) $this->read($timestampFile) : 0;
+
+        if (($time - $lastCleanup) >= $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
+            $logFiles = glob($logDir . $file . '_*.log');
+            $logFilesMTime = array();
+
+            foreach ($logFiles as $lf) {
+                $lfmtime = filemtime($lf);
+                if (($time - $lfmtime) > ($this->ENV['LOG_RETENTION_DAYS'] * 86400)) {
+                    unlink($lf);
+                    continue;
+                }
+                $logFilesMTime[$lf] = $lfmtime;
+            }
+
+            asort($logFilesMTime);
+            $logFiles = array_keys($logFilesMTime);
+
+            if (count($logFiles) > $this->ENV['MAX_LOG_FILES']) {
+                $maxIndex = count($logFiles) - $this->ENV['MAX_LOG_FILES'];
+                for ($i = 0; $maxIndex > $i; $i++) unlink($logFiles[$i]);
+            }
+
+            $this->write($timestampFile, $time);
+        }
+    }
+}
