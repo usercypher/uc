@@ -34,70 +34,73 @@
 
 <h2>Triggers</h2>
 <pre>
-
 x-on-click               // all
-x-on-click="name name2"  // only name, name2
-x-on-click="!name name2" // all except name, name2
+x-on-click="name name2"  // only specified names
+x-on-click="!name name2" // all except specified names
 
 x-on-input               // all
-x-on-input="name name2"  // only name, name2
-x-on-input="!name name2" // all except name, name2
+x-on-input="name name2"  // only specified names
+x-on-input="!name name2" // all except specified names
 
-// hovers
-x-on-enter               // all
-x-on-enter="name name2"  // only name, name2
-x-on-enter="!name name2" // all except name, name2
+x-on-enter               // all (hover enter)
+x-on-enter="name name2"  // only specified names
+x-on-enter="!name name2" // all except specified names
 
-x-on-leave               // all
-x-on-leave="name name2"  // only name, name2
-x-on-leave="!name name2" // all except name, name2
+x-on-leave               // all (hover leave)
+x-on-leave="name name2"  // only specified names
+x-on-leave="!name name2" // all except specified names
 
-// focus
 x-on-focus               // all
-x-on-focus="name name2"  // only name, name2
-x-on-focus="!name name2" // all except name, name2
+x-on-focus="name name2"  // only specified names
+x-on-focus="!name name2" // all except specified names
 
-// hovers
 x-on-blur                // all
-x-on-blur="name name2"   // only name, name2
-x-on-blur="!name name2"  // all except name, name2
+x-on-blur="name name2"   // only specified names
+x-on-blur="!name name2"  // all except specified names
 
-// scope in element
-12="key1 key2 ctrl-key"  // support combo key for "ctrl", "alt", "shift" combine using "-"
-x-on-key-[key]=""              // (rules applied to key) all
-x-on-key-[key]="name name2"    // (rules applied to key) only name, name2
-x-on-key-[key]="!name name2"   // (rules applied to key) all except name, name2
+// Key triggers (element scope)
+x-on-key="key1 key2 ctrl-key"   // supports combos with ctrl, alt, shift using "-"
+x-on-key-[key]=""               // all
+x-on-key-[key]="name name2"     // only specified names
+x-on-key-[key]="!name name2"    // all except specified names
 
-// scope in window
-x-on-key-window="key1 key2 ctrl-key"  // support combo key for "ctrl", "alt", "shift" combine using "-"
-x-on-key-window-[key]=""              // (rules applied to key) all
-x-on-key-window-[key]="name name2"    // (rules applied to key) only name, name2
-x-on-key-window-[key]="!name name2"   // (rules applied to key) all except name, name2
-
+// Key triggers (window scope)
+x-on-key-window="key1 key2 ctrl-key"
+x-on-key-window-[key]=""
+x-on-key-window-[key]="name name2"
+x-on-key-window-[key]="!name name2"
 </pre>
 
 <h2>Modifiers</h2>
 <pre>
-x-stop    // stop propagation x-on-click & x-on-input & x-on-key only.
-x-prevent // prevent default x-on-click & x-on-submit
+x-stop    // stop propagation (x-on-click, x-on-input, x-on-key only)
+x-prevent // prevent default (x-on-click, x-on-input, x-on-submit only)
 </pre>
 
 <h2>Actions</h2>
 <pre>
+// Reserved names
+this      // targets element itself (used in x-val, x-var, x-rot, x-set)
+
+// Reserved values
+this      // use element’s value or innerHTML (must be alone)
+null      // in x-set removes attribute; in x-rot means no class (avoid 'null' CSS class)
+
 x-val-[name]="value"
 x-var-[name]="value"
 x-rot-[name]="class1 class2"
-x-tab="name:name"                   // tab key range
-x-tab-reset                         // reset tab to default (default set by register)
+x-tab="name:name"                       // tab key range
+x-tab-reset                             // reset tab to default
 x-focus="name"
 x-set-[name].[attribute]="value|value"
-x-run-[name]="trigger1 trigger2"    // activate triggers
+x-run-[name]="trigger1 trigger2"        // activate triggers
 </pre>
 
 <h2>Target</h2>
 <pre>
 x-ref-[name]
 </pre>
+
 
 <hr>
 
@@ -201,7 +204,7 @@ x-val-dialog-content="dialog3"
 
 <hr>
 <h2>Input binding</h2>
-<input x-on-input x-val-name value="Alice"/>
+<input x-on-input x-val-name="this" value="Alice"/>
 <p></p>
 <p x-ref-name>Alice</p>
 <input x-ref-name/>
@@ -209,15 +212,14 @@ x-val-dialog-content="dialog3"
 
 <p></p>
 
-<label for="volumeSlider">Volume: <span id="volumeValue" x-ref-volume-label>50</span>%</label>
+<label>Volume: <span x-ref-volume-label>50</span>%</label>
 <input
   x-ref-volume
   x-on-input
-  x-set-volume.aria-valuenow
-  x-val-volume-label
-  x-var-volume
+  x-set-volume.aria-valuenow="this"
+  x-val-volume-label="this"
+  x-var-volume="this"
   type="range"
-  id="volumeSlider"
   min="0"
   max="100"
   value="50"
@@ -225,19 +227,17 @@ x-val-dialog-content="dialog3"
   aria-valuemin="0"
   aria-valuemax="100"
   aria-valuenow="50"
-  aria-label="Volume slider"
 />
 
 <hr>
 <h2>Attribute</h2>
 <p></p>
-<button
 
+<button
 x-on-click
 x-rot-box="show"
-x-set-.x-rot-box="hide|show"
+x-set-this.x-rot-box="hide|show"
 >toggle</button>
-
 
 
 <div class="block hide"
@@ -283,15 +283,15 @@ Drawer
 <h2>Var</h2>
 
 
-<input type="number" x-rot-tooltip="show hide" x-on-input="price" x-var-price placeholder="price"/>
-<select  x-on-input x-var-qty>
+<input type="number" x-on-input x-var-price="this" placeholder="price"/>
+<select x-on-input x-var-qty="this">
     <option value="1">1x</option>
     <option value="2">2x</option>
     <option value="3">3x</option>
 </select>
 
 <p><b x-ref-qty="1" x-ref-price x-ref-total></b></p>
-   
+
   <!-- Load Script -->
   <script>
     (window.init = window.init || []).push(function () {
