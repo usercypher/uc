@@ -299,14 +299,14 @@ Drawer
         tagx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
         // tagx.clean(); // clean dead references
     
-        tagx.watch("*", Utils.debounce(function (key, old, current, el) {
+        tagx.tap("*", Utils.debounce(function (key, old, current, el) {
             if (key == "qty" || key == "price") {
-                tagx.getRefs("total").forEach(el => {
+                tagx.getRef("total").forEach(el => {
                     el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
                 });
             }
             if (key == "volume") {
-                tagx.getRefs("volume").forEach(el => {
+                tagx.getRef("volume").forEach(el => {
                     console.log(el.getAttribute("aria-valuenow"));
                 }); 
             }

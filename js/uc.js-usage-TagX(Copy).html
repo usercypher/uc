@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width  initial-scale=1.0" />
+  <title>TagX – Example Usage</title>
+  <script src="uc.js" defer></script>
+  <style>
+
+
+
+  </style>
+</head>
+<body style="padding: 1em;">
+    <button x-on-click x-ref-decrease x-var-decrease>decrease</button>
+    <button x-on-click x-var-increase>increase</button>
+    <div style="width: 50px; height: 50px; background: red;"x-ref-target></div>
+
+  <!-- Load Script -->
+  <script>
+    (window.init = window.init || []).push(function () {
+        var tagx = new TagX();
+        tagx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
+        // tagx.clean(); // clean dead references
+        var target = tagx.getRef("target")[0];
+        var size = 50;
+        var decrease = tagx.getRef("decrease")[0];
+        tagx.tap("decrease", function (old, current, el) {
+            size = size - 10;
+            target.style.width = size + "px";
+            target.style.height = size + "px";
+            if (size <= 30) {
+                el.setAttribute("disabled", "");
+            }
+        });
+        tagx.tap("increase", function (old, current, el) {
+            size = size + 10;
+            target.style.width = size + "px";
+            target.style.height = size + "px";
+            if (size >= 30 && decrease.getAttribute("disabled") !== null) {
+                decrease.removeAttribute("disabled");
+            }
+        });
+        
+    });    
+  </script>
+</body>
+</html>
