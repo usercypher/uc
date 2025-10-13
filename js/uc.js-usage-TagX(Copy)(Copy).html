@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TagX – Example Usage with FPS</title>
-  <script src="uc.js" defer></script>
+  <title>Vanilla – Color Picker Performance</title>
   <script src="https://jscolor.com/release/2.4.6/jscolor.js"></script>
 
   <style>
@@ -33,32 +32,31 @@
 
   <div id="fps-counter">FPS: 0</div>
 
-  <input data-jscolor value="ab2567" x-on-input x-var-color="this">
+  <!-- Color input -->
+  <input id="color-picker" data-jscolor value="ab2567" />
 
+  <!-- Container for 500 divs -->
   <div id="target-container"></div>
 
-  <!-- Generate 1000 divs with x-ref-color-target -->
+  <!-- Create 1000 divs -->
   <script>
     const container = document.getElementById("target-container");
+    const colorBoxes = [];
 
     for (let i = 0; i < 1000; i++) {
       const div = document.createElement("div");
       div.className = "target-box";
-      div.setAttribute("x-ref-color-target", "");
       container.appendChild(div);
+      colorBoxes.push(div);
     }
-  </script>
 
-  <!-- TagX bindings -->
-  <script>
-    (window.init = window.init || []).push(function () {
-      var tagx = new TagX();
-      tagx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
+    // On color input change
+    const colorInput = document.getElementById("color-picker");
 
-      tagx.tap("color", function (old, current, el) {
-        tagx.getRef("color-target").forEach(function (element) {
-          element.style["background-color"] = current;
-        });
+    colorInput.addEventListener("input", function () {
+      const color = this.value;
+      colorBoxes.forEach((box) => {
+        box.style.backgroundColor = color;
       });
     });
   </script>
