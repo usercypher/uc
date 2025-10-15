@@ -11,9 +11,11 @@ class Lib_Database {
             $user = isset($config['user']) ? $config['user'] : '';
             $pass = isset($config['pass']) ? $config['pass'] : '';
             $time = isset($config['time']) ? $config['time'] : '+00:00';
+            $timeout = isset($config['timeout']) ? (int)$config['timeout'] : 5;
 
             $this->conn[$key] = new PDO('mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name, $user, $pass, array(
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
+                PDO::ATTR_TIMEOUT => $timeout
             ));
             $this->conn[$key]->exec('SET time_zone = "' . $time . '"');
         }
