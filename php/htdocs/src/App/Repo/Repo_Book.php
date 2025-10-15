@@ -39,7 +39,7 @@ class Repo_Book extends Lib_DatabaseHelper {
             return false;
         }
 
-        $book = $this->first('WHERE id = ?', array($bookData['id']));
+        $book = $this->one('WHERE id = ?', array($bookData['id']));
 
         $book['title'] = $bookData['title']['new'];
         $book['author'] = $bookData['author'];

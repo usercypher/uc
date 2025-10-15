@@ -21,7 +21,7 @@ class Lib_DatabaseHelper {
         return $this->messages;
     }
 
-    function beginTransaction() {
+    function begin() {
         return $this->conn->beginTransaction();
     }
 
@@ -29,7 +29,7 @@ class Lib_DatabaseHelper {
         return $this->conn->commit();
     }
 
-    function rollBack() {
+    function rollback() {
         return $this->conn->rollBack();
     }
 
@@ -41,7 +41,7 @@ class Lib_DatabaseHelper {
         return $this->conn->exec($query);
     }
 
-    function query($query, $params) {
+    function stmt($query, $params) {
         $stmt = $this->conn->prepare($query);
         if (!$stmt) {
             $error = $this->conn->errorInfo();
@@ -65,7 +65,7 @@ class Lib_DatabaseHelper {
         }
 
         if (!$stmt->execute()) {
-            $error = $this->conn->errorInfo();
+            $error = $stmt->errorInfo();
             trigger_error('500|Execute failed: ' . $error[2]);
             return false;
         }
@@ -94,23 +94,23 @@ class Lib_DatabaseHelper {
 
     function insert($data) {
         $columns = implode(', ', array_keys($data));
-        $placeholders = implode(', ', array_fill(0, count($data), '?'));
+        $placeholders = str_repeat('?,', count($data) - 1) . '?';
 
         $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES (' . $placeholders . ')';
-        return ($this->query($query, array_values($data)) !== false) ? $this->lastInsertId() : false;
+        return ($this->stmt($query, array_values($data)) !== false) ? $this->lastInsertId() : false;
     }
 
     function insertBatch($rows) {
         $columns = implode(', ', array_keys($rows[0]));
-        $placeholders = implode(', ', array_fill(0, count($rows[0]), '?'));
+        $placeholders = str_repeat('?,', count($rows[0]) - 1) . '?';
         $values = array();
         foreach ($rows as $row) {
             foreach ($row as $value) {
                 $values[] = $value;
             }
         }
-        $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES ' . implode(', ', array_fill(0, count($rows), '(' . $placeholders . ')'));
-        return $this->query($query, $values) !== false;
+        $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES ' . str_repeat('(' . $placeholders . '), ', count($rows) - 1) . '(' . $placeholders . ')';
+        return $this->stmt($query, $values) !== false;
     }
 
     function update($data) {
@@ -119,7 +119,7 @@ class Lib_DatabaseHelper {
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
 
         $query = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->key . ' = ?';
-        return $this->query($query, array_merge(array_values($data), array($id))) !== false;
+        return $this->stmt($query, array_merge(array_values($data), array($id))) !== false;
     }
 
     function updateBatch($rows) {
@@ -153,49 +153,49 @@ class Lib_DatabaseHelper {
         }
 
         $setClause = implode(', ', $setClauses);
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
         $query = 'UPDATE ' . $this->table . ' SET ' . $setClause . ' WHERE ' . $this->key . ' IN (' . $placeholders . ')';
 
         $values = array_merge($values, $ids);
 
-        return $this->query($query, $values) !== false;
+        return $this->stmt($query, $values) !== false;
     }
 
     function delete($id) {
         $query = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->key . ' = ?';
-        return $this->query($query, array($id)) !== false;
+        return $this->stmt($query, array($id)) !== false;
     }
 
     function deleteBatch($ids) {
-        $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
         $query = 'DELETE FROM ' . $this->table . ' WHERE ' . $this->key . ' IN (' . $placeholders . ')';
-        return $this->query($query, $ids) !== false;
+        return $this->stmt($query, $ids) !== false;
     }
 
     function save($data) {
         return isset($data[$this->key]) ? $this->update($data) : $this->insert($data);
     }
 
-    function first($conditions = '', $params = array(), $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
-        $stmt = $this->query($query, $params);
-        return $this->fetch($stmt);
-    }
-
-    function list($conditions = '', $params = array(), $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions;
-        $stmt = $this->query($query, $params);
+    function query($query, $params = array()) {
+        $stmt = $this->stmt($query, $params);
         return $this->fetchAll($stmt);
     }
 
-    function get($query, $params = array()) {
-        $stmt = $this->query($query, $params);
+    function one($conditions = '', $params = array(), $columns = '*') {
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
+        $stmt = $this->stmt($query, $params);
+        return $this->fetch($stmt);
+    }
+
+    function all($conditions = '', $params = array(), $columns = '*') {
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions;
+        $stmt = $this->stmt($query, $params);
         return $this->fetchAll($stmt);
     }
 
     function count($conditions = '', $params = array()) {
         $query = 'SELECT COUNT(*) AS total FROM ' . $this->table . ' ' . $conditions;
-        $stmt = $this->query($query, $params);
+        $stmt = $this->stmt($query, $params);
         $result = $this->fetch($stmt);
 
         return $result ? (int) $result['total'] : 0;
@@ -203,7 +203,7 @@ class Lib_DatabaseHelper {
 
     function exists($conditions, $params = array()) {
         $query = 'SELECT 1 FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
-        $stmt = $this->query($query, $params);
+        $stmt = $this->stmt($query, $params);
         return $this->fetch($stmt) !== false;
     }
 

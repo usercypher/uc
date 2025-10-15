@@ -21,7 +21,7 @@ class Pipe_Book_Home {
             'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'books' => $this->bookRepo->list(),
+            'books' => $this->bookRepo->all(),
         ));
 
         return array($input, $output, $success);

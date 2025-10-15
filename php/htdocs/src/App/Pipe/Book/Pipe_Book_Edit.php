@@ -24,7 +24,7 @@ class Pipe_Book_Edit {
             'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),
-            'book' => $this->bookRepo->first('WHERE id = ?', array($bookId)),
+            'book' => $this->bookRepo->one('WHERE id = ?', array($bookId)),
         ));
 
         return array($input, $output, $success);
