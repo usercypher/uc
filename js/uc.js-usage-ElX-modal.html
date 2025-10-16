@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Modal Demo</title>
-    <link rel="stylesheet" href="uc.css" />
     <script src="uc.js"></script>
     <style>
         body {
@@ -95,8 +94,8 @@
     </div>
     <script>
         (window.init = window.init || []).push(function () {
-            var tagx = new TagX();
-            tagx.register(document.getElementsByTagName("*"), "-login-open:-login-open");
+            var elx = new ElX();
+            elx.register(document.getElementsByTagName("*"), "-login-open:-login-open");
         });
     </script>
 </body>

@@ -6,7 +6,7 @@
  * - Url: easy query/hash manipulation + history sync
  * - Request: XMLHttpRequest wrapper with caching and retry
  * - Response: wraps XHR into clean object
- * - Tag: simple DOM content handling
+ * - El: simple DOM content handling
  **************************************************************/
 
 /**************************************************************
@@ -18,12 +18,12 @@ const size = Utils.strSizeOf("Hello 🌍");
 // Example result: 12
 
 // Convert object to query string
-const queryStr = Utils.objectToQuery({ name: "John", tags: ["js", "dev"] });
-// "name=John&tags[]=js&tags[]=dev"
+const queryStr = Utils.objectToQuery({ name: "John", els: ["js", "dev"] });
+// "name=John&els[]=js&els[]=dev"
 
 // Parse query string into an object
-const obj = Utils.queryToObject("name=John&tags[]=js&tags[]=dev");
-// { name: "John", tags: ["js", "dev"] }
+const obj = Utils.queryToObject("name=John&els[]=js&els[]=dev");
+// { name: "John", els: ["js", "dev"] }
 
 // Debounce a function (run after delay if no more calls)
 const debouncedFn = Utils.debounce(() => console.log("Run"), 300);
@@ -38,7 +38,7 @@ throttledFn.cancel(); // cancel scheduled call
 // run(funcCondition, funcCallback, options)
 // options - {interval: 100, timeout: 5000}
 Utils.run(function () {
-    // usefull to check dependency like return tagx && Utils;
+    // usefull to check dependency like return elx && Utils;
     return true;
 }, function {
     // code
@@ -133,28 +133,34 @@ req.addCallback((request, response) => {
 </script>
 
 /**************************************************************
- * 🧩 Tag – Usage Examples
+ * 🧩 El – Usage Examples
  **************************************************************/
 
-const tag = new Tag("output");
+const el = new El("output");
 
 // Replace content
-tag.set("<p>Hello, world!</p>");
+el.html("<p>Hello, world!</p>");
 
 // Append new HTML (temporarily backed up content)
-tag.append("<div>New content</div>", true);
+el.store().append("<div>New content</div>");
 
 // Restore previous content (when temp was set)
-tag.set("<span>Updated again</span>");
+el.restore().append("<span>Updated again</span>");
 
 // Prepend content
-tag.prepend("<h1>Header</h1>");
+el.prepend("<h1>Header</h1>");
+
+// insert html in before of element, store() & restore() will not affect it
+el.before("<span>before</span>");
+
+// insert html in after of element, store() & restore() will not affect it
+el.after("<span>after</span>");
 
 // Direct DOM access still possible
-tag.tag.addEventListener("click", () => alert("Clicked!"));
+el.el.addEventListener("click", () => alert("Clicked!"));
 
 // remove an element
-new Tag('element').remove();
+new El('element').remove();
 
 /**************************************************************
  * 🚀 Combine All – Practical Flow
@@ -171,8 +177,8 @@ new Url()
   .sync(true);
 
 // Output element
-const output = new Tag("output");
-output.set("<p>Loading...</p>", true);
+const output = new El("output");
+output.html("<p>Loading...</p>", true);
 
 // Create and send a request
 const dataReq = new Request(new XMLHttpRequest());
@@ -182,9 +188,9 @@ dataReq
   .setCacheTTL(60)    // 60s TTL
   .addCallback((req, res) => {
     if (res.code === 200) {
-      output.set(`<pre>${res.content}</pre>`);
+      output.html(`<pre>${res.content}</pre>`);
     } else {
-      output.set(`<p style="color:red;">Error ${res.code}</p>`);
+      output.html(`<p style="color:red;">Error ${res.code}</p>`);
       req.retry().send(apiUrl.toString(), {
         method: "GET",
         headers: { "Accept": "application/json" }
@@ -195,34 +201,3 @@ dataReq
     method: "GET",
     headers: { "Accept": "application/json" }
   });
-
-
-/**************************************************************
- * 🧩 Dui
- **************************************************************/
-
-new Dui().init();
-
-/*
-<body>
-    <!-- Define a variable -->
-    <div data-var-name="John"></div>
-
-    <!-- Bind the variable to an input -->
-    <input type="text" data-bind-name placeholder="Enter name">
-
-    <!-- Show the bound variable elsewhere -->
-    <p>Hello, <span data-bind-name></span>!</p>
-
-    <!-- Button to set the variable -->
-    <button data-set-name="Alice">Set Name to Alice</button>
-
-    <!-- Button to toggle visibility of target element -->
-    <button data-toggle="mybox" data-type="display" data-state="block,none">Toggle Box</button>
-
-    <!-- Target element that gets toggled -->
-    <div data-target="mybox" style="display: block;">This box can be shown or hidden.</div>
-</body>
-
-
-*/

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width  initial-scale=1.0" />
-  <title>TagX – Example Usage</title>
+  <title>ElX – Example Usage</title>
   <script src="uc.js" defer></script>
   <style>
 
@@ -295,18 +295,18 @@ Drawer
   <!-- Load Script -->
   <script>
     (window.init = window.init || []).push(function () {
-        var tagx = new TagX();
-        tagx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
-        // tagx.clean(); // clean dead references
+        var elx = new ElX();
+        elx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
+        // elx.clean(); // clean dead references
     
-        tagx.tap("*", Utils.debounce(function (key, old, current, el) {
+        elx.tap("*", Utils.debounce(function (key, old, current, el) {
             if (key == "qty" || key == "price") {
-                tagx.getRef("total").forEach(el => {
-                    el.innerHTML = (tagx.getVar("qty")) * (tagx.getVar("price"));
+                elx.getRef("total").forEach(el => {
+                    el.innerHTML = (elx.getVar("qty")) * (elx.getVar("price"));
                 });
             }
             if (key == "volume") {
-                tagx.getRef("volume").forEach(el => {
+                elx.getRef("volume").forEach(el => {
                     console.log(el.getAttribute("aria-valuenow"));
                 }); 
             }
