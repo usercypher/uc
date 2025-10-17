@@ -298,19 +298,23 @@ Drawer
         var elx = new ElX();
         elx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
         // elx.clean(); // clean dead references
-    
+
         elx.tap("*", Utils.debounce(function (key, old, current, el) {
             if (key == "qty" || key == "price") {
-                elx.getRef("total").forEach(el => {
-                    el.innerHTML = (elx.getVar("qty")) * (elx.getVar("price"));
+                elx.ref("total").forEach(el => {
+                    el.innerHTML = (elx.vars.qty) * (elx.vars.price);
                 });
             }
-            if (key == "volume") {
-                elx.getRef("volume").forEach(el => {
-                    console.log(el.getAttribute("aria-valuenow"));
-                }); 
-            }
         }, 300));
+        
+        var volume = elx.x("volume"); // easier state management
+    
+        volume.tap(Utils.debounce(function (old, current) {
+            volume.ref().forEach(el => {
+                console.log(el.getAttribute("aria-valuenow"));
+            }); 
+        }, 300));
+
     });    
   </script>
 </body>
