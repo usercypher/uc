@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width  initial-scale=1.0" />
+  <title>ElX – Example Usage</title>
+  <script src="uc.js" defer></script>
+  <style>
+
+
+  </style>
+</head>
+<body style="padding: 1em;">
+
+
+  <!-- Load Script -->
+  <script>
+    (window.init = window.init || []).push(function () {
+        var elx = new ElX();
+        elx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
+
+
+    });    
+  </script>
+</body>
+</html>
