@@ -296,7 +296,7 @@ Drawer
   <script>
     (window.init = window.init || []).push(function () {
         var elx = new ElX();
-        elx.register(document.getElementsByTagName("*"), "tabfirst:tablast");
+        elx.init(document.getElementsByTagName("*"), "tabfirst:tablast");
         // elx.clean(); // clean dead references
 
         elx.tap("*", Utils.debounce(function (key, old, current, el) {

@@ -35,7 +35,7 @@
             window.onload = function() {
                 var isFlash = <?= empty($flash) ? 'false' : 'true' ?>;
                 var elx = new ElX();
-                elx.register(document.getElementsByTagName("*"));
+                elx.init(document.getElementsByTagName("*"));
                 if (isFlash) {
                     elx.run("-flash-open", "x-on-click");
                 }
