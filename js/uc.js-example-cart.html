@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElX – Example Usage</title>
+  <script src="uc.js" defer></script>
+  <style>
+
+
+  </style>
+</head>
+<body style="padding: 1em;">
+    
+    <table width='100%'>
+        <thead>
+            <tr>
+                <th width='25%'>Category</th>
+                <th width='25%'>Product</th>
+                <th class='price' width='15%'>Price</th>
+                <th class='quantity' width='10%'>Quantity</th>
+                <th class='price' width='15%'>Subtotal</th>
+                <th width='10%'> </th>
+            </tr>
+        </thead>
+        <tbody id="lines">
+            
+        </tbody>
+    </table>
+    <p>
+        Total value: <span x-ref-grandtotal>0.00</span>
+    </p>
+    <button x-on-click x-var-addline>Add product</button>
+    <button x-on-click x-var-save>Submit order</button>
+
+    <script type="text/html" id="line-html">
+        <tr x-ref-line-:id>
+            <td>
+                <select 
+                    x-ref-category-:id
+                    x-on-input
+                    x-var-category-:id="this"
+                >:category</select>
+            </td>
+            <td>
+                <select 
+                    x-ref-product-:id
+                    x-on-input
+                    x-var-product-:id="this"
+                >:product</select>
+            </td>
+            <td>
+                <span x-ref-price-:id>:price</span>
+            </td>
+            <td>
+                <input
+                    type="number"
+                    x-ref-qty-:id
+                    x-on-input
+                    x-var-qty-:id="this"
+                    value=":qty"
+                />
+            </td>
+            <td>
+                <span x-ref-subtotal-:id>:subtotal</span>
+            </td>
+            <td>
+                <a x-on-click x-prevent x-var-removeline=":id">Remove</a>
+            </td>
+        </tr>
+    </script>
+
+    <script type="text/html" id="option-html">
+        <option value=":value">
+            :value
+        </option>
+    </script>
+
+    <!-- Load Script -->
+    <script>
+        (window.init = window.init || []).push(function () {
+            var elx = new ElX();
+            elx.init(document.getElementsByTagName("*"), "tabfirst:tablast");
+             
+            function ProductModel(id, name, category, qty, price) {
+                this.id = id;
+                this.name = elx.x("product-" + id, name);
+                this.category = elx.x("category-" + id, category);
+                this.qty = elx.x("qty-" + id, qty);
+                this.price = elx.x("price-" + id, price);
+                this.subtotal = elx.x("subtotal-" + id, qty * price);
+
+                var that = this;
+                this.qty.tap(function () {
+                    that.subtotal.var(that.price.value() * that.qty.value());
+                });
+                this.price.tap(function () {
+                    that.subtotal.var(that.price.value() * that.qty.value());
+                });
+            }
+            
+            function Category(product) {
+                this.tpl = document.getElementById("option-html").innerHTML;
+                this.options = ["Cars", "Planes"];
+            }
+            Category.prototype.yield = function () {
+                var output = "";
+                var that = this;
+                this.options.forEach(function (_) {
+                    output += Utils.strReplace(that.tpl, {
+                        ":value": _
+                    });
+                });
+                return output;
+            }; 
+
+            function Product(product) {
+                this.product = product;
+
+                this.tpl = document.getElementById("option-html").innerHTML;
+                this.options = [
+                    {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
+                    {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
+                    {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
+                    {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
+                ];
+                                
+                var that = this;
+                
+                product.price.tap(function (old, current) {
+                    product.price.val(String(current.toFixed(2)));
+                });
+                
+                product.name.tap(function (old, current) {
+                    that.options.forEach(function (_) {
+                        if (_.name === current) {
+                            product.price.var(_.price);
+                        }
+                    });
+                });
+                
+                product.category.tap(function (old, current) {
+                    var found = false;
+                    that.options.forEach(function (_) {
+                        if (!found && _.category === current) {
+                            product.name.var(_.name);
+                            new El(product.name.ref()[0]).html(that.yield());
+                            found = true;
+                        }
+                    });
+                });
+            }
+            Product.prototype.yield = function () {
+                var output = "";
+                var that = this;
+                this.options.forEach(function (_) {
+                    if (_.category === that.product.category.value()) {
+                        output += Utils.strReplace(that.tpl, {
+                            ":value": _.name
+                        });
+                    }
+                });
+
+                return output;
+            }; 
+
+            function Line(product) {
+                this.product = product;
+                this.categoryComponent = new Category(product);
+                this.productComponent = new Product(product);
+                this.tpl = document.getElementById("line-html").innerHTML;
+
+                var that = this;
+
+                product.subtotal.tap(function (old, current) {
+                    product.subtotal.val(String(current.toFixed(2)));
+                });
+            }
+            Line.prototype.yield = function () {
+                return Utils.strReplace(this.tpl, {
+                    ":category": this.categoryComponent.yield(),
+                    ":product": this.productComponent.yield(),
+                    ":id": this.product.id,
+                    ":price": this.product.price.value().toFixed(2),
+                    ":qty": this.product.qty.value(),
+                    ":subtotal": this.product.subtotal.value().toFixed(2),
+                });
+            }; 
+            
+            function Cart() {
+                this.lines = {};
+                this.id = 0;
+                this.ui = new El("lines");
+                this.total = elx.x("grandtotal");
+                
+                var that = this;
+                that.total.tap(function (old, current) {
+                    that.total.val(String(current.toFixed(2)));
+                });
+                
+                elx.tap("addline", function () {
+                    that.addline();
+                });
+
+                elx.tap("removeline", function (old, current) {
+                    delete that.lines[current];
+                    new El(elx.ref("line-" + current)[0]).remove();
+                    elx.clean();
+                    that.total.var(that.grandtotal());
+                });
+                
+                elx.tap("save", function () {
+                    that.save();
+                });
+            }
+
+            Cart.prototype.addline = function () {
+                var that = this;
+                var product = new ProductModel(this.id, "1948 Porsche 356-A Roadster", "Cars", 1, 53.90);
+                product.subtotal.tap(function () {
+                    that.total.var(that.grandtotal());
+                });
+
+                var line = new Line(product);
+
+                this.lines[this.id] = line;
+                this.ui.append(line.yield());
+                elx.init(this.ui.el.getElementsByTagName("*"));
+
+                this.total.var(this.grandtotal());
+                
+                this.id++;
+            };
+
+            Cart.prototype.save = function () {
+                var products = [];
+                for (var key in this.lines) {
+                    if (!this.lines.hasOwnProperty(key)) continue;
+                    products.push({productName: this.lines[key].product.name.value(), quantity: this.lines[key].product.qty.value()});
+                }
+                alert(JSON.stringify(products));
+            };
+
+            Cart.prototype.grandtotal = function () {
+                var total = 0;
+                for (var key in this.lines) {
+                    if (!this.lines.hasOwnProperty(key)) continue;
+                    total += this.lines[key].product.subtotal.value();
+                }
+                return total;
+            };
+            
+            new Cart();
+            
+        });
+    </script>
+</body>
+</html>

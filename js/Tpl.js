@@ -12,7 +12,7 @@
         for (var i = 0, ilen = elements.length; i < ilen; i++) { els.push(elements[i]); }
         for (var i = els.length - 1; i > -1; i--) {
             var el = els[i];
-            var tpl = el.tpl.getAttribute("__tpl");
+            var tpl = el.getAttribute("__tpl");
             if (!this.tpl.hasOwnProperty(tpl)) continue;
             var data = {"__slot" : el.innerHTML};
             var source = this.tpl[tpl][1];
