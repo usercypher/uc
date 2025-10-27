@@ -34,7 +34,7 @@
     <button x-on-click x-var-save>Submit order</button>
 
     <script type="text/html" id="line-html">
-        <tr x-ref-line-:id>
+        <tr id="line-:id">
             <td>
                 <select 
                     x-ref-category-:id
@@ -99,7 +99,7 @@
                 });
             }
             
-            function Category(product) {
+            function Category() {
                 this.tpl = document.getElementById("option-html").innerHTML;
                 this.options = ["Cars", "Planes"];
             }
@@ -128,7 +128,7 @@
                 var that = this;
                 
                 product.price.tap(function (old, current) {
-                    product.price.val(String(current.toFixed(2)));
+                    product.price.val(current.toFixed(2));
                 });
                 
                 product.name.tap(function (old, current) {
@@ -144,7 +144,9 @@
                     that.options.forEach(function (_) {
                         if (!found && _.category === current) {
                             product.name.var(_.name);
-                            new El(product.name.ref()[0]).html(that.yield());
+                            product.name.ref().forEach(function (_) {
+                                _.innerHTML = that.yield();
+                            });
                             found = true;
                         }
                     });
@@ -166,16 +168,19 @@
 
             function Line(product) {
                 this.product = product;
-                this.categoryComponent = new Category(product);
+                this.categoryComponent = new Category();
                 this.productComponent = new Product(product);
                 this.tpl = document.getElementById("line-html").innerHTML;
 
                 var that = this;
 
                 product.subtotal.tap(function (old, current) {
-                    product.subtotal.val(String(current.toFixed(2)));
+                    product.subtotal.val(current.toFixed(2));
                 });
             }
+            Line.prototype.init = function () {
+                this.ui = new El("line-" + this.product.id);
+            };
             Line.prototype.yield = function () {
                 return Utils.strReplace(this.tpl, {
                     ":category": this.categoryComponent.yield(),
@@ -195,7 +200,7 @@
                 
                 var that = this;
                 that.total.tap(function (old, current) {
-                    that.total.val(String(current.toFixed(2)));
+                    that.total.val(current.toFixed(2));
                 });
                 
                 elx.tap("addline", function () {
@@ -203,10 +208,7 @@
                 });
 
                 elx.tap("removeline", function (old, current) {
-                    delete that.lines[current];
-                    new El(elx.ref("line-" + current)[0]).remove();
-                    elx.clean();
-                    that.total.var(that.grandtotal());
+                    that.removeline(Number(current));
                 });
                 
                 elx.tap("save", function () {
@@ -225,11 +227,20 @@
 
                 this.lines[this.id] = line;
                 this.ui.append(line.yield());
+                
+                line.init();
                 elx.init(this.ui.el.getElementsByTagName("*"));
 
                 this.total.var(this.grandtotal());
                 
                 this.id++;
+            };
+            
+            Cart.prototype.removeline = function (id) {
+                this.lines[id].ui.remove();
+                delete this.lines[id];
+                elx.clean();
+                this.total.var(this.grandtotal());
             };
 
             Cart.prototype.save = function () {
@@ -251,7 +262,7 @@
             };
             
             new Cart();
-            
+
         });
     </script>
 </body>
