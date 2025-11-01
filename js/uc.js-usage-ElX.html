@@ -282,17 +282,15 @@ Drawer
 <h2>Var</h2>
 
 
-<input type="number" x-on-input x-var-price="this" placeholder="price"/>
+<input type="number" x-on-input x-var-price="this" placeholder="price" value="100"/>
 <select x-on-input x-var-qty="this">
     <option value="1">1x</option>
     <option value="2">2x</option>
     <option value="3">3x</option>
 </select>
 
-<p><b x-ref-qty="1" x-ref-price x-ref-total></b></p>
+<p><b x-ref-total></b></p>
 
-
-<div x-ref-ztest></div>
   <!-- Load Script -->
   <script>
     (window.init = window.init || []).push(function () {
@@ -313,7 +311,7 @@ Drawer
                 });
             }
         }, 300));
-        
+
         var volume = ElX.x("volume"); // easier state management
     
         this.volumeContext = ElX.x("volume-context", "");

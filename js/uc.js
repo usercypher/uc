@@ -536,10 +536,11 @@ limitations under the License.
             var el = elements[i];
             for (var j = 0, jlen = el.attributes.length; j < jlen; j++) {
                 var attr = el.attributes[j];
-                if (attr.name.substring(0, 6) === "x-ref-") {
-                    var key = attr.name.substring(6);
-                    var isDuplicate = false;
+                var prefix = attr.name.substring(0, 6);
+                var key = attr.name.substring(6);
+                if (prefix === "x-ref-") {
                     if (!ElX.refs[key]) { ElX.refs[key] = []; }
+                    var isDuplicate = false;
                     for (var k = 0, klen = ElX.refs[key].length; k < klen; k++) {
                         if (ElX.refs[key][k] === el) {
                             isDuplicate = true;
@@ -547,14 +548,7 @@ limitations under the License.
                         }
                     }
                     if (!isDuplicate) { ElX.refs[key].push(el); }
-                    if (!ElX.vars.hasOwnProperty(key)) {
-                        if (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) {
-                            ElX.vars[key] = el.checked.toString();
-                        } else {
-                            ElX.vars[key] = el.value || el.getAttribute(attr.name);
-                        }
-                    }
-                }
+                } else if (prefix === "x-var-" && !ElX.vars[key]) { ElX.vars[key] = attr.value !== "this" ? attr.value : (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : ""); }
             }
             if (tab.length >= 2) {
                 if (el.getAttribute("x-ref-" + tab[0]) !== null) {
@@ -839,7 +833,7 @@ limitations under the License.
     function X(elx, key, value) {
         this.elx = elx;
         this.key = key;
-        this.elx.vars[key] = value;
+        if (value) { this.elx.vars[key] = value; }
     }
     X.prototype.value = function() { return this.elx.vars[this.key]; };
     X.prototype.ref = function() { return this.elx.refs[this.key] || []; };
