@@ -291,31 +291,41 @@ Drawer
 
 <p><b x-ref-qty="1" x-ref-price x-ref-total></b></p>
 
+
+<div x-ref-ztest></div>
   <!-- Load Script -->
   <script>
     (window.init = window.init || []).push(function () {
-        var elx = new ElX();
-        elx.init(document.getElementsByTagName("*"), "tabfirst:tablast");
-        // elx.clean(); // clean dead references
+        ElX.init(document.getElementsByTagName("*"), "tabfirst:tablast");
+        // ElX.clean(); // clean dead references
 
-        elx.tap("*", Utils.debounce(function (key, old, current, el) {
+        ElX.tap("*", Utils.debounce(function (old, current, event, key) {
             if (key == "qty" || key == "price") {
-                elx.ref("total").forEach(el => {
-                    el.innerHTML = (elx.vars.qty) * (elx.vars.price);
+                if (key == "price" && current < 0 && event.target) {
+                    // event.type - base on the x-on-* events
+                    // event.target - element that trigger the event usually from x-var- 
+                    event.target.value = 0;
+                    ElX.vars.price = 0;
+                    return;
+                }
+                ElX.ref("total").forEach(function (el) {
+                    el.innerHTML = (ElX.vars.qty) * (ElX.vars.price);
                 });
             }
         }, 300));
         
-        var volume = elx.x("volume"); // easier state management
+        var volume = ElX.x("volume"); // easier state management
     
+        this.volumeContext = ElX.x("volume-context", "");
+        this.volumeContext.tap(function (old, current) {
+            console.log("volume-context: " + current);
+        });
         volume.tap(Utils.debounce(function (old, current) {
-            volume.ref().forEach(el => {
+            volume.ref().forEach(function (el) {
                 console.log(el.getAttribute("aria-valuenow"));
-            }); 
-        }, 300));
-        
-        
-        
+            });
+            this.volumeContext.var(current); // access context
+        }, 300), this); // can pass context
 
     });    
   </script>

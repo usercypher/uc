@@ -43,6 +43,24 @@ Utils.run(function () {
 }, function {
     // code
 }, { interval: 100, timeout: 5000 });
+
+// Utils.script
+<button onclick="loadFeature()">Load Feature</button>
+
+<script>
+    var retryCount = 0;
+    function loadFeature() {
+        // Utils.script(srcs, successCallback, failureCallback(url, retry))
+        // 'async::' loads the script without blocking and calls successCallback immediately if no next script
+        Utils.script(['async::lib.js', 'feature.js'], function () {
+            initFeature();
+        }, function (url, retry) {
+            if (retryCount < 3) {
+                retry();
+            }
+        });
+    };
+</script>
 /**************************************************************
  * 🔗 Url – Usage Examples
  **************************************************************/
@@ -114,23 +132,6 @@ req.addCallback((request, response) => {
   const headers = response.headers;
   // Do something with response
 });
-
-/**************************************************************
- * 🧩 Script – Usage Examples
- **************************************************************/
-
-<button onclick="loadFeature()">Load Feature</button>
-
-<script>
-    var script = new Script();
-
-    function loadFeature() {
-        // load(srcs, successCallback, failureCallback)
-        script.load(['lib.js', 'feature.js'], function () {
-            initFeature();
-        });
-    };
-</script>
 
 /**************************************************************
  * 🧩 El – Usage Examples

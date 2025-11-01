@@ -77,193 +77,172 @@
     </script>
 
     <!-- Load Script -->
-    <script>
-        (window.init = window.init || []).push(function () {
-            var elx = new ElX();
-            elx.init(document.getElementsByTagName("*"), "tabfirst:tablast");
-             
-            function ProductModel(id, name, category, qty, price) {
-                this.id = id;
-                this.name = elx.x("product-" + id, name);
-                this.category = elx.x("category-" + id, category);
-                this.qty = elx.x("qty-" + id, qty);
-                this.price = elx.x("price-" + id, price);
-                this.subtotal = elx.x("subtotal-" + id, qty * price);
+<script>
+(window.init = window.init || []).push(function () {
+    ElX.init(document.getElementsByTagName("*"), "tabfirst:tablast");
+     
+    function ProductModel(id, name, category, qty, price) {
+        this.id = id;
+        this.name = ElX.x("product-" + id, name);
+        this.category = ElX.x("category-" + id, category);
+        this.qty = ElX.x("qty-" + id, qty);
+        this.price = ElX.x("price-" + id, price);
+        this.subtotal = ElX.x("subtotal-" + id, qty * price);
 
-                var that = this;
-                this.qty.tap(function () {
-                    that.subtotal.var(that.price.value() * that.qty.value());
-                });
-                this.price.tap(function () {
-                    that.subtotal.var(that.price.value() * that.qty.value());
-                });
-            }
-            
-            function Category() {
-                this.tpl = document.getElementById("option-html").innerHTML;
-                this.options = ["Cars", "Planes"];
-            }
-            Category.prototype.yield = function () {
-                var output = "";
-                var that = this;
-                this.options.forEach(function (_) {
-                    output += Utils.strReplace(that.tpl, {
-                        ":value": _
-                    });
-                });
-                return output;
-            }; 
-
-            function Product(product) {
-                this.product = product;
-
-                this.tpl = document.getElementById("option-html").innerHTML;
-                this.options = [
-                    {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
-                    {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
-                    {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
-                    {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
-                ];
-                                
-                var that = this;
-                
-                product.price.tap(function (old, current) {
-                    product.price.val(current.toFixed(2));
-                });
-                
-                product.name.tap(function (old, current) {
-                    that.options.forEach(function (_) {
-                        if (_.name === current) {
-                            product.price.var(_.price);
-                        }
-                    });
-                });
-                
-                product.category.tap(function (old, current) {
-                    var found = false;
-                    that.options.forEach(function (_) {
-                        if (!found && _.category === current) {
-                            product.name.var(_.name);
-                            product.name.ref().forEach(function (_) {
-                                _.innerHTML = that.yield();
-                            });
-                            found = true;
-                        }
-                    });
-                });
-            }
-            Product.prototype.yield = function () {
-                var output = "";
-                var that = this;
-                this.options.forEach(function (_) {
-                    if (_.category === that.product.category.value()) {
-                        output += Utils.strReplace(that.tpl, {
-                            ":value": _.name
-                        });
-                    }
-                });
-
-                return output;
-            }; 
-
-            function Line(product) {
-                this.product = product;
-                this.categoryComponent = new Category();
-                this.productComponent = new Product(product);
-                this.tpl = document.getElementById("line-html").innerHTML;
-
-                var that = this;
-
-                product.subtotal.tap(function (old, current) {
-                    product.subtotal.val(current.toFixed(2));
-                });
-            }
-            Line.prototype.init = function () {
-                this.ui = new El("line-" + this.product.id);
-            };
-            Line.prototype.yield = function () {
-                return Utils.strReplace(this.tpl, {
-                    ":category": this.categoryComponent.yield(),
-                    ":product": this.productComponent.yield(),
-                    ":id": this.product.id,
-                    ":price": this.product.price.value().toFixed(2),
-                    ":qty": this.product.qty.value(),
-                    ":subtotal": this.product.subtotal.value().toFixed(2),
-                });
-            }; 
-            
-            function Cart() {
-                this.lines = {};
-                this.id = 0;
-                this.ui = new El("lines");
-                this.total = elx.x("grandtotal");
-                
-                var that = this;
-                that.total.tap(function (old, current) {
-                    that.total.val(current.toFixed(2));
-                });
-                
-                elx.tap("addline", function () {
-                    that.addline();
-                });
-
-                elx.tap("removeline", function (old, current) {
-                    that.removeline(Number(current));
-                });
-                
-                elx.tap("save", function () {
-                    that.save();
-                });
-            }
-
-            Cart.prototype.addline = function () {
-                var that = this;
-                var product = new ProductModel(this.id, "1948 Porsche 356-A Roadster", "Cars", 1, 53.90);
-                product.subtotal.tap(function () {
-                    that.total.var(that.grandtotal());
-                });
-
-                var line = new Line(product);
-
-                this.lines[this.id] = line;
-                this.ui.append(line.yield());
-                
-                line.init();
-                elx.init(this.ui.el.getElementsByTagName("*"));
-
-                this.total.var(this.grandtotal());
-                
-                this.id++;
-            };
-            
-            Cart.prototype.removeline = function (id) {
-                this.lines[id].ui.remove();
-                delete this.lines[id];
-                elx.clean();
-                this.total.var(this.grandtotal());
-            };
-
-            Cart.prototype.save = function () {
-                var products = [];
-                for (var key in this.lines) {
-                    if (!this.lines.hasOwnProperty(key)) continue;
-                    products.push({productName: this.lines[key].product.name.value(), quantity: this.lines[key].product.qty.value()});
-                }
-                alert(JSON.stringify(products));
-            };
-
-            Cart.prototype.grandtotal = function () {
-                var total = 0;
-                for (var key in this.lines) {
-                    if (!this.lines.hasOwnProperty(key)) continue;
-                    total += this.lines[key].product.subtotal.value();
-                }
-                return total;
-            };
-            
-            new Cart();
-
+        this.qty.tap(ProductModel.prototype.subtotalCalc, this);
+        this.price.tap(ProductModel.prototype.subtotalCalc, this);
+    }    
+    ProductModel.prototype.subtotalCalc = function () {
+        this.subtotal.var(this.price.value() * this.qty.value());
+    };
+    
+    function Category() {
+        this.tpl = document.getElementById("option-html").innerHTML;
+        this.options = ["Cars", "Planes"];
+    }
+    Category.prototype.yield = function () {
+        var output = "";
+        var that = this;
+        this.options.forEach(function (opt) {
+            output += Utils.strReplace(that.tpl, { ":value": opt });
         });
-    </script>
+        return output;
+    };
+
+    function Product(product) {
+        this.product = product;
+        this.tpl = document.getElementById("option-html").innerHTML;
+        this.options = [
+            {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
+            {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
+            {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
+            {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
+        ];
+
+        product.price.tap(Product.prototype.priceVal, this);
+        product.name.tap(Product.prototype.updatePrice, this);
+        product.category.tap(Product.prototype.updateName, this);
+    }
+    Product.prototype.priceVal = function (old, current) {
+        this.product.price.val(current.toFixed(2));
+    };
+    Product.prototype.updatePrice = function (old, current) {
+        var that = this;
+        this.options.forEach(function (opt) {
+            if (opt.name === current) that.product.price.var(opt.price);
+        });
+    };
+    Product.prototype.updateName = function (old, current) {
+        var that = this;
+        var found = false;
+        this.options.forEach(function (opt) {
+            if (!found && opt.category === current) {
+                that.product.name.var(opt.name);
+                that.product.name.ref().forEach(function (el) {
+                    el.innerHTML = that.yield();
+                });
+                found = true;
+            }
+        });
+    };
+    Product.prototype.yield = function () {
+        var output = "";
+        var that = this;
+        this.options.forEach(function (opt) {
+            if (opt.category === that.product.category.value()) {
+                output += Utils.strReplace(that.tpl, { ":value": opt.name });
+            }
+        });
+        return output;
+    };
+
+    function Line(product) {
+        this.product = product;
+        this.categoryComponent = new Category();
+        this.productComponent = new Product(product);
+        this.tpl = document.getElementById("line-html").innerHTML;
+
+        this.product.subtotal.tap(Line.prototype.subtotalVal, this);
+    }
+    Line.prototype.init = function () {
+        this.ui = new El("line-" + this.product.id);
+    };
+    Line.prototype.subtotalVal = function (old, current) {
+        this.product.subtotal.val(current.toFixed(2));
+    };
+    Line.prototype.yield = function () {
+        return Utils.strReplace(this.tpl, {
+            ":category": this.categoryComponent.yield(),
+            ":product": this.productComponent.yield(),
+            ":id": this.product.id,
+            ":price": this.product.price.value().toFixed(2),
+            ":qty": this.product.qty.value(),
+            ":subtotal": this.product.subtotal.value().toFixed(2)
+        });
+    };
+
+    function Cart() {
+        this.lines = {};
+        this.id = 0;
+        this.ui = new El("lines");
+        this.grandtotal = ElX.x("grandtotal");
+
+        this.grandtotal.tap(Cart.prototype.grandtotalVal, this);
+
+        ElX.tap("addline", Cart.prototype.addline, this);
+        ElX.tap("removeline", Cart.prototype.removeline, this);
+        ElX.tap("save", Cart.prototype.save, this);
+    }
+    Cart.prototype.addline = function () {
+        var product = new ProductModel(this.id, "1948 Porsche 356-A Roadster", "Cars", 1, 53.90);
+
+        product.subtotal.tap(Cart.prototype.grandtotalCalc, this);
+
+        var line = new Line(product);
+
+        this.lines[this.id] = line;
+        this.ui.append(line.yield());
+
+        line.init();
+        ElX.init(this.ui.el.getElementsByTagName("*"));
+
+        this.grandtotalCalc();
+        this.id++;
+    };
+    Cart.prototype.removeline = function (old, current) {
+        var id = Number(current);
+        this.lines[id].ui.remove();
+        delete this.lines[id];
+        ElX.clean();
+        this.grandtotalCalc();
+    };
+    Cart.prototype.save = function () {
+        var products = [];
+        for (var key in this.lines) {
+            if (!this.lines.hasOwnProperty(key)) continue;
+            products.push({
+                productName: this.lines[key].product.name.value(),
+                quantity: this.lines[key].product.qty.value()
+            });
+        }
+        alert(JSON.stringify(products));
+    };
+    Cart.prototype.grandtotalVal = function (old, current) {
+        this.grandtotal.val(current.toFixed(2));
+    };
+    Cart.prototype.grandtotalCalc = function () {
+        var grandtotal = 0;
+        for (var key in this.lines) {
+            if (!this.lines.hasOwnProperty(key)) continue;
+            grandtotal += this.lines[key].product.subtotal.value();
+        }
+        this.grandtotal.var(grandtotal);
+    };
+
+    new Cart();
+    
+});
+</script>
+
 </body>
 </html>

@@ -34,10 +34,9 @@
         (window.init = window.init || []).push(function () {
             window.onload = function() {
                 var isFlash = <?= empty($flash) ? 'false' : 'true' ?>;
-                var elx = new ElX();
-                elx.init(document.getElementsByTagName("*"));
+                ElX.init(document.getElementsByTagName("*"));
                 if (isFlash) {
-                    elx.run("-flash-open", "x-on-click");
+                    ElX.run("-flash-open", "x-on-click");
                 }
             };
         })();
