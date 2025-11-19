@@ -14,18 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-* {
+*, *:before, *:after {
     border: 0;
     margin: 0;
     padding: 0;
 
     box-sizing: border-box;
-}
-
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden;
 }
 
 html {
@@ -148,6 +142,7 @@ q {
 q:before {
     content: '"';
 }
+
 q:after {
     content: '"';
 }
@@ -155,7 +150,6 @@ q:after {
 table {
     border-collapse: collapse;
     margin-bottom: 1em;
-    width: 100%;
 }
 
 th, td {

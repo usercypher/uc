@@ -172,7 +172,7 @@ class Output {
 class App {
     var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
     var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
-    var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array(), $pathListCache = array();
+    var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array();
 
     // Application Setup
 
@@ -484,12 +484,11 @@ class App {
 
                     if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
 
-                    $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
+                    $pathListIndex = array_search($path, $this->pathList);
                     if ($pathListIndex === false) {
                         $pathListIndex = $this->pathListIndex;
                         $this->pathList[$this->pathListIndex] = $path;
                         ++$this->pathListIndex;
-                        $this->pathListCache[$path] = $pathListIndex;
                     }
 
                     $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), array(), false);
