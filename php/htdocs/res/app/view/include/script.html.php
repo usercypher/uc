@@ -41,6 +41,3 @@
             };
         })();
     </script>
-
-    <hr>
-    <?php require($app->dirRoot('res/uc/view/include/performance.html.php')); ?>

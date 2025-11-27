@@ -29,7 +29,7 @@ $books = $data['books'];
     <!-- Display books here -->
     <?php foreach ($books as $i => $book) : ?>
 
-    <div class="block">
+    <div>
         <h3><?php echo $output->htmlEncode($book['title']); ?></h3>
         <p><strong>Author:</strong> <?php echo $output->htmlEncode($book['author']); ?></p>
         <p><strong>Publisher:</strong> <?php echo $output->htmlEncode($book['publisher']); ?></p>
@@ -57,6 +57,7 @@ $books = $data['books'];
             </button>
         </div>
     </div>
+    <hr>
     <?php endforeach; ?>
 
     <div class="modal hidden" x-ref--book-delete x-on-click x-run--book-delete-close="x-on-click">
@@ -75,5 +76,6 @@ $books = $data['books'];
     </div>
 
     <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>
+    <?php require($app->dirRoot('res/uc/view/include/performance.html.php')); ?>
 </body>
 </html>

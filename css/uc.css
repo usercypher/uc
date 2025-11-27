@@ -232,7 +232,7 @@ legend {
 
 iframe {
     border: 1px solid #ccc;
-    width: 100%;
+    max-width: 100%;
 }
 
 img {

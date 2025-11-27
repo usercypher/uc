@@ -49,9 +49,7 @@ $csrfToken = $data['csrf_token'];
                 <input type="date" name="book[year]">
             </p>
 
-            <hr>
-
-            <input type="submit" value="Create">      
+            <button>Create</button>
         </fieldset>
     </form>
     <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>

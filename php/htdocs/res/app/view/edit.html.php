@@ -52,9 +52,7 @@ $book = $data['book'];
                 <input type="date" name="book[year]" value="<?php echo($output->htmlEncode($book['year'])); ?>">
             </p>
 
-            <hr>
-
-            <input type="submit" value="Update">
+            <button>Update</button>
         </fieldset>
     </form>
     <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>
