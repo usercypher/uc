@@ -47,7 +47,7 @@ function index($coreFile, $coreConfigFile, $appStateFile) {
             $output->headers['set-cookie'][] = 'php_exec_time_ms=' . number_format((microtime(true) - SCRIPT_START_TIME) * 1000, 2) . '; Max-Age=3600; Path=/';
             $output->headers['set-cookie'][] = 'php_memory_usage_kb=' . number_format((memory_get_usage() - SCRIPT_START_MEMORY) / 1024, 2) . '; Max-Age=3600; Path=/';
 
-            $output->http($output->content);
+            return $output->http($output->content);
         default:
             echo('Unknown input source:' . $input->source);
     }
