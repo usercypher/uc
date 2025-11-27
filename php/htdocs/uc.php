@@ -76,7 +76,7 @@ function input_cli($in) {
             } else {
                 $in->flags[substr($arg, 2)] = true;
             }
-        } elseif (substr($arg, 0, 1) !== '-') {
+        } else {
             $in->positional[] = $arg;
         }
     }
@@ -129,7 +129,7 @@ class Input {
 class Output {
     var $headers = array(), $content = '', $code = 200, $type = 'text/html';
 
-    function http() {
+    function http($content) {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
             if (!isset($this->headers['content-type'])) header('content-type: ' . $this->type);
@@ -144,12 +144,14 @@ class Output {
 
         if (!isset($this->headers['location'])) {
             ob_clean();
-            echo $this->content;
+            echo $content;
+            ob_flush();
+            flush();
         }
     }
 
-    function std($msg, $err = false) {
-        fwrite($err ? STDERR : STDOUT, $msg);
+    function std($content, $err = false) {
+        fwrite($err ? STDERR : STDOUT, $content);
     }
 
     function html($file, $data) {
@@ -244,7 +246,7 @@ class App {
     // Error Management
 
     function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
-        if (ob_get_level() > 0) ob_clean();
+        ob_clean();
 
         if ($this->ENV['DEBUG']) {
             echo($errstr);
@@ -272,8 +274,8 @@ class App {
 
             foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
- 
-        if ($type !== null && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
+
+        if (isset($type) && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
             $data = array('app' => $this, 'code' => $code, 'error' => $content);
             ob_start();
             include($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type]);
@@ -620,7 +622,7 @@ class App {
     // Utility Functions
 
     function clear($property) {
-        unset($this-> {$property});
+        unset($this->{$property});
     }
 
     function dir($s) {
