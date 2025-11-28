@@ -12,7 +12,7 @@ function compile($coreFile, $coreConfigFile, $appStateFile) {
     $app = new App();
     $app->init();
 
-    require($app->dirRoot($coreConfigFile));
+    require($coreConfigFile);
 
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
