@@ -245,15 +245,15 @@ class App {
 
     // Error Management
 
-    function error($errno, $errstr, $errfile, $errline, $return = false, $exception = false, $trace = array()) {
+    function error($errno, $errstr, $errfile, $errline, $errtrace = array(), $exit = true) {
+        if (!(error_reporting() & $errno)) return;
+
         ob_clean();
 
         if ($this->ENV['DEBUG']) {
             echo($errstr);
             return;
         }
-
-        if (!(error_reporting() & $errno)) return;
 
         $type = http_negotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
         $code = 500;
@@ -272,7 +272,7 @@ class App {
         if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
             $content = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
 
-            foreach (array_merge(debug_backtrace(), $trace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
+            foreach (array_merge(debug_backtrace(), $errtrace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
 
         if (isset($type) && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
@@ -285,8 +285,6 @@ class App {
             $code = 406;
         }
 
-        if ($return) return array('code' => $code, 'type' => $type, 'content' => $content);
-
         if (SAPI === 'cli') {
             fwrite(STDERR, $content);
         } else {
@@ -297,7 +295,7 @@ class App {
             echo($content);
         }
 
-        if (!$exception) exit($code > 255 ? 1 : $code);
+        if ($exit) exit($code > 255 ? 1 : $code);
     }
 
     // Route Management
