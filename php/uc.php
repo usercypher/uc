@@ -28,10 +28,9 @@ if (strpos(strtolower(PHP_OS), 'win') !== false) {
     define('EOL', "\n");
 }
 
-function d($var, $detailed = false, $exit = false) {
+function d($var, $detailed = false) {
     if (SAPI !== 'cli' && !headers_sent()) header('Content-Type: text/plain');
     $detailed ? var_dump($var) : print_r($var);
-    if ($exit) exit;
 }
 
 function input_http($in) {
@@ -192,6 +191,7 @@ class App {
         $this->ENV['URL_WEB'] = '/';
 
         $this->ENV['ERROR_TEMPLATES'] = array();
+        $this->ENV['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
         $this->ENV['ERROR_LOG_FILE'] = 'error';
         $this->ENV['SHOW_ERRORS'] = false;
         $this->ENV['LOG_ERRORS'] = true;
@@ -245,14 +245,14 @@ class App {
 
     // Error Management
 
-    function error($errno, $errstr, $errfile, $errline, $errtrace = array(), $exit = true) {
-        if (!(error_reporting() & $errno)) return;
+    function error($errno, $errstr, $errfile, $errline, $errcontext = array()) {
+        if (!($errno & error_reporting())) return true;
 
         ob_clean();
 
         if ($this->ENV['DEBUG']) {
             echo($errstr);
-            return;
+            return true;
         }
 
         $type = http_negotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
@@ -269,10 +269,12 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
 
+        if ($errno & $this->ENV['ERROR_NON_FATAL']) return true;
+
         if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
             $content = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
 
-            foreach (array_merge(debug_backtrace(), $errtrace) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
+            foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
 
         if (isset($type) && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
@@ -295,7 +297,9 @@ class App {
             echo($content);
         }
 
-        if ($exit) exit($code > 255 ? 1 : $code);
+        if (isset($errcontext['ERROR_RETURN'])) return true;
+
+        exit($code > 255 ? 1 : $code);
     }
 
     // Route Management

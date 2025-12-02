@@ -14,12 +14,19 @@ class Lib_Exception {
     }
 
     public function errorThrow($errno, $errstr, $errfile, $errline) {
-        if (!(error_reporting() & $errno)) return;
+        if ($errno & $this->app->getEnv('ERROR_NON_FATAL')) {
+            return $this->app->error($errno, $errstr, $errfile, $errline, array(
+                'ERROR_RETURN' => true
+            ));
+        }
         throw new ErrorException($errstr, 500, $errno, $errfile, $errline);
     }
 
     public function exception($e) {
-        $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), false);
+        $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
+            'ERROR_TRACE' => $e->getTrace(),
+            'ERROR_RETURN' => true,
+        ));
     }
 
     public function shutdown() {
