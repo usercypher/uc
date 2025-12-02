@@ -220,7 +220,6 @@ class App {
         }
 
         $type = $this->httpNegotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
-        if ($type === null) $type = 'text/plain';
         $code = 500;
         $content = '';
 
@@ -242,7 +241,7 @@ class App {
             foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
 
-        if (file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
+        if (isset($type) && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $content));
         }
 
@@ -251,7 +250,7 @@ class App {
         } else {
             if (!headers_sent()) {
                 header('HTTP/1.1 ' . $code);
-                header('content-type: ' . $type);
+                header('content-type: ' . (isset($type) ? $type : 'text/plain'));
             }
             echo($content);
         }
