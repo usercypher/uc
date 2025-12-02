@@ -15,31 +15,28 @@ $httpMap = array(
     500 => array('Internal Server Error', '500', 'An unexpected error occurred. Please try again later.')
 );
 
-list($head_title, $title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap[500];
+list($title, $httpCode, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap[500];
 
 ?>
 
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $head_title; ?></title>
+    <title><?php echo $title; ?></title>
     <style>
-        * {box-sizing: border-box;}
         html {font-size: 16px;}
-        body {font-family: Arial, sans-serif; padding: 0; margin: 0;}
-        div {word-wrap: break-word; padding: 3em; text-align: center;}
-        h1 {font-size: 4em; color: #e74c3c; font-weight: 900;}
-        p {font-size: 1em; line-height: 1.6;}
-        a {color: #3498db; text-decoration: none;}
+        body {font-family: Arial, sans-serif; margin: 1em;}
+        h1 {font-size: 2.7em; font-weight: 500; margin-top: 1em;}
+        p {line-height: 1.6;}
+        a {text-decoration: none;}
         a:hover {text-decoration: underline;}
         pre {white-space: pre; overflow-x: auto; text-align: left;}
     </style>
 </head>
 <body>
-    <div>
-        <h1><?php echo $title; ?></h1>
-        <p><?php echo $description; ?> <a href="<?php echo $app->urlRoute(''); ?>">GO BACK</a></p>
-        <pre><?php echo $app->getEnv('SHOW_ERRORS') ? htmlspecialchars($error) : ''; ?></pre>
-    </div>
+    <h1><?php echo $title; ?></h1>
+    <p><b><?php echo $httpCode; ?>.</b> <?php echo $description; ?> <a href="<?php echo $app->urlRoute(''); ?>">Go to homepage</a></p>
+    <pre><?php echo $app->htmlEncode($error); ?></pre>
 </body>
 </html>

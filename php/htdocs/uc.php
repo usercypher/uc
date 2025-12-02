@@ -83,36 +83,11 @@ function input_cli($in) {
     return $in;
 }
 
-function http_negotiate($accept, $offers) {
-    $prefs = array();
-    foreach (explode(',', $accept) as $type) {
-        $parts = explode(';', trim($type));
-        $aType = trim(array_shift($parts));
-
-        $q = 1.0;
-        foreach ($parts as $p) {
-            $p = explode('=', trim($p));
-            if (isset($p[1]) && strtolower(trim($p[0])) === 'q') $q = (float)trim($p[1]);
-        }
-        if ($q > 0) $prefs[$aType] = $q;
-    }
-    arsort($prefs);
-    foreach (array_keys($prefs) as $p) {
-        foreach ($offers as $o) {
-            if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) return $o;
-        }
-    }
-}
-
 class Input {
     var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array(), $positional = array(), $options = array(), $flags = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
-    }
-
-    function httpNegotiate($accept, $offers) {
-        return http_negotiate($accept, $offers);
     }
 
     function std($mark = '', $eol = "\n") {
@@ -151,17 +126,6 @@ class Output {
 
     function std($content, $err = false) {
         fwrite($err ? STDERR : STDOUT, $content);
-    }
-
-    function html($file, $data) {
-        $this->type = 'text/html';
-        ob_start();
-        require($file);
-        $this->content = ob_get_clean();
-    }
-
-    function htmlEncode($s) {
-        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
     }
 
     function redirect($url, $code = 302) {
@@ -255,7 +219,8 @@ class App {
             return true;
         }
 
-        $type = http_negotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
+        $type = $this->httpNegotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
+        if ($type === null) $type = 'text/plain';
         $code = 500;
         $content = '';
 
@@ -277,14 +242,8 @@ class App {
             foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
         }
 
-        if (isset($type) && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
-            $data = array('app' => $this, 'code' => $code, 'error' => $content);
-            ob_start();
-            include($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type]);
-            $content = ob_get_clean();
-        } else if (SAPI !== 'cli') {
-            $type = 'text/plain';
-            $code = 406;
+        if (file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
+            $content = $this->template($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $content));
         }
 
         if (SAPI === 'cli') {
@@ -651,6 +610,37 @@ class App {
 
     function strSlug($s) {
         return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($s)), '-');
+    }
+
+    function template($file, $data = array()) {
+        ob_start();
+        require($file);
+        return ob_get_clean();
+    }
+
+    function htmlEncode($s) {
+        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
+    }
+
+    function httpNegotiate($accept, $offers) {
+        $prefs = array();
+        foreach (explode(',', $accept) as $type) {
+            $parts = explode(';', trim($type));
+            $aType = trim(array_shift($parts));
+    
+            $q = 1.0;
+            foreach ($parts as $p) {
+                $p = explode('=', trim($p));
+                if (isset($p[1]) && strtolower(trim($p[0])) === 'q') $q = (float)trim($p[1]);
+            }
+            if ($q > 0) $prefs[$aType] = $q;
+        }
+        arsort($prefs);
+        foreach (array_keys($prefs) as $p) {
+            foreach ($offers as $o) {
+                if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) return $o;
+            }
+        }
     }
 
     function write($file, $string, $append = false) {

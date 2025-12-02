@@ -28,28 +28,28 @@ $book = $data['book'];
         <fieldset>
             <legend>Book Information</legend>
 
-            <input type="hidden" name="csrf_token" value="<?php echo $output->htmlEncode($csrfToken); ?>">
-            <input type="hidden" name="book[id]" value="<?php echo($output->htmlEncode($book['id'])); ?>">
-            <input type="hidden" name="book[title][current]" value="<?php echo($output->htmlEncode($book['title'])); ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo $app->htmlEncode($csrfToken); ?>">
+            <input type="hidden" name="book[id]" value="<?php echo($app->htmlEncode($book['id'])); ?>">
+            <input type="hidden" name="book[title][current]" value="<?php echo($app->htmlEncode($book['title'])); ?>">
 
             <label>Title:</label>
             <p>
-                <input type="text" name="book[title][new]" value="<?php echo($output->htmlEncode($book['title'])); ?>" required>
+                <input type="text" name="book[title][new]" value="<?php echo($app->htmlEncode($book['title'])); ?>" required>
             </p>
 
             <label>Author:</label>
             <p>
-                <input type="text" name="book[author]" value="<?php echo($output->htmlEncode($book['author'])); ?>">
+                <input type="text" name="book[author]" value="<?php echo($app->htmlEncode($book['author'])); ?>">
             </p>
 
             <label>Publisher:</label>
             <p>
-                <input type="text" name="book[publisher]" value="<?php echo($output->htmlEncode($book['publisher'])); ?>">
+                <input type="text" name="book[publisher]" value="<?php echo($app->htmlEncode($book['publisher'])); ?>">
             </p>
 
             <label>Year:</label>
             <p>
-                <input type="date" name="book[year]" value="<?php echo($output->htmlEncode($book['year'])); ?>">
+                <input type="date" name="book[year]" value="<?php echo($app->htmlEncode($book['year'])); ?>">
             </p>
 
             <button>Update</button>

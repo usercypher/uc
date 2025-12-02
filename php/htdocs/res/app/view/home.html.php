@@ -30,10 +30,10 @@ $books = $data['books'];
     <?php foreach ($books as $i => $book) : ?>
 
     <div>
-        <h3><?php echo $output->htmlEncode($book['title']); ?></h3>
-        <p><strong>Author:</strong> <?php echo $output->htmlEncode($book['author']); ?></p>
-        <p><strong>Publisher:</strong> <?php echo $output->htmlEncode($book['publisher']); ?></p>
-        <p><strong>Year:</strong> <?php echo $output->htmlEncode($book['year']); ?></p>
+        <h3><?php echo $app->htmlEncode($book['title']); ?></h3>
+        <p><strong>Author:</strong> <?php echo $app->htmlEncode($book['author']); ?></p>
+        <p><strong>Publisher:</strong> <?php echo $app->htmlEncode($book['publisher']); ?></p>
+        <p><strong>Year:</strong> <?php echo $app->htmlEncode($book['year']); ?></p>
 
         <!-- Actions (Edit & Delete) -->
         <div class="actions">
@@ -50,8 +50,8 @@ $books = $data['books'];
                 x-set-window.x-on-key-window-escape="-book-delete-close"
                 x-set-window.x-run--book-delete-close="x-on-click"
                 x-set--book-delete-close.x-focus="-book-delete-open-<?= $i ?>"
-                x-val-book_id="<?= $output->htmlEncode($book['id']) ?>"
-                x-val-book_title="<?= $output->htmlEncode($book['title']) ?>"
+                x-val-book_id="<?= $app->htmlEncode($book['id']) ?>"
+                x-val-book_title="<?= $app->htmlEncode($book['title']) ?>"
             >
                 Delete
             </button>
@@ -66,7 +66,7 @@ $books = $data['books'];
             <h2>Delete</h2>
             <p>Do you want to delete book "<span x-ref-book_title></span>"?</p>
             <form method="POST" action="<?php echo $app->urlRoute('book/delete?redirect=:redirect', array(':redirect' => $currentRoute)); ?>">
-                <input type="hidden" name="csrf_token" value="<?= $output->htmlEncode($csrfToken) ?>"/>
+                <input type="hidden" name="csrf_token" value="<?= $app->htmlEncode($csrfToken) ?>"/>
                 <input type="hidden" name="book[id]" value="" required x-ref-book_id>
 
                 <button type="submit" class="button negative" x-ref--book-delete-tab-first>Delete</button>
