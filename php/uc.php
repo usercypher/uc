@@ -91,7 +91,7 @@ class Input {
     }
 
     function std($mark = '', $eol = "\n") {
-        if ($mark === '' && ($line = fgets(STDIN))) return $line ? rtrim($line) : '';
+        if ($mark === '') return (($line = fgets(STDIN)) !== false) ? rtrim($line) : '';
 
         $lines = array();
         while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) $lines[] = $line;
