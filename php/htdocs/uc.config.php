@@ -10,7 +10,7 @@ function extension($app) {
 function settings() {
     return array(
         'mode' => array(
-            'index.php' => 'dev',
+            'index.php' => 'prod',
             'compile.php' => 'dev',
         ),
         'env' => array(

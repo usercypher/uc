@@ -4,6 +4,7 @@ $app = $data['app'];
 $code = $data['code'];
 $error = $data['error'];
 
-echo $app->getEnv('SHOW_ERRORS') ? $error : 'An unexpected error occurred. Please try again later.' . EOL;
+echo 'An unexpected error occurred. Please try again later.' . "\n\n";
+echo $error;
 
 ?>

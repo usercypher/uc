@@ -157,8 +157,8 @@ class App {
         $this->ENV['ERROR_TEMPLATES'] = array();
         $this->ENV['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
         $this->ENV['ERROR_LOG_FILE'] = 'error';
-        $this->ENV['SHOW_ERRORS'] = false;
-        $this->ENV['LOG_ERRORS'] = true;
+        $this->ENV['SHOW_ERRORS'] = true;
+        $this->ENV['LOG_ERRORS'] = false;
 
         $this->ENV['LOG_SIZE_LIMIT_MB'] = 5;
         $this->ENV['LOG_CLEANUP_INTERVAL_DAYS'] = 1;
@@ -219,30 +219,36 @@ class App {
             return true;
         }
 
-        $type = $this->httpNegotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
         $code = 500;
-        $content = '';
-
         $parts = explode('|', $errstr, 2);
         if (is_numeric($parts[0])) {
             $code = (int) $parts[0];
             $errstr = $parts[1];
         }
 
-        $code = SAPI === 'cli' && $code > 255 ? 1 : $code;
+        if (SAPI === 'cli' && $code > 255) $code = 1;
 
-        if ($this->ENV['LOG_ERRORS']) $this->log('[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline, $this->ENV['ERROR_LOG_FILE']);
+        $error = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline;
+
+        if ($this->ENV['LOG_ERRORS']) $this->log($error, $this->ENV['ERROR_LOG_FILE']);
 
         if ($errno & $this->ENV['ERROR_NON_FATAL']) return true;
 
-        if ($this->ENV['SHOW_ERRORS'] || SAPI === 'cli') {
-            $content = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in '. $errfile . ':' . $errline . "\n\n" . 'Stack trace: ' . "\n";
+        if ($this->ENV['SHOW_ERRORS']) {
+            $error .= "\n\n" . 'Stack trace: ' . "\n";
 
-            foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) $content .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
+            foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) $error .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . ((isset($frame['line']) ? $frame['line'] : 'no line')) . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
+        } else {
+            $error = '';
         }
 
-        if (isset($type) && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
-            $content = $this->template($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $content));
+        $content = '';
+        $type = $this->httpNegotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
+        if ($type && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
+            $content = $this->template($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
+        } else {
+            $type = 'text/plain';
+            $content = 'An unexpected error occurred.' . "\n\n" . $error;
         }
 
         if (SAPI === 'cli') {
@@ -250,7 +256,7 @@ class App {
         } else {
             if (!headers_sent()) {
                 header('HTTP/1.1 ' . $code);
-                header('content-type: ' . (isset($type) ? $type : 'text/plain'));
+                header('content-type: ' . $type);
             }
             echo($content);
         }
