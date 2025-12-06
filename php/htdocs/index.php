@@ -30,16 +30,16 @@ function index($coreFile, $coreConfigFile, $appStateFile) {
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
-    $app->setEnv('ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
-
-    $app = extension($app);
+    $app->setEnv('ERROR_ACCEPT', strtolower($input->getFrom($input->headers, 'accept', '')));
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;
 
+    extension($app, $input, $output);
+
     $output = $app->dispatch($input, $output);
 
-    switch ($input->source) {
+        switch ($input->source) {
         case 'cli':
             $output->std($output->content, $output->code > 0);
             exit($output->code);

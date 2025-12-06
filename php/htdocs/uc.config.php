@@ -1,10 +1,8 @@
 <?php
 
-function extension($app) {
-    $exception = $app->loadClass('Lib_Exception');
-    $exception->init();
-
-    return $app;
+function extension($app, $input, $output) {
+    $exception = $app->loadClass('Lib_Error');
+    $exception->init($app, $input, $output);
 }
 
 function settings() {

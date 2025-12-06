@@ -24,11 +24,6 @@ $app->setUnit('Lib_GoogleApiGmail', array(
     'cache' => true
 ));
 
-$app->setUnit('Lib_Exception', array(
-    'args' => array('App'),
-    'cache' => true
-));
-
 /**
  * ------------------------------------------------------------------------
  * Pipe

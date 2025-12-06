@@ -4,7 +4,6 @@ $app = $data['app'];
 $code = $data['code'];
 $error = $data['error'];
 
-echo 'An unexpected error occurred. Please try again later.' . "\n\n";
-echo $error;
+echo $code . '. An unexpected error occurred.' . "\n\n" . $error;
 
 ?>

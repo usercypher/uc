@@ -142,8 +142,6 @@ class App {
     // Application Setup
 
     function init() {
-        $this->ENV['DEBUG'] = false;
-
         $this->ENV['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
         $this->ENV['DIR_WEB'] = '';
         $this->ENV['DIR_LOG'] = '';
@@ -170,7 +168,7 @@ class App {
         $this->unitListIndex = 1;
         $this->cache['App'] = array($this, true);
 
-        set_error_handler(array($this, 'error'));
+        set_error_handler(array($this, 'errorDefault'));
     }
 
     function setEnv($key, $value) {
@@ -195,6 +193,10 @@ class App {
         }
     }
 
+    function getIni($key) {
+        return ini_get($key);
+    }
+
     // Config Management
 
     function save($file) {
@@ -209,15 +211,26 @@ class App {
 
     // Error Management
 
-    function error($errno, $errstr, $errfile, $errline, $errcontext = array()) {
-        if (!($errno & error_reporting())) return true;
+    function errorDefault($errno, $errstr, $errfile, $errline) {
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('ERROR_ACCEPT' => $this->getEnv('ERROR_ACCEPT', '')));
 
-        ob_clean();
+        if (!$e) return true;
 
-        if ($this->ENV['DEBUG']) {
-            echo($errstr);
-            return true;
+        if (SAPI === 'cli') {
+            fwrite(STDERR, $e['content']);
+        } else {
+            if (!headers_sent()) {
+                header('HTTP/1.1 ' . $e['code']);
+                header('content-type: ' . $e['type']);
+            }
+            echo($e['content']);
         }
+
+        exit($e['code'] > 255 ? 1 : $e['code']);
+    }
+
+    function error($errno, $errstr, $errfile, $errline, $errcontext = array()) {
+        if (!($errno & error_reporting())) return array();
 
         $code = 500;
         $parts = explode('|', $errstr, 2);
@@ -232,7 +245,7 @@ class App {
 
         if ($this->ENV['LOG_ERRORS']) $this->log($error, $this->ENV['ERROR_LOG_FILE']);
 
-        if ($errno & $this->ENV['ERROR_NON_FATAL']) return true;
+        if ($errno & $this->ENV['ERROR_NON_FATAL']) return array();
 
         if ($this->ENV['SHOW_ERRORS']) {
             $error .= "\n\n" . 'Stack trace: ' . "\n";
@@ -243,27 +256,15 @@ class App {
         }
 
         $content = '';
-        $type = $this->httpNegotiate($this->getEnv('ACCEPT', ''), array_keys($this->ENV['ERROR_TEMPLATES']));
+        $type = $this->httpNegotiate(isset($errcontext['ERROR_ACCEPT']) ? $errcontext['ERROR_ACCEPT'] : '', array_keys($this->ENV['ERROR_TEMPLATES']));
         if ($type && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
             $type = 'text/plain';
-            $content = 'An unexpected error occurred.' . "\n\n" . $error;
+            $content = $code . '. An unexpected error occurred.' . "\n\n" . $error;
         }
 
-        if (SAPI === 'cli') {
-            fwrite(STDERR, $content);
-        } else {
-            if (!headers_sent()) {
-                header('HTTP/1.1 ' . $code);
-                header('content-type: ' . $type);
-            }
-            echo($content);
-        }
-
-        if (isset($errcontext['ERROR_RETURN'])) return true;
-
-        exit($code > 255 ? 1 : $code);
+        return array('content' => $content, 'code' => $code, 'type' => $type);
     }
 
     // Route Management

@@ -76,6 +76,5 @@ $books = $data['books'];
     </div>
 
     <?php require($app->dirRoot('res/app/view/include/script.html.php')); ?>
-    <?php require($app->dirRoot('res/uc/view/include/performance.html.php')); ?>
 </body>
 </html>
