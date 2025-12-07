@@ -16,7 +16,6 @@ limitations under the License.
 */
 
 while (ob_get_level() > 0) ob_end_clean();
-ob_start();
 
 define('SAPI', php_sapi_name());
 
@@ -117,9 +116,7 @@ class Output {
         }
 
         if (!isset($this->headers['location'])) {
-            ob_clean();
-            echo $content;
-            ob_flush();
+            echo($content);
             flush();
         }
     }
