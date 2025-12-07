@@ -175,22 +175,12 @@ class App {
         $this->ENV[$key] = $value;
     }
 
-    function setEnvs($env) {
-        foreach ($env as $key => $value) $this->ENV[$key] = $value;
-    }
-
     function getEnv($key, $default = null) {
         return isset($this->ENV[$key]) ? $this->ENV[$key] : $default;
     }
 
     function setIni($key, $value) {
         if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
-    }
-
-    function setInis($ini) {
-        foreach ($ini as $key => $value) {
-            if (ini_set($key, $value) === false) $this->log('Failed to set ini setting: ' . $key, $this->ENV['ERROR_LOG_FILE']);
-        }
     }
 
     function getIni($key) {

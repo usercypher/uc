@@ -16,8 +16,14 @@ function compile($coreFile, $coreConfigFile, $appStateFile) {
 
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
-    $app->setInis($settings['ini'][$mode]);
-    $app->setEnvs($settings['env'][$mode]);
+
+    foreach ($settings['ini'][$mode] as $key => $value) {
+        $app->setIni($key, $value);
+    }
+
+    foreach ($settings['env'][$mode] as $key => $value) {
+        $app->setEnv($key, $value);
+    }
 
     require('config/scan.php');
 
