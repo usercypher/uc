@@ -45,7 +45,7 @@ function index($coreFile, $coreConfigFile, $appStateFile) {
 
     $output = $app->dispatch($input, $output);
 
-        switch ($input->source) {
+    switch ($input->source) {
         case 'cli':
             $output->std($output->content, $output->code > 0);
             exit($output->code);

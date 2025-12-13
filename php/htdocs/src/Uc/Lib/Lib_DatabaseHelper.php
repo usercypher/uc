@@ -2,9 +2,10 @@
 
 class Lib_DatabaseHelper {
     var $messages = array();
-    var $conn, $table, $key;
+    var $db, $conn, $table, $key;
 
-    function setConn($conn) {
+    function setDb($db, $conn = '_') {
+        $this->db = $db;
         $this->conn = $conn;
     }
 
@@ -22,63 +23,35 @@ class Lib_DatabaseHelper {
     }
 
     function begin() {
-        return $this->conn->beginTransaction();
+        return $this->db->begin($this->conn);
     }
 
     function commit() {
-        return $this->conn->commit();
+        return $this->db->commit($this->conn);
     }
 
     function rollback() {
-        return $this->conn->rollBack();
+        return $this->db->rollback($this->conn);
     }
 
     function lastInsertId() {
-        return $this->conn->lastInsertId();
+        return $this->db->lastInsertId($this->conn);
     }
 
     function execute($query) {
-        return $this->conn->exec($query);
+        return $this->db->execute($query, $this->conn);
     }
 
     function stmt($query, $params) {
-        $stmt = $this->conn->prepare($query);
-        if (!$stmt) {
-            $error = $this->conn->errorInfo();
-            trigger_error('500|Prepare failed: ' . $error[2]);
-            return false;
-        }
-
-        $typeMap = array(
-            'boolean' => PDO::PARAM_BOOL,
-            'integer' => PDO::PARAM_INT,
-            'null' => PDO::PARAM_NULL,
-            'resource' => PDO::PARAM_LOB,
-        );
-
-        $i = 1;
-
-        foreach ($params as $value) {
-            $type = strtolower(gettype($value));
-            $type = isset($typeMap[$type]) ? $typeMap[$type] : PDO::PARAM_STR;
-            $stmt->bindValue($i++, $value, $type);
-        }
-
-        if (!$stmt->execute()) {
-            $error = $stmt->errorInfo();
-            trigger_error('500|Execute failed: ' . $error[2]);
-            return false;
-        }
-
-        return $stmt;
+        return $this->db->stmt($query, $params, $this->conn);
     }
 
     function fetch($stmt) {
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->db->fetch($stmt);
     }
 
     function fetchAll($stmt) {
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->db->fetchAll($stmt);
     }
 
     function create($definition, $return = false) {
@@ -142,7 +115,7 @@ class Lib_DatabaseHelper {
             $caseClause = array();
             foreach ($rows as $row) {
                 if (!isset($row[$column])) {
-                    trigger_error('500|Execute failed: Missing column "' . $column . '" in some rows.');
+                    trigger_error('500|Execute failed: Missing column "' . $column . '" in some rows.', E_USER_WARNING);
                     return false;
                 }
                 $caseClause[] = 'WHEN ? THEN ?';

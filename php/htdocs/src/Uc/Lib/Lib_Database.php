@@ -33,5 +33,67 @@ class Lib_Database {
     function hasConnection($key = '_') {
         return isset($this->conn[$key]);
     }
+
+    // db operations
+
+    function begin($key = '_') {
+        return $this->conn[$key]->beginTransaction();
+    }
+
+    function commit($key = '_') {
+        return $this->conn[$key]->commit();
+    }
+
+    function rollback($key = '_') {
+        return $this->conn[$key]->rollBack();
+    }
+
+    function lastInsertId($key = '_') {
+        return $this->conn[$key]->lastInsertId();
+    }
+
+    function execute($query, $key = '_') {
+        return $this->conn[$key]->exec($query);
+    }
+
+    function stmt($query, $params, $key = '_') {
+        $stmt = $this->conn[$key]->prepare($query);
+        if (!$stmt) {
+            $error = $this->conn[$key]->errorInfo();
+            trigger_error('500|Prepare failed: ' . $error[2], E_USER_WARNING);
+            return false;
+        }
+
+        $typeMap = array(
+            'boolean' => PDO::PARAM_BOOL,
+            'integer' => PDO::PARAM_INT,
+            'null' => PDO::PARAM_NULL,
+            'resource' => PDO::PARAM_LOB,
+        );
+
+        $i = 1;
+
+        foreach ($params as $value) {
+            $type = strtolower(gettype($value));
+            $type = isset($typeMap[$type]) ? $typeMap[$type] : PDO::PARAM_STR;
+            $stmt->bindValue($i++, $value, $type);
+        }
+
+        if (!$stmt->execute()) {
+            $error = $stmt->errorInfo();
+            trigger_error('500|Execute failed: ' . $error[2], E_USER_WARNING);
+            return false;
+        }
+
+        return $stmt;
+    }
+
+    function fetch($stmt) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    function fetchAll($stmt) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>

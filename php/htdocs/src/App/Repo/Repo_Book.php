@@ -7,14 +7,16 @@ class Repo_Book extends Lib_DatabaseHelper {
             $database
         ) = $args;
 
-        parent::setConn($database->connect([
+        $database->connect([
             'host' => $app->getEnv('DB_HOST'), 
             'port' => $app->getEnv('DB_PORT'),
             'name' => $app->getEnv('DB_NAME'),
             'user' => $app->getEnv('DB_USER'),
             'pass' => $app->getEnv('DB_PASS'),
             'time' => $app->getEnv('DB_TIME', '+00:00')
-        ]));
+        ]);
+
+        parent::setDb($database);
         parent::setTable('books');
     }
 

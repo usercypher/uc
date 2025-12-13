@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-while (ob_get_level() > 0) ob_end_clean();
+while (ob_get_level()) ob_end_clean();
 
 define('SAPI', php_sapi_name());
 
