@@ -80,6 +80,10 @@
 <script>
 (window.init = window.init || []).push(function () {
     ElX.init(document.getElementsByTagName("*"), "tabfirst:tablast");
+
+    var categoryTpl = document.getElementById("option-html").innerHTML;
+    var productTpl = document.getElementById("option-html").innerHTML;
+    var lineTpl = document.getElementById("line-html").innerHTML;
      
     function ProductModel(id, name, category, qty, price) {
         this.id = id;
@@ -96,46 +100,53 @@
         this.subtotal.var(this.price.value() * this.qty.value());
     };
     
-    function Category() {
-        this.tpl = document.getElementById("option-html").innerHTML;
-        this.options = ["Cars", "Planes"];
-    }
+    function Category() {}
+    Category.prototype.tpl = function () {
+        return categoryTpl;
+    };
+    Category.prototype.options = function () {
+        return ["Cars", "Planes"];
+    };
     Category.prototype.yield = function () {
         var output = "";
         var that = this;
-        this.options.forEach(function (opt) {
-            output += Utils.strReplace(that.tpl, { ":value": opt });
+        this.options().forEach(function (opt) {
+            output += Utils.strReplace(that.tpl(), { ":value": opt });
         });
         return output;
     };
 
     function Product(product) {
         this.product = product;
-        this.tpl = document.getElementById("option-html").innerHTML;
-        this.options = [
-            {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
-            {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
-            {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
-            {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
-        ];
 
         product.price.tap(Product.prototype.priceVal, this);
         product.name.tap(Product.prototype.updatePrice, this);
         product.category.tap(Product.prototype.updateName, this);
     }
+    Product.prototype.tpl = function () {
+        return productTpl;
+    };
+    Product.prototype.options = function () {
+        return [
+            {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
+            {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
+            {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
+            {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
+        ];
+    };
     Product.prototype.priceVal = function (old, current) {
         this.product.price.val(current.toFixed(2));
     };
     Product.prototype.updatePrice = function (old, current) {
         var that = this;
-        this.options.forEach(function (opt) {
+        this.options().forEach(function (opt) {
             if (opt.name === current) that.product.price.var(opt.price);
         });
     };
     Product.prototype.updateName = function (old, current) {
         var that = this;
         var found = false;
-        this.options.forEach(function (opt) {
+        this.options().forEach(function (opt) {
             if (!found && opt.category === current) {
                 that.product.name.var(opt.name);
                 that.product.name.ref().forEach(function (el) {
@@ -148,9 +159,9 @@
     Product.prototype.yield = function () {
         var output = "";
         var that = this;
-        this.options.forEach(function (opt) {
+        this.options().forEach(function (opt) {
             if (opt.category === that.product.category.value()) {
-                output += Utils.strReplace(that.tpl, { ":value": opt.name });
+                output += Utils.strReplace(that.tpl(), { ":value": opt.name });
             }
         });
         return output;
@@ -160,10 +171,12 @@
         this.product = product;
         this.categoryComponent = new Category();
         this.productComponent = new Product(product);
-        this.tpl = document.getElementById("line-html").innerHTML;
 
         this.product.subtotal.tap(Line.prototype.subtotalVal, this);
     }
+    Line.prototype.tpl = function () {
+        return lineTpl;
+    };
     Line.prototype.init = function () {
         this.ui = new El("line-" + this.product.id);
     };
@@ -171,7 +184,7 @@
         this.product.subtotal.val(current.toFixed(2));
     };
     Line.prototype.yield = function () {
-        return Utils.strReplace(this.tpl, {
+        return Utils.strReplace(this.tpl(), {
             ":category": this.categoryComponent.yield(),
             ":product": this.productComponent.yield(),
             ":id": this.product.id,
