@@ -1,7 +1,6 @@
 <?php 
 
 $app = $data['app'];
-$output = $data['output'];
 $currentRoute = $data['current_route'];
 
 $flash = isset($data['flash']) ? $data['flash'] : array();
@@ -30,11 +29,11 @@ $book = $data['book'];
 
             <input type="hidden" name="csrf_token" value="<?php echo $app->htmlEncode($csrfToken); ?>">
             <input type="hidden" name="book[id]" value="<?php echo($app->htmlEncode($book['id'])); ?>">
-            <input type="hidden" name="book[title][current]" value="<?php echo($app->htmlEncode($book['title'])); ?>">
+            <input type="hidden" name="book_old[title]" value="<?php echo($app->htmlEncode($book['title'])); ?>">
 
             <label>Title:</label>
             <p>
-                <input type="text" name="book[title][new]" value="<?php echo($app->htmlEncode($book['title'])); ?>" required>
+                <input type="text" name="book[title]" value="<?php echo($app->htmlEncode($book['title'])); ?>" required>
             </p>
 
             <label>Author:</label>

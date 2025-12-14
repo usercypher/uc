@@ -1,7 +1,6 @@
 <?php 
 
 $app = $data['app'];
-$output = $data['output'];
 $currentRoute = $data['current_route'];
 
 $flash = isset($data['flash']) ? $data['flash'] : array();

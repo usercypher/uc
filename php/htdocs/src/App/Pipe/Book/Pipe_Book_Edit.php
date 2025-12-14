@@ -20,7 +20,6 @@ class Pipe_Book_Edit {
 
         $output->content = $this->app->template($this->app->dirRoot('res/app/view/edit.html.php'), array(
             'app' => $this->app,
-            'output' => $output,
             'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),
             'csrf_token' => $this->session->get('csrf_token'),

@@ -14,7 +14,7 @@ class Pipe_CsrfValidate {
         $success = true;
 
         if (!isset($input->parsed['csrf_token'])) {
-            $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));
+            $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid csrf token')
             ));
@@ -24,7 +24,7 @@ class Pipe_CsrfValidate {
         $csrfToken = $this->session->unset('csrf_token');
 
         if (!$csrfToken) {
-            $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));
+            $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid csrf token')
             ));
@@ -32,7 +32,7 @@ class Pipe_CsrfValidate {
         }
 
         if ($input->parsed['csrf_token'] != $csrfToken) {
-            $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));
+            $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid csrf token')
             ));

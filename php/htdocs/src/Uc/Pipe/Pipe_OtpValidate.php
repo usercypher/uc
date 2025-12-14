@@ -14,25 +14,25 @@ class Pipe_OtpValidate {
         $success = true;
 
         if (!isset($input->parsed['otp_token'])) {
-            $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));
+            $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid otp token')
             ));
             $success = false;
         }
 
-        $csrfToken = $this->session->get('otp_token');
+        $otpToken = $this->session->get('otp_token');
 
-        if (!$csrfToken) {
-            $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));
+        if (!$otpToken) {
+            $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid otp token')
             ));
             $success = false;
         }
 
-        if ($input->parsed['otp_token'] != $csrfToken) {
-            $output->redirect($this->app->urlRoute($input->getFrom($input->query, 'redirect', 'home')));
+        if ($input->parsed['otp_token'] != $otpToken) {
+            $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid otp token')
             ));

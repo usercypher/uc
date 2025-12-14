@@ -22,6 +22,7 @@ class Repo_Book extends Lib_DatabaseHelper {
 
     public function validateAndInsert($data) {
         $bookData = $data['book'];
+
         if ($this->exists('WHERE title = ?', array($bookData['title']))) {
             $this->addMessage('error', 'Title Already Exists.');
             return false;
@@ -36,19 +37,14 @@ class Repo_Book extends Lib_DatabaseHelper {
 
     public function validateAndUpdate($data) {
         $bookData = $data['book'];
-        if ($this->exists('WHERE title = ?', array($bookData['title']['new'])) && $bookData['title']['current'] !== $bookData['title']['new']) {
+        $bookOldData = $data['book_old'];
+
+        if ($this->exists('WHERE title = ?', array($bookData['title'])) && $bookOldData['title'] !== $bookData['title']) {
             $this->addMessage('error', 'Title Already Exists.');
             return false;
         }
 
-        $book = $this->one('WHERE id = ?', array($bookData['id']));
-
-        $book['title'] = $bookData['title']['new'];
-        $book['author'] = $bookData['author'];
-        $book['publisher'] = $bookData['publisher'];
-        $book['year'] = $bookData['year'];
-
-        $this->update($book);
+        $this->update($bookData);
 
         $this->addMessage('success', 'Book updated successfully.');
 
