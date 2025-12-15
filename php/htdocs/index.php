@@ -3,13 +3,12 @@
 // Uncomment to generate 'var/compiled/app.state' or run 'php compile.php' on terminal.
 //require('compile.php');  // Generates config and exits script
 
-require('uc.php');
-require('uc.config.php');
-
 function index() {
+    require('uc.php');
     $app = new App();
     $app->init();
 
+    require('uc.config.php');
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
 
@@ -21,8 +20,6 @@ function index() {
         $app->setEnv($key, $value);
     }
 
-    $app->load('var/compiled/app.state');
-
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
@@ -30,6 +27,8 @@ function index() {
 
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;
+
+    $app->load('var/compiled/app.state');
 
     extension($app, $input, $output);
 

@@ -1,12 +1,11 @@
 <?php
 
-require('uc.php');
-require('uc.config.php');
-
 function compile() {
+    require('uc.php');
     $app = new App();
     $app->init();
 
+    require('uc.config.php');
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
 
