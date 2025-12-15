@@ -13,7 +13,8 @@ class Pipe_Cli_Route_Help {
         $message .= 'Usage: php [file] route [option]' . EOL;
         $message .= 'Options:' . EOL;
         $message .= '  print    Show all defined routes' . EOL;
-        $message .= '  resolve  Simulate resolving a request using --type=[value] and --path=[value]' . EOL;
+        $message .= '  resolve  Simulate resolving a request using --method=[value] and --route=[value]' . EOL;
+        $message .= '  run      run a request using --method=[value], --route=[value], --header=[value], --content=[value] and --query=[value]' . EOL;
         $output->content = $message;
         $output->code = 1;
 

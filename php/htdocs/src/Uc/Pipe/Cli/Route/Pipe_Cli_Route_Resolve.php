@@ -16,19 +16,19 @@ class Pipe_Cli_Route_Resolve {
 
         $message = '';
 
-        $type = $input->getFrom($input->options, 'type');
-        $path = $input->getFrom($input->options, 'path');
+        $method = $input->getFrom($input->options, 'method', 'GET');
+        $route = $input->getFrom($input->options, 'route');
 
-        if ($type === null || $path === null) {
+        if ($route === null) {
             $message .= 'Error: Missing required parameters.' . EOL;
-            $message .= 'Usage: --type=GET|POST --path=/route/path' . EOL;
+            $message .= 'Usage: --route=/route/path' . EOL;
             $output->content = $message;
             $output->code = 1;
             $success = false;
             return array($input, $output, $success);
         }
 
-        $result = $this->app->resolveRoute($type, $path);
+        $result = $this->app->resolveRoute($method, $route);
 
         if (isset($result['error'])) {
             $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
@@ -38,8 +38,8 @@ class Pipe_Cli_Route_Resolve {
         }
 
         $message .= 'RESOLVED ROUTE' . EOL;
-        $message .= '  Method : ' . $type . EOL;
-        $message .= '  Path   : ' . $path . EOL;
+        $message .= '  Method : ' . $method . EOL;
+        $message .= '  Route  : ' . $route . EOL;
 
         $message .= '  Pipe   :' . EOL;
         foreach ($result['pipe'] as $i => $index) {

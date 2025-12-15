@@ -1,8 +1,12 @@
 <?php
 
 function extension($app, $input, $output) {
-    $exception = $app->loadClass('Lib_Error');
-    $exception->init($app, $input, $output);
+    $error = $app->loadClass('Lib_Error');
+    $error->init($app, $input, $output);
+
+    $session = $app->loadClass('Lib_Session');
+    $session->name('SESSION_ID');
+    $session->start();
 }
 
 function settings() {

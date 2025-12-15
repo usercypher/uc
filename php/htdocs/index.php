@@ -1,24 +1,14 @@
 <?php
 
-// Uncomment to generate configuration or run compile script.
+// Uncomment to generate 'var/compiled/app.state' or run 'php compile.php' on terminal.
 //require('compile.php');  // Generates config and exits script
 
-define('SCRIPT_START_TIME', microtime(true));
-define('SCRIPT_START_MEMORY', memory_get_usage());
+require('uc.php');
+require('uc.config.php');
 
-index(
-    'uc.php',
-    'uc.config.php',
-    'var/compiled/app.state'
-);
-
-function index($coreFile, $coreConfigFile, $appStateFile) {
-    require($coreFile);
-
+function index() {
     $app = new App();
     $app->init();
-
-    require($coreConfigFile);
 
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
@@ -31,7 +21,7 @@ function index($coreFile, $coreConfigFile, $appStateFile) {
         $app->setEnv($key, $value);
     }
 
-    $app->load($appStateFile);
+    $app->load('var/compiled/app.state');
 
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
@@ -50,11 +40,10 @@ function index($coreFile, $coreConfigFile, $appStateFile) {
             $output->std($output->content, $output->code > 0);
             exit($output->code);
         case 'http':
-            $output->headers['set-cookie'][] = 'php_exec_time_ms=' . number_format((microtime(true) - SCRIPT_START_TIME) * 1000, 2) . '; Max-Age=3600; Path=/';
-            $output->headers['set-cookie'][] = 'php_memory_usage_kb=' . number_format((memory_get_usage() - SCRIPT_START_MEMORY) / 1024, 2) . '; Max-Age=3600; Path=/';
-
             return $output->http($output->content);
         default:
             echo('Unknown input source:' . $input->source);
     }
 }
+
+index();

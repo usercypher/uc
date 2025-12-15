@@ -36,6 +36,10 @@ $app->groupRoute($group, '', 'route/resolve/::*:', array(
     'pipe' => array('Pipe_Cli_Route_Resolve'),
 ));
 
+$app->groupRoute($group, '', 'route/run/::*:', array(
+    'pipe' => array('Pipe_Cli_Route_Run'),
+));
+
 /**
  * ------------------------------------------------------------------------
  * pipe

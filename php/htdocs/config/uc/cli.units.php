@@ -14,3 +14,4 @@ $app->groupUnit($group, 'Pipe_Cli_Help');
 $app->groupUnit($group, 'Pipe_Cli_Pipe_Create');
 $app->groupUnit($group, 'Pipe_Cli_Route_Print');
 $app->groupUnit($group, 'Pipe_Cli_Route_Resolve');
+$app->groupUnit($group, 'Pipe_Cli_Route_Run');

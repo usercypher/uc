@@ -1,10 +1,6 @@
 <?php
 
 class Lib_Session {
-    function __construct() {
-        $this->start();
-    }
-
     function set($key, $value) {
         $_SESSION[$key] = $value;
     }
@@ -45,5 +41,9 @@ class Lib_Session {
 
     function id() {
         return session_id();
+    }
+
+    function name($name) {
+        session_name($name);
     }
 }

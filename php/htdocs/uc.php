@@ -318,7 +318,7 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) === ':') {
+                if ($key && $key[0] === ':') {
                     list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
                     if ($paramModifier === '*') {
                         $params[$paramName] = array_slice($routeSegments, $index);
@@ -345,7 +345,7 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if (substr($key, 0, 1) === ':') {
+                if ($key && $key[0] === ':') {
                     list($none, $paramName, $paramModifier) = explode(':', $key, 4);
                     if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
                         $current = $value;
@@ -379,20 +379,12 @@ class App {
 
     function dispatch($input, $output) {
         if (SAPI === 'cli') {
+            $input->route = '';
             foreach ($input->positional as $positional) $input->route .= '/' . urlencode($positional);
-            if (isset($input->flags['request'])) {
-                foreach ((isset($input->options['header']) ? explode("\n", $input->options['header']) : array()) as $header) {
-                    list($k, $v) = explode(':', $header, 2);
-                    $input->headers[strtolower(trim($k))] = trim($v);
-                }
-                $input->content = isset($input->options['content']) ? $input->options['content'] : '';
-                $input->method = isset($input->options['method']) ? $input->options['method'] : 'GET';
-                if (isset($input->options['query'])) parse_str($input->options['query'], $input->query);
-            }
         } elseif ($this->ENV['ROUTE_REWRITE']) {
             $pos = strpos($input->uri, '?');
             $input->route = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
-        } elseif (isset($input->query['route']) && $input->query['route'] !== '') {
+        } elseif (isset($input->query['route']) && $input->query['route']) {
             $input->route = ($input->query['route'][0] === '/' ? '' : '/') . $input->query['route'];
         }
 

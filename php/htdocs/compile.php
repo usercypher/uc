@@ -1,18 +1,11 @@
 <?php
 
-compile(
-    'uc.php',
-    'uc.config.php',
-    'var/compiled/app.state'
-);
+require('uc.php');
+require('uc.config.php');
 
-function compile($coreFile, $coreConfigFile, $appStateFile) {
-    require($coreFile);
-
+function compile() {
     $app = new App();
     $app->init();
-
-    require($coreConfigFile);
 
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
@@ -27,7 +20,7 @@ function compile($coreFile, $coreConfigFile, $appStateFile) {
 
     require('config/scan.php');
 
-    if ($files = glob($app->getEnv('DIR_ROOT') . 'config/*/*.units.php')) {
+    if ($files = glob($app->dirRoot('config/*/*.units.php'))) {
         foreach ($files as $file) {
             require($file);
         }
@@ -35,13 +28,15 @@ function compile($coreFile, $coreConfigFile, $appStateFile) {
 
     require('config/pipes.php');
 
-    if ($files = glob($app->getEnv('DIR_ROOT') . 'config/*/*.routes.php')) {
+    if ($files = glob($app->dirRoot('config/*/*.routes.php'))) {
         foreach ($files as $file) {
             require($file);
         }
     }
 
-    $app->save($appStateFile);
+    $app->save('var/compiled/app.state');
 
-    exit;
+    exit(0);
 }
+
+compile();
