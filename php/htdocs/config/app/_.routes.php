@@ -9,6 +9,7 @@
 // GET
 // ==========
 $group = array(
+    'pipe_prepend' => array('Pipe_CsrfGenerate'),
     'pipe_append' => array('Pipe_OutputCompression')
 );
 
@@ -41,8 +42,7 @@ $app->groupRoute($group, 'GET', 'edit/:id::[0-9]+', array(
 // POST
 // ==========
 $group = array(
-    'pipe_prepend' => array('Pipe_CsrfValidate'),
-    'ignore' => array('Pipe_CsrfGenerate')
+    'pipe_prepend' => array('Pipe_CsrfValidate')
 );
 
 $app->groupRoute($group, 'POST', 'book/store', array(

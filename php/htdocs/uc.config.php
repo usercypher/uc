@@ -1,15 +1,6 @@
 <?php
 
-function extension($app, $input, $output) {
-    $error = $app->loadClass('Lib_Error');
-    $error->init($app, $input, $output);
-
-    $session = $app->loadClass('Lib_Session');
-    $session->name('SESSION_ID');
-    $session->start();
-}
-
-function settings() {
+function config() {
     return array(
         'mode' => array(
             'index.php' => 'dev',

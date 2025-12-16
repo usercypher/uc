@@ -8,7 +8,7 @@
  * Handles dynamic CLI piping through optional route params.
  */
 $group = array(
-    'ignore' => array('--global')
+
 );
 
 $app->groupRoute($group, '', ':on-unknown-route:*:', array(
@@ -21,7 +21,7 @@ $app->groupRoute($group, '', ':on-unknown-route:*:', array(
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'ignore' => array('--global')
+
 );
 
 $app->groupRoute($group, '', 'route/:on-unknown-option:*:', array(
@@ -46,7 +46,7 @@ $app->groupRoute($group, '', 'route/run/::*:', array(
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'ignore' => array('--global')
+
 );
 
 $app->groupRoute($group, '', 'pipe/:on-unknown-option:*:', array(
@@ -64,7 +64,7 @@ $app->groupRoute($group, '', 'pipe/create/:class:?:/::*:', array(
  * ------------------------------------------------------------------------
  */
 $group = array(
-    'ignore' => array('--global')
+
 );
 
 $app->groupRoute($group, '', 'file/:on-unknown-option:*:', array(

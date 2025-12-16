@@ -1,16 +1,24 @@
 <?php
 
-class Lib_Error {
-    private $app, $input, $output;
+class Pipe_ErrorHandler {
+    private $app;
+    private $input, $output;
 
-    public function init($app, $input, $output) {
-        $this->app = $app;
+    public function args($args) {
+        list(
+            $this->app, 
+        ) = $args;
+    } 
+
+    public function process($input, $output) {
         $this->input = $input;
         $this->output = $output;
 
         set_error_handler(array($this, 'error'));
         set_exception_handler(array($this, 'exception'));
         register_shutdown_function(array($this, 'shutdown'));
+
+        return array($input, $output, true);
     }
 
     public function error($errno, $errstr, $errfile, $errline) {

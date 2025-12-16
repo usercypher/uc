@@ -291,7 +291,7 @@ class App {
     }
 
     function resolveRoute($method, $route) {
-        if (!isset($this->routes[$method])) return array('http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $route);
+        if (!isset($this->routes[$method])) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'http' => 405, 'error' => 'Method not allowed: ' . $method . ' ' . $route);
 
         $current = $this->routes[$method];
         $params = array();
@@ -302,13 +302,13 @@ class App {
 
         foreach ($routeSegments as $index => $routeSegment) {
             if ($routeSegment === '' && !(!$foundSegment && $last === $index)) {
-                if (++$emptySegmentsCount > 20) return array('http' => 400, 'error' => 'Empty route segments exceeded limit (20): ' . $route);
+                if (++$emptySegmentsCount > 20) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'http' => 400, 'error' => 'Empty route segments exceeded limit (20): ' . $route);
                 continue;
             }
 
             $foundSegment = true;
 
-            if (strlen($routeSegment) > 255) return array('http' => 400, 'error' => 'Route segment too long (max 255 chars): ' . $routeSegment);
+            if (strlen($routeSegment) > 255) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'http' => 400, 'error' => 'Route segment too long (max 255 chars): ' . $routeSegment);
 
             if (isset($current[$routeSegment])) {
                 $current = $current[$routeSegment];
@@ -338,7 +338,7 @@ class App {
                 }
             }
 
-            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
+            if (!$matched) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
         }
 
         while (!isset($current[$this->ROUTE_HANDLER])) {
@@ -355,10 +355,10 @@ class App {
                 }
             }
 
-            if (!$matched) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
+            if (!$matched) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
         }
 
-        if (!isset($current[$this->ROUTE_HANDLER])) return array('http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
+        if (!isset($current[$this->ROUTE_HANDLER])) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'http' => 404, 'error' => 'Route not found: ' . $method . ' ' . $route);
 
         $finalPipes = array();
 
@@ -390,14 +390,14 @@ class App {
 
         $route = $this->resolveRoute($input->method, $input->route);
 
-        if (isset($route['error'])) return trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
-
         $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {
             $p = $this->loadClass($this->unitList[$p]);
             list($input, $output, $success) = $p->process($input, $output);
             if (!$success) break;
         }
+
+        if (isset($route['error'])) return trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
 
         return $output;
     }

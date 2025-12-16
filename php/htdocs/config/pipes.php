@@ -7,7 +7,8 @@
  */
 $app->setPipes(array(
     'prepend' => array(
-        'Pipe_CsrfGenerate',
+        'Pipe_ErrorHandler',
+        'Pipe_Init',
     ),
     'append' => array(
         

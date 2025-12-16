@@ -30,6 +30,8 @@ $app->setUnit('Lib_GoogleApiGmail', array(
  * ------------------------------------------------------------------------
  */
 
+$app->setUnit('Pipe_ErrorHandler', array('args' => array('App')));
+
 $group = array(
     'args_prepend' => array('App', 'Lib_Session')
 );

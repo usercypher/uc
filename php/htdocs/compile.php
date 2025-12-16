@@ -6,14 +6,14 @@ function compile() {
     $app->init();
 
     require('uc.config.php');
-    $settings = settings();
-    $mode = $settings['mode'][basename(__FILE__)];
+    $config = config();
+    $mode = $config['mode'][basename(__FILE__)];
 
-    foreach ($settings['ini'][$mode] as $key => $value) {
+    foreach ($config['ini'][$mode] as $key => $value) {
         $app->setIni($key, $value);
     }
 
-    foreach ($settings['env'][$mode] as $key => $value) {
+    foreach ($config['env'][$mode] as $key => $value) {
         $app->setEnv($key, $value);
     }
 
