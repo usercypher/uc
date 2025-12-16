@@ -36,6 +36,8 @@ class Pipe_ErrorHandler {
     }
 
     public function exception($e) {
+        while (ob_get_level()) ob_end_clean();
+
         $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
             'ERROR_ACCEPT' => $this->input->getFrom($this->input->headers, 'accept', ''),
             'ERROR_TRACE' => $e->getTrace(),

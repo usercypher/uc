@@ -203,6 +203,8 @@ class App {
 
         if (!$e) return true;
 
+        while (ob_get_level()) ob_end_clean();
+
         if (SAPI === 'cli') {
             fwrite(STDERR, $e['content']);
         } else {
