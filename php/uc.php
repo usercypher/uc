@@ -405,7 +405,7 @@ class App {
 
     // Class Management
 
-    function autoRegisterUnit($path, $option) {
+    function autoAddUnit($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
         if (!isset($option['max'])) $option['max'] = -1;
         if (!isset($option['ignore'])) $option['ignore'] = array();
@@ -424,20 +424,20 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
-                    $this->autoRegisterUnit($path . $file . '/', $option);
+                    $this->autoAddUnit($path . $file . '/', $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
                     $unit = substr($file, 0, -4);
                     if ($option['dir_as_namespace']) $unit = $option['namespace'] . $unit;
-                    $this->registerUnit($unit, $path);
+                    $this->addUnit($unit, $path);
                 }
             }
             closedir($dp);
         }
     }
 
-    function registerUnit($unit, $path = '') {
+    function addUnit($unit, $path = '') {
         $pathListIndex = array_search($path, $this->pathList);
         if ($pathListIndex === false) {
             $pathListIndex = $this->pathListIndex;

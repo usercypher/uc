@@ -17,7 +17,7 @@ function compile() {
         $app->setEnv($key, $value);
     }
 
-    require('config/autoRegisterUnit.php');
+    require('config/units.php');
 
     if ($files = glob($app->dirRoot('config/*/*.units.php'))) {
         foreach ($files as $file) {
