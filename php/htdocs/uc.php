@@ -132,9 +132,8 @@ class Output {
 }
 
 class App {
-    var $ENV = array(), $UNIT_LIST_INDEX = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
-    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array());
-    var $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array();
+    var $ENV = array(), $UNIT_LIST = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
+    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array()), $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array();
 
     // Application Setup
 
@@ -264,7 +263,7 @@ class App {
         $map = array('pipe' => $this->ROUTE_HANDLER_PIPE, 'ignore' => $this->ROUTE_HANDLER_IGNORE);
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
-                foreach ($option[$key] as $tmpUnit) $handler[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
+                foreach ($option[$key] as $tmpUnit) $handler[$value][] = ($tmpUnit === '--global' && $key === 'ignore') ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST];
             }
         }
 
@@ -288,7 +287,7 @@ class App {
 
     function setPipes($pipes) {
         foreach ($pipes as $key => $p) {
-            foreach ($p as $unit) $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST_INDEX];
+            foreach ($p as $unit) $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST];
         }
     }
 
@@ -406,7 +405,7 @@ class App {
 
     // Class Management
 
-    function scanUnits($path, $option) {
+    function autoRegisterUnit($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
         if (!isset($option['max'])) $option['max'] = -1;
         if (!isset($option['ignore'])) $option['ignore'] = array();
@@ -425,29 +424,35 @@ class App {
                     ++$option['depth'];
                     $namespace = $option['namespace'];
                     $option['namespace'] .= $file . '\\';
-                    $this->scanUnits($path . $file . '/', $option);
+                    $this->autoRegisterUnit($path . $file . '/', $option);
                     $option['namespace'] = $namespace;
                     --$option['depth'];
                 } else if (substr($file, -4) === '.php') {
-                    $unitFile = substr($file, 0, -4);
-                    $unit = ($option['dir_as_namespace']) ? ($option['namespace'] . $unitFile) : $unitFile;
-
-                    if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . ' and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
-
-                    $pathListIndex = array_search($path, $this->pathList);
-                    if ($pathListIndex === false) {
-                        $pathListIndex = $this->pathListIndex;
-                        $this->pathList[$this->pathListIndex] = $path;
-                        ++$this->pathListIndex;
-                    }
-
-                    $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $unitFile, array(), array(), false);
-                    $this->unitList[$this->unitListIndex] = $unit;
-                    ++$this->unitListIndex;
+                    $unit = substr($file, 0, -4);
+                    if ($option['dir_as_namespace']) $unit = $option['namespace'] . $unit;
+                    $this->registerUnit($unit, $path);
                 }
             }
             closedir($dp);
         }
+    }
+
+    function registerUnit($unit, $path = '') {
+        $pathListIndex = array_search($path, $this->pathList);
+        if ($pathListIndex === false) {
+            $pathListIndex = $this->pathListIndex;
+            $this->pathList[$this->pathListIndex] = $path;
+            ++$this->pathListIndex;
+        }
+
+        $pos = strrpos($unit, '\\');
+        $file = $pos === false ? $unit : substr($unit, $pos + 1);
+
+        if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . '.php and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
+
+        $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $file, array(), array(), false);
+        $this->unitList[$this->unitListIndex] = $unit;
+        ++$this->unitListIndex;
     }
 
     function setUnit($unit, $option) {
@@ -456,7 +461,7 @@ class App {
         $map = array('args' => $this->UNIT_ARGS, 'load' => $this->UNIT_LOAD);
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
-                foreach ($option[$key] as $tmpUnit) $this->unit[$unit][$value][] = $this->unit[$tmpUnit][$this->UNIT_LIST_INDEX];
+                foreach ($option[$key] as $tmpUnit) $this->unit[$unit][$value][] = $this->unit[$tmpUnit][$this->UNIT_LIST];
             }
         }
 
@@ -614,7 +619,7 @@ class App {
         foreach (explode(',', $accept) as $type) {
             $parts = explode(';', trim($type));
             $aType = trim(array_shift($parts));
-    
+
             $q = 1.0;
             foreach ($parts as $p) {
                 $p = explode('=', trim($p));
