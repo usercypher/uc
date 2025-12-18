@@ -448,7 +448,7 @@ class App {
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
 
-        if (isset($this->unit[$unit])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $path . $file . '.php and ' . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php', E_USER_WARNING);
+        if (isset($this->unit[$unit]) && ($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE])) return trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
 
         $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $file, array(), array(), false);
         $this->unitList[$this->unitListIndex] = $unit;
