@@ -181,12 +181,9 @@ class Lib_DatabaseHelper {
     }
 
     function chunk(&$array, $chunkSize) {
-        if (!$array || 0 >= $chunkSize) {
-            return false;
-        }
-        $chunk = array_slice($array, 0, $chunkSize);
-        $array = array_slice($array, $chunkSize);
-        return $chunk;
+        if (0 >= $chunkSize || empty($array)) return false;
+
+        return array_splice($array, 0, $chunkSize);
     }
 }
 ?>
