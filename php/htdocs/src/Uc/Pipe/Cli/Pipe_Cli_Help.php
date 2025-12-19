@@ -1,48 +1,55 @@
 <?php
 
 class Pipe_Cli_Help {
-    private $app;
+    var $app;
 
-    public function args($args) {
+    function args($args) {
         list(
-            $this->app,
+            $this->app
         ) = $args;
     }
 
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
-
         $message = '';
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
-
         sort($routes);
 
         $target = $input->getFrom($input->options, 'autocomplete');
-
         $seen = array();
+
         if (!$target) {
             $route = $input->getFrom($input->params, 'on-unknown-route', array(''));
-            $message .= 'No route \'' . $route[0] . '\' found, list:'. EOL;
-            foreach ($routes as $route) {
-                $pathParts = explode('/', $route['path']);
+            $message .= 'No route \'' . $route[0] . '\' found, list:' . "\n";
+
+            for ($i = 0; $i < count($routes); $i++) {
+                $routeItem = $routes[$i];
+                $pathParts = explode('/', $routeItem['path']);
+
                 if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === ':') continue;
                 $seen[$pathParts[0]] = true;
-                if ($route['method'] === '') $message .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . EOL;
+
+                if ($routeItem['method'] === '') {
+                    $message .= ' Route \'' . str_replace('/', ' ', $pathParts[0]) . '\'' . "\n";
+                }
             }
         } else {
             $matched = false;
-            foreach ($routes as $route) {
-                $pathParts = explode('/', $route['path']);
+            for ($i = 0; $i < count($routes); $i++) {
+                $routeItem = $routes[$i];
+                $pathParts = explode('/', $routeItem['path']);
+
                 if ($pathParts[0] === $target && isset($pathParts[1])) {
                     if (isset($seen[$pathParts[1]]) || substr($pathParts[1], 0, 1) === ':') continue;
                     $seen[$pathParts[1]] = true;
-                    $message .= ' ' . $pathParts[1] . EOL;
+                    $message .= ' ' . $pathParts[1] . "\n";
                     $matched = true;
                 }
             }
+
             if (!$matched) {
-                $message .= 'No sub-route found for \'' . $target . '\'' . EOL;
+                $message .= 'No sub-route found for \'' . $target . '\'' . "\n";
             }
         }
 
@@ -52,21 +59,23 @@ class Pipe_Cli_Help {
         return array($input, $output, $success);
     }
 
-    private function flattenRoutesWithMethod($tree) {
+    function flattenRoutesWithMethod($tree) {
         $routes = array();
 
         foreach ($tree as $method => $branches) {
             $paths = $this->flattenRoutes($branches);
 
-            foreach ($paths as $route) {
-                $routes[] = array('method' => $method) + $route;
+            for ($i = 0; $i < count($paths); $i++) {
+                $route = $paths[$i];
+                $route['method'] = $method; // use assignment instead of '+' operator
+                $routes[] = $route;
             }
         }
 
         return $routes;
     }
 
-    private function flattenRoutes($tree, $prefix = '') {
+    function flattenRoutes($tree, $prefix = '') {
         $routes = array();
 
         foreach ($tree as $segment => $children) {
@@ -74,7 +83,7 @@ class Pipe_Cli_Help {
                 continue;
             }
 
-            $currentPath = $prefix === '' ? $segment : $prefix . '/' . $segment;
+            $currentPath = ($prefix === '') ? $segment : $prefix . '/' . $segment;
 
             if (is_array($children)) {
                 $childKeys = array_keys($children);
@@ -93,7 +102,8 @@ class Pipe_Cli_Help {
 
                     $routes[] = $route;
                 } else {
-                    $routes = array_merge($routes, $this->flattenRoutes($children, $currentPath));
+                    $childRoutes = $this->flattenRoutes($children, $currentPath);
+                    $routes = array_merge($routes, $childRoutes);
                 }
             }
         }

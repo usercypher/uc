@@ -1,7 +1,7 @@
 <?php
 
-class Pipe_Cli_Pipe_Help {
-    public function process($input, $output) {
+class Pipe_Cli_Unit_Help {
+    function process($input, $output) {
         $success = true;
 
         $message = '';
@@ -10,9 +10,9 @@ class Pipe_Cli_Pipe_Help {
             $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
         }
 
-        $message .= 'Usage: php [file] pipe [option]' . EOL;
+        $message .= 'Usage: php [file] unit [option]' . EOL;
         $message .= 'Options:' . EOL;
-        $message .= '  create [name]   create pipe using --path=[value] --args=[value]' . EOL;
+        $message .= '  create [name]   create pipe using --pipe, --path=[value], and --args=[value]' . EOL;
         $output->content = $message;
         $output->code = 1;
 

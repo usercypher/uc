@@ -1,15 +1,15 @@
 <?php
 
 class Pipe_Cli_Route_Print {
-    private $app;
+    var $app;
 
-    public function args($args) {
+    function args($args) {
         list(
             $this->app
         ) = $args;
     }
 
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
@@ -18,10 +18,9 @@ class Pipe_Cli_Route_Print {
         $pipesAppend = $this->app->pipes['append'];
 
         $routes = $this->flattenRoutesWithMethod($routes);
-
         sort($routes);
 
-        $message = "ROUTES" . EOL;
+        $message = "ROUTES" . "\n";
 
         foreach ($routes as $no => $route) {
             $no++;
@@ -31,7 +30,7 @@ class Pipe_Cli_Route_Print {
 
             if (!empty($pipesPrepend)) {
                 $prepend = array();
-                foreach (array_merge($pipesPrepend) as $i) {
+                foreach ($pipesPrepend as $i) {
                     $prepend[] = $unitList[$i];
                 }
 
@@ -39,8 +38,8 @@ class Pipe_Cli_Route_Print {
             }
 
             if (!empty($pipesAppend)) {
-                $prepend = array();
-                foreach (array_merge($pipesAppend) as $i) {
+                $append = array();
+                foreach ($pipesAppend as $i) {
                     $append[] = $unitList[$i];
                 }
 
@@ -57,7 +56,7 @@ class Pipe_Cli_Route_Print {
             }
 
             if (!empty($route['ignore'])) {
-                $ignore = [];
+                $ignore = array();
                 foreach ($route['ignore'] as $i) {
                     $ignore[] = isset($unitList[$i]) ? $unitList[$i] : '--global';
                 }
@@ -69,7 +68,7 @@ class Pipe_Cli_Route_Print {
                 $line .= ' → ' . implode(' | ', $parts);
             }
 
-            $message .= $line . EOL;
+            $message .= $line . "\n";
         }
 
         $output->content = $message;
@@ -77,21 +76,22 @@ class Pipe_Cli_Route_Print {
         return array($input, $output, $success);
     }
 
-    private function flattenRoutesWithMethod($tree) {
+    function flattenRoutesWithMethod($tree) {
         $routes = array();
 
         foreach ($tree as $method => $branches) {
             $paths = $this->flattenRoutes($branches);
 
             foreach ($paths as $route) {
-                $routes[] = array('method' => $method) + $route;
+                $route['method'] = $method; // assignment instead of '+'
+                $routes[] = $route;
             }
         }
 
         return $routes;
     }
 
-    private function flattenRoutes($tree, $prefix = '') {
+    function flattenRoutes($tree, $prefix = '') {
         $routes = array();
 
         foreach ($tree as $segment => $children) {
@@ -99,7 +99,7 @@ class Pipe_Cli_Route_Print {
                 continue;
             }
 
-            $currentPath = $prefix === '' ? $segment : $prefix . '/' . $segment;
+            $currentPath = ($prefix === '') ? $segment : $prefix . '/' . $segment;
 
             if (is_array($children)) {
                 $childKeys = array_keys($children);
@@ -118,7 +118,8 @@ class Pipe_Cli_Route_Print {
 
                     $routes[] = $route;
                 } else {
-                    $routes = array_merge($routes, $this->flattenRoutes($children, $currentPath));
+                    $childRoutes = $this->flattenRoutes($children, $currentPath);
+                    $routes = array_merge($routes, $childRoutes);
                 }
             }
         }

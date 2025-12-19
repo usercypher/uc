@@ -1,6 +1,6 @@
 <?php
 
-class Translator {
+class Lib_Translator {
     var $translations = array();
     var $pluralRule = null;
 

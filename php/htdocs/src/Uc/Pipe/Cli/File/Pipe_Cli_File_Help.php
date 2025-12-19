@@ -1,7 +1,7 @@
 <?php
 
 class Pipe_Cli_File_Help {
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
 
         $message = '';

@@ -1,7 +1,7 @@
 <?php
 
 class Pipe_Cli_File_FindReplace {
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
         $message = '';
 
@@ -16,8 +16,8 @@ class Pipe_Cli_File_FindReplace {
         $replace = $input->getFrom($input->options, 'replace');
 
         if ($search === null || $replace === null) {
-            $message .= 'Error: Missing required parameters.' . EOL;
-            $message .= 'Usage: php [file] file find-replace --search="searchString" --replace="replaceString" --dir="directoryPath"' . EOL;
+            $message .= 'Error: Missing required parameters.' . "\n";
+            $message .= 'Usage: php [file] file find-replace --search="searchString" --replace="replaceString" --dir="directoryPath"' . "\n";
             $output->content = $message;
             $output->code = 1;
             $success = false;
@@ -25,52 +25,61 @@ class Pipe_Cli_File_FindReplace {
         }
 
         if (!is_dir($directory)) {
-            $message .= "Error: Directory does not exist: $directory" . EOL;
+            $message .= "Error: Directory does not exist: $directory" . "\n";
             $output->content = $message;
             $output->code = 1;
             $success = false;
             return array($input, $output, $success);
         }
 
-        $output->std("Scanning..." . EOL);
+        $output->std("Scanning..." . "\n");
         $files = $this->getFilesRecursive($directory);
-        $updatedFiles = [];
+        $updatedFiles = array();
 
-        foreach ($files as $file) {
+        for ($i = 0; $i < count($files); $i++) {
+            $file = $files[$i];
             if ($this->replaceStringInFile($file, $search, $replace)) {
                 $updatedFiles[] = $file;
             }
         }
 
-        $output->std("Done. " . count($files) . " files scanned. " . ($updatedFiles ? count($updatedFiles) : 0) . " updated." . EOL . EOL,);
+        $output->std("Done. " . count($files) . " files scanned. " . (count($updatedFiles) ? count($updatedFiles) : 0) . " updated." . "\n\n");
 
-        if ($updatedFiles) {
-            $message .= "Updated files:" . EOL;
-            foreach ($updatedFiles as $file) {
-                $message .= " - $file" . EOL;
+        if (count($updatedFiles)) {
+            $message .= "Updated files:" . "\n";
+            for ($i = 0; $i < count($updatedFiles); $i++) {
+                $message .= " - " . $updatedFiles[$i] . "\n";
             }
         } else {
-            $message .= "No files updated." . EOL;
+            $message .= "No files updated." . "\n";
         }
 
         $output->content = $message;
         return array($input, $output, $success);
     }
 
-    private function getFilesRecursive($dir) {
-        $files = [];
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
-        );
-        foreach ($iterator as $file) {
-            if ($file->isFile()) {
-                $files[] = $file->getPathname();
+    function getFilesRecursive($dir, &$files = array()) {
+        $dh = @opendir($dir);
+        if ($dh) {
+            while (($file = readdir($dh)) !== false) {
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
+
+                $fullPath = $dir . '/' . $file;
+
+                if (is_file($fullPath)) {
+                    $files[] = $fullPath;
+                } elseif (is_dir($fullPath)) {
+                    $this->getFilesRecursive($fullPath, $files);
+                }
             }
+            closedir($dh);
         }
         return $files;
     }
 
-    private function replaceStringInFile($filePath, $search, $replace) {
+    function replaceStringInFile($filePath, $search, $replace) {
         $tempFile = tempnam(sys_get_temp_dir(), 'rep');
 
         $readHandle = @fopen($filePath, 'r');
@@ -109,5 +118,4 @@ class Pipe_Cli_File_FindReplace {
 
         return true;
     }
-
 }

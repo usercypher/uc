@@ -1,5 +1,5 @@
 <?php
-// uc.cli.routes.php
+// cli.set_route.php
 
 /**
  * ------------------------------------------------------------------------
@@ -42,20 +42,20 @@ $app->groupRoute($group, '', 'route/run/::*:', array(
 
 /**
  * ------------------------------------------------------------------------
- * pipe
+ * unit
  * ------------------------------------------------------------------------
  */
 $group = array(
 
 );
 
-$app->groupRoute($group, '', 'pipe/:on-unknown-option:*:', array(
-    'pipe' => array('Pipe_Cli_Pipe_Help'),
+$app->groupRoute($group, '', 'unit/:on-unknown-option:*:', array(
+    'pipe' => array('Pipe_Cli_Unit_Help'),
 ));
 
-// route=pipe/create/:class
-$app->groupRoute($group, '', 'pipe/create/:class:?:/::*:', array(
-    'pipe' => array('Pipe_Cli_Pipe_Create'),
+// route=unit/create/:name
+$app->groupRoute($group, '', 'unit/create/:name:?:/::*:', array(
+    'pipe' => array('Pipe_Cli_Unit_Create'),
 ));
 
 /**

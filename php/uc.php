@@ -393,7 +393,7 @@ class App {
 
         $input->params = $route['params'];
         foreach ($route['pipe'] as $p) {
-            $p = $this->loadClass($this->unitList[$p]);
+            $p = $this->newUnit($this->unitList[$p]);
             list($input, $output, $success) = $p->process($input, $output);
             if (!$success) break;
         }
@@ -403,7 +403,7 @@ class App {
         return $output;
     }
 
-    // Class Management
+    // Unit Management
 
     function autoAddUnit($path, $option) {
         if (!isset($option['depth'])) $option['depth'] = 0;
@@ -514,7 +514,7 @@ class App {
         }
     }
 
-    function loadClass($unit, $new = false) {
+    function newUnit($unit, $reset = false) {
         $stack = array($unit);
         $seen = array();
         $md = array();
@@ -526,9 +526,9 @@ class App {
             $previousUnit = end($stack);
             $seen[$previousUnit] = true;
 
-            if (isset($seen[$unit])) return trigger_error('Circular dependency detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+            if (isset($seen[$unit])) return trigger_error('Circular args detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
-            $cache = !$new && $this->unit[$unit][$this->UNIT_CACHE];
+            $cache = !$reset && $this->unit[$unit][$this->UNIT_CACHE];
             if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
                 if (!$stack) return $this->cache[$unit][$this->CACHE_CLASS];
 
@@ -568,8 +568,8 @@ class App {
         return $class;
     }
 
-    function reloadClass($unit) {
-        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->loadClass($unit, true);
+    function resetUnit($unit) {
+        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->newUnit($unit, true);
     }
 
     // Utility Functions

@@ -1,7 +1,7 @@
 <?php
 
 class Pipe_Cli_File_Find {
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
         $message = '';
 
@@ -15,8 +15,8 @@ class Pipe_Cli_File_Find {
         $search = $input->getFrom($input->options, 'search');
 
         if ($search === null) {
-            $message .= 'Error: Missing required parameters.' . EOL;
-            $message .= 'Usage: php [file] file find --search="searchString" [--dir="directoryPath"]' . EOL;
+            $message .= 'Error: Missing required parameters.' . "\n";
+            $message .= 'Usage: php [file] file find --search="searchString" [--dir="directoryPath"]' . "\n";
             $output->content = $message;
             $output->code = 1;
             $success = false;
@@ -24,53 +24,61 @@ class Pipe_Cli_File_Find {
         }
 
         if (!is_dir($directory)) {
-            $message .= "Error: Directory does not exist: $directory" . EOL;
+            $message .= "Error: Directory does not exist: $directory" . "\n";
             $output->content = $message;
             $output->code = 1;
             $success = false;
             return array($input, $output, $success);
         }
 
-        $output->std("Scanning..." . EOL);
+        $output->std("Scanning..." . "\n");
         $files = $this->getFilesRecursive($directory);
-        $foundFiles = [];
+        $foundFiles = array();
 
-        foreach ($files as $i => $file) {
+        for ($i = 0; $i < count($files); $i++) {
+            $file = $files[$i];
             if ($this->fileContainsString($file, $search)) {
                 $foundFiles[] = $file;
             }
         }
 
-        $output->std("Done. " . count($files) . " files scanned. " . ($foundFiles ? count($foundFiles) : 0) . " found." . EOL . EOL,);
+        $output->std("Done. " . count($files) . " files scanned. " . (count($foundFiles) ? count($foundFiles) : 0) . " found." . "\n\n");
 
-        if ($foundFiles) {
-            $message .= "Files containing '$search':" . EOL;
-            foreach ($foundFiles as $file) {
-                $message .= " - $file" . EOL;
+        if (count($foundFiles)) {
+            $message .= "Files containing '$search':" . "\n";
+            for ($i = 0; $i < count($foundFiles); $i++) {
+                $message .= " - " . $foundFiles[$i] . "\n";
             }
         } else {
-            $message .= "No files containing '$search' found." . EOL;
+            $message .= "No files containing '$search' found." . "\n";
         }
 
         $output->content = $message;
         return array($input, $output, $success);
     }
 
-    private function getFilesRecursive($dir) {
-        $files = [];
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
-        );
+    function getFilesRecursive($dir, &$files = array()) {
+        $dh = @opendir($dir);
+        if ($dh) {
+            while (($file = readdir($dh)) !== false) {
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
 
-        foreach ($iterator as $file) {
-            if ($file->isFile()) {
-                $files[] = $file->getPathname();
+                $fullPath = $dir . '/' . $file;
+
+                if (is_file($fullPath)) {
+                    $files[] = $fullPath;
+                } elseif (is_dir($fullPath)) {
+                    $this->getFilesRecursive($fullPath, $files);
+                }
             }
+            closedir($dh);
         }
         return $files;
     }
 
-    private function fileContainsString($filePath, $search) {
+    function fileContainsString($filePath, $search) {
         $handle = @fopen($filePath, 'r');
         if (!$handle) {
             return false;

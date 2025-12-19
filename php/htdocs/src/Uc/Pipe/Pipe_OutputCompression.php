@@ -1,7 +1,7 @@
 <?php
 
 class Pipe_OutputCompression {
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
 
         if (!empty($output->content) && isset($input->headers['accept-encoding']) && is_string($input->headers['accept-encoding']) && strpos($input->headers['accept-encoding'], 'gzip') !== false && function_exists('gzencode')) {

@@ -17,17 +17,23 @@ function compile() {
         $app->setEnv($key, $value);
     }
 
-    require('config/units.php');
+    require('config/auto_add_unit.php');
 
-    if ($files = glob($app->dirRoot('config/*/*.units.php'))) {
+    if ($files = glob($app->dirRoot('config/*/*.add_unit.php'))) {
         foreach ($files as $file) {
             require($file);
         }
     }
 
-    require('config/pipes.php');
+    if ($files = glob($app->dirRoot('config/*/*.set_unit.php'))) {
+        foreach ($files as $file) {
+            require($file);
+        }
+    }
 
-    if ($files = glob($app->dirRoot('config/*/*.routes.php'))) {
+    require('config/set_pipes.php');
+
+    if ($files = glob($app->dirRoot('config/*/*.set_route.php'))) {
         foreach ($files as $file) {
             require($file);
         }

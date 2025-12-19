@@ -1,16 +1,16 @@
 <?php
 
 class Pipe_ErrorHandler {
-    private $app;
-    private $input, $output;
+    var $app;
+    var $input, $output;
 
-    public function args($args) {
+    function args($args) {
         list(
             $this->app, 
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    function process($input, $output) {
         $this->input = $input;
         $this->output = $output;
 
@@ -21,7 +21,7 @@ class Pipe_ErrorHandler {
         return array($input, $output, true);
     }
 
-    public function error($errno, $errstr, $errfile, $errline) {
+    function error($errno, $errstr, $errfile, $errline) {
         if (!($errno & error_reporting())) return true;
 
         if ($errno & $this->app->getEnv('ERROR_NON_FATAL')) {
@@ -35,7 +35,7 @@ class Pipe_ErrorHandler {
         throw new ErrorException($errstr, 500, $errno, $errfile, $errline);
     }
 
-    public function exception($e) {
+    function exception($e) {
         while (ob_get_level()) ob_end_clean();
 
         $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
@@ -61,7 +61,7 @@ class Pipe_ErrorHandler {
         }
     }
 
-    public function shutdown() {
+    function shutdown() {
         if (($error = error_get_last()) !== null) $this->error($error['type'], $error['message'], $error['file'], $error['line']);
     }
 }

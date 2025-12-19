@@ -1,5 +1,5 @@
 <?php
-// uc.units.php
+// _.set_unit.php
 
 /**
  * ------------------------------------------------------------------------
@@ -7,22 +7,15 @@
  * ------------------------------------------------------------------------
  */
 
-$app->setUnit('Lib_Database', array(
+$group = array(
     'cache' => true
-));
-
-$app->setUnit('Lib_Session', array(
-    'cache' => true
-));
-
-$app->setUnit('Lib_Curl', array(
-    'cache' => true
-));
-
-$app->setUnit('Lib_GoogleApiGmail', array(
-    'args' => array('Lib_Curl'),
-    'cache' => true
-));
+);
+$app->groupUnit($group, 'Lib_Curl');
+$app->groupUnit($group, 'Lib_Database');
+$app->groupUnit($group, 'Lib_GoogleApiGmail', array('args' => array('Lib_Curl')));
+$app->groupUnit($group, 'Lib_Html');
+$app->groupUnit($group, 'Lib_Session');
+$app->groupUnit($group, 'Lib_Translator');
 
 /**
  * ------------------------------------------------------------------------

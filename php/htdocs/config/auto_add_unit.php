@@ -1,4 +1,5 @@
 <?php
+// auto_add_unit.php
 
 /**
  * ------------------------------------------------------------------------
@@ -10,4 +11,4 @@
  *  - 'ignore' => [...]   // Patterns/files to ignore
  *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
  */
-$app->autoAddUnit('src/', array());
+$app->autoAddUnit('src/App/', array());

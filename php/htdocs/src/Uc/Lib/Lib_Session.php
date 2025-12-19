@@ -44,6 +44,8 @@ class Lib_Session {
     }
 
     function name($name) {
-        session_name($name);
+        if (session_id() == '') {
+            session_name($name);
+        }
     }
 }

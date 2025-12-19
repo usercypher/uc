@@ -1,16 +1,16 @@
 <?php
 
 class Pipe_OtpExist {
-    public $app, $session;
+    var $app, $session;
 
-    public function args($args) {
+    function args($args) {
         list(
             $this->app,
             $this->session
         ) = $args;
     }
 
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
 
         $otpToken = $this->session->get('otp_token');

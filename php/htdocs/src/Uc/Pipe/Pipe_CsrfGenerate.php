@@ -1,16 +1,16 @@
 <?php
 
 class Pipe_CsrfGenerate {
-    public $app, $session;
+    var $app, $session;
 
-    public function args($args) {
+    function args($args) {
         list(
             $this->app,
             $this->session
         ) = $args;
     }
 
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
 
         $this->session->set('csrf_token', bin2hex(random_bytes(32)));

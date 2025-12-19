@@ -1,10 +1,10 @@
 <?php
 
-require 'Translator.php';
+require 'Lib_Translator.php';
 
 $endl = "\n";
 
-$t = new Translator();
+$t = new Lib_Translator();
 $t->setDefaultPluralRule();
 
 $t->translations = array(

@@ -1,15 +1,15 @@
 <?php
 
 class Pipe_Cli_Route_Resolve {
-    private $app;
+    var $app;
 
-    public function args($args) {
+    function args($args) {
         list(
             $this->app
         ) = $args;
     }
 
-    public function process($input, $output) {
+    function process($input, $output) {
         $success = true;
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
@@ -20,8 +20,8 @@ class Pipe_Cli_Route_Resolve {
         $route = $input->getFrom($input->options, 'route');
 
         if ($route === null) {
-            $message .= 'Error: Missing required parameters.' . EOL;
-            $message .= 'Usage: --route=/route/path' . EOL;
+            $message .= 'Error: Missing required parameters.' . "\n";
+            $message .= 'Usage: --route=/route/path' . "\n";
             $output->content = $message;
             $output->code = 1;
             $success = false;
@@ -31,26 +31,26 @@ class Pipe_Cli_Route_Resolve {
         $result = $this->app->resolveRoute($method, $route);
 
         if (isset($result['error'])) {
-            $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . EOL;
+            $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . "\n";
             $output->content = $message;
             $output->code = 1;
             return array($input, $output, $success);
         }
 
-        $message .= 'RESOLVED ROUTE' . EOL;
-        $message .= '  Method : ' . $method . EOL;
-        $message .= '  Route  : ' . $route . EOL;
+        $message .= 'RESOLVED ROUTE' . "\n";
+        $message .= '  Method : ' . $method . "\n";
+        $message .= '  Route  : ' . $route . "\n";
 
-        $message .= '  Pipe   :' . EOL;
+        $message .= '  Pipe   :' . "\n";
         foreach ($result['pipe'] as $i => $index) {
-            $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $unitList[$index] . EOL;
+            $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $unitList[$index] . "\n";
         }
 
         // Show dynamic params if any
         if (!empty($result['params'])) {
-            $message .= '  Params :' . EOL;
+            $message .= '  Params :' . "\n";
             foreach ($result['params'] as $key => $value) {
-                $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . EOL;
+                $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . "\n";
             }
         }
 
