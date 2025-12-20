@@ -14,7 +14,6 @@ class Pipe_Cli_Help {
         $message = '';
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
-        sort($routes);
 
         $target = $input->getFrom($input->options, 'autocomplete');
         $seen = array();
@@ -61,13 +60,14 @@ class Pipe_Cli_Help {
 
     function flattenRoutesWithMethod($tree) {
         $routes = array();
+        asort($tree);
 
         foreach ($tree as $method => $branches) {
             $paths = $this->flattenRoutes($branches);
+            asort($paths);
 
-            for ($i = 0; $i < count($paths); $i++) {
-                $route = $paths[$i];
-                $route['method'] = $method; // use assignment instead of '+' operator
+            foreach ($paths as $route) {
+                $route['method'] = $method; // assignment instead of '+'
                 $routes[] = $route;
             }
         }

@@ -18,7 +18,6 @@ class Pipe_Cli_Route_Print {
         $pipesAppend = $this->app->pipes['append'];
 
         $routes = $this->flattenRoutesWithMethod($routes);
-        sort($routes);
 
         $message = "ROUTES" . "\n";
 
@@ -78,9 +77,11 @@ class Pipe_Cli_Route_Print {
 
     function flattenRoutesWithMethod($tree) {
         $routes = array();
+        asort($tree);
 
         foreach ($tree as $method => $branches) {
             $paths = $this->flattenRoutes($branches);
+            asort($paths);
 
             foreach ($paths as $route) {
                 $route['method'] = $method; // assignment instead of '+'
