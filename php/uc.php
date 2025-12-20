@@ -132,8 +132,8 @@ class Output {
 }
 
 class App {
-    var $ENV = array(), $UNIT_LIST = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CACHE = 5, $CACHE_CLASS = 0, $CACHE_PATH = 1, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
-    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array()), $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $cache = array();
+    var $ENV = array(), $UNIT_LIST = 0, $UNIT_PATH = 1, $UNIT_FILE = 2, $UNIT_LOAD = 3, $UNIT_ARGS = 4, $UNIT_CLASS_CACHE = 5, $ROUTE_HANDLER = '!', $ROUTE_HANDLER_PIPE = 0, $ROUTE_HANDLER_IGNORE = 1;
+    var $routes = array(), $pipes = array('prepend' => array(), 'append' => array()), $unit = array(), $unitList = array(), $unitListIndex = 0, $pathList = array(), $pathListIndex = 0, $unitClassCache = array(), $unitPathCache = array(), $pathListCache = array();
 
     // Application Setup
 
@@ -162,7 +162,8 @@ class App {
         $this->unit['App'] = array(0, null, null, array(), array(), true);
         $this->unitList[0] = 'App';
         $this->unitListIndex = 1;
-        $this->cache['App'] = array($this, true);
+        $this->unitClassCache['App'] = $this;
+        $this->unitPathCache['App'] = true;
 
         set_error_handler(array($this, 'errorDefault'));
     }
@@ -417,20 +418,18 @@ class App {
                 if ($file === '.' || $file === '..') continue;
 
                 foreach ($option['ignore'] as $pattern) {
-                    if (fnmatch(strtolower($pattern), strtolower($file))) continue 2;
+                    if (fnmatch($pattern, $file)) continue 2;
                 }
 
-                if (($option['max'] === -1 || $option['max'] > $option['depth']) && is_dir($this->ENV['DIR_ROOT'] . $path . $file)) {
-                    ++$option['depth'];
-                    $namespace = $option['namespace'];
-                    $option['namespace'] .= $file . '\\';
-                    $this->autoAddUnit($path . $file . '/', $option);
-                    $option['namespace'] = $namespace;
-                    --$option['depth'];
-                } else if (substr($file, -4) === '.php') {
-                    $unit = substr($file, 0, -4);
-                    if ($option['dir_as_namespace']) $unit = $option['namespace'] . $unit;
-                    $this->addUnit($unit, $path);
+                $isDir = is_dir($this->ENV['DIR_ROOT'] . $path . $file);
+
+                if ($isDir && ($option['max'] === -1 || $option['max'] > $option['depth'])) {
+                    $subOption = $option;
+                    $subOption['depth']++;
+                    $subOption['namespace'] .= $file . '\\';
+                    $this->autoAddUnit($path . $file . '/', $subOption);
+                } elseif (!$isDir && substr($file, -4) === '.php') {
+                    $this->addUnit(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($file, 0, -4), $path);
                 }
             }
             closedir($dp);
@@ -438,10 +437,11 @@ class App {
     }
 
     function addUnit($unit, $path = '') {
-        $pathListIndex = array_search($path, $this->pathList);
+        $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
         if ($pathListIndex === false) {
             $pathListIndex = $this->pathListIndex;
             $this->pathList[$this->pathListIndex] = $path;
+            $this->pathListCache[$path] = $this->pathListIndex;
             ++$this->pathListIndex;
         }
 
@@ -465,7 +465,7 @@ class App {
             }
         }
 
-        $this->unit[$unit][$this->UNIT_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CACHE]);
+        $this->unit[$unit][$this->UNIT_CLASS_CACHE] = (isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_CLASS_CACHE]);
     }
 
     function groupUnit($group, $unit, $option = array()) {
@@ -487,7 +487,7 @@ class App {
 
             if (isset($seen[$unit])) return trigger_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
-            if (isset($this->cache[$unit][$this->CACHE_PATH])) {
+            if (isset($this->unitPathCache[$unit])) {
                 if (!$stack) return;
 
                 unset($seen[$previousUnit]);
@@ -510,7 +510,7 @@ class App {
             unset($seen[$previousUnit]);
 
             require($this->ENV['DIR_ROOT'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php');
-            $this->cache[$unit][$this->CACHE_PATH] = true;
+            $this->unitPathCache[$unit] = true;
         }
     }
 
@@ -528,12 +528,12 @@ class App {
 
             if (isset($seen[$unit])) return trigger_error('Circular args detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
-            $cache = !$reset && $this->unit[$unit][$this->UNIT_CACHE];
-            if ($cache && isset($this->cache[$unit][$this->CACHE_CLASS])) {
-                if (!$stack) return $this->cache[$unit][$this->CACHE_CLASS];
+            $cache = !$reset && $this->unit[$unit][$this->UNIT_CLASS_CACHE];
+            if ($cache && isset($this->unitClassCache[$unit])) {
+                if (!$stack) return $this->unitClassCache[$unit];
 
                 unset($seen[$previousUnit]);
-                $resolvedArgs[$previousUnit][] = $this->cache[$unit][$this->CACHE_CLASS];
+                $resolvedArgs[$previousUnit][] = $this->unitClassCache[$unit];
                 continue;
             }
 
@@ -560,7 +560,7 @@ class App {
                 unset($resolvedArgs[$unit]);
             }
 
-            if ($cache) $this->cache[$unit][$this->CACHE_CLASS] = $class;
+            if ($cache) $this->unitClassCache[$unit] = $class;
 
             $resolvedArgs[$previousUnit][] = $class;
         }
@@ -569,7 +569,7 @@ class App {
     }
 
     function resetUnit($unit) {
-        if ($this->unit[$unit][$this->UNIT_CACHE]) $this->cache[$unit][$this->CACHE_CLASS] = $this->newUnit($unit, true);
+        if ($this->unit[$unit][$this->UNIT_CLASS_CACHE]) $this->unitClassCache[$unit] = $this->newUnit($unit, true);
     }
 
     // Utility Functions
