@@ -17,6 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
+define('UC_PHP_VERSION', '0.0.0');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -58,9 +59,9 @@ function input_http($in) {
 }
 
 function input_cli($in) {
-    global $argc, $argv;
-
     $in->source = 'cli';
+
+    global $argc, $argv;
 
     $in->argc = isset($argc) ? $argc : 0;
     $in->argv = isset($argv) ? $argv : array();
@@ -165,7 +166,7 @@ class App {
         $this->unitClassCache['App'] = $this;
         $this->unitPathCache['App'] = true;
 
-        set_error_handler(array($this, 'errorDefault'));
+        set_error_handler(array($this, 'handleErrorDefault'));
     }
 
     function setEnv($key, $value) {
@@ -198,7 +199,7 @@ class App {
 
     // Error Management
 
-    function errorDefault($errno, $errstr, $errfile, $errline) {
+    function handleErrorDefault($errno, $errstr, $errfile, $errline) {
         $e = $this->error($errno, $errstr, $errfile, $errline, array('ERROR_ACCEPT' => $this->getEnv('ERROR_ACCEPT', '')));
 
         if (!$e) return true;
@@ -245,7 +246,7 @@ class App {
         }
 
         $content = '';
-        $type = $this->httpNegotiate(isset($errcontext['ERROR_ACCEPT']) ? $errcontext['ERROR_ACCEPT'] : '', array_keys($this->ENV['ERROR_TEMPLATES']));
+        $type = $this->negotiateMime(isset($errcontext['ERROR_ACCEPT']) ? $errcontext['ERROR_ACCEPT'] : '', array_keys($this->ENV['ERROR_TEMPLATES']));
         if ($type && file_exists($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->ENV['DIR_ROOT'] . $this->ENV['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
@@ -379,7 +380,7 @@ class App {
 
     // Request Handling
 
-    function dispatch($input, $output) {
+    function process($input, $output) {
         if (SAPI === 'cli') {
             $input->route = '';
             foreach ($input->positional as $positional) $input->route .= '/' . urlencode($positional);
@@ -393,15 +394,16 @@ class App {
         $route = $this->resolveRoute($input->method, $input->route);
 
         $input->params = $route['params'];
+
         foreach ($route['pipe'] as $p) {
-            $p = $this->newUnit($this->unitList[$p]);
+            $p = $this->makeUnit($this->unitList[$p]);
             list($input, $output, $success) = $p->process($input, $output);
             if (!$success) break;
         }
 
-        if (isset($route['error'])) return trigger_error((SAPI === 'cli' ? 1 : $route['http']) . '|' . $route['error'], E_USER_WARNING);
+        if (isset($route['error'])) trigger_error($route['http'] . '|' . $route['error']. E_USER_WARNING);
 
-        return $output;
+        return array($input, $output, true);
     }
 
     // Unit Management
@@ -514,7 +516,7 @@ class App {
         }
     }
 
-    function newUnit($unit, $reset = false) {
+    function makeUnit($unit, $new = false) {
         $stack = array($unit);
         $seen = array();
         $md = array();
@@ -528,7 +530,7 @@ class App {
 
             if (isset($seen[$unit])) return trigger_error('Circular args detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
 
-            $cache = !$reset && $this->unit[$unit][$this->UNIT_CLASS_CACHE];
+            $cache = !$new && $this->unit[$unit][$this->UNIT_CLASS_CACHE];
             if ($cache && isset($this->unitClassCache[$unit])) {
                 if (!$stack) return $this->unitClassCache[$unit];
 
@@ -569,7 +571,7 @@ class App {
     }
 
     function resetUnit($unit) {
-        if ($this->unit[$unit][$this->UNIT_CLASS_CACHE]) $this->unitClassCache[$unit] = $this->newUnit($unit, true);
+        if ($this->unit[$unit][$this->UNIT_CLASS_CACHE]) unset($this->unitClassCache[$unit]);
     }
 
     // Utility Functions
@@ -614,7 +616,7 @@ class App {
         return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
     }
 
-    function httpNegotiate($accept, $offers) {
+    function negotiateMime($accept, $offers) {
         $prefs = array();
         foreach (explode(',', $accept) as $type) {
             $parts = explode(';', trim($type));

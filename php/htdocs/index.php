@@ -20,8 +20,6 @@ function index() {
         $app->setEnv($key, $value);
     }
 
-    $app->load('var/compiled/app.state');
-
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->headers, 'host', '127.0.0.1') . '/');
@@ -30,7 +28,9 @@ function index() {
     $output = new Output();
     $output->code = SAPI === 'cli' ? 0 : 200;
 
-    $output = $app->dispatch($input, $output);
+    $app->load('var/compiled/app.state');
+
+    list($input, $output) = $app->process($input, $output);
 
     switch ($input->source) {
         case 'cli':

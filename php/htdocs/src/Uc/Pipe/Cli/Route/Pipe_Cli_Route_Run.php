@@ -49,7 +49,7 @@ class Pipe_Cli_Route_Run {
         $input->positional = array_filter(explode('/', $route));
 
         // Dispatch the request
-        $output = $this->app->dispatch($input, $output);
+        list($input, $output) = $this->app->process($input, $output);
 
         // Restore the original positional arguments
         $input->positional = $savePostional;
