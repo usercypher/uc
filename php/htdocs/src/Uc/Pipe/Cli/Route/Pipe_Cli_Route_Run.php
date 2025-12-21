@@ -29,10 +29,10 @@ class Pipe_Cli_Route_Run {
 
         // Handle headers
         if (isset($input->query['header'])) {
-            $headers = explode("\n", $input->query['header']);
-            foreach ($headers as $header) {
-                list($k, $v) = explode(':', $header, 2);
-                $tempInput->headers[strtolower(trim($k))] = trim($v);
+            $header = explode("\n", $input->query['header']);
+            foreach ($header as $h) {
+                list($k, $v) = explode(':', $h, 2);
+                $tempInput->header[strtolower(trim($k))] = trim($v);
             }
         }
 

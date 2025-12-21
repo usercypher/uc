@@ -1,17 +1,17 @@
 <?php
 
 class Lib_Curl {
-    var $result = null, $headersRaw = array();
+    var $result = null, $headerRaw = array();
 
     function send($url, $options = array()) {
         $this->result = new stdClass();
-        $this->headersRaw = array();
+        $this->headerRaw = array();
         $ch = curl_init();
 
         $method = isset($options['method']) ? strtoupper($options['method']) : 'GET';
-        $headers = isset($options['headers']) ? $options['headers'] : array();
-        $timeout = isset($options['timeout']) ? (int)$options['timeout'] : 30;
+        $header = isset($options['header']) ? $options['header'] : array();
         $content = isset($options['content']) ? $options['content'] : '';
+        $timeout = isset($options['timeout']) ? (int)$options['timeout'] : 30;
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -32,9 +32,9 @@ class Lib_Curl {
             curl_setopt($ch, CURLOPT_CAINFO, $options['ca_info']);
         }
 
-        if (!empty($headers)) {
+        if (!empty($header)) {
             $parsedHeaders = array();
-            foreach ($headers as $key => $value) $parsedHeaders[] = $key . ':' . $value;
+            foreach ($header as $key => $value) $parsedHeaders[] = $key . ':' . $value;
             curl_setopt($ch, CURLOPT_HTTPHEADER, $parsedHeaders);
         }
 
@@ -42,7 +42,7 @@ class Lib_Curl {
 
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($that, 'header'));
 
-        $this->result->headers = array();
+        $this->result->header = array();
         $this->result->content = curl_exec($ch);
         $this->result->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->result->type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
@@ -58,33 +58,33 @@ class Lib_Curl {
         $trimmed = trim($headerLine);
 
         if ($trimmed === '') {
-            $this->result->headers = $this->parseHeaders($this->headersRaw);
-            $this->headersRaw = array();
+            $this->result->header = $this->parseHeader($this->headerRaw);
+            $this->headerRaw = array();
         } else {
-            $this->headersRaw[] = $headerLine;
+            $this->headerRaw[] = $headerLine;
         }
 
         return strlen($headerLine);
     }
 
-    function parseHeaders($headerLines) {
-        $headers = array();
+    function parseHeader($headerLines) {
+        $header = array();
         foreach ($headerLines as $line) {
             if (strpos($line, ':') !== false) {
                 list($key, $value) = explode(':', $line, 2);
                 $key = strtolower(trim($key));
                 $value = trim($value);
-                if (!isset($headers[$key])) {
-                    $headers[$key] = $value;
+                if (!isset($header[$key])) {
+                    $header[$key] = $value;
                 } else {
-                    if (is_array($headers[$key])) {
-                        $headers[$key][] = $value;
+                    if (is_array($header[$key])) {
+                        $header[$key][] = $value;
                     } else {
-                        $headers[$key] = array($headers[$key], $value);
+                        $header[$key] = array($header[$key], $value);
                     }
                 }
             }
         }
-        return $headers;
+        return $header;
     }
 }

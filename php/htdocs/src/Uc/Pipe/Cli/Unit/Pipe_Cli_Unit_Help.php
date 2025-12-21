@@ -5,7 +5,7 @@ class Pipe_Cli_Unit_Help {
         $success = true;
 
         $message = '';
-        $option = $input->getFrom($input->params, 'on-unknown-option');
+        $option = $input->getFrom($input->param, 'on-unknown-option');
         if ($option) {
             $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
         }

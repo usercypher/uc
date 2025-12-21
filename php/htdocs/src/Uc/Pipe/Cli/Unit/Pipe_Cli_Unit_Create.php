@@ -13,7 +13,7 @@ class Pipe_Cli_Unit_Create {
         $success = true;
         $message = '';
 
-        $className = $input->getFrom($input->params, 'name');
+        $className = $input->getFrom($input->param, 'name');
 
         if (empty($className)) {
             $message .= 'Error: Missing required parameters.' . "\n";

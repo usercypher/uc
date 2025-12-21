@@ -109,7 +109,7 @@ req.addCallback((req, res) => {
 // Send GET request
 req.send("https://api.example.com/info", {
   method: "GET",
-  headers: {
+  header: {
     "Accept": "application/json"
   },
   timeout: 5
@@ -129,7 +129,7 @@ req.retryAll();  // Retry all previous
 req.addCallback((request, response) => {
   const status = response.code;
   const content = response.content;
-  const headers = response.headers;
+  const header = response.header;
   // Do something with response
 });
 
@@ -194,11 +194,11 @@ dataReq
       output.html(`<p style="color:red;">Error ${res.code}</p>`);
       req.retry().send(apiUrl.toString(), {
         method: "GET",
-        headers: { "Accept": "application/json" }
+        header: { "Accept": "application/json" }
       });
     }
   })
   .send(apiUrl.toString(), {
     method: "GET",
-    headers: { "Accept": "application/json" }
+    header: { "Accept": "application/json" }
   });

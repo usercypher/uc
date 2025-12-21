@@ -12,7 +12,7 @@ class Lib_GoogleApiGmail {
     function getToken($clientId, $clientSecret, $refreshToken) {
         return $this->curl->send('https://oauth2.googleapis.com/token', array(
             'method' => 'POST',
-            'headers' => array(
+            'header' => array(
                 'Content-Type' => 'application/x-www-form-urlencoded'
             ),
             'content' => http_build_query(array(
@@ -36,7 +36,7 @@ class Lib_GoogleApiGmail {
         // Step 3: Send via Gmail API
         return $this->curl->send('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', array(
             'method' => 'POST',
-            'headers' => array(
+            'header' => array(
                 "Authorization" => 'Bearer ' . $access_token,
                 "Content-Type" => 'application/json'
             ),

@@ -4,9 +4,9 @@ class Pipe_OutputCompression {
     function process($input, $output) {
         $success = true;
 
-        if (!empty($output->content) && isset($input->headers['accept-encoding']) && is_string($input->headers['accept-encoding']) && strpos($input->headers['accept-encoding'], 'gzip') !== false && function_exists('gzencode')) {
+        if (!empty($output->content) && isset($input->header['accept-encoding']) && is_string($input->header['accept-encoding']) && strpos($input->header['accept-encoding'], 'gzip') !== false && function_exists('gzencode')) {
             $output->content = gzencode($output->content, 1);
-            $output->headers['content-encoding'] = 'gzip';
+            $output->header['content-encoding'] = 'gzip';
         }
 
         return array($input, $output, $success);

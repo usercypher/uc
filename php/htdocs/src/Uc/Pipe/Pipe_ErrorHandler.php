@@ -26,7 +26,7 @@ class Pipe_ErrorHandler {
 
         if ($errno & $this->app->getEnv('ERROR_NON_FATAL')) {
             $result = $this->app->error($errno, $errstr, $errfile, $errline, array(
-                'ERROR_ACCEPT' => $this->input->getFrom($this->input->headers, 'accept', ''),
+                'ERROR_ACCEPT' => $this->input->getFrom($this->input->header, 'accept', ''),
             ));
 
             return true;
@@ -39,7 +39,7 @@ class Pipe_ErrorHandler {
         while (ob_get_level()) ob_end_clean();
 
         $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
-            'ERROR_ACCEPT' => $this->input->getFrom($this->input->headers, 'accept', ''),
+            'ERROR_ACCEPT' => $this->input->getFrom($this->input->header, 'accept', ''),
             'ERROR_TRACE' => $e->getTrace(),
         ));
 

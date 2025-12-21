@@ -17,7 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
-define('UC_PHP_VERSION', '0.3.0');
+define('UC_PHP_VERSION', '0.4.0');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -38,15 +38,15 @@ function input_http($in) {
 
     $in->server = $_SERVER;
 
-    $contentHeaders = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
+    $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
     foreach ($_SERVER as $key => $value) {
         if (substr($key, 0, 5) === 'HTTP_') {
-            $in->headers[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
-        } elseif (isset($contentHeaders[$key])) {
-            $in->headers[str_replace('_', '-', strtolower($key))] = $value;
+            $in->header[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
+        } elseif (isset($contentHeader[$key])) {
+            $in->header[str_replace('_', '-', strtolower($key))] = $value;
         }
     }
-    $in->headers['cookie'] = $_COOKIE;
+    $in->header['cookie'] = $_COOKIE;
 
     $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
@@ -85,7 +85,7 @@ function input_cli($in) {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array();
+    var $source = '', $data = array(), $server = array(), $header = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $parsed = array(), $param = array(), $argc = 0, $argv = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -102,13 +102,13 @@ class Input {
 }
 
 class Output {
-    var $headers = array(), $content = '', $code = 200, $type = 'text/html';
+    var $header = array(), $content = '', $code = 200, $type = 'text/html';
 
     function http($content) {
         if (!headers_sent()) {
             header('HTTP/1.1 ' . $this->code);
-            if (!isset($this->headers['content-type'])) header('content-type: ' . $this->type);
-            foreach ($this->headers as $key => $value) {
+            if (!isset($this->header['content-type'])) header('content-type: ' . $this->type);
+            foreach ($this->header as $key => $value) {
                 if (is_array($value)) {
                     foreach ($value as $v) header($key . ': ' . $v, false);
                 } else {
@@ -117,7 +117,7 @@ class Output {
             }
         }
 
-        if (!isset($this->headers['location'])) {
+        if (!isset($this->header['location'])) {
             echo($content);
             flush();
         }
@@ -128,7 +128,7 @@ class Output {
     }
 
     function redirect($url, $code = 302) {
-        $this->headers['location'] = $url;
+        $this->header['location'] = $url;
         $this->code = $code;
     }
 }
@@ -298,11 +298,11 @@ class App {
     }
 
     function resolveRoute($method, $route) {
-        if (strlen($route) > 32640) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
-        if (!isset($this->routes[$method])) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
+        if (strlen($route) > 32640) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
+        if (!isset($this->routes[$method])) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
 
         $current = $this->routes[$method];
-        $params = array();
+        $param = array();
         $routeSegments = explode('/', $route, 129);
         $foundSegment = false;
         $last = count($routeSegments) - 1;
@@ -314,7 +314,7 @@ class App {
 
             $foundSegment = true;
 
-            if (strlen($routeSegment) > 255) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
+            if (strlen($routeSegment) > 255) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
 
             if (isset($current[$routeSegment])) {
                 $current = $current[$routeSegment];
@@ -327,7 +327,7 @@ class App {
                 if ($key && $key[0] === ':') {
                     list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
                     if ($paramModifier === '*') {
-                        foreach (array_slice($routeSegments, $index) as $v) $params[$paramName][] = rawurldecode($v);
+                        foreach (array_slice($routeSegments, $index) as $v) $param[$paramName][] = rawurldecode($v);
                         $current = $value;
                         if (isset($current[$this->ROUTE_HANDLER])) break 2;
                         $matched = true;
@@ -336,7 +336,7 @@ class App {
                     $matches = array($routeSegment);
                     if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $routeSegment, $matches)) {
                         foreach ($matches as $k => $v) $matches[$k] = rawurldecode($v);
-                        $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
+                        $param[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
                         break;
@@ -344,7 +344,7 @@ class App {
                 }
             }
 
-            if (!$matched) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+            if (!$matched) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
         }
 
         while (!isset($current[$this->ROUTE_HANDLER])) {
@@ -353,7 +353,7 @@ class App {
             foreach ($current as $key => $value) {
                 if ($key && $key[0] === ':') {
                     list($none, $paramName, $paramModifier) = explode(':', $key, 4);
-                    if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($params[$paramName] = substr($paramModifier, $pos + 1))) {
+                    if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false) && ($param[$paramName] = substr($paramModifier, $pos + 1))) {
                         $current = $value;
                         $matched = true;
                         break;
@@ -361,10 +361,10 @@ class App {
                 }
             }
 
-            if (!$matched) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+            if (!$matched) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
         }
 
-        if (!isset($current[$this->ROUTE_HANDLER])) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'params' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+        if (!isset($current[$this->ROUTE_HANDLER])) return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
 
         $finalPipes = array();
 
@@ -378,7 +378,7 @@ class App {
             }
         }
 
-        return array('pipe' => $finalPipes, 'params' => $params);
+        return array('pipe' => $finalPipes, 'param' => $param);
     }
 
     // Request Handling
@@ -392,7 +392,7 @@ class App {
 
         $route = $this->resolveRoute($input->method, $input->route);
 
-        $input->params = $route['params'];
+        $input->param = $route['param'];
 
         foreach ($route['pipe'] as $p) {
             $p = $this->makeUnit($this->unitList[$p]);
@@ -591,14 +591,14 @@ class App {
         return $this->ENV['DIR_ROOT'] . $this->ENV['DIR_WEB'] . $s;
     }
 
-    function urlRoute($s, $params = array()) {
+    function urlRoute($s, $param = array()) {
         $base = $this->ENV['URL_ROOT'] . ($this->ENV['ROUTE_REWRITE'] ? '' : $this->ENV['ROUTE_FILE'] . '?route=/');
         if (!$this->ENV['ROUTE_REWRITE'] && strpos($base, '?') !== false) $s = str_replace('?', '&', $s);
-        return $base . ($params ? strtr($s, $params) : $s);
+        return $base . ($param ? strtr($s, $param) : $s);
     }
 
-    function urlWeb($s, $params = array()) {
-        return $this->ENV['URL_WEB'] . ($params ? strtr($s, $params) : $s);
+    function urlWeb($s, $param = array()) {
+        return $this->ENV['URL_WEB'] . ($param ? strtr($s, $param) : $s);
     }
 
     function strSlug($s) {

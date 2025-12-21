@@ -46,10 +46,10 @@ class Pipe_Cli_Route_Resolve {
             $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $unitList[$index] . "\n";
         }
 
-        // Show dynamic params if any
-        if (!empty($result['params'])) {
+        // Show dynamic param if any
+        if (!empty($result['param'])) {
             $message .= '  Params :' . "\n";
-            foreach ($result['params'] as $key => $value) {
+            foreach ($result['param'] as $key => $value) {
                 $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . "\n";
             }
         }

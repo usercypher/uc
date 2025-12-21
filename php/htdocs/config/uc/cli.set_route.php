@@ -5,7 +5,7 @@
  * ------------------------------------------------------------------------
  * CLI Pipe
  * ------------------------------------------------------------------------
- * Handles dynamic CLI piping through optional route params.
+ * Handles dynamic CLI piping through optional route param.
  */
 $group = array(
 

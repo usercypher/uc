@@ -56,7 +56,7 @@ class Lib_Database {
         return $this->conn[$key]->exec($query);
     }
 
-    function stmt($query, $params, $key = '_') {
+    function stmt($query, $param, $key = '_') {
         $stmt = $this->conn[$key]->prepare($query);
         if (!$stmt) {
             $error = $this->conn[$key]->errorInfo();
@@ -73,7 +73,7 @@ class Lib_Database {
 
         $i = 1;
 
-        foreach ($params as $value) {
+        foreach ($param as $value) {
             $type = strtolower(gettype($value));
             $type = isset($typeMap[$type]) ? $typeMap[$type] : PDO::PARAM_STR;
             $stmt->bindValue($i++, $value, $type);

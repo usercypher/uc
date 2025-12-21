@@ -19,7 +19,7 @@ class Pipe_Cli_Help {
         $seen = array();
 
         if (!$target) {
-            $route = $input->getFrom($input->params, 'on-unknown-route', array(''));
+            $route = $input->getFrom($input->param, 'on-unknown-route', array(''));
             $message .= 'No route \'' . $route[0] . '\' found, list:' . "\n";
 
             for ($i = 0; $i < count($routes); $i++) {

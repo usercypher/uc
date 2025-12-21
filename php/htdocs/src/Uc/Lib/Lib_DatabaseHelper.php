@@ -42,8 +42,8 @@ class Lib_DatabaseHelper {
         return $this->db->execute($query, $this->conn);
     }
 
-    function stmt($query, $params) {
-        return $this->db->stmt($query, $params, $this->conn);
+    function stmt($query, $param) {
+        return $this->db->stmt($query, $param, $this->conn);
     }
 
     function fetch($stmt) {
@@ -149,34 +149,34 @@ class Lib_DatabaseHelper {
         return isset($data[$this->key]) ? $this->update($data) : $this->insert($data);
     }
 
-    function query($query, $params = array()) {
-        $stmt = $this->stmt($query, $params);
+    function query($query, $param = array()) {
+        $stmt = $this->stmt($query, $param);
         return $this->fetchAll($stmt);
     }
 
-    function one($conditions = '', $params = array(), $columns = '*') {
+    function one($conditions = '', $param = array(), $columns = '*') {
         $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
-        $stmt = $this->stmt($query, $params);
+        $stmt = $this->stmt($query, $param);
         return $this->fetch($stmt);
     }
 
-    function all($conditions = '', $params = array(), $columns = '*') {
+    function all($conditions = '', $param = array(), $columns = '*') {
         $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions;
-        $stmt = $this->stmt($query, $params);
+        $stmt = $this->stmt($query, $param);
         return $this->fetchAll($stmt);
     }
 
-    function count($conditions = '', $params = array()) {
+    function count($conditions = '', $param = array()) {
         $query = 'SELECT COUNT(*) AS total FROM ' . $this->table . ' ' . $conditions;
-        $stmt = $this->stmt($query, $params);
+        $stmt = $this->stmt($query, $param);
         $result = $this->fetch($stmt);
 
         return $result ? (int) $result['total'] : 0;
     }
 
-    function exists($conditions, $params = array()) {
+    function exists($conditions, $param = array()) {
         $query = 'SELECT 1 FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
-        $stmt = $this->stmt($query, $params);
+        $stmt = $this->stmt($query, $param);
         return $this->fetch($stmt) !== false;
     }
 
