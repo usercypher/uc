@@ -10,7 +10,7 @@ function config() {
             'dev' => array(
                 // Environment Settings
                 'DIR_WEB' => 'web/',
-                'URL_WEB' => 'web/', // URL path for web access
+                'URL_WEB' => '/web/', // URL path for web access
                 // Error Settings
                 'ERROR_TEMPLATES' => array(
                     'text/plain' => 'res/uc/view/text.plain.php',
@@ -22,9 +22,9 @@ function config() {
                 'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
                 'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
                 // Routing Configuration
-                'ROUTE_FILE' => 'index.php', // file for index (usually server root), become useless when route rewrite is enable
                 'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
                 // If enabled, routing is handled via clean URLs (e.g., /home),
+                // If not enabled, routing is handles via query parameter (e.g., ?route=/home),
                 /*
                  * Web Server Configuration for URL Rewriting:
                  *
@@ -77,7 +77,6 @@ function config() {
                 'SHOW_ERRORS' => 0,
                 'LOG_ERRORS' => 1,
                 // Routing Configuration
-                'ROUTE_FILE' => 'index.php',
                 'ROUTE_REWRITE' => 0,
                 // Logging Configuration
                 'DIR_LOG' => 'var/log/',

@@ -17,7 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
-define('UC_PHP_VERSION', '0.0.0');
+define('UC_PHP_VERSION', '0.0.1');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -38,9 +38,9 @@ function input_http($in) {
 
     $in->server = $_SERVER;
 
-    $contentHeaders = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true, 'CONTENT_MD5' => true);
+    $contentHeaders = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
     foreach ($_SERVER as $key => $value) {
-        if (strpos($key, 'HTTP_') === 0) {
+        if (substr($key, 0, 5) === 'HTTP_') {
             $in->headers[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
         } elseif (isset($contentHeaders[$key])) {
             $in->headers[str_replace('_', '-', strtolower($key))] = $value;
@@ -332,7 +332,7 @@ class App {
                     }
                     $matches = array($routeSegment);
                     if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $routeSegment, $matches)) {
-                        foreach ($matches as $k => $v) $matches[$k] = urldecode($v);
+                        foreach ($matches as $k => $v) $matches[$k] = rawurldecode($v);
                         $params[$paramName] = (count($matches) === 1) ? $matches[0] : $matches;
                         $current = $value;
                         $matched = true;
@@ -381,14 +381,11 @@ class App {
     // Request Handling
 
     function process($input, $output) {
-        if (SAPI === 'cli') {
+        if (SAPI !== 'cli' && $this->ENV['ROUTE_REWRITE']) {
+            $input->route = (($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri;
+        } else {
             $input->route = '';
-            foreach ($input->positional as $positional) $input->route .= '/' . urlencode($positional);
-        } elseif ($this->ENV['ROUTE_REWRITE']) {
-            $pos = strpos($input->uri, '?');
-            $input->route = ($pos !== false) ? substr($input->uri, 0, $pos) : $input->uri;
-        } elseif (isset($input->query['route']) && $input->query['route']) {
-            $input->route = ($input->query['route'][0] === '/' ? '' : '/') . $input->query['route'];
+            foreach ((SAPI === 'cli' ? $input->positional : (isset($input->query['route']) && $input->query['route'] ? explode('/', $input->query['route'][0] === '/' ? substr($input->query['route'], 1) : $input->query['route']) : array())) as $routePart) $input->route .= '/' . rawurlencode($routePart);
         }
 
         $route = $this->resolveRoute($input->method, $input->route);
@@ -401,7 +398,7 @@ class App {
             if (!$success) break;
         }
 
-        if (isset($route['error'])) trigger_error($route['http'] . '|' . $route['error']. E_USER_WARNING);
+        if (isset($route['error'])) return trigger_error($route['http'] . '|' . $route['error'], E_USER_WARNING);
 
         return array($input, $output, true);
     }

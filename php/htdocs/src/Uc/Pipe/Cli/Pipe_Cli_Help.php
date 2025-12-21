@@ -60,11 +60,10 @@ class Pipe_Cli_Help {
 
     function flattenRoutesWithMethod($tree) {
         $routes = array();
-        asort($tree);
 
         foreach ($tree as $method => $branches) {
             $paths = $this->flattenRoutes($branches);
-            asort($paths);
+            sort($paths);
 
             foreach ($paths as $route) {
                 $route['method'] = $method; // assignment instead of '+'
