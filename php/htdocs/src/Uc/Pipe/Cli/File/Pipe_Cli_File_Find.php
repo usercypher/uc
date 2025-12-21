@@ -5,16 +5,16 @@ class Pipe_Cli_File_Find {
         $success = true;
         $message = '';
 
-        $directory = $input->getFrom($input->options, 'dir');
+        $directory = $input->getFrom($input->query, 'dir');
 
         // If dir is not provided, use current working directory
-        if ($directory === null || $directory === '') {
+        if (empty($directory)) {
             $directory = getcwd();
         }
 
-        $search = $input->getFrom($input->options, 'search');
+        $search = $input->getFrom($input->query, 'search');
 
-        if ($search === null) {
+        if (empty($search)) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: php [file] file find --search="searchString" [--dir="directoryPath"]' . "\n";
             $output->content = $message;

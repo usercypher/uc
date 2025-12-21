@@ -16,10 +16,10 @@ class Pipe_Cli_Route_Resolve {
 
         $message = '';
 
-        $method = $input->getFrom($input->options, 'method', 'GET');
-        $route = $input->getFrom($input->options, 'route');
+        $method = $input->getFrom($input->query, 'method', 'GET');
+        $route = $input->getFrom($input->query, 'route');
 
-        if ($route === null) {
+        if (empty($route)) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: --route=/route/path' . "\n";
             $output->content = $message;
@@ -31,7 +31,7 @@ class Pipe_Cli_Route_Resolve {
         $result = $this->app->resolveRoute($method, $route);
 
         if (isset($result['error'])) {
-            $message .= 'Route Error [http ' . $result['http'] . ']: ' . $result['error'] . "\n";
+            $message .= 'Route Error: ' . $result['error'] . "\n";
             $output->content = $message;
             $output->code = 1;
             return array($input, $output, $success);

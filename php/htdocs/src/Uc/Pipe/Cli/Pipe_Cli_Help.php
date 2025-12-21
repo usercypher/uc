@@ -15,7 +15,7 @@ class Pipe_Cli_Help {
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
 
-        $target = $input->getFrom($input->options, 'autocomplete');
+        $target = $input->getFrom($input->query, 'autocomplete');
         $seen = array();
 
         if (!$target) {

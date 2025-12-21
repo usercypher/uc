@@ -15,7 +15,7 @@ class Pipe_Cli_Unit_Create {
 
         $className = $input->getFrom($input->params, 'name');
 
-        if (!$className) {
+        if (empty($className)) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: php [file] unit create [name]' . "\n";
             $output->content = $message;
@@ -24,11 +24,11 @@ class Pipe_Cli_Unit_Create {
             return array($input, $output, $success);
         }
 
-        $classPath = $input->getFrom($input->options, 'path', '') . $className . '.php';
-        $tempDeps = $input->getFrom($input->options, 'args');
+        $classPath = $input->getFrom($input->query, 'path', '') . $className . '.php';
+        $tempDeps = $input->getFrom($input->query, 'args');
         $classDeps = $tempDeps ? explode(',', $tempDeps) : array();
 
-        $classContent = $this->classContent($className, $classDeps, $input->getFrom($input->flags, 'pipe'));
+        $classContent = $this->classContent($className, $classDeps, isset($input->query['pipe']));
 
         $fullPath = $this->app->dirRoot('' . $classPath);
         $this->app->write($fullPath, $classContent);

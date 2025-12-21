@@ -13,9 +13,12 @@ class Pipe_Cli_Route_Run {
         $success = true;
         $message = '';
 
-        $route = $input->getFrom($input->options, 'route');
+        $tempInput = new Input;
+        $tempInput->source = 'http';
 
-        if ($route === null) {
+        $tempInput->route = $input->getFrom($input->query, 'route');
+
+        if (empty($tempInput->route)) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: --route=/route/path' . "\n";
             $output->content = $message;
@@ -25,34 +28,25 @@ class Pipe_Cli_Route_Run {
         }
 
         // Handle headers
-        if (isset($input->options['header'])) {
-            $headers = explode("\n", $input->options['header']);
+        if (isset($input->query['header'])) {
+            $headers = explode("\n", $input->query['header']);
             foreach ($headers as $header) {
                 list($k, $v) = explode(':', $header, 2);
-                $input->headers[strtolower(trim($k))] = trim($v);
+                $tempInput->headers[strtolower(trim($k))] = trim($v);
             }
         }
 
         // Handle content and method
-        $input->content = $input->getFrom($input->options, 'content', '');
-        $input->method = $input->getFrom($input->options, 'method', 'GET');
+        $tempInput->content = $input->getFrom($input->query, 'content', '');
+        $tempInput->method = $input->getFrom($input->query, 'method', 'GET');
 
         // Handle query string if provided
-        if (isset($input->options['query'])) {
-            parse_str($input->options['query'], $input->query);
+        if (isset($input->query['query'])) {
+            parse_str($input->query['query'], $tempInput->query);
         }
 
-        // Save the current positional arguments
-        $savePostional = $input->positional;
-
-        // Update positional arguments
-        $input->positional = array_filter(explode('/', $route));
-
         // Dispatch the request
-        list($input, $output) = $this->app->process($input, $output);
-
-        // Restore the original positional arguments
-        $input->positional = $savePostional;
+        list($_, $output) = $this->app->process($tempInput, $output);
 
         return array($input, $output, $success);
     }

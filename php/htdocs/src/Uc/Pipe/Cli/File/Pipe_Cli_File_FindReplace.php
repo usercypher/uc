@@ -5,17 +5,17 @@ class Pipe_Cli_File_FindReplace {
         $success = true;
         $message = '';
 
-        $directory = $input->getFrom($input->options, 'dir');
+        $directory = $input->getFrom($input->query, 'dir');
 
         // If dir is not provided, use current working directory
-        if ($directory === null || $directory === '') {
+        if (empty($directory)) {
             $directory = getcwd();
         }
 
-        $search = $input->getFrom($input->options, 'search');
-        $replace = $input->getFrom($input->options, 'replace');
+        $search = $input->getFrom($input->query, 'search');
+        $replace = $input->getFrom($input->query, 'replace');
 
-        if ($search === null || $replace === null) {
+        if (empty($search) || empty($replace)) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: php [file] file find-replace --search="searchString" --replace="replaceString" --dir="directoryPath"' . "\n";
             $output->content = $message;
