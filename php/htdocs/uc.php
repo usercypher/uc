@@ -17,7 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
-define('UC_PHP_VERSION', '0.2.0');
+define('UC_PHP_VERSION', '0.3.0');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -46,16 +46,13 @@ function input_http($in) {
             $in->headers[str_replace('_', '-', strtolower($key))] = $value;
         }
     }
+    $in->headers['cookie'] = $_COOKIE;
 
     $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $in->query = $_GET;
-    $in->cookies = $_COOKIE;
-    $in->files = $_FILES;
-    $in->parsed = $_POST;
+    $in->parsed = array_merge($_POST, $_FILES);
     $in->content = file_get_contents('php://input');
-
-    $in->route = (($pos = strpos($in->uri, '?')) !== false) ? substr($in->uri, 0, $pos) : $in->uri;
 
     return $in;
 }
@@ -68,8 +65,6 @@ function input_cli($in) {
     $in->argc = isset($argc) ? $argc : 0;
     $in->argv = isset($argv) ? $argv : array();
 
-    $in->route = '';
-
     for ($i = 1; $in->argc > $i; $i++) {
         $arg = $in->argv[$i];
         if (substr($arg, 0, 2) === '--') {
@@ -80,17 +75,17 @@ function input_cli($in) {
                 $in->query[] = urlencode(substr($arg, 2));
             }
         } else {
-            $in->route .= '/' . rawurlencode($arg);
+            $in->uri .= '/' . rawurlencode($arg);
         }
     }
 
-    parse_str(implode('&', $in->query), $in->query);
+    parse_str(implode('&', $in->query) , $in->query);
 
     return $in;
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $cookies = array(), $files = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array();
+    var $source = '', $data = array(), $server = array(), $headers = array(), $content = '', $method = '', $uri = '', $route = '/', $query = array(), $parsed = array(), $params = array(), $argc = 0, $argv = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -391,6 +386,8 @@ class App {
     function process($input, $output) {
         if (SAPI !== 'cli' && !$this->ENV['ROUTE_REWRITE']) {
             foreach ((isset($input->query['route']) && $input->query['route'] ? explode('/', $input->query['route'][0] === '/' ? substr($input->query['route'], 1) : $input->query['route']) : array()) as $routePart) $input->route .= '/' . rawurlencode($routePart);
+        } else {
+            $input->route = (($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri;
         }
 
         $route = $this->resolveRoute($input->method, $input->route);
