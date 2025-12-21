@@ -19,6 +19,7 @@ function config() {
                 ),
                 'ERROR_NON_FATAL' => E_NOTICE | E_DEPRECATED | E_USER_NOTICE | E_USER_DEPRECATED, // set non fatal, it only logs (if log error is enabled)
                 'ERROR_LOG_FILE' => 'error', // Error log file
+                'ERROR_MAX_LENGTH' => 4096, // Error string max length
                 'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
                 'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
                 // Routing Configuration
@@ -74,6 +75,7 @@ function config() {
                 ),
                 'ERROR_NON_FATAL' => E_NOTICE | E_DEPRECATED | E_USER_NOTICE | E_USER_DEPRECATED,
                 'ERROR_LOG_FILE' => 'error',
+                'ERROR_MAX_LENGTH' => 4096,
                 'SHOW_ERRORS' => 0,
                 'LOG_ERRORS' => 1,
                 // Routing Configuration
