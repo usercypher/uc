@@ -45,7 +45,6 @@ class Lib_Curl {
         $this->result->header = array();
         $this->result->content = curl_exec($ch);
         $this->result->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $this->result->type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
         $this->result->error = curl_error($ch);
         $this->result->info = curl_getinfo($ch);
 

@@ -42,10 +42,10 @@ class Pipe_ErrorHandler {
             'ERROR_ACCEPT' => $this->input->getFrom($this->input->header, 'accept', ''),
             'ERROR_TRACE' => $e->getTrace(),
         ));
-
+        $this->output->header['content-type'] = $result['type'];
         $this->output->content = $result['content'];
         $this->output->code = $result['code'];
-        $this->output->type = $result['type'];
+        $this->output->version = $this->input->version;
 
         $input = $this->input;
         $output = $this->output;

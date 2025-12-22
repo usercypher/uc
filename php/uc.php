@@ -17,7 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
-define('UC_PHP_VERSION', '0.5.0');
+define('UC_PHP_VERSION', '0.6.0');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -47,6 +47,7 @@ function input_http($in) {
         }
     }
 
+    $in->version = isset($_SERVER['SERVER_PROTOCOL']) ? substr($_SERVER['SERVER_PROTOCOL'], 5) : '1.1';
     $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $in->route = (($pos = strpos($in->uri, '?')) !== false) ? substr($in->uri, 0, $pos) : $in->uri;
@@ -86,7 +87,7 @@ function input_cli($in) {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $header = array(), $content = '', $method = '', $uri = '', $route = '/', $cookie = array(), $query = array(), $frame = array(), $param = array(), $argc = 0, $argv = array();
+    var $source = '', $data = array(), $server = array(), $header = array(), $content = '', $method = '', $uri = '', $version = '1.1', $route = '/', $cookie = array(), $query = array(), $frame = array(), $param = array(), $argc = 0, $argv = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -103,12 +104,12 @@ class Input {
 }
 
 class Output {
-    var $header = array(), $content = '', $code = 200, $type = 'text/html';
+    var $header = array(), $content = '', $code = 200, $version = '1.1';
 
     function http($content) {
         if (!headers_sent()) {
-            header('HTTP/1.1 ' . $this->code);
-            if (!isset($this->header['content-type'])) header('content-type: ' . $this->type);
+            header('HTTP/' . $this->version . ' ' . $this->code);
+            if (!isset($this->header['content-type'])) $this->header['content-type'] = 'text/html';
             foreach ($this->header as $key => $value) {
                 if (is_array($value)) {
                     foreach ($value as $v) header($key . ': ' . $v, false);

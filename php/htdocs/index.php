@@ -33,6 +33,8 @@ function index() {
 
     list($input, $output) = $app->process($input, $output);
 
+    $output->version = $input->version;
+
     switch ($input->source) {
         case 'cli':
             $output->std($output->content, $output->code > 0);
