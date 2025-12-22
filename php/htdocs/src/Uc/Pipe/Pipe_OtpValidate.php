@@ -13,7 +13,7 @@ class Pipe_OtpValidate {
     function process($input, $output) {
         $success = true;
 
-        if (!isset($input->parsed['otp_token'])) {
+        if (!isset($input->frame['otp_token'])) {
             $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid otp token')
@@ -31,7 +31,7 @@ class Pipe_OtpValidate {
             $success = false;
         }
 
-        if ($input->parsed['otp_token'] != $otpToken) {
+        if ($input->frame['otp_token'] != $otpToken) {
             $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid otp token')

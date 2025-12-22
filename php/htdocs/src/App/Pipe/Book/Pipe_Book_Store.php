@@ -15,7 +15,7 @@ class Pipe_Book_Store {
     public function process($input, $output) {
         $success = true;
 
-        $data = $input->parsed;
+        $data = $input->frame;
 
         $route = trim($input->getFrom($input->query, 'redirect', ''), '/');
 

@@ -13,7 +13,7 @@ class Pipe_CsrfValidate {
     function process($input, $output) {
         $success = true;
 
-        if (!isset($input->parsed['csrf_token'])) {
+        if (!isset($input->frame['csrf_token'])) {
             $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid csrf token')
@@ -31,7 +31,7 @@ class Pipe_CsrfValidate {
             $success = false;
         }
 
-        if ($input->parsed['csrf_token'] != $csrfToken) {
+        if ($input->frame['csrf_token'] != $csrfToken) {
             $output->redirect($this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/')));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'invalid csrf token')
