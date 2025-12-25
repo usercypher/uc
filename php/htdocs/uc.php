@@ -17,7 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
-define('UC_PHP_VERSION', '0.6.0');
+define('UC_PHP_VERSION', '0.6.1');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -50,7 +50,6 @@ function input_http($in) {
     $in->version = isset($_SERVER['SERVER_PROTOCOL']) ? substr($_SERVER['SERVER_PROTOCOL'], 5) : '1.1';
     $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-    $in->route = (($pos = strpos($in->uri, '?')) !== false) ? substr($in->uri, 0, $pos) : $in->uri;
     $in->cookie = $_COOKIE;
     $in->query = $_GET;
     $in->frame = array_merge($_POST, $_FILES);
@@ -77,7 +76,7 @@ function input_cli($in) {
                 $in->query[] = urlencode(substr($arg, 2));
             }
         } else {
-            $in->route .= '/' . rawurlencode($arg);
+            $in->uri .= '/' . rawurlencode($arg);
         }
     }
 
@@ -87,7 +86,7 @@ function input_cli($in) {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $header = array(), $content = '', $method = '', $uri = '', $version = '1.1', $route = '/', $cookie = array(), $query = array(), $frame = array(), $param = array(), $argc = 0, $argv = array();
+    var $source = '', $data = array(), $server = array(), $header = array(), $content = '', $method = '', $uri = '', $version = '1.1', $route = '', $cookie = array(), $query = array(), $frame = array(), $param = array(), $argc = 0, $argv = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -389,6 +388,8 @@ class App {
         if (SAPI !== 'cli' && !$this->ENV['ROUTE_REWRITE']) {
             $input->route = '';
             foreach ((isset($input->query['route']) && $input->query['route'] ? explode('/', $input->query['route'][0] === '/' ? substr($input->query['route'], 1) : $input->query['route']) : array()) as $routePart) $input->route .= '/' . rawurlencode($routePart);
+        } else {
+            $input->route = (($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri;
         }
 
         $route = $this->resolveRoute($input->method, $input->route);
