@@ -17,7 +17,7 @@ limitations under the License.
 
 while (ob_get_level()) ob_end_clean();
 
-define('UC_PHP_VERSION', '0.6.1');
+define('UC_PHP_VERSION', '0.6.2');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -35,8 +35,6 @@ function d($var, $detailed = false) {
 
 function input_http($in) {
     $in->source = 'http';
-
-    $in->server = $_SERVER;
 
     $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
     foreach ($_SERVER as $key => $value) {
@@ -86,7 +84,7 @@ function input_cli($in) {
 }
 
 class Input {
-    var $source = '', $data = array(), $server = array(), $header = array(), $content = '', $method = '', $uri = '', $version = '1.1', $route = '', $cookie = array(), $query = array(), $frame = array(), $param = array(), $argc = 0, $argv = array();
+    var $source = '', $data = array(), $header = array(), $content = '', $method = '', $uri = '', $version = '1.1', $route = '', $cookie = array(), $query = array(), $frame = array(), $param = array(), $argc = 0, $argv = array();
 
     function getFrom(&$arr, $key, $default = null) {
         return isset($arr[$key]) ? $arr[$key] : $default;
@@ -386,7 +384,6 @@ class App {
 
     function process($input, $output) {
         if (SAPI !== 'cli' && !$this->ENV['ROUTE_REWRITE']) {
-            $input->route = '';
             foreach ((isset($input->query['route']) && $input->query['route'] ? explode('/', $input->query['route'][0] === '/' ? substr($input->query['route'], 1) : $input->query['route']) : array()) as $routePart) $input->route .= '/' . rawurlencode($routePart);
         } else {
             $input->route = (($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri;

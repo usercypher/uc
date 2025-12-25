@@ -23,7 +23,7 @@ function index() {
     $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('ROUTE_FILE', substr((($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri, 1));
-    $app->setEnv('URL_ROOT', (($input->getFrom($input->server, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->header, 'host', '127.0.0.1') . '/');
+    $app->setEnv('URL_ROOT', (($input->getFrom($_SERVER, 'HTTPS', 'off') !== 'off') ? 'https' : 'http') . "://" . $input->getFrom($input->header, 'host', '127.0.0.1') . '/');
     $app->setEnv('ERROR_ACCEPT', $input->getFrom($input->header, 'accept', ''));
 
     $output = new Output();
