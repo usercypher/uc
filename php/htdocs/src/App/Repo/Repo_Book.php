@@ -7,21 +7,26 @@ class Repo_Book extends Lib_DatabaseHelper {
             $database
         ) = $args;
 
-        $database->connect([
+        parent::setDb($database, $database->connect([
             'host' => $app->getEnv('DB_HOST'), 
             'port' => $app->getEnv('DB_PORT'),
             'name' => $app->getEnv('DB_NAME'),
             'user' => $app->getEnv('DB_USER'),
             'pass' => $app->getEnv('DB_PASS'),
             'time' => $app->getEnv('DB_TIME', '+00:00')
-        ]);
-
-        parent::setDb($database);
+        ]));
         parent::setTable('books');
+        parent::setSchema([
+            'id' => 'integer',
+            'title' => 'string',
+            'publisher' => 'string',
+            'author' => 'string',
+            'year' => 'string',
+        ]);
     }
 
     public function validateAndInsert($data) {
-        $bookData = $data['book'];
+        $bookData = $this->cast($data['book']);
 
         if ($this->exists('WHERE title = ?', array($bookData['title']))) {
             $this->addMessage('error', 'Title Already Exists.');
@@ -36,10 +41,10 @@ class Repo_Book extends Lib_DatabaseHelper {
     }
 
     public function validateAndUpdate($data) {
-        $bookData = $data['book'];
-        $bookOldData = $data['book_old'];
+        $bookData = $this->cast($data['book']);
+        $bookOldData = $this->cast($data['book_old']);
 
-        if ($this->exists('WHERE title = ?', array($bookData['title'])) && $bookOldData['title'] !== $bookData['title']) {
+        if ($bookOldData['title'] !== $bookData['title'] && $this->exists('WHERE title = ?', array($bookData['title']))) {
             $this->addMessage('error', 'Title Already Exists.');
             return false;
         }
@@ -52,7 +57,7 @@ class Repo_Book extends Lib_DatabaseHelper {
     }
 
     public function validateAndDelete($data) {
-        $bookData = $data['book'];
+        $bookData = $this->cast($data['book']);
 
         if (!$this->exists('WHERE id = ?', array($bookData['id']))) {
             $this->addMessage('error', 'Book not found.');

@@ -1,4 +1,5 @@
 <?php
+
 header('Content-Type: text/plain');
 require('Lib_Database.php');
 require('Lib_DatabaseHelper.php');
@@ -8,18 +9,22 @@ function msg($success, $msg) {
 }
 
 $db = new Lib_Database();
-$conn = $db->connect([
+$model = new Lib_DatabaseHelper();
+$model->setDb($db, $db->connect([
     'host' => '127.0.0.1',
     'port' => '3306',
     'name' => 'test',
     'user' => 'root',
     'pass' => '',
     'time' => '+00:00'
-]);
-
-$model = new Lib_DatabaseHelper();
-$model->setConn($conn);
+]));
 $model->setTable('table_name', 'id');
+$model->setSchema([
+    'id' => 'integer',
+    'name' => 'string',
+    'email' => 'string',
+    'age' => 'integer',
+]);
 
 // Create table
 $createResult = $model->create("
@@ -111,6 +116,15 @@ msg(is_numeric($userCount) && $userCount === 3, "validate count()");
 // Check if user with email exists
 $exists = $model->exists('WHERE email = ?', ['johndoe@example.com']);
 msg(is_bool($exists), "validate exists()");
+
+// Check if casting works
+$casted = $model->cast(['id' => '1', 'name' => 123, 'age' => '25']);
+msg(
+    $casted['id'] === 1 && is_int($casted['id']) &&
+    $casted['name'] === '123' && is_string($casted['name']) &&
+    $casted['age'] === 25 && is_int($casted['age']),
+    "validate cast()"
+);
 
 msg($model->drop(), "validate drop()");
 

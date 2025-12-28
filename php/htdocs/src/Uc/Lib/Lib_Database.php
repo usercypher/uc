@@ -19,7 +19,7 @@ class Lib_Database {
             ));
             $this->conn[$key]->exec('SET time_zone = "' . $time . '"');
         }
-        return $this->conn[$key];
+        return $key;
     }
 
     function disconnect($key = '_') {

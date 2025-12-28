@@ -2,7 +2,7 @@
 
 class Lib_DatabaseHelper {
     var $messages = array();
-    var $db, $conn, $table, $key;
+    var $db, $conn, $table, $key, $schema = array();
 
     function setDb($db, $conn = '_') {
         $this->db = $db;
@@ -12,6 +12,10 @@ class Lib_DatabaseHelper {
     function setTable($table, $key = 'id') {
         $this->table = $table;
         $this->key = $key;
+    }
+
+    function setSchema($schema) {
+        $this->schema = $schema;
     }
 
     function addMessage($type, $message, $meta = array()) {
@@ -182,8 +186,32 @@ class Lib_DatabaseHelper {
 
     function chunk(&$array, $chunkSize) {
         if (0 >= $chunkSize || empty($array)) return false;
-
         return array_splice($array, 0, $chunkSize);
+    }
+
+    function cast($data) {
+        $result = array();
+        foreach ($this->schema as $field => $type) {
+            if (isset($data[$field])) {
+                switch ($type) {
+                    case 'string':
+                        $result[$field] = (string) $data[$field];
+                        break;
+                    case 'integer':
+                        if (is_numeric($data[$field])) $result[$field] = (int) $data[$field];
+                        break;
+                    case 'double':
+                        if (is_numeric($data[$field])) $result[$field] = (float) $data[$field];
+                        break;
+                    case 'boolean':
+                        $result[$field] = (bool) $data[$field];
+                        break;
+                    default:
+                        $result[$field] = $data[$field];
+                }
+            }
+        }
+        return $result;
     }
 }
 ?>
