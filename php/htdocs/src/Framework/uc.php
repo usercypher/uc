@@ -829,8 +829,8 @@ class App {
         $ext = '';
         $pos = strrpos($file, '.');
         if ($pos !== false) {
-            $file = substr($file, 0, $pos);
             $ext = substr($file, $pos);
+            $file = substr($file, 0, $pos);
         }
 
         $logDir = $this->env['DIR_ROOT'] . $this->env['DIR_LOG'];

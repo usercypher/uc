@@ -1,14 +1,16 @@
 <?php
 
-// Uncomment to generate 'var/data/app.state.dat' or run 'php compile.php' on terminal.
-//require 'compile.php';  // Generates settings and exits script
+// Uncomment to generate 'var/data/app.state.dat' or run 'php bin/compile.php' on terminal.
+//require 'bin/compile.php';  // Generates settings and exits script
 
-require 'uc.php';
+require 'src/Framework/uc.php';
 require 'config/settings.php';
 
 function index() {
     $app = new App();
     $app->init();
+
+    $app->setEnv('DIR_ROOT', $app->dir(dirname(__FILE__)) . '/');
 
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];

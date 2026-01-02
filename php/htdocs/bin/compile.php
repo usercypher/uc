@@ -1,11 +1,13 @@
 <?php
 
-require 'uc.php';
-require 'config/settings.php';
+require str_replace('\\', '/', dirname(__FILE__)) . '/../src/Framework/uc.php';
+require str_replace('\\', '/', dirname(__FILE__)) . '/../config/settings.php';
 
 function compile() {
     $app = new App();
     $app->init();
+
+    $app->setEnv('DIR_ROOT',  $app->dir(dirname(__FILE__)) . '/../');
 
     $settings = settings();
     $mode = $settings['mode'][basename(__FILE__)];
@@ -26,7 +28,7 @@ function compile() {
 
     scan_dir($app->dirRoot('config'), $files);
 
-    require('config/auto_add_unit.php');
+    require(str_replace('\\', '/', dirname(__FILE__)) . '/../config/auto_add_unit.php');
 
     foreach ($files['add_unit'] as $file) {
         require($file);
@@ -36,7 +38,7 @@ function compile() {
         require($file);
     }
 
-    require('config/set_pipes.php');
+    require(str_replace('\\', '/', dirname(__FILE__)) . '/../config/set_pipes.php');
 
     foreach ($files['set_route'] as $file) {
         require($file);
