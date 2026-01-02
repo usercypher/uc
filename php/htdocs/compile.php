@@ -1,47 +1,84 @@
 <?php
 
+require 'uc.php';
+require 'config/settings.php';
+
 function compile() {
-    require('uc.php');
     $app = new App();
     $app->init();
 
-    require('uc.config.php');
-    $config = config();
-    $mode = $config['mode'][basename(__FILE__)];
+    $settings = settings();
+    $mode = $settings['mode'][basename(__FILE__)];
 
-    foreach ($config['ini'][$mode] as $key => $value) {
+    foreach ($settings['ini'][$mode] as $key => $value) {
         $app->setIni($key, $value);
     }
 
-    foreach ($config['env'][$mode] as $key => $value) {
+    foreach ($settings['env'][$mode] as $key => $value) {
         $app->setEnv($key, $value);
     }
 
+    $files = array(
+        'add_unit' => array(),
+        'set_unit' => array(),
+        'set_route' => array(),
+    );
+
+    scan_dir($app->dirRoot('config'), $files);
+
     require('config/auto_add_unit.php');
 
-    if ($files = glob($app->dirRoot('config/*/*.add_unit.php'))) {
-        foreach ($files as $file) {
-            require($file);
-        }
+    foreach ($files['add_unit'] as $file) {
+        require($file);
     }
 
-    if ($files = glob($app->dirRoot('config/*/*.set_unit.php'))) {
-        foreach ($files as $file) {
-            require($file);
-        }
+    foreach ($files['set_unit'] as $file) {
+        require($file);
     }
 
     require('config/set_pipes.php');
 
-    if ($files = glob($app->dirRoot('config/*/*.set_route.php'))) {
-        foreach ($files as $file) {
-            require($file);
-        }
+    foreach ($files['set_route'] as $file) {
+        require($file);
     }
 
-    $app->save('var/compiled/app.state');
+    $app->save('var/data/app.state.dat');
 
     exit(0);
 }
+
+function scan_dir($dir, &$result) {
+    $handle = opendir($dir);
+
+    if ($handle === false) {
+        return;
+    }
+
+    while (($item = readdir($handle)) !== false) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+
+        $path = $dir . '/' . $item;
+
+        if (is_dir($path)) {
+            scan_dir($path, $result);
+            continue;
+        }
+
+        if (is_file($path)) {
+            if (substr($item, -13) === '.add_unit.php') {
+                $result['add_unit'][] = $path;
+            } elseif (substr($item, -13) === '.set_unit.php') {
+                $result['set_unit'][] = $path;
+            } elseif (substr($item, -14) === '.set_route.php') {
+                $result['set_route'][] = $path;
+            }
+        }
+    }
+
+    closedir($handle);
+}
+
 
 compile();

@@ -13,7 +13,7 @@ class Pipe_Book_Create {
     public function process($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dirRoot('res/app/view/create.html.php'), array(
+        $output->content = $this->app->template($this->app->dirRoot('res/App/view/create.html.php'), array(
             'app' => $this->app,
             'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),

@@ -19,7 +19,7 @@ while (ob_get_level()) {
     ob_end_clean();
 }
 
-define('UC_PHP_VERSION', '0.6.3');
+define('UC_PHP_VERSION', '0.6.4');
 define('SAPI', php_sapi_name());
 
 if (strpos(strtolower(PHP_OS), 'win') !== false) {
@@ -198,7 +198,7 @@ class App {
 
         'ERROR_TEMPLATES' => array(),
         'ERROR_NON_FATAL' => 0,
-        'ERROR_LOG_FILE' => 'error',
+        'ERROR_LOG_FILE' => 'error.log',
         'ERROR_MAX_LENGTH' => 4096,
         'SHOW_ERRORS' => true,
         'LOG_ERRORS' => false,
@@ -246,13 +246,13 @@ class App {
     // Config Management
 
     function save($file) {
-        $file = $this->env['DIR_ROOT'] . $file . '.dat';
+        $file = $this->env['DIR_ROOT'] . $file;
         $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
         echo 'File created: ' . $file . "\n";
     }
 
     function load($file) {
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file . '.dat'));
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file));
     }
 
     // Error Management
@@ -541,30 +541,30 @@ class App {
             $option['dir_as_namespace'] = false;
         }
 
-        if ($dp = opendir($this->env['DIR_ROOT'] . $path)) {
-            while (($file = readdir($dp)) !== false) {
-                if ($file === '.' || $file === '..') {
+        if ($handle = opendir($this->env['DIR_ROOT'] . $path)) {
+            while (($item = readdir($handle)) !== false) {
+                if ($item === '.' || $item === '..') {
                     continue;
                 }
 
                 foreach ($option['ignore'] as $pattern) {
-                    if (($pattern[0] === '?' && strpos($file, substr($pattern, 1))) || ($pattern[0] !== '?' && $pattern === $file)) {
+                    if (($pattern[0] === '?' && strpos($item, substr($pattern, 1))) || ($pattern[0] !== '?' && $pattern === $item)) {
                         continue 2;
                     }
                 }
 
-                $isDir = is_dir($this->env['DIR_ROOT'] . $path . $file);
+                $isDir = is_dir($this->env['DIR_ROOT'] . $path . $item);
 
                 if ($isDir && ($option['max'] === -1 || $option['max'] > $option['depth'])) {
                     $subOption = $option;
                     $subOption['depth']++;
-                    $subOption['namespace'] .= $file . '\\';
-                    $this->autoAddUnit($path . $file . '/', $subOption);
-                } elseif (!$isDir && substr($file, -4) === '.php') {
-                    $this->addUnit(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($file, 0, -4), $path);
+                    $subOption['namespace'] .= $item . '\\';
+                    $this->autoAddUnit($path . $item . '/', $subOption);
+                } elseif (!$isDir && substr($item, -4) === '.php') {
+                    $this->addUnit(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($item, 0, -4), $path);
                 }
             }
-            closedir($dp);
+            closedir($handle);
         }
     }
 
@@ -753,6 +753,10 @@ class App {
         return $base . ($param ? strtr($s, $param) : $s);
     }
 
+    function urlRoot($s = '') {
+        return $this->env['URL_ROOT'] . $s;
+    }
+
     function urlWeb($s, $param = array()) {
         return $this->env['URL_WEB'] . ($param ? strtr($s, $param) : $s);
     }
@@ -822,13 +826,20 @@ class App {
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
+        $ext = '';
+        $pos = strrpos($file, '.');
+        if ($pos !== false) {
+            $file = substr($file, 0, $pos);
+            $ext = substr($file, $pos);
+        }
+
         $logDir = $this->env['DIR_ROOT'] . $this->env['DIR_LOG'];
-        $logFile = $logDir . $file . '.log';
+        $logFile = $logDir . $file . $ext;
 
         $this->write($logFile, '[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . "\n", true);
 
         if (filesize($logFile) >= $this->env['LOG_SIZE_LIMIT_MB'] * 1048576) {
-            $newLogFile = $logDir . $file . '_' . date('Y-m-d_H-i-s') . '.log';
+            $newLogFile = $logDir . '/' . $file . '_' . date('Y-m-d_H-i-s') . $ext;
             rename($logFile, $newLogFile);
         }
 
@@ -839,12 +850,12 @@ class App {
             $prefix = $file . '_';
             $prefixLen = strlen($prefix);
             $logFilesMTime = array();
-            if ($dp = opendir($logDir)) {
-                while (($entry = readdir($dp)) !== false) {
-                    if ($entry === '.' || $entry === '..' || substr($entry, 0, $prefixLen) !== $prefix) {
+            if ($handle = opendir($logDir)) {
+                while (($item = readdir($handle)) !== false) {
+                    if ($item === '.' || $item === '..' || substr($item, 0, $prefixLen) !== $prefix) {
                         continue;
                     }
-                    $lf = $logDir . $entry;
+                    $lf = $logDir . $item;
                     $lfmtime = filemtime($lf);
                     if ($time - $lfmtime > $this->env['LOG_RETENTION_DAYS'] * 86400) {
                         unlink($lf);
@@ -852,7 +863,7 @@ class App {
                     }
                     $logFilesMTime[$lf] = $lfmtime;
                 }
-                closedir($dp);
+                closedir($handle);
             }
 
             asort($logFilesMTime);

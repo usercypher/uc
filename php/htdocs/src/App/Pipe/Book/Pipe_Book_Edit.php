@@ -18,7 +18,7 @@ class Pipe_Book_Edit {
         $data = $input->param;
         $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
 
-        $output->content = $this->app->template($this->app->dirRoot('res/app/view/edit.html.php'), array(
+        $output->content = $this->app->template($this->app->dirRoot('res/App/view/edit.html.php'), array(
             'app' => $this->app,
             'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),

@@ -15,7 +15,7 @@ class Pipe_Book_Home {
     public function process($input, $output) {
         $success = true;
         
-        $output->content = $this->app->template($this->app->dirRoot('res/app/view/home.html.php'), array(
+        $output->content = $this->app->template($this->app->dirRoot('res/App/view/home.html.php'), array(
             'app' => $this->app,
             'current_route' => $input->route,
             'flash' => $this->session->unset('flash'),
