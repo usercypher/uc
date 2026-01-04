@@ -15,23 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Version 0.6.5
+
 while (ob_get_level()) {
     ob_end_clean();
 }
 
-define('UC_PHP_VERSION', '0.6.4');
-define('SAPI', php_sapi_name());
-
-if (strpos(strtolower(PHP_OS), 'win') !== false) {
-    define('DS', '\\');
-    define('EOL', "\r\n");
-} else {
-    define('DS', '/');
-    define('EOL', "\n");
-}
-
 function d($var, $detailed = false) {
-    if (SAPI !== 'cli' && !headers_sent()) {
+    if (php_sapi_name() !== 'cli' && !headers_sent()) {
         header('Content-Type: text/plain');
     }
     $detailed ? var_dump($var) : print_r($var);
@@ -55,7 +46,6 @@ function input_http($in) {
     $in->cookie = $_COOKIE;
     $in->query = $_GET;
     $in->frame = array_merge($_POST, $_FILES);
-    $in->content = file_get_contents('php://input');
 
     return $in;
 }
@@ -186,6 +176,8 @@ class App {
     var $pathListCache = array();
 
     var $env = array(
+        'SAPI' => '',
+
         'DIR_ROOT' => '',
         'DIR_WEB' => '',
         'DIR_LOG' => '',
@@ -212,6 +204,7 @@ class App {
     // Application Setup
 
     function init() {
+        $this->env['SAPI'] = php_sapi_name();
         $this->env['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
 
@@ -268,7 +261,7 @@ class App {
             ob_end_clean();
         }
 
-        if (SAPI === 'cli') {
+        if ($this->env['SAPI'] === 'cli') {
             fwrite(STDERR, $e['content']);
         } else {
             if (!headers_sent()) {
@@ -293,7 +286,7 @@ class App {
             $errstr = $parts[1];
         }
 
-        if (SAPI === 'cli' && $code > 255) {
+        if ($this->env['SAPI'] === 'cli' && $code > 255) {
             $code = 1;
         }
 
@@ -301,7 +294,7 @@ class App {
             $errstr = substr($errstr, 0, $this->env['ERROR_MAX_LENGTH']) . '...';
         }
 
-        $error = '[php error ' . $errno . '] [' . SAPI . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
+        $error = '[php error ' . $errno . '] [' . $this->env['SAPI'] . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
 
         if ($this->env['LOG_ERRORS']) {
             $this->log($error, $this->env['ERROR_LOG_FILE']);
@@ -490,7 +483,7 @@ class App {
     // Request Handling
 
     function process($input, $output) {
-        if (SAPI !== 'cli' && !$this->env['ROUTE_REWRITE']) {
+        if ($input->source !== 'cli' && !$this->env['ROUTE_REWRITE']) {
             foreach (isset($input->query['route']) && $input->query['route'] ? explode('/', $input->query['route'][0] === '/' ? substr($input->query['route'], 1) : $input->query['route']) : array() as $routePart) {
                 $input->route .= '/' . rawurlencode($routePart);
             }

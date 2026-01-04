@@ -23,13 +23,13 @@ function index() {
         $app->setEnv($key, $value);
     }
 
-    $input = SAPI === 'cli' ? input_cli(new Input()) : input_http(new Input());
+    $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
 
     $app->setEnv('ROUTE_FILE', substr((($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri, 1));
     $app->setEnv('ERROR_ACCEPT', $input->getFrom($input->header, 'accept', ''));
 
     $output = new Output();
-    $output->code = SAPI === 'cli' ? 0 : 200;
+    $output->code = $app->getEnv('SAPI') === 'cli' ? 0 : 200;
 
     $app->load('var/data/app.state.dat');
 
