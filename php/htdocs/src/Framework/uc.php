@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Version 0.6.5
+// Version 0.7.0
 
 while (ob_get_level()) {
     ob_end_clean();
@@ -169,11 +169,11 @@ class App {
     var $unit = array();
     var $unitList = array();
     var $unitListIndex = 0;
+    var $path = array();
     var $pathList = array();
     var $pathListIndex = 0;
     var $unitInstCache = array();
     var $unitPathCache = array();
-    var $pathListCache = array();
 
     var $env = array(
         'SAPI' => '',
@@ -240,12 +240,12 @@ class App {
 
     function save($file) {
         $file = $this->env['DIR_ROOT'] . $file;
-        $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex)));
+        $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
         echo 'File created: ' . $file . "\n";
     }
 
     function load($file) {
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file));
+        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file));
     }
 
     // Error Management
@@ -562,25 +562,25 @@ class App {
     }
 
     function addUnit($unit, $path = '') {
-        $pathListIndex = isset($this->pathListCache[$path]) ? $this->pathListCache[$path] : array_search($path, $this->pathList);
-        if ($pathListIndex === false) {
-            $pathListIndex = $this->pathListIndex;
-            $this->pathList[$this->pathListIndex] = $path;
-            $this->pathListCache[$path] = $this->pathListIndex;
-            ++$this->pathListIndex;
+        $pathListIndex = null;
+        if (isset($this->path[$path])) {
+            $pathListIndex = $this->path[$path];
+        } else {
+            $pathListIndex = $this->pathListIndex++;
+            $this->path[$path] = $pathListIndex;
+            $this->pathList[$pathListIndex] = $path;
         }
 
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
-
         if (isset($this->unit[$unit]) && ($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE])) {
             trigger_error('500|Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
             return;
         }
 
-        $this->unit[$unit] = array($this->unitListIndex, $pathListIndex, $file, array(), array(), false);
-        $this->unitList[$this->unitListIndex] = $unit;
-        ++$this->unitListIndex;
+        $unitListIndex = $this->unitListIndex++;
+        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), false);
+        $this->unitList[$unitListIndex] = $unit;
     }
 
     function setUnit($unit, $option) {
