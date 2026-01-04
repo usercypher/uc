@@ -607,21 +607,22 @@ class App {
 
     function loadUnit($unit) {
         $stack = array($unit);
+        $top = 0;
         $seen = array();
         $md = array();
 
-        while ($stack) {
-            $unit = array_pop($stack);
-            $previousUnit = end($stack);
+        while ($top > -1) {
+            $unit = $stack[$top--];
+            $previousUnit = $top > -1 ? $stack[$top] : '';
             $seen[$previousUnit] = true;
 
             if (isset($seen[$unit])) {
-                trigger_error('500|Circular load detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+                trigger_error('500|Circular load detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
                 return;
             }
 
             if (isset($this->unitPathCache[$unit])) {
-                if (!$stack) {
+                if (0 > $top) {
                     return;
                 }
 
@@ -636,8 +637,8 @@ class App {
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $stack[] = $unit;
-                    $stack[] = $this->unitList[$load[$md[$unit][0]]];
+                    $top = $top + 2;
+                    $stack[$top] = $this->unitList[$load[$md[$unit][0]]];
                     ++$md[$unit][0];
                     continue;
                 }
@@ -653,24 +654,25 @@ class App {
 
     function makeUnit($unit, $new = false) {
         $stack = array($unit);
+        $top = 0;
         $seen = array();
         $md = array();
         $resolvedArgs = array();
         $class = null;
 
-        while ($stack) {
-            $unit = array_pop($stack);
-            $previousUnit = end($stack);
+        while ($top > -1) {
+            $unit = $stack[$top--];
+            $previousUnit = $top > -1 ? $stack[$top] : '';
             $seen[$previousUnit] = true;
 
             if (isset($seen[$unit])) {
-                trigger_error('Circular args detected: ' . implode(' -> ', $stack) . ' -> ' . $unit, E_USER_WARNING);
+                trigger_error('Circular args detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
                 return;
             }
 
             $cache = !$new && $this->unit[$unit][$this->UNIT_INST_CACHE];
             if ($cache && isset($this->unitInstCache[$unit])) {
-                if (!$stack) {
+                if (0 > $top) {
                     return $this->unitInstCache[$unit];
                 }
 
@@ -686,8 +688,8 @@ class App {
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $stack[] = $unit;
-                    $stack[] = $this->unitList[$args[$md[$unit][0]]];
+                    $top = $top + 2;
+                    $stack[$top] = $this->unitList[$args[$md[$unit][0]]];
                     ++$md[$unit][0];
                     continue;
                 }
