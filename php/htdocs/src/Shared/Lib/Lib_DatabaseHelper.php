@@ -119,7 +119,7 @@ class Lib_DatabaseHelper {
             $caseClause = array();
             foreach ($rows as $row) {
                 if (!isset($row[$column])) {
-                    trigger_error('500|Execute failed: Missing column "' . $column . '" in some rows.', E_USER_WARNING);
+                    trigger_error('Execute failed: Missing column "' . $column . '" in some rows.', E_USER_WARNING);
                     return false;
                 }
                 $caseClause[] = 'WHEN ? THEN ?';

@@ -60,7 +60,7 @@ class Lib_Database {
         $stmt = $this->conn[$key]->prepare($query);
         if (!$stmt) {
             $error = $this->conn[$key]->errorInfo();
-            trigger_error('500|Prepare failed: ' . $error[2], E_USER_WARNING);
+            trigger_error('Prepare failed: ' . $error[2], E_USER_WARNING);
             return false;
         }
 
@@ -81,7 +81,7 @@ class Lib_Database {
 
         if (!$stmt->execute()) {
             $error = $stmt->errorInfo();
-            trigger_error('500|Execute failed: ' . $error[2], E_USER_WARNING);
+            trigger_error('Execute failed: ' . $error[2], E_USER_WARNING);
             return false;
         }
 
