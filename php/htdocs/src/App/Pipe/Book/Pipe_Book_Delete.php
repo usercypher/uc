@@ -23,7 +23,7 @@ class Pipe_Book_Delete {
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->redirect($this->app->urlRoute($route));
+        $output->header['location'] = $this->app->urlRoute($route);
 
         return array($input, $output, $success);
     }

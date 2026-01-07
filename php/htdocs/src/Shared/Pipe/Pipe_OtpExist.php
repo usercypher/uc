@@ -16,7 +16,7 @@ class Pipe_OtpExist {
         $otpToken = $this->session->get('otp_token');
 
         if (!$otpToken) {
-            $output->redirect($this->app->urlRoute('home'));
+            $output->header['location'] = $this->app->urlRoute(trim($input->getFrom($input->query, 'redirect', ''), '/'));
             $this->session->set('flash', array(
                 array('type' => 'error', 'message' => 'Otp not found. please resend code again.'),
             ));

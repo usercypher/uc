@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Version 0.7.1
+// Version 0.8.0
 
 while (ob_get_level()) {
     ob_end_clean();
@@ -122,6 +122,9 @@ class Output {
 
     function http($content) {
         if (!headers_sent()) {
+            if (isset($this->header['location']) && (300 > $this->code || $this->code > 399)) {
+                $this->code = 302;
+            }
             header('HTTP/' . $this->version . ' ' . $this->code);
             if (!isset($this->header['content-type'])) {
                 $this->header['content-type'] = 'text/html';
@@ -145,11 +148,6 @@ class Output {
 
     function std($content, $err = false) {
         fwrite($err ? STDERR : STDOUT, $content);
-    }
-
-    function redirect($url, $code = 302) {
-        $this->header['location'] = $url;
-        $this->code = $code;
     }
 }
 
