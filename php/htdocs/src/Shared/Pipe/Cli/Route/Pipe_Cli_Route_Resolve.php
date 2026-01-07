@@ -12,8 +12,6 @@ class Pipe_Cli_Route_Resolve {
     function process($input, $output) {
         $success = true;
 
-        $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
-
         $message = '';
 
         $method = $input->getFrom($input->query, 'method', 'GET');
@@ -42,13 +40,13 @@ class Pipe_Cli_Route_Resolve {
         $message .= '  Route  : ' . $route . "\n";
 
         $message .= '  Pipe   :' . "\n";
-        foreach ($result['pipe'] as $i => $index) {
-            $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $unitList[$index] . "\n";
+        foreach ($result['pipe'] as $i => $p) {
+            $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $p . "\n";
         }
 
         // Show dynamic param if any
+        $message .= '  Params :' . "\n";
         if (!empty($result['param'])) {
-            $message .= '  Params :' . "\n";
             foreach ($result['param'] as $key => $value) {
                 $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . "\n";
             }

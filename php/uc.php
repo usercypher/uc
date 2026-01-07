@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Version 0.8.0
+// Version 0.0.1
 
 while (ob_get_level()) {
     ob_end_clean();
@@ -159,11 +159,8 @@ class App {
     var $UNIT_ARGS = 4;
     var $UNIT_INST_CACHE = 5;
     var $ROUTE_HANDLER = '!';
-    var $ROUTE_HANDLER_PIPE = 0;
-    var $ROUTE_HANDLER_IGNORE = 1;
 
     var $routes = array();
-    var $pipes = array('prepend' => array(), 'append' => array());
     var $unit = array();
     var $unitList = array();
     var $unitListIndex = 0;
@@ -238,12 +235,12 @@ class App {
 
     function save($file) {
         $file = $this->env['DIR_ROOT'] . $file;
-        $this->write($file, serialize(array($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
+        $this->write($file, serialize(array($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
         echo 'File created: ' . $file . "\n";
     }
 
     function load($file) {
-        list($this->routes, $this->pipes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file));
+        list($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file));
     }
 
     // Error Management
@@ -326,16 +323,10 @@ class App {
 
     // Route Management
 
-    function setRoute($method, $route, $option) {
-        $handler = array($this->ROUTE_HANDLER_PIPE => array(), $this->ROUTE_HANDLER_IGNORE => array());
-
-        $map = array('pipe' => $this->ROUTE_HANDLER_PIPE, 'ignore' => $this->ROUTE_HANDLER_IGNORE);
-        foreach ($map as $key => $value) {
-            if (isset($option[$key])) {
-                foreach ($option[$key] as $tmpUnit) {
-                    $handler[$value][] = $tmpUnit === '--global' && $key === 'ignore' ? -1 : $this->unit[$tmpUnit][$this->UNIT_LIST];
-                }
-            }
+    function setRoute($method, $route, $pipe) {
+        $finalPipes = array();
+        foreach ($pipe as $p) {
+            $finalPipes[] = $this->unit[$p][$this->UNIT_LIST];
         }
 
         $node = &$this->routes[$method];
@@ -352,30 +343,30 @@ class App {
             return;
         }
 
-        $node[$this->ROUTE_HANDLER] = $handler;
+        $node[$this->ROUTE_HANDLER] = $finalPipes;
     }
 
-    function groupRoute($group, $method, $route, $option = array()) {
-        $option['pipe'] = array_merge(isset($group['pipe_prepend']) ? $group['pipe_prepend'] : array(), isset($option['pipe']) ? $option['pipe'] : array(), isset($group['pipe_append']) ? $group['pipe_append'] : array());
-        $option['ignore'] = array_merge(isset($group['ignore']) ? $group['ignore'] : array(), isset($option['ignore']) ? $option['ignore'] : array());
-        $this->setRoute($method, $route, $option);
-    }
+    function groupRoute($group, $method, $route, $pipe, $ignore = array()) {
+        $ignore = array_flip($ignore);
+        $pipe = isset($ignore['--all']) ? $pipe : array_merge(isset($group['prepend']) && !isset($ignore['--prepend']) ? $group['prepend'] : array(), isset($pipe) ? $pipe : array(), isset($group['append']) && !isset($ignore['--append']) ? $group['append'] : array());
 
-    function setPipes($pipes) {
-        foreach ($pipes as $key => $p) {
-            foreach ($p as $unit) {
-                $this->pipes[$key][] = $this->unit[$unit][$this->UNIT_LIST];
+        $finalPipes = array();
+        foreach ($pipe as $p) {
+            if (!isset($ignore[$p])) {
+                $finalPipes[] = $p;
             }
         }
+
+        $this->setRoute($method, $route, $finalPipes);
     }
 
     function resolveRoute($method, $route) {
         if (strlen($route) > 32640) {
-            return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
+            return array('pipe' => array(), 'param' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
         }
 
         if (!isset($this->routes[$method])) {
-            return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
+            return array('pipe' => array(), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
         }
 
         $current = $this->routes[$method];
@@ -396,7 +387,7 @@ class App {
             $foundSegment = true;
 
             if (strlen($routeSegment) > 255) {
-                return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
+                return array('pipe' => array(), 'param' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
             }
 
             if (isset($current[$routeSegment])) {
@@ -434,7 +425,7 @@ class App {
             }
 
             if (!$matched) {
-                return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+                return array('pipe' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
             }
         }
 
@@ -453,26 +444,17 @@ class App {
             }
 
             if (!$matched) {
-                return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+                return array('pipe' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
             }
         }
 
         if (!isset($current[$this->ROUTE_HANDLER])) {
-            return array('pipe' => array_merge($this->pipes['prepend'], $this->pipes['append']), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+            return array('pipe' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
         }
 
         $finalPipes = array();
-
-        $ignore = array_flip($current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_IGNORE]);
-
-        $pipeGroup = isset($ignore[-1]) ? array(&$current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_PIPE]) : array(&$this->pipes['prepend'], &$current[$this->ROUTE_HANDLER][$this->ROUTE_HANDLER_PIPE], &$this->pipes['append']);
-
-        foreach ($pipeGroup as $pipes) {
-            foreach ($pipes as $pipe) {
-                if (!isset($ignore[$pipe])) {
-                    $finalPipes[] = $pipe;
-                }
-            }
+        foreach ($current[$this->ROUTE_HANDLER] as $p) {
+            $finalPipes[] = $this->unitList[$p];
         }
 
         return array('pipe' => $finalPipes, 'param' => $param);
@@ -493,13 +475,7 @@ class App {
 
         $input->param = $route['param'];
 
-        foreach ($route['pipe'] as $p) {
-            $p = $this->makeUnit($this->unitList[$p]);
-            list($input, $output, $success) = $p->process($input, $output);
-            if (!$success) {
-                break;
-            }
-        }
+        list($input, $output) = $this->pipe($input, $output, $route['pipe']);
 
         if (isset($route['error'])) {
             trigger_error($route['error'], E_USER_WARNING);
@@ -723,6 +699,18 @@ class App {
 
     function clear($property) {
         unset($this->{$property});
+    }
+
+    function pipe($input, $output, $pipe) {
+        foreach ($pipe as $p) {
+            $p = $this->makeUnit($p);
+            list($input, $output, $success) = $p->process($input, $output);
+            if (!$success) {
+                break;
+            }
+        }
+
+        return array($input, $output);
     }
 
     function dir($s) {

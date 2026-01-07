@@ -53,7 +53,6 @@ class Pipe_Cli_Help {
         }
 
         $output->content = $message;
-        $output->code = 1;
 
         return array($input, $output, $success);
     }
@@ -66,7 +65,7 @@ class Pipe_Cli_Help {
             sort($paths);
 
             foreach ($paths as $route) {
-                $route['method'] = $method; // assignment instead of '+'
+                $route['method'] = $method;
                 $routes[] = $route;
             }
         }
@@ -78,7 +77,7 @@ class Pipe_Cli_Help {
         $routes = array();
 
         foreach ($tree as $segment => $children) {
-            if ($segment === $this->app->ROUTE_HANDLER || $segment === $this->app->ROUTE_HANDLER_IGNORE) {
+            if ($segment === $this->app->ROUTE_HANDLER) {
                 continue;
             }
 
@@ -91,12 +90,8 @@ class Pipe_Cli_Help {
                 if ($onlyMeta) {
                     $route = array('path' => $currentPath);
 
-                    if (isset($children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_PIPE])) {
-                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_PIPE];
-                    }
-
-                    if (isset($children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_IGNORE])) {
-                        $route['ignore'] = $children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_IGNORE];
+                    if (isset($children[$this->app->ROUTE_HANDLER])) {
+                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER];
                     }
 
                     $routes[] = $route;

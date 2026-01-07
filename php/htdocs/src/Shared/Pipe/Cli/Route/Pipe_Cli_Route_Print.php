@@ -14,8 +14,6 @@ class Pipe_Cli_Route_Print {
 
         $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
         $routes = $this->app->routes;
-        $pipesPrepend = $this->app->pipes['prepend'];
-        $pipesAppend = $this->app->pipes['append'];
 
         $routes = $this->flattenRoutesWithMethod($routes);
 
@@ -27,24 +25,6 @@ class Pipe_Cli_Route_Print {
 
             $parts = array();
 
-            if (!empty($pipesPrepend)) {
-                $prepend = array();
-                foreach ($pipesPrepend as $i) {
-                    $prepend[] = $unitList[$i];
-                }
-
-                $parts[] = 'prepend: ' . implode(' > ', $prepend);
-            }
-
-            if (!empty($pipesAppend)) {
-                $append = array();
-                foreach ($pipesAppend as $i) {
-                    $append[] = $unitList[$i];
-                }
-
-                $parts[] = 'append: ' . implode(' > ', $append);
-            }
-
             if (!empty($route['pipe'])) {
                 $pipe = array();
                 foreach ($route['pipe'] as $i) {
@@ -52,15 +32,6 @@ class Pipe_Cli_Route_Print {
                 }
 
                 $parts[] = 'pipe: ' . implode(' > ', $pipe);
-            }
-
-            if (!empty($route['ignore'])) {
-                $ignore = array();
-                foreach ($route['ignore'] as $i) {
-                    $ignore[] = isset($unitList[$i]) ? $unitList[$i] : '--global';
-                }
-
-                $parts[] = 'ignore: ' . implode(' > ', $ignore);
             }
 
             if (!empty($parts)) {
@@ -83,7 +54,7 @@ class Pipe_Cli_Route_Print {
             sort($paths);
 
             foreach ($paths as $route) {
-                $route['method'] = $method; // assignment instead of '+'
+                $route['method'] = $method;
                 $routes[] = $route;
             }
         }
@@ -95,7 +66,7 @@ class Pipe_Cli_Route_Print {
         $routes = array();
 
         foreach ($tree as $segment => $children) {
-            if ($segment === $this->app->ROUTE_HANDLER || $segment === $this->app->ROUTE_HANDLER_IGNORE) {
+            if ($segment === $this->app->ROUTE_HANDLER) {
                 continue;
             }
 
@@ -108,12 +79,8 @@ class Pipe_Cli_Route_Print {
                 if ($onlyMeta) {
                     $route = array('path' => $currentPath);
 
-                    if (isset($children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_PIPE])) {
-                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_PIPE];
-                    }
-
-                    if (isset($children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_IGNORE])) {
-                        $route['ignore'] = $children[$this->app->ROUTE_HANDLER][$this->app->ROUTE_HANDLER_IGNORE];
+                    if (isset($children[$this->app->ROUTE_HANDLER])) {
+                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER];
                     }
 
                     $routes[] = $route;

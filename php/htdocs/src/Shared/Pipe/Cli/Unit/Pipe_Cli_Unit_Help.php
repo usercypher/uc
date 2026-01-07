@@ -7,12 +7,12 @@ class Pipe_Cli_Unit_Help {
         $message = '';
         $option = $input->getFrom($input->param, 'on-unknown-option');
         if ($option) {
-            $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. EOL;
+            $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. PHP_EOL;
         }
 
-        $message .= 'Usage: php [file] unit [option]' . EOL;
-        $message .= 'Options:' . EOL;
-        $message .= '  create [name]   create pipe using --pipe, --path=[value], and --args=[value]' . EOL;
+        $message .= 'Usage: php [file] unit [option]' . PHP_EOL;
+        $message .= 'Options:' . PHP_EOL;
+        $message .= '  create [name]   create pipe using --pipe, --path=[value], and --args=[value]' . PHP_EOL;
         $output->content = $message;
         $output->code = 1;
 

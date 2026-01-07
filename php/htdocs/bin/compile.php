@@ -38,8 +38,6 @@ function compile() {
         require($file);
     }
 
-    require(str_replace('\\', '/', dirname(__FILE__)) . '/../config/set_pipes.php');
-
     foreach ($files['set_route'] as $file) {
         require($file);
     }

@@ -61,6 +61,7 @@ function settings() {
     );
 
     return array(
+        'pipe' => array('Pipe_ErrorHandler', 'Pipe_Init', 'App'),
         'mode' => array(
             'index.php' => 'dev',
             'compile.php' => 'dev',

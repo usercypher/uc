@@ -33,7 +33,7 @@ function index() {
 
     $app->load('var/data/app.state.dat');
 
-    list($input, $output) = $app->process($input, $output);
+    list($input, $output) = $app->pipe($input, $output, $settings['pipe']);
 
     $output->version = $input->version;
 

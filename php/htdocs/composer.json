@@ -1,0 +1,9 @@
+{
+    "name": "myname/myproject",
+    "description": "My project using composer scripts",
+    "type": "project",
+    "require": {},
+    "scripts": {
+        "bin": "php bin/index.php"
+    }
+}
