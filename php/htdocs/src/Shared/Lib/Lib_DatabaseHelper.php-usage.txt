@@ -27,13 +27,12 @@ $model->setSchema([
 ]);
 
 // Create table
-$createResult = $model->create("
+msg($model->create("
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     age INT NOT NULL
-");
-msg($createResult === true, "validate create()");
+") === true, "validate create()");
 
 // Test addMessage() and getMessages()
 $model->addMessage('success', 'Operation successful');
@@ -92,18 +91,13 @@ while ($chunk = $model->chunk($idsToDelete, 2)) {
 }
 msg($deleteBatchCount === 3, "validate deleteBatch()");
 
-// Save (insert or update)
-$dataToSave = ['name' => 'Alice', 'email' => 'alice@example.com', 'age' => 29];
-$saveResult = $model->save($dataToSave);
-msg((int) $saveResult === 6, "validate save()");
-
 // all users older than 25
 $users = $model->all('WHERE age > ?', [25]);
-msg(is_array($users) && count($users) === 3, "validate all()");
+msg(is_array($users) && count($users) === 2, "validate all()");
 
 // Query users older than 25
 $usersByQuery = $model->query('SELECT * FROM ' . $model->table . ' WHERE age > ?', [25]);
-msg(is_array($usersByQuery) && count($usersByQuery) === 3, "validate query()");
+msg(is_array($usersByQuery) && count($usersByQuery) === 2, "validate query()");
 
 // Get one user older than 25
 $oneUser = $model->one('WHERE age > ?', [25]);
@@ -111,7 +105,7 @@ msg(is_array($oneUser) && !empty($oneUser), "validate one()");
 
 // Count users older than 25
 $userCount = $model->count('WHERE age > ?', [25]);
-msg(is_numeric($userCount) && $userCount === 3, "validate count()");
+msg(is_numeric($userCount) && $userCount === 2, "validate count()");
 
 // Check if user with email exists
 $exists = $model->exists('WHERE email = ?', ['johndoe@example.com']);

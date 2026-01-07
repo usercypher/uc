@@ -59,13 +59,13 @@ class Lib_DatabaseHelper {
     }
 
     function create($definition, $return = false) {
-        $query = 'CREATE TABLE IF NOT EXISTS ' . $this->table . ' (' . $definition . ')';
+        $query = 'CREATE TABLE ' . $this->table . ' (' . $definition . ')';
         if ($return) return $query . ';';
         return $this->execute($query) !== false;
     }
 
     function drop() {
-        $query = 'DROP TABLE IF EXISTS ' . $this->table;
+        $query = 'DROP TABLE ' . $this->table;
         return $this->execute($query) !== false;
     }
 
@@ -149,17 +149,13 @@ class Lib_DatabaseHelper {
         return $this->stmt($query, $ids) !== false;
     }
 
-    function save($data) {
-        return isset($data[$this->key]) ? $this->update($data) : $this->insert($data);
-    }
-
     function query($query, $param = array()) {
         $stmt = $this->stmt($query, $param);
         return $this->fetchAll($stmt);
     }
 
     function one($conditions = '', $param = array(), $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' t WHERE ' . $this->key . ' = (SELECT MIN(' . $this->key . ') FROM ' . $this->table . ' ' . $conditions . ')';
         $stmt = $this->stmt($query, $param);
         return $this->fetch($stmt);
     }
@@ -179,7 +175,7 @@ class Lib_DatabaseHelper {
     }
 
     function exists($conditions, $param = array()) {
-        $query = 'SELECT 1 FROM ' . $this->table . ' ' . $conditions . ' LIMIT 1';
+        $query = 'SELECT 1 FROM ' . $this->table . ' t WHERE ' . $this->key . ' = (SELECT MIN(' . $this->key . ') FROM ' . $this->table . ' ' . $conditions . ')';
         $stmt = $this->stmt($query, $param);
         return $this->fetch($stmt) !== false;
     }
