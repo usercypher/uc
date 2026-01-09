@@ -4,9 +4,7 @@ class Pipe_Cli_Route_Print {
     var $app;
 
     function args($args) {
-        list(
-            $this->app
-        ) = $args;
+        list($this->app) = $args;
     }
 
     function process($input, $output) {
@@ -17,26 +15,19 @@ class Pipe_Cli_Route_Print {
 
         $routes = $this->flattenRoutesWithMethod($routes);
 
-        $message = "ROUTES" . "\n";
+        $message = 'ROUTES' . "\n";
 
         foreach ($routes as $no => $route) {
             $no++;
             $line = '  ' . str_pad('\'' . $route['method'] . '\'', 6) . ' \'' . $route['path'] . '\'';
 
-            $parts = array();
+            $handler = array();
 
-            if (!empty($route['pipe'])) {
-                $pipe = array();
-                foreach ($route['pipe'] as $i) {
-                    $pipe[] = $unitList[$i];
-                }
-
-                $parts[] = 'pipe: ' . implode(' > ', $pipe);
+            foreach ($route['pipe'] as $i) {
+                $handler[] = $unitList[$i];
             }
 
-            if (!empty($parts)) {
-                $line .= ' → ' . implode(' | ', $parts);
-            }
+            $line .= ' => ' . implode(' > ', $handler);
 
             $message .= $line . "\n";
         }
@@ -70,7 +61,7 @@ class Pipe_Cli_Route_Print {
                 continue;
             }
 
-            $currentPath = ($prefix === '') ? $segment : $prefix . '/' . $segment;
+            $currentPath = $prefix === '' ? $segment : $prefix . '/' . $segment;
 
             if (is_array($children)) {
                 $childKeys = array_keys($children);

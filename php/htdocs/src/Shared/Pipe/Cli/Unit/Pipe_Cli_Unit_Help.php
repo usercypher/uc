@@ -5,9 +5,9 @@ class Pipe_Cli_Unit_Help {
         $success = true;
 
         $message = '';
-        $option = $input->getFrom($input->param, 'on-unknown-option');
+        $option = isset($input->param['on-unknown-option']) ? $input->param['on-unknown-option'] : null;
         if ($option) {
-            $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.'. PHP_EOL;
+            $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.' . PHP_EOL;
         }
 
         $message .= 'Usage: php [file] unit [option]' . PHP_EOL;

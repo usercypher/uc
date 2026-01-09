@@ -4,21 +4,14 @@ class Pipe_Cli_Route_Run {
     var $app;
 
     function args($args) {
-        list(
-            $this->app
-        ) = $args;
+        list($this->app) = $args;
     }
 
     function process($input, $output) {
         $success = true;
         $message = '';
 
-        $tempInput = new Input;
-        $tempInput->source = 'http';
-
-        $tempInput->route = $input->getFrom($input->query, 'route');
-
-        if (empty($tempInput->route)) {
+        if (empty($input->query['route'])) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: --route=/route/path' . "\n";
             $output->content = $message;
@@ -26,6 +19,11 @@ class Pipe_Cli_Route_Run {
             $success = false;
             return array($input, $output, $success);
         }
+
+        $tempInput = new Input();
+        $tempInput->source = 'http';
+
+        $tempInput->route = $input->query['route'];
 
         // Handle headers
         if (isset($input->query['header'])) {
@@ -37,16 +35,23 @@ class Pipe_Cli_Route_Run {
         }
 
         // Handle content and method
-        $tempInput->content = $input->getFrom($input->query, 'content', '');
-        $tempInput->method = $input->getFrom($input->query, 'method', 'GET');
+        $tempInput->content = isset($input->query['content']) ? $input->query['content'] : '';
+        $tempInput->method = isset($input->query['method']) ? $input->query['method'] : 'GET';
 
         // Handle query string if provided
         if (isset($input->query['query'])) {
             parse_str($input->query['query'], $tempInput->query);
         }
 
+        $result = $this->app->resolveRoute($tempInput->method, $tempInput->route);
+        $tempInput->param = $result['param'];
+
         // Dispatch the request
-        list($_, $output) = $this->app->process($tempInput, $output);
+        list($_, $output) = $this->app->pipe($tempInput, $output, $result['handler']);
+
+        if (isset($result['error'])) {
+            trigger_error($result['error'], E_USER_WARNING);
+        }
 
         return array($input, $output, $success);
     }

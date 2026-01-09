@@ -28,7 +28,7 @@ function d($var, $detailed = false) {
     $detailed ? var_dump($var) : print_r($var);
 }
 
-function input_http($in) {
+function input_http($in, $option = array()) {
     $in->source = 'http';
 
     $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
@@ -47,10 +47,12 @@ function input_http($in) {
     $in->query = $_GET;
     $in->frame = array_merge($_POST, $_FILES);
 
+    $in->route = ($pos = strpos($in->uri, '?')) !== false ? substr($in->uri, 0, $pos) : $in->uri;
+
     return $in;
 }
 
-function input_cli($in) {
+function input_cli($in, $option = array()) {
     $in->source = 'cli';
 
     global $argc, $argv;
@@ -71,6 +73,8 @@ function input_cli($in) {
             $in->uri .= '/' . rawurlencode($arg);
         }
     }
+
+    $in->route = $in->uri;
 
     parse_str(implode('&', $in->query), $in->query);
 
@@ -95,10 +99,6 @@ class Input {
     var $query = array();
     var $frame = array();
     var $param = array();
-
-    function getFrom(&$arr, $key, $default = null) {
-        return isset($arr[$key]) ? $arr[$key] : $default;
-    }
 
     function std($mark = '', $eol = "\n") {
         if ($mark === '') {
@@ -178,9 +178,8 @@ class App {
         'DIR_LOG' => '',
         'DIR_LOG_TIMESTAMP' => '',
 
-        'ROUTE_FILE' => 'index.php',
-        'ROUTE_REWRITE' => false,
         'URL_ROOT' => '/',
+        'URL_ROUTE' => '/',
         'URL_WEB' => '/',
 
         'ERROR_TEMPLATES' => array(),
@@ -231,12 +230,10 @@ class App {
         return ini_get($key);
     }
 
-    // Config Management
+    // State Management
 
     function save($file) {
-        $file = $this->env['DIR_ROOT'] . $file;
-        $this->write($file, serialize(array($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
-        echo 'File created: ' . $file . "\n";
+        $this->write($this->env['DIR_ROOT'] . $file, serialize(array($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
     }
 
     function load($file) {
@@ -246,7 +243,7 @@ class App {
     // Error Management
 
     function handleErrorDefault($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, array('ERROR_ACCEPT' => $this->getEnv('ERROR_ACCEPT', '')));
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('ERROR_ACCEPT' => $this->getEnv('HANDLE_ERROR_DEFAULT_ACCEPT', '')));
 
         if (!$e) {
             return true;
@@ -323,10 +320,10 @@ class App {
 
     // Route Management
 
-    function setRoute($method, $route, $pipe) {
-        $finalPipes = array();
-        foreach ($pipe as $p) {
-            $finalPipes[] = $this->unit[$p][$this->UNIT_LIST];
+    function setRoute($method, $route, $units) {
+        $handler = array();
+        foreach ($units as $unit) {
+            $handler[] = $this->unit[$unit][$this->UNIT_LIST];
         }
 
         $node = &$this->routes[$method];
@@ -343,30 +340,30 @@ class App {
             return;
         }
 
-        $node[$this->ROUTE_HANDLER] = $finalPipes;
+        $node[$this->ROUTE_HANDLER] = $handler;
     }
 
-    function groupRoute($group, $method, $route, $pipe, $ignore = array()) {
+    function groupRoute($group, $method, $route, $units, $ignore = array()) {
         $ignore = array_flip($ignore);
-        $pipe = isset($ignore['--all']) ? $pipe : array_merge(isset($group['prepend']) && !isset($ignore['--prepend']) ? $group['prepend'] : array(), isset($pipe) ? $pipe : array(), isset($group['append']) && !isset($ignore['--append']) ? $group['append'] : array());
+        $units = isset($ignore['--all']) ? $units : array_merge(isset($group['prepend']) && !isset($ignore['--prepend']) ? $group['prepend'] : array(), isset($units) ? $units : array(), isset($group['append']) && !isset($ignore['--append']) ? $group['append'] : array());
 
-        $finalPipes = array();
-        foreach ($pipe as $p) {
-            if (!isset($ignore[$p])) {
-                $finalPipes[] = $p;
+        $filteredUnits = array();
+        foreach ($units as $unit) {
+            if (!isset($ignore[$unit])) {
+                $filteredUnits[] = $unit;
             }
         }
 
-        $this->setRoute($method, $route, $finalPipes);
+        $this->setRoute($method, $route, $filteredUnits);
     }
 
     function resolveRoute($method, $route) {
         if (strlen($route) > 32640) {
-            return array('pipe' => array(), 'param' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
+            return array('handler' => array(), 'param' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
         }
 
         if (!isset($this->routes[$method])) {
-            return array('pipe' => array(), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
+            return array('handler' => array(), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
         }
 
         $current = $this->routes[$method];
@@ -387,7 +384,7 @@ class App {
             $foundSegment = true;
 
             if (strlen($routeSegment) > 255) {
-                return array('pipe' => array(), 'param' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
+                return array('handler' => array(), 'param' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
             }
 
             if (isset($current[$routeSegment])) {
@@ -425,7 +422,7 @@ class App {
             }
 
             if (!$matched) {
-                return array('pipe' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+                return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
             }
         }
 
@@ -444,44 +441,20 @@ class App {
             }
 
             if (!$matched) {
-                return array('pipe' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+                return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
             }
         }
 
         if (!isset($current[$this->ROUTE_HANDLER])) {
-            return array('pipe' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+            return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
         }
 
-        $finalPipes = array();
-        foreach ($current[$this->ROUTE_HANDLER] as $p) {
-            $finalPipes[] = $this->unitList[$p];
+        $handler = array();
+        foreach ($current[$this->ROUTE_HANDLER] as $unit) {
+            $handler[] = $this->unitList[$unit];
         }
 
-        return array('pipe' => $finalPipes, 'param' => $param);
-    }
-
-    // Request Handling
-
-    function process($input, $output) {
-        if ($input->source !== 'cli' && !$this->env['ROUTE_REWRITE']) {
-            foreach (isset($input->query['route']) && $input->query['route'] ? explode('/', $input->query['route'][0] === '/' ? substr($input->query['route'], 1) : $input->query['route']) : array() as $routePart) {
-                $input->route .= '/' . rawurlencode($routePart);
-            }
-        } else {
-            $input->route = ($pos = strpos($input->uri, '?')) !== false ? substr($input->uri, 0, $pos) : $input->uri;
-        }
-
-        $route = $this->resolveRoute($input->method, $input->route);
-
-        $input->param = $route['param'];
-
-        list($input, $output) = $this->pipe($input, $output, $route['pipe']);
-
-        if (isset($route['error'])) {
-            trigger_error($route['error'], E_USER_WARNING);
-        }
-
-        return array($input, $output, true);
+        return array('handler' => $handler, 'param' => $param);
     }
 
     // Unit Management
@@ -690,16 +663,10 @@ class App {
     }
 
     function resetUnit($unit) {
-        if ($this->unit[$unit][$this->UNIT_INST_CACHE]) {
-            unset($this->unitInstCache[$unit]);
-        }
+        unset($this->unitInstCache[$unit]);
     }
 
-    // Utility Functions
-
-    function clear($property) {
-        unset($this->{$property});
-    }
+    // Utility
 
     function pipe($input, $output, $pipe) {
         foreach ($pipe as $p) {
@@ -726,11 +693,10 @@ class App {
     }
 
     function urlRoute($s, $param = array()) {
-        $base = $this->env['URL_ROOT'] . ($this->env['ROUTE_REWRITE'] ? '' : $this->env['ROUTE_FILE'] . '?route=/');
-        if (!$this->env['ROUTE_REWRITE'] && strpos($base, '?') !== false) {
+        if (strpos($this->env['URL_ROUTE'], '?') !== false) {
             $s = str_replace('?', '&', $s);
         }
-        return $base . ($param ? strtr($s, $param) : $s);
+        return $this->env['URL_ROUTE'] . ($param ? strtr($s, $param) : $s);
     }
 
     function urlRoot($s = '') {

@@ -1,0 +1,66 @@
+<?php
+
+require 'Lib_DataValidator.php';
+
+/**
+ * Example rule object
+ */
+class Rule {
+    var $name = 'rule';
+    // Method signature: value to validate, arguments
+    // Returns null if valid, or [message, signal] if invalid
+    public function required($value, $args = null) {
+        if ($value === null || $value === '') {
+            return array("This field is required", -1); // 0 to continue, -1 or -2 could be used
+        }
+        return null; // valid
+    }
+
+    public function maxLength($value, $args = null) {
+        $max = isset($args['max']) ? $args['max'] : 255;
+        if (is_string($value) && strlen($value) > $max) {
+            return array("Maximum length is $max" . ". " . strlen($value) . " given.", 0);
+        }
+        return null;
+    }
+
+    public function email($value, $args = null) {
+        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            return array("Invalid email format", 0);
+        }
+        return null;
+    }
+}
+
+// Instantiate validator
+$validator = new Lib_DataValidator();
+
+// Register rules
+$validator->args(array(new Rule()));
+
+// Example data
+$data = array(
+    'username' => 'verylongusername_exceeding_limit',
+    'email' => 'invalid-email'
+);
+
+// Validation rules
+$validationRules = array(
+    'username' => array(
+        array('rule', 'required', null),
+        array('rule', 'maxLength', array('max' => 10)),
+    ),
+    'email' => array(
+        array('rule', 'required', null),
+        array('rule', 'email', null),
+    ),
+);
+
+// Run validation
+$errors = $validator->validate($data, $validationRules);
+
+if ($errors) {
+    print_r($errors);
+} else {
+    echo "All data is valid!";
+}

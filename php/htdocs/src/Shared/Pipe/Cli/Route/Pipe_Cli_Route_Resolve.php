@@ -4,9 +4,7 @@ class Pipe_Cli_Route_Resolve {
     var $app;
 
     function args($args) {
-        list(
-            $this->app
-        ) = $args;
+        list($this->app) = $args;
     }
 
     function process($input, $output) {
@@ -14,10 +12,7 @@ class Pipe_Cli_Route_Resolve {
 
         $message = '';
 
-        $method = $input->getFrom($input->query, 'method', 'GET');
-        $route = $input->getFrom($input->query, 'route');
-
-        if (empty($route)) {
+        if (empty($input->query['route'])) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: --route=/route/path' . "\n";
             $output->content = $message;
@@ -25,6 +20,9 @@ class Pipe_Cli_Route_Resolve {
             $success = false;
             return array($input, $output, $success);
         }
+
+        $route = $input->query['route'];
+        $method = isset($input->query['method']) ? $input->query['method'] : 'GET';
 
         $result = $this->app->resolveRoute($method, $route);
 
@@ -36,16 +34,16 @@ class Pipe_Cli_Route_Resolve {
         }
 
         $message .= 'RESOLVED ROUTE' . "\n";
-        $message .= '  Method : ' . $method . "\n";
-        $message .= '  Route  : ' . $route . "\n";
+        $message .= '  Method  : ' . $method . "\n";
+        $message .= '  Route   : ' . $route . "\n";
 
-        $message .= '  Pipe   :' . "\n";
-        foreach ($result['pipe'] as $i => $p) {
+        $message .= '  Handler :' . "\n";
+        foreach ($result['handler'] as $i => $p) {
             $message .= '    #' . str_pad($i, 2, ' ', STR_PAD_LEFT) . '  ' . $p . "\n";
         }
 
         // Show dynamic param if any
-        $message .= '  Params :' . "\n";
+        $message .= '  Params  :' . "\n";
         if (!empty($result['param'])) {
             foreach ($result['param'] as $key => $value) {
                 $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . "\n";

@@ -5,17 +5,7 @@ class Pipe_Cli_File_FindReplace {
         $success = true;
         $message = '';
 
-        $directory = $input->getFrom($input->query, 'dir');
-
-        // If dir is not provided, use current working directory
-        if (empty($directory)) {
-            $directory = getcwd();
-        }
-
-        $search = $input->getFrom($input->query, 'search');
-        $replace = $input->getFrom($input->query, 'replace');
-
-        if (empty($search) || empty($replace)) {
+        if (empty($input->query['search']) || empty($input->query['replace'])) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: php [file] file find-replace --search="searchString" --replace="replaceString" --dir="directoryPath"' . "\n";
             $output->content = $message;
@@ -23,6 +13,11 @@ class Pipe_Cli_File_FindReplace {
             $success = false;
             return array($input, $output, $success);
         }
+
+        $search = $input->query['search'];
+        $replace = $input->query['replace'];
+
+        $directory = !empty($input->query['dir']) ? $input->query['dir'] : getcwd();
 
         if (!is_dir($directory)) {
             $message .= "Error: Directory does not exist: $directory" . "\n";
@@ -32,7 +27,7 @@ class Pipe_Cli_File_FindReplace {
             return array($input, $output, $success);
         }
 
-        $output->std("Scanning..." . "\n");
+        $output->std('Scanning...' . "\n");
         $files = $this->getFilesRecursive($directory);
         $updatedFiles = array();
 
@@ -43,15 +38,15 @@ class Pipe_Cli_File_FindReplace {
             }
         }
 
-        $output->std("Done. " . count($files) . " files scanned. " . (count($updatedFiles) ? count($updatedFiles) : 0) . " updated." . "\n\n");
+        $output->std('Done. ' . count($files) . ' files scanned. ' . (count($updatedFiles) ? count($updatedFiles) : 0) . ' updated.' . "\n\n");
 
         if (count($updatedFiles)) {
-            $message .= "Updated files:" . "\n";
+            $message .= 'Updated files:' . "\n";
             for ($i = 0; $i < count($updatedFiles); $i++) {
-                $message .= " - " . $updatedFiles[$i] . "\n";
+                $message .= ' - ' . $updatedFiles[$i] . "\n";
             }
         } else {
-            $message .= "No files updated." . "\n";
+            $message .= 'No files updated.' . "\n";
         }
 
         $output->content = $message;

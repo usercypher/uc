@@ -12,11 +12,10 @@ $httpMap = array(
     405 => array('Method Not Allowed', 'The HTTP method used is not allowed for this resource.'),
     414 => array('Request-URI Too Long', 'The URI provided in the request is too long. Please shorten the URL and try again.'),
     422 => array('Unprocessable Entity', 'The request was well-formed but could not be followed due to semantic errors.'),
-    500 => array('Internal Server Error', 'An unexpected error occurred. Please try again later.')
+    500 => array('Internal Server Error', 'An unexpected error occurred. Please try again later.'),
 );
 
 list($title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap[500];
-
 ?>
 
 <html>

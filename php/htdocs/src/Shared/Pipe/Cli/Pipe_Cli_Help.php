@@ -4,9 +4,7 @@ class Pipe_Cli_Help {
     var $app;
 
     function args($args) {
-        list(
-            $this->app
-        ) = $args;
+        list($this->app) = $args;
     }
 
     function process($input, $output) {
@@ -15,18 +13,20 @@ class Pipe_Cli_Help {
 
         $routes = $this->flattenRoutesWithMethod($this->app->routes);
 
-        $target = $input->getFrom($input->query, 'autocomplete');
+        $target = isset($input->query['autocomplete']) ? $input->query['autocomplete'] : null;
         $seen = array();
 
         if (!$target) {
-            $route = $input->getFrom($input->param, 'on-unknown-route', array(''));
+            $route = isset($input->param['on-unknown-route']) ? $input->param['on-unknown-route'] : array('');
             $message .= 'No route \'' . $route[0] . '\' found, list:' . "\n";
 
             for ($i = 0; $i < count($routes); $i++) {
                 $routeItem = $routes[$i];
                 $pathParts = explode('/', $routeItem['path']);
 
-                if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === ':') continue;
+                if (isset($seen[$pathParts[0]]) || substr($pathParts[0], 0, 1) === ':') {
+                    continue;
+                }
                 $seen[$pathParts[0]] = true;
 
                 if ($routeItem['method'] === '') {
@@ -40,7 +40,9 @@ class Pipe_Cli_Help {
                 $pathParts = explode('/', $routeItem['path']);
 
                 if ($pathParts[0] === $target && isset($pathParts[1])) {
-                    if (isset($seen[$pathParts[1]]) || substr($pathParts[1], 0, 1) === ':') continue;
+                    if (isset($seen[$pathParts[1]]) || substr($pathParts[1], 0, 1) === ':') {
+                        continue;
+                    }
                     $seen[$pathParts[1]] = true;
                     $message .= ' ' . $pathParts[1] . "\n";
                     $matched = true;
@@ -81,7 +83,7 @@ class Pipe_Cli_Help {
                 continue;
             }
 
-            $currentPath = ($prefix === '') ? $segment : $prefix . '/' . $segment;
+            $currentPath = $prefix === '' ? $segment : $prefix . '/' . $segment;
 
             if (is_array($children)) {
                 $childKeys = array_keys($children);
@@ -91,7 +93,7 @@ class Pipe_Cli_Help {
                     $route = array('path' => $currentPath);
 
                     if (isset($children[$this->app->ROUTE_HANDLER])) {
-                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER];
+                        $route['handler'] = $children[$this->app->ROUTE_HANDLER];
                     }
 
                     $routes[] = $route;

@@ -4,10 +4,7 @@ class Pipe_OtpGenerate {
     var $app, $session;
 
     function args($args) {
-        list(
-            $this->app,
-            $this->session
-        ) = $args;
+        list($this->app, $this->session) = $args;
     }
 
     function process($input, $output) {

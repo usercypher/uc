@@ -9,7 +9,7 @@ class Lib_Translator {
     }
 
     function simplePlural($n) {
-        return ($n == 0) ? 0 : (($n == 1) ? 1 : 2);
+        return $n == 0 ? 0 : ($n == 1 ? 1 : 2);
     }
 
     function t($key, $placeholders = array()) {

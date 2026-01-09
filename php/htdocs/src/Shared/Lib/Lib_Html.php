@@ -23,11 +23,11 @@ class Lib_Html {
                 } elseif (is_string($currentArray[$key])) {
                     if ($encode) {
                         $currentArray[$key] = trim($currentArray[$key]);
-                        $currentArray[$key] = ($stripTags) ? strip_tags($currentArray[$key], $allowedTags) : $currentArray[$key];
+                        $currentArray[$key] = $stripTags ? strip_tags($currentArray[$key], $allowedTags) : $currentArray[$key];
                         $currentArray[$key] = htmlspecialchars($currentArray[$key], ENT_QUOTES);
                     } else {
                         $currentArray[$key] = html_entity_decode($currentArray[$key]);
-                        $currentArray[$key] = ($stripTags) ? strip_tags($currentArray[$key], $allowedTags) : $currentArray[$key];
+                        $currentArray[$key] = $stripTags ? strip_tags($currentArray[$key], $allowedTags) : $currentArray[$key];
                     }
                 }
             }

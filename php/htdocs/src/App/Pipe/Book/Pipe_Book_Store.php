@@ -17,7 +17,7 @@ class Pipe_Book_Store {
 
         $data = $input->frame;
 
-        $route = trim($input->getFrom($input->query, 'redirect', ''), '/');
+        $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
 
         $route = $this->bookRepo->validateAndInsert($data) ? 'home' : $route;
 

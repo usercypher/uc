@@ -5,16 +5,7 @@ class Pipe_Cli_File_Find {
         $success = true;
         $message = '';
 
-        $directory = $input->getFrom($input->query, 'dir');
-
-        // If dir is not provided, use current working directory
-        if (empty($directory)) {
-            $directory = getcwd();
-        }
-
-        $search = $input->getFrom($input->query, 'search');
-
-        if (empty($search)) {
+        if (empty($input->query['search'])) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: php [file] file find --search="searchString" [--dir="directoryPath"]' . "\n";
             $output->content = $message;
@@ -22,6 +13,10 @@ class Pipe_Cli_File_Find {
             $success = false;
             return array($input, $output, $success);
         }
+
+        $search = $input->query['search'];
+
+        $directory = !empty($input->query['dir']) ? $input->query['dir'] : getcwd();
 
         if (!is_dir($directory)) {
             $message .= "Error: Directory does not exist: $directory" . "\n";
@@ -31,7 +26,7 @@ class Pipe_Cli_File_Find {
             return array($input, $output, $success);
         }
 
-        $output->std("Scanning..." . "\n");
+        $output->std('Scanning...' . "\n");
         $files = $this->getFilesRecursive($directory);
         $foundFiles = array();
 
@@ -42,12 +37,12 @@ class Pipe_Cli_File_Find {
             }
         }
 
-        $output->std("Done. " . count($files) . " files scanned. " . (count($foundFiles) ? count($foundFiles) : 0) . " found." . "\n\n");
+        $output->std('Done. ' . count($files) . ' files scanned. ' . (count($foundFiles) ? count($foundFiles) : 0) . ' found.' . "\n\n");
 
         if (count($foundFiles)) {
             $message .= "Files containing '$search':" . "\n";
             for ($i = 0; $i < count($foundFiles); $i++) {
-                $message .= " - " . $foundFiles[$i] . "\n";
+                $message .= ' - ' . $foundFiles[$i] . "\n";
             }
         } else {
             $message .= "No files containing '$search' found." . "\n";

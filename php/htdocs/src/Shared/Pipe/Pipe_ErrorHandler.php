@@ -5,10 +5,8 @@ class Pipe_ErrorHandler {
     var $input, $output;
 
     function args($args) {
-        list(
-            $this->app, 
-        ) = $args;
-    } 
+        list($this->app) = $args;
+    }
 
     function process($input, $output) {
         $this->input = $input;
@@ -22,11 +20,13 @@ class Pipe_ErrorHandler {
     }
 
     function error($errno, $errstr, $errfile, $errline) {
-        if (!($errno & error_reporting())) return true;
+        if (!($errno & error_reporting())) {
+            return true;
+        }
 
         if ($errno & $this->app->getEnv('ERROR_NON_FATAL')) {
             $result = $this->app->error($errno, $errstr, $errfile, $errline, array(
-                'ERROR_ACCEPT' => $this->input->getFrom($this->input->header, 'accept', ''),
+                'ERROR_ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
             ));
 
             return true;
@@ -36,10 +36,12 @@ class Pipe_ErrorHandler {
     }
 
     function exception($e) {
-        while (ob_get_level()) ob_end_clean();
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
 
         $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
-            'ERROR_ACCEPT' => $this->input->getFrom($this->input->header, 'accept', ''),
+            'ERROR_ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
             'ERROR_TRACE' => $e->getTrace(),
         ));
         $this->output->header['content-type'] = $result['type'];
@@ -57,11 +59,13 @@ class Pipe_ErrorHandler {
             case 'http':
                 return $output->http($output->content);
             default:
-                echo('Unknown input source:' . $input->source);
+                echo 'Unknown input source:' . $input->source;
         }
     }
 
     function shutdown() {
-        if (($error = error_get_last()) !== null) $this->error($error['type'], $error['message'], $error['file'], $error['line']);
+        if (($error = error_get_last()) !== null) {
+            $this->error($error['type'], $error['message'], $error['file'], $error['line']);
+        }
     }
 }

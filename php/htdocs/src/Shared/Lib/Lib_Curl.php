@@ -1,7 +1,8 @@
 <?php
 
 class Lib_Curl {
-    var $result = null, $headerRaw = array();
+    var $result = null;
+    var $headerRaw = array();
 
     function send($url, $options = array()) {
         $this->result = new stdClass();
@@ -11,7 +12,7 @@ class Lib_Curl {
         $method = isset($options['method']) ? strtoupper($options['method']) : 'GET';
         $header = isset($options['header']) ? $options['header'] : array();
         $content = isset($options['content']) ? $options['content'] : '';
-        $timeout = isset($options['timeout']) ? (int)$options['timeout'] : 30;
+        $timeout = isset($options['timeout']) ? (int) $options['timeout'] : 30;
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -34,11 +35,13 @@ class Lib_Curl {
 
         if (!empty($header)) {
             $parsedHeaders = array();
-            foreach ($header as $key => $value) $parsedHeaders[] = $key . ':' . $value;
+            foreach ($header as $key => $value) {
+                $parsedHeaders[] = $key . ':' . $value;
+            }
             curl_setopt($ch, CURLOPT_HTTPHEADER, $parsedHeaders);
         }
 
-        $that =& $this;
+        $that = &$this;
 
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($that, 'header'));
 

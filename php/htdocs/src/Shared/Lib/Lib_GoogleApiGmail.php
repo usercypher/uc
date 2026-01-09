@@ -4,16 +4,14 @@ class Lib_GoogleApiGmail {
     var $curl;
 
     function args($args) {
-        list(
-            $this->curl,
-        ) = $args;
+        list($this->curl) = $args;
     }
 
     function getToken($clientId, $clientSecret, $refreshToken) {
         return $this->curl->send('https://oauth2.googleapis.com/token', array(
             'method' => 'POST',
             'header' => array(
-                'Content-Type' => 'application/x-www-form-urlencoded'
+                'Content-Type' => 'application/x-www-form-urlencoded',
             ),
             'content' => http_build_query(array(
                 'client_id' => $clientId,
@@ -37,11 +35,11 @@ class Lib_GoogleApiGmail {
         return $this->curl->send('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', array(
             'method' => 'POST',
             'header' => array(
-                "Authorization" => 'Bearer ' . $access_token,
-                "Content-Type" => 'application/json'
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
             ),
             'content' => json_encode(array(
-                'raw' => $encodedMessage
+                'raw' => $encodedMessage,
             )),
         ));
     }

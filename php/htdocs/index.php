@@ -23,19 +23,29 @@ function index() {
         $app->setEnv($key, $value);
     }
 
-    $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
+    $app->load('var/data/app.state.dat');
 
-    $app->setEnv('ROUTE_FILE', substr((($pos = strpos($input->uri, '?')) !== false) ? substr($input->uri, 0, $pos) : $input->uri, 1));
-    $app->setEnv('ERROR_ACCEPT', $input->getFrom($input->header, 'accept', ''));
+    $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
+    if ($input->source !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
+        $app->setEnv('URL_ROUTE', $input->route . '?route=/');
+        $input->route = isset($input->query['route']) ? $input->query['route'] : '/';
+    }
+
+    $app->setEnv('HANDLE_ERROR_DEFAULT_ACCEPT', isset($input->header['accept']) ? $input->header['accept'] : '');
 
     $output = new Output();
     $output->code = $app->getEnv('SAPI') === 'cli' ? 0 : 200;
-
-    $app->load('var/data/app.state.dat');
-
-    list($input, $output) = $app->pipe($input, $output, $settings['pipe']);
-
     $output->version = $input->version;
+
+    $result = $app->resolveRoute($input->method, $input->route);
+
+    $input->param = $result['param'];
+
+    list($input, $output) = $app->pipe($input, $output, array_merge($settings['handler'], $result['handler']));
+
+    if (isset($result['error'])) {
+        trigger_error($result['error'], E_USER_WARNING);
+    }
 
     switch ($input->source) {
         case 'cli':
@@ -44,7 +54,7 @@ function index() {
         case 'http':
             return $output->http($output->content);
         default:
-            echo('Unknown input source:' . $input->source);
+            echo 'Unknown input source:' . $input->source;
     }
 }
 

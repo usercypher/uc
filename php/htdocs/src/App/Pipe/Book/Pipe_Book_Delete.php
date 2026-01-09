@@ -17,7 +17,7 @@ class Pipe_Book_Delete {
 
         $data = $input->frame;
 
-        $route = trim($input->getFrom($input->query, 'redirect', ''), '/');
+        $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
 
         $this->bookRepo->validateAndDelete($data);
 

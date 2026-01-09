@@ -2,7 +2,11 @@
 
 class Lib_DatabaseHelper {
     var $messages = array();
-    var $db, $conn, $table, $key, $schema = array();
+    var $db;
+    var $conn;
+    var $table;
+    var $key;
+    var $schema = array();
 
     function setDb($db, $conn = '_') {
         $this->db = $db;
@@ -60,7 +64,9 @@ class Lib_DatabaseHelper {
 
     function create($definition, $return = false) {
         $query = 'CREATE TABLE ' . $this->table . ' (' . $definition . ')';
-        if ($return) return $query . ';';
+        if ($return) {
+            return $query . ';';
+        }
         return $this->execute($query) !== false;
     }
 
@@ -74,7 +80,7 @@ class Lib_DatabaseHelper {
         $placeholders = str_repeat('?,', count($data) - 1) . '?';
 
         $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES (' . $placeholders . ')';
-        return ($this->stmt($query, array_values($data)) !== false) ? $this->lastInsertId() : false;
+        return $this->stmt($query, array_values($data)) !== false ? $this->lastInsertId() : false;
     }
 
     function insertBatch($rows) {
@@ -181,7 +187,9 @@ class Lib_DatabaseHelper {
     }
 
     function chunk(&$array, $chunkSize) {
-        if (0 >= $chunkSize || empty($array)) return false;
+        if (0 >= $chunkSize || empty($array)) {
+            return false;
+        }
         return array_splice($array, 0, $chunkSize);
     }
 
@@ -194,10 +202,14 @@ class Lib_DatabaseHelper {
                         $result[$field] = (string) $data[$field];
                         break;
                     case 'integer':
-                        if (is_numeric($data[$field])) $result[$field] = (int) $data[$field];
+                        if (is_numeric($data[$field])) {
+                            $result[$field] = (int) $data[$field];
+                        }
                         break;
                     case 'double':
-                        if (is_numeric($data[$field])) $result[$field] = (float) $data[$field];
+                        if (is_numeric($data[$field])) {
+                            $result[$field] = (float) $data[$field];
+                        }
                         break;
                     case 'boolean':
                         $result[$field] = (bool) $data[$field];

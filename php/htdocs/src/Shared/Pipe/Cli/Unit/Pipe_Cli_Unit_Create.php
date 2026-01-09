@@ -4,18 +4,14 @@ class Pipe_Cli_Unit_Create {
     var $app;
 
     function args($args) {
-        list(
-            $this->app,
-        ) = $args;
+        list($this->app) = $args;
     }
 
     function process($input, $output) {
         $success = true;
         $message = '';
 
-        $className = $input->getFrom($input->param, 'name');
-
-        if (empty($className)) {
+        if (empty($input->param['name'])) {
             $message .= 'Error: Missing required parameters.' . "\n";
             $message .= 'Usage: php [file] unit create [name]' . "\n";
             $output->content = $message;
@@ -24,8 +20,9 @@ class Pipe_Cli_Unit_Create {
             return array($input, $output, $success);
         }
 
-        $classPath = $input->getFrom($input->query, 'path', '') . $className . '.php';
-        $tempDeps = $input->getFrom($input->query, 'args');
+        $className = $input->param['name'];
+        $classPath = (isset($input->query['path']) ? $input->query['path'] : '') . $className . '.php';
+        $tempDeps = isset($input->query['args']) ? $input->query['args'] : null;
         $classDeps = $tempDeps ? explode(',', $tempDeps) : array();
 
         $classContent = $this->classContent($className, $classDeps, isset($input->query['pipe']));
@@ -67,8 +64,8 @@ class Pipe_Cli_Unit_Create {
             $functionArgs = "\n    function args(\$args) {\n        " . $classVarList . "\n    }\n";
         }
 
-        $functionProcess = $isPipe ? "\n    function process(\$input, \$output) {\n        \$success = true;\n        // code\n        return array(\$input, \$output, \$success);\n    }\n" : "";
+        $functionProcess = $isPipe ? "\n    function process(\$input, \$output) {\n        \$success = true;\n        // code\n        return array(\$input, \$output, \$success);\n    }\n" : '';
 
-        return "<?php\n\nclass $className {" . $classVar . $functionArgs . $functionProcess . "}";
+        return "<?php\n\nclass $className {" . $classVar . $functionArgs . $functionProcess . '}';
     }
 }

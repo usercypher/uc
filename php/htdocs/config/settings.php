@@ -16,26 +16,6 @@ function settings() {
         'ERROR_MAX_LENGTH' => 4096, // Error string max length
         'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
         'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
-        // Routing Configuration
-        'ROUTE_FILE' => 'index.php', // Entry script, use in app->urlRoute() generation when ROUTE_REWRITE is disabled
-        'ROUTE_REWRITE' => 0, // Enable or disable URL rewriting (1: Yes, 0: No).
-        // If enabled, routing is handled via clean URLs (e.g., /home),
-        // If not enabled, routing is handles via query parameter (e.g., ?route=/home),
-        /*
-            Web Server Configuration for URL Rewriting:
-          
-            Apache (.htaccess):
-                RewriteEngine On
-                RewriteBase /
-                RewriteCond %{REQUEST_FILENAME} !-f
-                RewriteCond %{REQUEST_FILENAME} !-d
-                RewriteRule ^(.*)$ index.php [QSA,L]
-          
-            Nginx:
-                location / {
-                    try_files $uri $uri/ /index.php?$query_string;
-                }
-         */
         // Logging Configuration
         'DIR_LOG' => 'var/log/',
         'DIR_LOG_TIMESTAMP' => 'var/data/',
@@ -61,13 +41,15 @@ function settings() {
     );
 
     return array(
-        'pipe' => array('Pipe_ErrorHandler', 'Pipe_Init', 'App'),
+        'handler' => array('Pipe_ErrorHandler', 'Pipe_Init'),
         'mode' => array(
             'index.php' => 'dev',
             'compile.php' => 'dev',
         ),
         'env' => array(
             'dev' => array_merge($env, array(
+                'ROUTE_REWRITE' => 0,
+
                 'DB_HOST' => '127.0.0.1',
                 'DB_PORT' => '3306',
                 'DB_NAME' => 'library',
@@ -76,6 +58,8 @@ function settings() {
                 'DB_TIME' => '+08:00',
             )),
             'prod' => array_merge($env, array(
+                'ROUTE_REWRITE' => 0,
+
                 'SHOW_ERRORS' => 0,
 
                 'DB_HOST' => '127.0.0.1',
