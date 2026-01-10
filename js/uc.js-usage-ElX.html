@@ -80,14 +80,14 @@ x-prevent // prevent default (x-on-click, x-on-input, x-on-submit only)
 <h2>Actions</h2>
 <pre>
 // Reserved names
-this      // targets element itself (used in x-val, x-var, x-rot, x-set)
+this      // targets element itself (used in x-txt, x-val, x-rot, x-set)
 
 // Reserved values
 this      // use element’s value or innerHTML (must be alone)
 null      // in x-set removes attribute; in x-rot means no class (avoid 'null' CSS class)
 
+x-txt-[name]="value"
 x-val-[name]="value"
-x-var-[name]="value"
 x-rot-[name]="class1 class2"
 x-tab="name:name"                       // tab key range
 x-focus="name"
@@ -169,7 +169,7 @@ x-ref-button3
 
 x-on-key-window="escape"
 
-x-val-dialog-content=""
+x-txt-dialog-content=""
 ></span>
 
 <h2>Reusable Dialog Box</h2>
@@ -178,21 +178,21 @@ x-val-dialog-content=""
 x-on-click
 x-on-key-window="ctrl-1"
 
-x-val-dialog-content="dialog1"
+x-txt-dialog-content="dialog1"
 >dialog1</button>
 
 <button
 x-on-click
 x-on-key-window="ctrl-2"
 
-x-val-dialog-content="dialog2"
+x-txt-dialog-content="dialog2"
 >dialog2</button>
 
 <button
 x-on-click
 x-on-key-window="ctrl-3"
 
-x-val-dialog-content="dialog3"
+x-txt-dialog-content="dialog3"
 >dialog3</button>
 
 <div class="block">
@@ -203,7 +203,7 @@ x-val-dialog-content="dialog3"
 
 <hr>
 <h2>Input binding</h2>
-<input x-on-input x-val-name="this" value="Alice"/>
+<input x-on-input x-txt-name="this" value="Alice"/>
 <p></p>
 <p x-ref-name>Alice</p>
 <input x-ref-name/>
@@ -215,8 +215,8 @@ x-val-dialog-content="dialog3"
   x-ref-volume
   x-on-input
   x-set-volume.aria-valuenow="this"  
-  x-val-volume-label="this"
-  x-var-volume="this"
+  x-txt-volume-label="this"
+  x-val-volume="this"
   type="range"
   min="0"
   max="100"
@@ -281,8 +281,8 @@ Drawer
 <h2>Var</h2>
 
 
-<input type="number" x-on-input x-var-price="this" placeholder="price" value="100"/>
-<select x-on-input x-var-qty="this">
+<input type="number" x-on-input x-val-price="this" placeholder="price" value="100"/>
+<select x-on-input x-val-qty="this">
     <option value="1">1x</option>
     <option value="2">2x</option>
     <option value="3">3x</option>
@@ -300,13 +300,13 @@ Drawer
             if (key == "qty" || key == "price") {
                 if (key == "price" && current < 0 && event.target) {
                     // event.type - base on the x-on-* events
-                    // event.target - element that trigger the event usually from x-var- 
+                    // event.target - element that trigger the event usually from x-val- 
                     event.target.value = 0;
-                    ElX.vars.price = 0;
+                    ElX.vals.price = 0;
                     return;
                 }
                 ElX.ref("total").forEach(function (el) {
-                    el.innerHTML = (ElX.vars.qty) * (ElX.vars.price);
+                    el.innerHTML = (ElX.vals.qty) * (ElX.vals.price);
                 });
             }
         }, 300));
@@ -321,7 +321,7 @@ Drawer
             volume.ref().forEach(function (el) {
                 console.log(el.getAttribute("aria-valuenow"));
             });
-            this.volumeContext.var(current); // access context
+            this.volumeContext.val(current); // access context
         }, 300), this); // can pass context
 
     });    

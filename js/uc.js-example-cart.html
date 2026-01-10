@@ -30,8 +30,8 @@
     <p>
         Total value: <span x-ref-grandtotal>0.00</span>
     </p>
-    <button x-on-click x-var-addline>Add product</button>
-    <button x-on-click x-var-save>Submit order</button>
+    <button x-on-click x-val-addline>Add product</button>
+    <button x-on-click x-val-save>Submit order</button>
 
     <script type="text/html" id="line-html">
         <tr id="line-:id">
@@ -39,14 +39,14 @@
                 <select 
                     x-ref-category-:id
                     x-on-input
-                    x-var-category-:id="this"
+                    x-val-category-:id="this"
                 >:category</select>
             </td>
             <td>
                 <select 
                     x-ref-product-:id
                     x-on-input
-                    x-var-product-:id="this"
+                    x-val-product-:id="this"
                 >:product</select>
             </td>
             <td>
@@ -57,7 +57,7 @@
                     type="number"
                     x-ref-qty-:id
                     x-on-input
-                    x-var-qty-:id="this"
+                    x-val-qty-:id="this"
                     value=":qty"
                 />
             </td>
@@ -65,7 +65,7 @@
                 <span x-ref-subtotal-:id>:subtotal</span>
             </td>
             <td>
-                <a x-on-click x-prevent x-var-removeline=":id">Remove</a>
+                <a x-on-click x-prevent x-val-removeline=":id">Remove</a>
             </td>
         </tr>
     </script>
@@ -97,7 +97,7 @@
         this.price.tap(ProductModel.prototype.subtotalCalc, this);
     }    
     ProductModel.prototype.subtotalCalc = function () {
-        this.subtotal.var(this.price.value() * this.qty.value());
+        this.subtotal.val(this.price.value() * this.qty.value());
     };
     
     function Category() {}
@@ -135,12 +135,12 @@
         ];
     };
     Product.prototype.priceVal = function (old, current) {
-        this.product.price.val(current.toFixed(2));
+        this.product.price.txt(current.toFixed(2));
     };
     Product.prototype.updatePrice = function (old, current) {
         var that = this;
         this.options().forEach(function (opt) {
-            if (opt.name === current) that.product.price.var(opt.price);
+            if (opt.name === current) that.product.price.val(opt.price);
         });
     };
     Product.prototype.updateName = function (old, current) {
@@ -148,7 +148,7 @@
         var found = false;
         this.options().forEach(function (opt) {
             if (!found && opt.category === current) {
-                that.product.name.var(opt.name);
+                that.product.name.val(opt.name);
                 that.product.name.ref().forEach(function (el) {
                     el.innerHTML = that.yield();
                 });
@@ -181,7 +181,7 @@
         this.ui = new El("line-" + this.product.id);
     };
     Line.prototype.subtotalVal = function (old, current) {
-        this.product.subtotal.val(current.toFixed(2));
+        this.product.subtotal.txt(current.toFixed(2));
     };
     Line.prototype.yield = function () {
         return Utils.strReplace(this.tpl(), {
@@ -241,7 +241,7 @@
         alert(JSON.stringify(products));
     };
     Cart.prototype.grandtotalVal = function (old, current) {
-        this.grandtotal.val(current.toFixed(2));
+        this.grandtotal.txt(current.toFixed(2));
     };
     Cart.prototype.grandtotalCalc = function () {
         var grandtotal = 0;
@@ -249,7 +249,7 @@
             if (!this.lines.hasOwnProperty(key)) continue;
             grandtotal += this.lines[key].product.subtotal.value();
         }
-        this.grandtotal.var(grandtotal);
+        this.grandtotal.val(grandtotal);
     };
 
     new Cart();

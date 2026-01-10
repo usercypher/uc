@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 (function() {
     var window = (typeof window !== "undefined") ? window : this;
 
@@ -496,7 +497,7 @@ limitations under the License.
     };
     function ElX() {}
     ElX.refs = {};
-    ElX.vars = {};
+    ElX.vals = {};
     ElX.taps = {};
     ElX.keys = {};
     ElX.tab = {
@@ -528,7 +529,7 @@ limitations under the License.
                         }
                     }
                     if (!isDuplicate) { ElX.refs[key].push(el); }
-                } else if (prefix === "x-var-" && !ElX.vars[key]) { ElX.vars[key] = attr.value !== "this" ? attr.value : (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : ""); }
+                } else if (prefix === "x-val-" && !ElX.vals[key]) { ElX.vals[key] = attr.value !== "this" ? attr.value : (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : ""); }
             }
             if (tab.length >= 2) {
                 if (el.getAttribute("x-ref-" + tab[0]) !== null) {
@@ -639,7 +640,7 @@ limitations under the License.
             else if (current !== "null" && newState === "null") { refEl.removeAttribute(attr); }
         }
     };
-    ElX.val = function(key, value, el) {
+    ElX.txt = function(key, value, el) {
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
@@ -656,9 +657,9 @@ limitations under the License.
             }
         }
     };
-    ElX.var = function (key, value, event) {
-        var old = ElX.vars[key];
-        ElX.vars[key] = value;
+    ElX.val = function (key, value, event) {
+        var old = ElX.vals[key];
+        ElX.vals[key] = value;
         for (var i = 0, keyTemp = key; i < 2; i++, keyTemp = "*") {
             if (ElX.taps[keyTemp]) {
                 for (var j = 0, jlen = ElX.taps[keyTemp].length; j < jlen; j++) {
@@ -733,9 +734,9 @@ limitations under the License.
 
             else if (prefix === "x-set") { ElX.set(key, keyAttrArr.slice(1).join("."), attrValue, el); }
 
-            else if (prefix === "x-val") { ElX.val(key, attrValue, el); }
+            else if (prefix === "x-txt") { ElX.txt(key, attrValue, el); }
 
-            else if (prefix === "x-var") { ElX.var(key, attrValue, event); }
+            else if (prefix === "x-val") { ElX.val(key, attrValue, event); }
 
             else if (prefix === "x-run") { ElX.run(key, attrValue); }
 
@@ -800,16 +801,16 @@ limitations under the License.
     function X(elx, key, value) {
         this.elx = elx;
         this.key = key;
-        this.elx.vars[key] = value;
+        this.elx.vals[key] = value;
     }
-    X.prototype.value = function() { return this.elx.vars[this.key]; };
+    X.prototype.value = function() { return this.elx.vals[this.key]; };
     X.prototype.ref = function() { return this.elx.refs[this.key] || []; };
     X.prototype.tap = function(callback, context) { return this.elx.tap(this.key, callback, context); };
     X.prototype.untap = function(index) { this.elx.untap(this.key, index); };
     X.prototype.rot = function(value) { this.elx.rot(this.key, value); };
     X.prototype.set = function(attr, value) { this.elx.set(this.key, attr, value); };
-    X.prototype.val = function(value) { this.elx.val(this.key, value); };
-    X.prototype.var = function(value, event) { this.elx.var(this.key, value, event); };
+    X.prototype.txt = function(value) { this.elx.txt(this.key, value); };
+    X.prototype.val = function(value, event) { this.elx.val(this.key, value, event); };
     X.prototype.run = function(triggersStr) { this.elx.run(this.key, triggersStr); };
 
     window.Utils = Utils;

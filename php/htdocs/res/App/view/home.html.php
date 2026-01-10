@@ -49,8 +49,8 @@ $books = $data['books'];
                 x-set-window.x-on-key-window-escape="-book-delete-close"
                 x-set-window.x-run--book-delete-close="x-on-click"
                 x-set--book-delete-close.x-focus="-book-delete-open-<?= $i ?>"
-                x-val-book_id="<?= $app->htmlEncode($book['id']) ?>"
-                x-val-book_title="<?= $app->htmlEncode($book['title']) ?>"
+                x-txt-book_id="<?= $app->htmlEncode($book['id']) ?>"
+                x-txt-book_title="<?= $app->htmlEncode($book['title']) ?>"
             >
                 Delete
             </button>
