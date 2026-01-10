@@ -179,8 +179,8 @@ class App {
         'DIR_LOG_TIMESTAMP' => '',
 
         'URL_ROOT' => '/',
-        'URL_ROUTE' => '/',
         'URL_WEB' => '/',
+        'URL_ROUTE' => '/',
 
         'ERROR_TEMPLATES' => array(),
         'ERROR_NON_FATAL' => 0,
@@ -307,7 +307,7 @@ class App {
         }
 
         $content = '';
-        $type = $this->negotiateMime(isset($errcontext['ERROR_ACCEPT']) ? $errcontext['ERROR_ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
+        $type = $this->mimeNegotiate(isset($errcontext['ERROR_ACCEPT']) ? $errcontext['ERROR_ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
         if ($type && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
@@ -692,19 +692,19 @@ class App {
         return $this->env['DIR_ROOT'] . $this->env['DIR_WEB'] . $s;
     }
 
-    function urlRoute($s, $param = array()) {
-        if (strpos($this->env['URL_ROUTE'], '?') !== false) {
-            $s = str_replace('?', '&', $s);
-        }
-        return $this->env['URL_ROUTE'] . ($param ? strtr($s, $param) : $s);
-    }
-
     function urlRoot($s = '') {
         return $this->env['URL_ROOT'] . $s;
     }
 
-    function urlWeb($s, $param = array()) {
+    function urlWeb($s = '', $param = array()) {
         return $this->env['URL_WEB'] . ($param ? strtr($s, $param) : $s);
+    }
+
+    function urlRoute($s = '', $param = array()) {
+        if (strpos($this->env['URL_ROUTE'], '?') !== false) {
+            $s = str_replace('?', '&', $s);
+        }
+        return $this->env['URL_ROUTE'] . ($param ? strtr($s, $param) : $s);
     }
 
     function strSlug($s) {
@@ -721,11 +721,11 @@ class App {
         return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
     }
 
-    function negotiateMime($accept, $offers) {
+    function mimeNegotiate($accept, $offers) {
         $prefs = array();
         foreach (explode(',', $accept) as $type) {
             $parts = explode(';', trim($type));
-            $aType = trim(array_shift($parts));
+            $mime = strtolower(trim(array_shift($parts)));
 
             $q = 1.0;
             foreach ($parts as $p) {
@@ -735,12 +735,14 @@ class App {
                 }
             }
             if ($q > 0) {
-                $prefs[$aType] = $q;
+                $q += substr($mime, -2) === '/*' ? 0 : 0.01;
+                $prefs[$mime] = isset($prefs[$mime]) && $prefs[$mime] > $q ? $prefs[$mime] : $q;
             }
         }
         arsort($prefs);
         foreach (array_keys($prefs) as $p) {
             foreach ($offers as $o) {
+                $o = strtolower($o);
                 if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) {
                     return $o;
                 }
@@ -774,7 +776,7 @@ class App {
 
         $ext = '';
         $pos = strrpos($file, '.');
-        if ($pos !== false) {
+        if ($pos !== false && $pos > 0) {
             $ext = substr($file, $pos);
             $file = substr($file, 0, $pos);
         }
