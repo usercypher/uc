@@ -1,4 +1,8 @@
+<?php 
 
+$flash = $data['flash'];
+
+?>
     <span
         x-ref-window
         x-on-key-window="escape"        
@@ -17,27 +21,41 @@
     </span>
 
     <!-- Flash Messages Modal -->
-    <div class="modal hidden" x-ref--flash x-on-key="escape" x-on-click x-run--flash-close="x-on-click">
+    <div class="modal hidden" x-ref--flash x-on-click x-run--flash-close="x-on-click">
         <div class="form-container modal-content small" x-ref--flash-content x-on-click x-stop>
             <span class="modal-close" x-ref--flash-close x-on-click x-rot--flash="hidden" x-rot--flash-content="small">&times;</span>
             <h2>Notification</h2>
-            <ul>
-            <?php foreach ($flash as $f) : ?>
-                <li><b><?= $f['type'] . ': ' ?></b> <?= $f['message'] ?></li>
-            <?php endforeach ?>
-            </ul>
+            <ul id="flash"></ul>
             <button type="button" class="button" x-ref--flash-tab-last x-on-click x-run--flash-close="x-on-click">Ok</button>
         </div>
     </div>
+    <script>
+        (window.init = window.init || []).push(function () {
+            Utils.run(function () {
+                return window.ElXInit;
+            },
+            function () {
+                var flash = <?php echo json_encode($flash); ?>;
+
+                if (flash) {
+                    flashTpl(flash);
+                    ElX.run("-flash-open", "x-on-click");
+                }
+            });
+
+            function flashTpl(flash) {
+                var flashHtml = "";
+                for (var i = 0, ilen = flash.length; i < ilen; i++) {
+                    flashHtml += `<li><b>${flash[i].type}: </b>${flash[i].message}</li>`;
+                }
+                document.getElementById("flash").innerHTML = flashHtml;
+            }
+        })();
+    </script>
 
     <script>
         (window.init = window.init || []).push(function () {
-            window.onload = function() {
-                var isFlash = <?= empty($flash) ? 'false' : 'true' ?>;
-                ElX.init(document.getElementsByTagName("*"));
-                if (isFlash) {
-                    ElX.run("-flash-open", "x-on-click");
-                }
-            };
+            ElX.init(document.getElementsByTagName("*"));
+            window.ElXInit = true;
         })();
     </script>

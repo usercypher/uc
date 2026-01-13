@@ -3,9 +3,10 @@
 $app = $data['app'];
 $currentRoute = $data['current_route'];
 
-$flash = isset($data['flash']) ? $data['flash'] : array();
 $csrfToken = $data['csrf_token'];
 $books = $data['books'];
+
+$partialScript = $data['partial_script'];
 
 ?>
 <html>
@@ -74,6 +75,6 @@ $books = $data['books'];
         </div>
     </div>
 
-    <?php require($app->dirRoot('res/App/view/include/script.html.php')); ?>
+    <?php echo $partialScript; ?>
 </body>
 </html>
