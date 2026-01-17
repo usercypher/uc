@@ -28,7 +28,7 @@ function d($var, $detailed = false) {
     $detailed ? var_dump($var) : print_r($var);
 }
 
-function input_http($in, $option = array()) {
+function input_http($in) {
     $in->source = 'http';
 
     $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
@@ -52,7 +52,7 @@ function input_http($in, $option = array()) {
     return $in;
 }
 
-function input_cli($in, $option = array()) {
+function input_cli($in) {
     $in->source = 'cli';
 
     global $argc, $argv;
@@ -60,23 +60,29 @@ function input_cli($in, $option = array()) {
     $in->argc = isset($argc) ? $argc : 0;
     $in->argv = isset($argv) ? $argv : array();
 
+    $route = '';
+    $query = array();
+
     for ($i = 1; $in->argc > $i; $i++) {
         $arg = $in->argv[$i];
         if (substr($arg, 0, 2) === '--') {
             $eq = strpos($arg, '=');
             if ($eq !== false) {
-                $in->query[] = urlencode(substr($arg, 2, $eq - 2)) . '=' . urlencode(substr($arg, $eq + 1));
+                $query[] = urlencode(substr($arg, 2, $eq - 2)) . '=' . urlencode(substr($arg, $eq + 1));
             } else {
-                $in->query[] = urlencode(substr($arg, 2));
+                $query[] = urlencode(substr($arg, 2));
             }
-        } else {
-            $in->uri .= '/' . rawurlencode($arg);
+        } elseif (substr($arg, 0, 1) !== '-') {
+            $route .= '/' . rawurlencode($arg);
         }
     }
 
-    $in->route = $in->uri;
+    $queryStr = implode('&', $query);
 
-    parse_str(implode('&', $in->query), $in->query);
+    $in->uri = $route . '?' . $queryStr;
+    $in->route = $route;
+
+    parse_str($queryStr, $in->query);
 
     return $in;
 }
@@ -89,12 +95,12 @@ class Input {
     var $content = '';
     var $version = '1.1';
     var $method = '';
-    var $uri = '';
+    var $uri = '/';
 
     var $argc = 0;
     var $argv = array();
 
-    var $route = '';
+    var $route = '/';
     var $cookie = array();
     var $query = array();
     var $frame = array();
