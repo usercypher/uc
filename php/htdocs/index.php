@@ -37,11 +37,13 @@ function index() {
     $output->code = $app->getEnv('SAPI') === 'cli' ? 0 : 200;
     $output->version = $input->version;
 
+    list($input, $output) = $app->pipe($input, $output, $settings['handler']);
+
     $result = $app->resolveRoute($input->method, $input->route);
 
     $input->param = $result['param'];
 
-    list($input, $output) = $app->pipe($input, $output, array_merge($settings['handler'], $result['handler']));
+    list($input, $output) = $app->pipe($input, $output, $result['handler']);
 
     if (isset($result['error'])) {
         trigger_error($result['error'], E_USER_WARNING);

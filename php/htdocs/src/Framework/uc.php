@@ -23,7 +23,7 @@ while (ob_get_level()) {
 
 function d($var, $detailed = false) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) {
-        header('Content-Type: text/plain');
+        header('content-type: text/plain');
     }
     $detailed ? var_dump($var) : print_r($var);
 }
@@ -181,8 +181,6 @@ class App {
 
         'DIR_ROOT' => '',
         'DIR_WEB' => '',
-        'DIR_LOG' => '',
-        'DIR_LOG_TIMESTAMP' => '',
 
         'URL_ROOT' => '/',
         'URL_WEB' => '/',
@@ -192,13 +190,16 @@ class App {
         'ERROR_NON_FATAL' => 0,
         'ERROR_LOG_FILE' => 'error.log',
         'ERROR_MAX_LENGTH' => 4096,
-        'SHOW_ERRORS' => true,
-        'LOG_ERRORS' => false,
+        'ERROR_DISPLAY' => true,
+        'ERROR_LOGGING' => false,
 
+        'LOG_HANDLER' => array(),
+        'LOG_DIR' => '',
+        'LOG_DIR_TIMESTAMP' => '',
         'LOG_SIZE_LIMIT_MB' => 5,
         'LOG_CLEANUP_INTERVAL_DAYS' => 1,
         'LOG_RETENTION_DAYS' => 7,
-        'MAX_LOG_FILES' => 10,
+        'LOG_MAX_FILES' => 10,
     );
 
     // Application Setup
@@ -294,7 +295,7 @@ class App {
 
         $error = '[php error ' . $errno . '] [' . $this->env['SAPI'] . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
 
-        if ($this->env['LOG_ERRORS']) {
+        if ($this->env['ERROR_LOGGING']) {
             $this->log($error, $this->env['ERROR_LOG_FILE']);
         }
 
@@ -302,7 +303,7 @@ class App {
             return array();
         }
 
-        if ($this->env['SHOW_ERRORS']) {
+        if ($this->env['ERROR_DISPLAY']) {
             $error .= "\n\n" . 'Stack trace: ' . "\n";
 
             foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) {
@@ -780,6 +781,14 @@ class App {
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
 
+        $msg = date(sprintf('[Y-m-d H:i:s.%06d O]', $micro * 1000000), $time) . ' ' . $msg . "\n";
+
+        if ($this->env['LOG_HANDLER']) {
+            list($obj, $method) = $this->env['LOG_HANDLER'];
+            $obj->$method($msg, $file);
+            return;
+        }
+
         $ext = '';
         $pos = strrpos($file, '.');
         if ($pos !== false && $pos > 0) {
@@ -787,17 +796,17 @@ class App {
             $file = substr($file, 0, $pos);
         }
 
-        $logDir = $this->env['DIR_ROOT'] . $this->env['DIR_LOG'];
+        $logDir = $this->env['DIR_ROOT'] . $this->env['LOG_DIR'];
         $logFile = $logDir . $file . $ext;
 
-        $this->write($logFile, '[' . date('Y-m-d H:i:s', $time) . '.' . sprintf('%06d', $micro * 1000000) . '] ' . $msg . "\n", true);
+        $this->write($logFile, $msg, true);
 
         if (filesize($logFile) >= $this->env['LOG_SIZE_LIMIT_MB'] * 1048576) {
             $newLogFile = $logDir . '/' . $file . '_' . date('Y-m-d_H-i-s') . $ext;
             rename($logFile, $newLogFile);
         }
 
-        $timestampFile = $this->env['DIR_ROOT'] . $this->env['DIR_LOG_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
+        $timestampFile = $this->env['DIR_ROOT'] . $this->env['LOG_DIR_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
         $lastCleanup = file_exists($timestampFile) ? (int) $this->read($timestampFile) : 0;
 
         if ($time - $lastCleanup >= $this->env['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
@@ -823,8 +832,8 @@ class App {
             asort($logFilesMTime);
             $logFiles = array_keys($logFilesMTime);
 
-            if (count($logFiles) > $this->env['MAX_LOG_FILES']) {
-                $maxIndex = count($logFiles) - $this->env['MAX_LOG_FILES'];
+            if (count($logFiles) > $this->env['LOG_MAX_FILES']) {
+                $maxIndex = count($logFiles) - $this->env['LOG_MAX_FILES'];
                 for ($i = 0; $maxIndex > $i; $i++) {
                     unlink($logFiles[$i]);
                 }

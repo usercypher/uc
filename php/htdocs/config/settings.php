@@ -14,15 +14,15 @@ function settings() {
         'ERROR_NON_FATAL' => E_NOTICE | E_DEPRECATED | E_USER_NOTICE | E_USER_DEPRECATED, // set non fatal, it only logs (if log error is enabled)
         'ERROR_LOG_FILE' => 'error.log', // Error log file
         'ERROR_MAX_LENGTH' => 4096, // Error string max length
-        'SHOW_ERRORS' => 1, // Enable (1) or disable (0) detailed error messages
-        'LOG_ERRORS' => 1, // Enable (1) or disable (0) error logging
+        'ERROR_DISPLAY' => 1, // Enable (1) or disable (0) detailed error messages
+        'ERROR_LOGGING' => 1, // Enable (1) or disable (0) error logging
         // Logging Configuration
-        'DIR_LOG' => 'var/log/',
-        'DIR_LOG_TIMESTAMP' => 'var/data/',
+        'LOG_DIR' => 'var/log/',
+        'LOG_DIR_TIMESTAMP' => 'var/data/',
         'LOG_SIZE_LIMIT_MB' => 5,
         'LOG_CLEANUP_INTERVAL_DAYS' => 1,
         'LOG_RETENTION_DAYS' => 7,
-        'MAX_LOG_FILES' => 10,
+        'LOG_MAX_FILES' => 10,
     );
 
     $ini = array(
