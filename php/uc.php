@@ -757,23 +757,27 @@ class App {
         }
     }
 
-    function write($file, $string, $append = false) {
-        if ($fp = fopen($file, $append ? 'ab' : 'wb')) {
-            fwrite($fp, (string) $string);
-            fclose($fp);
+    function write($file, $content, $append = false) {
+        if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
+            $content = (string) $content;
+            $length = strlen($content);
+            $offset = 0;
+            while ($length > $offset && fwrite($handle, substr($content, $offset, 8192)) !== false) {
+                $offset += 8192;
+            }
+            fclose($handle);
         }
     }
 
     function read($file) {
-        if ($fp = fopen($file, 'rb')) {
-            $chunks = array();
-            while (!feof($fp)) {
-                $chunks[] = fread($fp, 8192);
+        if ($handle = fopen($file, 'rb')) {
+            $content = '';
+            while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
+                $content .= $chunk;
             }
-            fclose($fp);
-            return implode('', $chunks);
+            fclose($handle);
+            return $content;
         }
-        return false;
     }
 
     function log($msg, $file) {
