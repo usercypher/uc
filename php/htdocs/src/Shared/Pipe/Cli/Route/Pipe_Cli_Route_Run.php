@@ -21,7 +21,6 @@ class Pipe_Cli_Route_Run {
         }
 
         $tempInput = new Input();
-        $tempInput->source = 'http';
 
         $tempInput->route = $input->query['route'];
 

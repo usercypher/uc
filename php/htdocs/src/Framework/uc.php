@@ -31,7 +31,6 @@ function d($var, $detailed = false, $limit = 8192) {
 }
 
 function input_http($in) {
-    $in->source = 'http';
     $in->stream = array(fopen('php://input', 'rb'));
 
     $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
@@ -56,7 +55,6 @@ function input_http($in) {
 }
 
 function input_cli($in) {
-    $in->source = 'cli';
     $in->stream = array(fopen('php://stdin', 'rb'));
 
     global $argc, $argv;
@@ -104,10 +102,9 @@ function output_cli($out) {
 }
 
 class Input {
-    var $stream = array();
-
-    var $source = '';
     var $data = array();
+
+    var $stream = array();
 
     var $header = array();
     var $content = '';

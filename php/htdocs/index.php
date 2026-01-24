@@ -26,7 +26,7 @@ function index() {
     $app->load('var/data/app.state.dat');
 
     $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
-    if ($input->source !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
+    if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
         $app->setEnv('URL_ROUTE', $input->route . '?route=/');
         $input->route = isset($input->query['route']) ? $input->query['route'] : '/';
     }
@@ -48,9 +48,9 @@ function index() {
         trigger_error($result['error'], E_USER_WARNING);
     }
 
-    $output->io($output->content, (int) ($input->source === 'cli' && $output->code > 0));
+    $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
 
-    if ($input->source === 'cli') {
+    if ($app->getEnv('SAPI') === 'cli') {
         exit($output->code);
     }
 }

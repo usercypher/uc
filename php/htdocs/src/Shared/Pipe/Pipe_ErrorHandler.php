@@ -44,10 +44,10 @@ class Pipe_ErrorHandler {
         $this->output->code = $result['code'];
         $this->output->version = $this->input->version;
 
-        $input = $this->input;
+        $app = $this->app;
         $output = $this->output;
 
-        $output->io($output->content, (int) ($input->source === 'cli' && $output->code > 0));
+        $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
     }
 
     function shutdown() {
