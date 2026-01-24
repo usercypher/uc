@@ -26,7 +26,6 @@ class Pipe_Cli_File_Find {
             return array($input, $output, $success);
         }
 
-        $output->std('Scanning...' . "\n");
         $files = $this->getFilesRecursive($directory);
         $foundFiles = array();
 
@@ -37,7 +36,7 @@ class Pipe_Cli_File_Find {
             }
         }
 
-        $output->std('Done. ' . count($files) . ' files scanned. ' . (count($foundFiles) ? count($foundFiles) : 0) . ' found.' . "\n\n");
+        $message .= 'Done. ' . count($files) . ' files scanned. ' . (count($foundFiles) ? count($foundFiles) : 0) . ' found.' . "\n\n";
 
         if (count($foundFiles)) {
             $message .= "Files containing '$search':" . "\n";

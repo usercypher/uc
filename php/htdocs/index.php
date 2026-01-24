@@ -33,8 +33,7 @@ function index() {
 
     $app->setEnv('HANDLE_ERROR_DEFAULT_ACCEPT', isset($input->header['accept']) ? $input->header['accept'] : '');
 
-    $output = new Output();
-    $output->code = $app->getEnv('SAPI') === 'cli' ? 0 : 200;
+    $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
     $output->version = $input->version;
 
     list($input, $output) = $app->pipe($input, $output, $settings['handler']);
@@ -49,14 +48,10 @@ function index() {
         trigger_error($result['error'], E_USER_WARNING);
     }
 
-    switch ($input->source) {
-        case 'cli':
-            $output->std($output->content, $output->code > 0);
-            exit($output->code);
-        case 'http':
-            return $output->http($output->content);
-        default:
-            echo 'Unknown input source:' . $input->source;
+    $output->io($output->content, (int) ($input->source === 'cli' && $output->code > 0));
+
+    if ($input->source === 'cli') {
+        exit($output->code);
     }
 }
 

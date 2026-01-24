@@ -25,9 +25,7 @@ class Pipe_ErrorHandler {
         }
 
         if ($errno & $this->app->getEnv('ERROR_NON_FATAL')) {
-            $result = $this->app->error($errno, $errstr, $errfile, $errline, array(
-                'ERROR_ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
-            ));
+            $result = $this->app->error($errno, $errstr, $errfile, $errline, $this->app->getEnv('ERROR_DISPLAY') ? debug_backtrace() : array(), isset($this->input->header['accept']) ? $this->input->header['accept'] : '');
 
             return true;
         }
@@ -40,11 +38,8 @@ class Pipe_ErrorHandler {
             ob_end_clean();
         }
 
-        $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
-            'ERROR_ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
-            'ERROR_TRACE' => $e->getTrace(),
-        ));
-        $this->output->header['content-type'] = $result['type'];
+        $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), $this->app->getEnv('ERROR_DISPLAY') ? $e->getTrace() : array(), isset($this->input->header['accept']) ? $this->input->header['accept'] : '');
+        $this->output->header['content-type'] = $result['header']['content-type'];
         $this->output->content = $result['content'];
         $this->output->code = $result['code'];
         $this->output->version = $this->input->version;
@@ -52,15 +47,7 @@ class Pipe_ErrorHandler {
         $input = $this->input;
         $output = $this->output;
 
-        switch ($input->source) {
-            case 'cli':
-                $output->std($output->content, $output->code > 0);
-                exit($output->code);
-            case 'http':
-                return $output->http($output->content);
-            default:
-                echo 'Unknown input source:' . $input->source;
-        }
+        $output->io($output->content, (int) ($input->source === 'cli' && $output->code > 0));
     }
 
     function shutdown() {

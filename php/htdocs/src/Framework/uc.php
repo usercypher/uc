@@ -17,19 +17,22 @@ limitations under the License.
 
 // Version 0.0.1
 
-while (ob_get_level()) {
-    ob_end_clean();
-}
+while (@ob_end_clean());
 
-function d($var, $detailed = false) {
+function d($var, $detailed = false, $limit = 8192) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) {
         header('content-type: text/plain');
     }
+    ob_start();
     $detailed ? var_dump($var) : print_r($var);
+    $content = ob_get_contents();
+    ob_end_clean();
+    echo $limit > -1 && strlen($content) > $limit ? substr($content, 0, $limit) . "\n... [truncated]" : $content;
 }
 
 function input_http($in) {
     $in->source = 'http';
+    $in->stream = array(fopen('php://input', 'rb'));
 
     $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
     foreach ($_SERVER as $key => $value) {
@@ -54,6 +57,7 @@ function input_http($in) {
 
 function input_cli($in) {
     $in->source = 'cli';
+    $in->stream = array(fopen('php://stdin', 'rb'));
 
     global $argc, $argv;
 
@@ -87,7 +91,21 @@ function input_cli($in) {
     return $in;
 }
 
+function output_http($out) {
+    $out->stream = array(fopen('php://output', 'wb'));
+    $out->code = 200;
+    return $out;
+}
+
+function output_cli($out) {
+    $out->stream = array(fopen('php://stdout', 'wb'), fopen('php://stderr', 'wb'));
+    $out->code = 0;
+    return $out;
+}
+
 class Input {
+    var $stream = array();
+
     var $source = '';
     var $data = array();
 
@@ -106,13 +124,13 @@ class Input {
     var $frame = array();
     var $param = array();
 
-    function std($mark = '', $eol = "\n") {
+    function io($id = 0, $mark = '', $eol = "\n") {
         if ($mark === '') {
-            return ($line = fgets(STDIN)) !== false ? rtrim($line) : '';
+            return ($line = fgets($this->stream[$id])) !== false ? rtrim($line) : '';
         }
 
         $lines = array();
-        while (($line = fgets(STDIN)) !== false && ($line = rtrim($line)) !== $mark) {
+        while (($line = fgets($this->stream[$id])) !== false && ($line = rtrim($line)) !== $mark) {
             $lines[] = $line;
         }
 
@@ -121,13 +139,15 @@ class Input {
 }
 
 class Output {
+    var $stream = array();
+
     var $header = array();
     var $content = '';
-    var $code = 200;
+    var $code = 0;
     var $version = '1.1';
 
-    function http($content) {
-        if (!headers_sent()) {
+    function io($content, $id = 0) {
+        if ($this->header && !headers_sent()) {
             if (isset($this->header['location']) && (300 > $this->code || $this->code > 399)) {
                 $this->code = 302;
             }
@@ -147,13 +167,9 @@ class Output {
         }
 
         if (!isset($this->header['location'])) {
-            echo $content;
+            fwrite($this->stream[$id], $content);
             flush();
         }
-    }
-
-    function std($content, $err = false) {
-        fwrite($err ? STDERR : STDOUT, $content);
     }
 }
 
@@ -250,22 +266,20 @@ class App {
     // Error Management
 
     function handleErrorDefault($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, array('ERROR_ACCEPT' => $this->getEnv('HANDLE_ERROR_DEFAULT_ACCEPT', '')));
+        $e = $this->error($errno, $errstr, $errfile, $errline, $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array(), $this->getEnv('HANDLE_ERROR_DEFAULT_ACCEPT', ''));
 
         if (!$e) {
             return true;
         }
 
-        while (ob_get_level()) {
-            ob_end_clean();
-        }
+        while (@ob_end_clean());
 
         if ($this->env['SAPI'] === 'cli') {
-            fwrite(STDERR, $e['content']);
+            fwrite(fopen('php://stderr', 'wb'), $e['content']);
         } else {
             if (!headers_sent()) {
                 header('HTTP/1.1 ' . $e['code']);
-                header('content-type: ' . $e['type']);
+                header('content-type: ' . $e['header']['content-type']);
             }
             echo $e['content'];
         }
@@ -273,7 +287,7 @@ class App {
         exit($e['code'] > 255 ? 1 : $e['code']);
     }
 
-    function error($errno, $errstr, $errfile, $errline, $errcontext = array()) {
+    function error($errno, $errstr, $errfile, $errline, $errtrace, $erraccept) {
         if (!($errno & error_reporting())) {
             return array();
         }
@@ -304,9 +318,9 @@ class App {
         }
 
         if ($this->env['ERROR_DISPLAY']) {
-            $error .= "\n\n" . 'Stack trace: ' . "\n";
+            $error .= "\n\n";
 
-            foreach (array_merge(debug_backtrace(), isset($errcontext['ERROR_TRACE']) ? $errcontext['ERROR_TRACE'] : array()) as $i => $frame) {
+            foreach ($errtrace as $i => $frame) {
                 $error .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
             }
         } else {
@@ -314,7 +328,7 @@ class App {
         }
 
         $content = '';
-        $type = $this->mimeNegotiate(isset($errcontext['ERROR_ACCEPT']) ? $errcontext['ERROR_ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
+        $type = $this->mimeNegotiate($erraccept, array_keys($this->env['ERROR_TEMPLATES']));
         if ($type && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
@@ -322,7 +336,7 @@ class App {
             $content = $code . '. An unexpected error occurred.' . "\n\n" . $error;
         }
 
-        return array('content' => $content, 'code' => $code, 'type' => $type);
+        return array('header' => array('content-type' => $type), 'content' => $content, 'code' => $code);
     }
 
     // Route Management
@@ -721,7 +735,9 @@ class App {
     function template($file, $data = array()) {
         ob_start();
         require $file;
-        return ob_get_clean();
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
     }
 
     function htmlEncode($s) {
