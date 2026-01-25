@@ -29,13 +29,8 @@ $app->groupRoute($group, 'GET', 'create', array(
     'Pipe_Book_Create'
 ));
 
-// route=edit/:title_id
-$app->groupRoute($group, 'GET', 'edit/:title_id::([a-zA-Z0-9-]+)-([0-9]+)', array(
-    'Pipe_Book_Edit'
-));
-
-// route=edit/:id
-$app->groupRoute($group, 'GET', 'edit/:id::[0-9]+', array(
+// route=edit/:slug
+$app->groupRoute($group, 'GET', 'edit/:slug', array(
     'Pipe_Book_Edit'
 ));
 

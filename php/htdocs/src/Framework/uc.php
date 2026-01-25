@@ -414,28 +414,20 @@ class App {
 
             foreach ($current as $key => $value) {
                 if ($key && $key[0] === ':') {
-                    list($none, $paramName, $paramModifier, $paramRegex) = explode(':', $key, 4);
-                    if ($paramModifier === '*') {
+                    $current = $value;
+                    $modifier = substr($key, -1);
+                    if ($modifier === '*') {
                         foreach (array_slice($routeSegments, $index) as $v) {
-                            $param[$paramName][] = rawurldecode($v);
+                            $param[$key][] = rawurldecode($v);
                         }
-                        $current = $value;
                         if (isset($current[$this->ROUTE_HANDLER])) {
                             break 2;
                         }
-                        $matched = true;
-                        break;
+                    } else {
+                        $param[$key] = rawurldecode($routeSegment);
                     }
-                    $matches = array($routeSegment);
-                    if ($paramRegex === '' || preg_match('/' . $paramRegex . '/', $routeSegment, $matches)) {
-                        foreach ($matches as $k => $v) {
-                            $matches[$k] = rawurldecode($v);
-                        }
-                        $param[$paramName] = count($matches) === 1 ? $matches[0] : $matches;
-                        $current = $value;
-                        $matched = true;
-                        break;
-                    }
+                    $matched = true;
+                    break;
                 }
             }
 
@@ -449,22 +441,15 @@ class App {
 
             foreach ($current as $key => $value) {
                 if ($key && $key[0] === ':') {
-                    list($none, $paramName, $paramModifier) = explode(':', $key, 4);
-                    if ($paramModifier === '*' || $paramModifier === '?' || (($pos = strpos($paramModifier, '=')) !== false && ($param[$paramName] = substr($paramModifier, $pos + 1)))) {
-                        $current = $value;
-                        $matched = true;
-                        break;
-                    }
+                    $current = $value;
+                    $matched = true;
+                    break;
                 }
             }
 
             if (!$matched) {
                 return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
             }
-        }
-
-        if (!isset($current[$this->ROUTE_HANDLER])) {
-            return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
         }
 
         $handler = array();
@@ -726,7 +711,17 @@ class App {
     }
 
     function strSlug($s) {
-        return preg_replace('/[^a-z0-9]+/', '-', strtolower($s));
+        $s = strtolower($s);
+        $slug = '';
+        for ($i = 0, $ilen = strlen($s); $ilen > $i; $i++) {
+            $char = $s[$i];
+            if (($char >= 'a' && 'z' >= $char) || ($char >= '0' && '9' >= $char)) {
+                $slug .= $char;
+            } elseif (($char === ' ' || $char === '-') && substr($slug, -1) !== '-') {
+                $slug .= '-';
+            }
+        }
+        return $slug;
     }
 
     function template($file, $data = array()) {

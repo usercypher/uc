@@ -16,7 +16,13 @@ class Pipe_Book_Edit {
         $success = true;
 
         $data = $input->param;
-        $bookId = isset($data['title_id'][2]) ? $data['title_id'][2] : $data['id'];
+        $slug = explode('-', isset($data[':slug']) ? $data[':slug'] : '');
+
+        $bookId = $slug[count($slug) - 1];
+        if (!is_numeric($bookId)) {
+            trigger_error('500|id not found in url.', E_USER_WARNING);
+            return array($input, $output, $success);
+        }
 
         $output->content = $this->app->template($this->app->dirRoot('res/App/view/edit.html.php'), array(
             'app' => $this->app,
