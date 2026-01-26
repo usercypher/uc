@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Version 0.0.1
+// 0.0.1
 
 while (@ob_end_clean());
 
@@ -415,16 +415,13 @@ class App {
             foreach ($current as $key => $value) {
                 if ($key && $key[0] === ':') {
                     $current = $value;
-                    $modifier = substr($key, -1);
-                    if ($modifier === '*') {
-                        foreach (array_slice($routeSegments, $index) as $v) {
-                            $param[$key][] = rawurldecode($v);
-                        }
+                    if (substr($key, -1) === '*') {
+                        $param[substr($key, 1, -1)] = implode('/', array_slice($routeSegments, $index));
                         if (isset($current[$this->ROUTE_HANDLER])) {
                             break 2;
                         }
                     } else {
-                        $param[$key] = rawurldecode($routeSegment);
+                        $param[substr($key, 1)] = rawurldecode($routeSegment);
                     }
                     $matched = true;
                     break;

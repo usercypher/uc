@@ -15,8 +15,7 @@ class Pipe_Book_Edit {
     public function process($input, $output) {
         $success = true;
 
-        $data = $input->param;
-        $slug = explode('-', isset($data[':slug']) ? $data[':slug'] : '');
+        $slug = explode('-', isset($input->param['slug']) ? $input->param['slug'] : '');
 
         $bookId = $slug[count($slug) - 1];
         if (!is_numeric($bookId)) {
