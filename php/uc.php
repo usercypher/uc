@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// 0.0.1
+// Version 0.0.1
 
 while (@ob_end_clean());
 
@@ -354,7 +354,7 @@ class App {
         }
 
         if (isset($node[$this->ROUTE_HANDLER])) {
-            trigger_error('Duplicate route detected: ' . $route, E_USER_WARNING);
+            user_error('Duplicate route detected: ' . $route, E_USER_WARNING);
             return;
         }
 
@@ -520,7 +520,7 @@ class App {
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
         if (isset($this->unit[$unit]) && ($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE])) {
-            trigger_error('Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
+            user_error('Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
             return;
         }
 
@@ -563,7 +563,7 @@ class App {
             $seen[$previousUnit] = true;
 
             if (isset($seen[$unit])) {
-                trigger_error('Circular load detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
+                user_error('Circular load detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
                 return;
             }
 
@@ -612,7 +612,7 @@ class App {
             $seen[$previousUnit] = true;
 
             if (isset($seen[$unit])) {
-                trigger_error('Circular args detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
+                user_error('Circular args detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
                 return;
             }
 
