@@ -778,21 +778,13 @@ class App {
         $valid = array();
         $error = array();
         foreach ($schema as $field => $rules) {
-            $value = isset($data[$field]) ? $data[$field] : null;
+            $valid[$field] = isset($data[$field]) ? $data[$field] : null;
             foreach ($rules as $rule) {
-                $result = $rule->process($value);
-                if (is_array($result)) {
-                    list($msg, $signal) = $result;
-                    $error[] = array('type' => 'error', 'message' => $msg, 'meta' => array('field' => $field) + $meta + (isset($result[2]) ? $result[2] : array()));
-                    if ($signal === 1 || $signal === 2) {
-                        break;
-                    }
-                } else {
-                    $value = $result;
+                list($valid[$field], $err) = $rule->process($valid[$field]);
+                if ($err) {
+                    $error[] = array('type' => 'error', 'message' => $err, 'meta' => array('field' => $field) + $meta);
+                    break;
                 }
-            }
-            if ($value !== null) {
-                $valid[$field] = $value;
             }
         }
         return array($valid, $error);

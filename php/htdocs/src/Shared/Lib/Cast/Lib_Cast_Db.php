@@ -46,7 +46,7 @@ class Lib_Cast_Db_Unique {
         $current = $this->current;
 
         if ($current !== null && $value === $current) {
-            return $value;
+            return array($value, null);
         }
 
         $sql = "SELECT COUNT(*) as count FROM `{$table}` WHERE `{$column}` = ?";
@@ -55,10 +55,10 @@ class Lib_Cast_Db_Unique {
         $result = $stmt->fetch();
 
         if ($result && $result['count'] > 0) {
-            return [$value . ' already exists in ' . $table, 1];
+            return array($value, $value . ' already exists in ' . $table);
         }
 
-        return $value;
+        return array($value, null);
     }
 }
 
@@ -75,9 +75,9 @@ class Lib_Cast_Db_Exists {
         $result = $stmt->fetch();
 
         if (!$result || $result['count'] == 0) {
-            return [$value . ' not found in ' . $table, 1];
+            return array($value, $value . ' not found in ' . $table);
         }
 
-        return $value;
+        return array($value, null);
     }
 }

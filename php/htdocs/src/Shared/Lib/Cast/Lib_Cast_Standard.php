@@ -74,29 +74,39 @@ class Lib_Cast_Standard {
         $o->max = $max;
         return $o;
     }
+
+    public function emptyToNull() {
+        return new Lib_Cast_Standard_EmptyToNull;
+    }
+
+    public function passwordHash($algo = PASSWORD_DEFAULT) {
+        $o = new Lib_Cast_Standard_PasswordHash;
+        $o->algo = $algo;
+        return $o;
+    }
 }
 
 class Lib_Cast_Standard_Required {
     function process($value) {
         if (empty($value)) {
-            return array('Field is required', 1);
+            return array($value, 'Field is required');
         }
-        return $value;
+        return array($value, null);
     }
 }
 
 class Lib_Cast_Standard_Trim {
     function process($value) {
-        return is_string($value) ? trim($value) : $value;
+        return array(is_string($value) ? trim($value) : $value, null);
     }
 }
 
 class Lib_Cast_Standard_Email {
     function process($value) {
         if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            return array('Invalid email format', 1);
+            return array($value, 'Invalid email format');
         }
-        return $value;
+        return array($value, null);
     }
 }
 
@@ -106,9 +116,9 @@ class Lib_Cast_Standard_LengthMin {
     function process($value) {
         $min = $this->min;
         if ($min > strlen($value)) {
-            return array("Must be at least $min characters", 1);
+            return array($value, "Must be at least $min characters");
         }
-        return $value;
+        return array($value, null);
     }
 }
 
@@ -118,33 +128,33 @@ class Lib_Cast_Standard_LengthMax {
     function process($value) {
         $max = $this->max;
         if (strlen($value) > $max) {
-            return array("Must be at most $max characters", 1);
+            return array($value, "Must be at most $max characters");
         }
-        return $value;
+        return array($value, null);
     }
 }
 
 class Lib_Cast_Standard_ToString {
     function process($value) {
-        return (string)$value;
+        return array((string)$value, null);
     }
 }
 
 class Lib_Cast_Standard_ToInt {
     function process($value) {
-        return (int)$value;
+        return array((int)$value, null);
     }
 }
 
 class Lib_Cast_Standard_ToFloat {
     function process($value) {
-        return (float)$value;
+        return array((float)$value, null);
     }
 }
 
 class Lib_Cast_Standard_ToBool {
     function process($value) {
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+        return array(filter_var($value, FILTER_VALIDATE_BOOLEAN), null);
     }
 }
 
@@ -153,12 +163,9 @@ class Lib_Cast_Standard_Regex {
 
     function process($value) {
         if (!preg_match($this->pattern, $value)) {
-            return array(
-                isset($this->error) ? $this->error : "Invalid format", 
-                1
-            );
+            return array($value, isset($this->error) ? $this->error : "Invalid format");
         }
-        return $value;
+        return array($value, null);
     }
 }
 
@@ -168,9 +175,9 @@ class Lib_Cast_Standard_Enum {
     function process($value) {
         $allowed = $this->allowed;
         if (!in_array($value, $allowed)) {
-            return array("Value must be one of: " . implode(', ', $allowed), 1);
+            return array($value, "Value must be one of: " . implode(', ', $allowed));
         }
-        return $value;
+        return array($value, null);
     }
 }
 
@@ -180,21 +187,21 @@ class Lib_Cast_Standard_DefaultValue {
     function process($value) {
         $default = $this->defaultValue;
         if ($value === null || $value === '') {
-            return $default;
+            return array($default, null);
         }
-        return $value;
+        return array($value, null);
     }
 }
 
 class Lib_Cast_Standard_ToDate {
     function process($value) {
-        if (!$value) return null;
+        if (!$value) return array(null, null);
         
         $timestamp = strtotime($value);
         if (!$timestamp) {
-            return array("Invalid date format", 1);
+            return array($value, "Invalid date format");
         }
-        return date('Y-m-d', $timestamp);
+        return array(date('Y-m-d', $timestamp), null);
     }
 }
 
@@ -204,9 +211,9 @@ class Lib_Cast_Standard_ToDateTime {
 
         $timestamp = strtotime($value);
         if (!$timestamp) {
-            return array("Invalid date-time format", 1);
+            return array($value, "Invalid date-time format");
         }
-        return date('Y-m-d H:i:s', $timestamp);
+        return array(date('Y-m-d H:i:s', $timestamp), null);
     }
 }
 
@@ -218,8 +225,27 @@ class Lib_Cast_Standard_Range {
         $max = $this->max;
 
         if ($min > $value || $value > $max) {
-            return array("Value must be between $min and $max", 1);
+            return array($value, "Value must be between $min and $max");
         }
-        return $value;
+        return array($value, null);
+    }
+}
+
+class Lib_Cast_Standard_EmptyToNull {
+    function process($value) {
+        if (is_string($value) && trim($value) === '') {
+            return array(null, null);
+        }
+        return array($value, null);
+    }
+}
+
+class Lib_Cast_Standard_PasswordHash {
+    var $algo;
+
+    function process($value) {
+        if (!$value) return array($value, null);
+
+        return array(password_hash($value, $this->algo), null);
     }
 }
