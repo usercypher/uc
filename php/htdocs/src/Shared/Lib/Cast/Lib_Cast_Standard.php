@@ -41,9 +41,10 @@ class Lib_Cast_Standard {
         return new Lib_Cast_Standard_ToBool;
     }
 
-    public function regex($pattern = '') {
+    public function regex($pattern, $error = null) {
         $o = new Lib_Cast_Standard_Regex;
         $o->pattern = $pattern;
+        $o->error = $error;
         return $o;
     }
 
@@ -148,12 +149,12 @@ class Lib_Cast_Standard_ToBool {
 }
 
 class Lib_Cast_Standard_Regex {
-    var $pattern;
+    var $pattern, $error;
 
     function process($value) {
-        if (!preg_match($params['pattern'], $value)) {
+        if (!preg_match($this->pattern, $value)) {
             return array(
-                isset($params['error']) ? $params['error'] : "Invalid format", 
+                isset($this->error) ? $this->error : "Invalid format", 
                 1
             );
         }
@@ -214,7 +215,7 @@ class Lib_Cast_Standard_Range {
 
     function process($value) {
         $min = $this->min;
-        $max = $this->min;
+        $max = $this->max;
 
         if ($min > $value || $value > $max) {
             return array("Value must be between $min and $max", 1);

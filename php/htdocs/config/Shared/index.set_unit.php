@@ -14,7 +14,10 @@ $app->groupUnit($group, 'Lib_Database');
 $app->groupUnit($group, 'Lib_GoogleApiGmail', array('args' => array('Lib_Curl')));
 $app->groupUnit($group, 'Lib_Html');
 $app->groupUnit($group, 'Lib_Session');
+$app->groupUnit($group, 'Lib_Standard');
 $app->groupUnit($group, 'Lib_Translator');
+$app->groupUnit($group, 'Lib_Cast_Standard');
+$app->groupUnit($group, 'Lib_Cast_Db', array('args' => array('App', 'Lib_Database')));
 
 /**
  * ------------------------------------------------------------------------

@@ -3,8 +3,20 @@
 class Lib_Cast_Db {
     var $db;
 
-    function setPdo($db) {
-        $this->db = $db;
+    function args($args) {
+        list(
+            $app,
+            $database
+        ) = $args;
+
+        $this->db = $database->conn[$database->connect([
+            'host' => $app->getEnv('DB_HOST'), 
+            'port' => $app->getEnv('DB_PORT'),
+            'name' => $app->getEnv('DB_NAME'),
+            'user' => $app->getEnv('DB_USER'),
+            'pass' => $app->getEnv('DB_PASS'),
+            'time' => $app->getEnv('DB_TIME', '+00:00')
+        ])];
     }
 
     function unique($table, $column, $current = null) {

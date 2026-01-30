@@ -8,18 +8,17 @@ class Pipe_Book_Store {
         list(
             $this->app, 
             $this->session, 
-            $this->bookRepo
+            $this->bookRepo,
         ) = $args;
     } 
 
     public function process($input, $output) {
         $success = true;
 
-        $data = $input->frame;
+        $route = $input->query['redirect'];
+        $book = $input->frame['book'];
 
-        $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
-        
-        list($book, $error) = $this->app->cast($data['book'], $this->bookRepo->getSchema('insert'));
+        list($book, $error) = $this->app->cast($book, $this->bookRepo->getSchema('insert'));
 
         if ($error) {
             foreach ($error as $e) {
@@ -33,7 +32,7 @@ class Pipe_Book_Store {
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->header['location'] = $this->app->urlRoute($route);
+        $output->header['location'] = $this->app->urlRoute(trim($route, '/'));
 
         return array($input, $output, $success);
     }

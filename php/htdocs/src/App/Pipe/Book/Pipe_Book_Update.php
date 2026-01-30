@@ -15,14 +15,13 @@ class Pipe_Book_Update {
     public function process($input, $output) {
         $success = true;
 
-        $data = $input->frame;
+        $route = $input->query['redirect'];
+        $book = $input->frame['book'];
+        $bookOld = $input->frame['book_old'];
 
-        $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
-
-        list($book, $error) = $this->app->cast($data['book'], $this->bookRepo->getSchema('update', array(
-            'book_old' => $data['book_old'],
+        list($book, $error) = $this->app->cast($book, $this->bookRepo->getSchema('update', array(
+            'book_old' => $bookOld,
         )));
-
         if ($error) {
             foreach ($error as $e) {
                 $this->bookRepo->addMessage($e['type'], $e['message'], $e['meta']);
@@ -34,7 +33,7 @@ class Pipe_Book_Update {
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 
-        $output->header['location'] = $this->app->urlRoute($route);
+        $output->header['location'] = $this->app->urlRoute(trim($route, '/'));
 
         return array($input, $output, $success);
     }

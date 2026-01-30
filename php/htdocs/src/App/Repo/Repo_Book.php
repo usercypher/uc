@@ -23,8 +23,6 @@ class Repo_Book extends Lib_DatabaseHelper {
             'pass' => $this->app->getEnv('DB_PASS'),
             'time' => $this->app->getEnv('DB_TIME', '+00:00')
         ]));
-
-        $this->castDb->setPdo($this->database->conn[$this->id]);
     }
 
     public function getSchema($action, $context = array()) {
