@@ -1,11 +1,18 @@
 <?php
 
+/* 
+// INTERFACE
+class Plural {
+    function rule() : void;
+}
+*/
+
 require 'Lib_Translator.php';
 
 $endl = "\n";
 
 $t = new Lib_Translator();
-$t->setDefaultPluralRule();
+$t->setDefaultPlural();
 
 $t->translations = array(
     // Basic string

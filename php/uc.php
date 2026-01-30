@@ -47,7 +47,7 @@ function input_http($in) {
     $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
     $in->cookie = $_COOKIE;
     $in->query = $_GET;
-    $in->frame = array_merge($_POST, $_FILES);
+    $in->frame = $_FILES + $_POST;
 
     $in->route = ($pos = strpos($in->uri, '?')) !== false ? substr($in->uri, 0, $pos) : $in->uri;
 
@@ -668,18 +668,6 @@ class App {
 
     // Utility
 
-    function pipe($input, $output, $pipe) {
-        foreach ($pipe as $p) {
-            $p = $this->makeUnit($p);
-            list($input, $output, $success) = $p->process($input, $output);
-            if (!$success) {
-                break;
-            }
-        }
-
-        return array($input, $output);
-    }
-
     function dir($s) {
         return str_replace('\\', '/', $s);
     }
@@ -705,84 +693,6 @@ class App {
             $s = str_replace('?', '&', $s);
         }
         return $this->env['URL_ROUTE'] . ($param ? strtr($s, $param) : $s);
-    }
-
-    function strSlug($s) {
-        $s = strtolower($s);
-        $slug = '';
-        for ($i = 0, $ilen = strlen($s); $ilen > $i; $i++) {
-            $char = $s[$i];
-            if (($char >= 'a' && 'z' >= $char) || ($char >= '0' && '9' >= $char)) {
-                $slug .= $char;
-            } elseif (($char === ' ' || $char === '-') && substr($slug, -1) !== '-') {
-                $slug .= '-';
-            }
-        }
-        return $slug;
-    }
-
-    function template($file, $data = array()) {
-        ob_start();
-        require $file;
-        $content = ob_get_contents();
-        ob_end_clean();
-        return $content;
-    }
-
-    function htmlEncode($s) {
-        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
-    }
-
-    function mimeNegotiate($accept, $offers) {
-        $prefs = array();
-        foreach (explode(',', $accept) as $type) {
-            $parts = explode(';', trim($type));
-            $mime = strtolower(trim(array_shift($parts)));
-
-            $q = 1.0;
-            foreach ($parts as $p) {
-                $p = explode('=', trim($p));
-                if (isset($p[1]) && strtolower(trim($p[0])) === 'q') {
-                    $q = (float) trim($p[1]);
-                }
-            }
-            if ($q > 0) {
-                $q += substr($mime, -2) === '/*' ? 0 : 0.01;
-                $prefs[$mime] = isset($prefs[$mime]) && $prefs[$mime] > $q ? $prefs[$mime] : $q;
-            }
-        }
-        arsort($prefs);
-        foreach (array_keys($prefs) as $p) {
-            foreach ($offers as $o) {
-                $o = strtolower($o);
-                if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) {
-                    return $o;
-                }
-            }
-        }
-    }
-
-    function write($file, $content, $append = false) {
-        if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
-            $content = (string) $content;
-            $length = strlen($content);
-            $offset = 0;
-            while ($length > $offset && fwrite($handle, substr($content, $offset, 8192)) !== false) {
-                $offset += 8192;
-            }
-            fclose($handle);
-        }
-    }
-
-    function read($file) {
-        if ($handle = fopen($file, 'rb')) {
-            $content = '';
-            while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
-                $content .= $chunk;
-            }
-            fclose($handle);
-            return $content;
-        }
     }
 
     function log($msg, $file) {
@@ -849,6 +759,120 @@ class App {
             }
 
             $this->write($timestampFile, $time);
+        }
+    }
+
+    function pipe($input, $output, $pipe) {
+        foreach ($pipe as $p) {
+            $p = $this->makeUnit($p);
+            list($input, $output, $success) = $p->process($input, $output);
+            if (!$success) {
+                break;
+            }
+        }
+
+        return array($input, $output);
+    }
+
+    function cast($data, $schema, $meta = array()) {
+        $valid = array();
+        $error = array();
+        foreach ($schema as $field => $rules) {
+            $value = isset($data[$field]) ? $data[$field] : null;
+            foreach ($rules as $rule) {
+                $result = $rule->process($value);
+                if (is_array($result)) {
+                    list($msg, $signal) = $result;
+                    $error[] = array('type' => 'error', 'message' => $msg, 'meta' => array('field' => $field) + $meta + (isset($result[2]) ? $result[2] : array()));
+                    if ($signal === 1 || $signal === 2) {
+                        break;
+                    }
+                } else {
+                    $value = $result;
+                }
+            }
+            if ($value !== null) {
+                $valid[$field] = $value;
+            }
+        }
+        return array($valid, $error);
+    }
+
+    function read($file) {
+        if ($handle = fopen($file, 'rb')) {
+            $content = '';
+            while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
+                $content .= $chunk;
+            }
+            fclose($handle);
+            return $content;
+        }
+    }
+
+    function write($file, $content, $append = false) {
+        if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
+            $content = (string) $content;
+            $length = strlen($content);
+            $offset = 0;
+            while ($length > $offset && fwrite($handle, substr($content, $offset, 8192)) !== false) {
+                $offset += 8192;
+            }
+            fclose($handle);
+        }
+    }
+
+    function template($file, $data = array()) {
+        ob_start();
+        require $file;
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    function strSlug($s) {
+        $s = strtolower($s);
+        $slug = '';
+        for ($i = 0, $ilen = strlen($s); $ilen > $i; $i++) {
+            $char = $s[$i];
+            if (($char >= 'a' && 'z' >= $char) || ($char >= '0' && '9' >= $char)) {
+                $slug .= $char;
+            } elseif (($char === ' ' || $char === '-') && substr($slug, -1) !== '-') {
+                $slug .= '-';
+            }
+        }
+        return $slug;
+    }
+
+    function htmlEncode($s) {
+        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
+    }
+
+    function mimeNegotiate($accept, $offers) {
+        $prefs = array();
+        foreach (explode(',', $accept) as $type) {
+            $parts = explode(';', trim($type));
+            $mime = strtolower(trim(array_shift($parts)));
+
+            $q = 1.0;
+            foreach ($parts as $p) {
+                $p = explode('=', trim($p));
+                if (isset($p[1]) && strtolower(trim($p[0])) === 'q') {
+                    $q = (float) trim($p[1]);
+                }
+            }
+            if ($q > 0) {
+                $q += substr($mime, -2) === '/*' ? 0 : 0.01;
+                $prefs[$mime] = isset($prefs[$mime]) && $prefs[$mime] > $q ? $prefs[$mime] : $q;
+            }
+        }
+        arsort($prefs);
+        foreach (array_keys($prefs) as $p) {
+            foreach ($offers as $o) {
+                $o = strtolower($o);
+                if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) {
+                    return $o;
+                }
+            }
         }
     }
 }

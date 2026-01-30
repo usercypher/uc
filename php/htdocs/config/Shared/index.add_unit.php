@@ -8,7 +8,13 @@ $app->addUnit('Lib_DatabaseHelper', $unitPath);
 $app->addUnit('Lib_GoogleApiGmail', $unitPath);
 $app->addUnit('Lib_Html', $unitPath);
 $app->addUnit('Lib_Session', $unitPath);
+$app->addUnit('Lib_Standard', $unitPath);
 $app->addUnit('Lib_Translator', $unitPath);
+
+$unitPath = 'src/Shared/Lib/Cast/';
+
+$app->addUnit('Lib_Cast_Standard', $unitPath);
+$app->addUnit('Lib_Cast_Db', $unitPath);
 
 $unitPath = 'src/Shared/Pipe/';
 

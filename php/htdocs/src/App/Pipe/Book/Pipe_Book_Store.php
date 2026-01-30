@@ -18,8 +18,18 @@ class Pipe_Book_Store {
         $data = $input->frame;
 
         $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
+        
+        list($book, $error) = $this->app->cast($data['book'], $this->bookRepo->getSchema('insert'));
 
-        $route = $this->bookRepo->validateAndInsert($data) ? 'home' : $route;
+        if ($error) {
+            foreach ($error as $e) {
+                $this->bookRepo->addMessage($e['type'], $e['message'], $e['meta']);
+            }
+        } else {
+            $route = 'home';
+            $this->bookRepo->insert($book);
+            $this->bookRepo->addMessage('success', 'book created successfully.');
+        }
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 

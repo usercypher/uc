@@ -46,7 +46,7 @@ $flash = $data['flash'];
             function flashTpl(flash) {
                 var flashHtml = "";
                 for (var i = 0, ilen = flash.length; i < ilen; i++) {
-                    flashHtml += `<li><b>${flash[i].type}: </b>${flash[i].message}</li>`;
+                    flashHtml += `<li><b>${flash[i].type}: </b>${flash[i].message} : ${JSON.stringify(flash[i].meta)}</li>`;
                 }
                 document.getElementById("flash").innerHTML = flashHtml;
             }

@@ -19,7 +19,18 @@ class Pipe_Book_Update {
 
         $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
 
-        $this->bookRepo->validateAndUpdate($data);
+        list($book, $error) = $this->app->cast($data['book'], $this->bookRepo->getSchema('update', array(
+            'book_old' => $data['book_old'],
+        )));
+
+        if ($error) {
+            foreach ($error as $e) {
+                $this->bookRepo->addMessage($e['type'], $e['message'], $e['meta']);
+            }
+        } else {
+            $this->bookRepo->update($book);
+            $this->bookRepo->addMessage('success', 'book updated successfully.');
+        }
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 

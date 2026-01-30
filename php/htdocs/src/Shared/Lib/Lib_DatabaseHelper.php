@@ -2,24 +2,19 @@
 
 class Lib_DatabaseHelper {
     var $messages = array();
-    var $db;
-    var $conn;
     var $table;
     var $key;
-    var $schema = array();
-
-    function setDb($db, $conn = '_') {
-        $this->db = $db;
-        $this->conn = $conn;
-    }
+    var $db;
+    var $id;
 
     function setTable($table, $key = 'id') {
         $this->table = $table;
         $this->key = $key;
     }
 
-    function setSchema($schema) {
-        $this->schema = $schema;
+    function setDb($db, $id = '_') {
+        $this->db = $db;
+        $this->id = $id;
     }
 
     function addMessage($type, $message, $meta = array()) {
@@ -31,27 +26,27 @@ class Lib_DatabaseHelper {
     }
 
     function begin() {
-        return $this->db->begin($this->conn);
+        return $this->db->begin($this->id);
     }
 
     function commit() {
-        return $this->db->commit($this->conn);
+        return $this->db->commit($this->id);
     }
 
     function rollback() {
-        return $this->db->rollback($this->conn);
+        return $this->db->rollback($this->id);
     }
 
     function lastInsertId() {
-        return $this->db->lastInsertId($this->conn);
+        return $this->db->lastInsertId($this->id);
     }
 
     function execute($query) {
-        return $this->db->execute($query, $this->conn);
+        return $this->db->execute($query, $this->id);
     }
 
     function stmt($query, $param) {
-        return $this->db->stmt($query, $param, $this->conn);
+        return $this->db->stmt($query, $param, $this->id);
     }
 
     function fetch($stmt) {
@@ -191,35 +186,6 @@ class Lib_DatabaseHelper {
             return false;
         }
         return array_splice($array, 0, $chunkSize);
-    }
-
-    function cast($data) {
-        $result = array();
-        foreach ($this->schema as $field => $type) {
-            if (isset($data[$field])) {
-                switch ($type) {
-                    case 'string':
-                        $result[$field] = (string) $data[$field];
-                        break;
-                    case 'integer':
-                        if (is_numeric($data[$field])) {
-                            $result[$field] = (int) $data[$field];
-                        }
-                        break;
-                    case 'double':
-                        if (is_numeric($data[$field])) {
-                            $result[$field] = (float) $data[$field];
-                        }
-                        break;
-                    case 'boolean':
-                        $result[$field] = (bool) $data[$field];
-                        break;
-                    default:
-                        $result[$field] = $data[$field];
-                }
-            }
-        }
-        return $result;
     }
 }
 ?>

@@ -1,74 +1,79 @@
 <?php
 
 class Repo_Book extends Lib_DatabaseHelper {
+    private $app;
+    private $database;
+    private $castStandard;
+    private $castDb; 
+
     public function args($args) {
         list(
-            $app,
-            $database
+            $this->app,
+            $this->database,
+            $this->castStandard,
+            $this->castDb,
         ) = $args;
 
-        parent::setDb($database, $database->connect([
-            'host' => $app->getEnv('DB_HOST'), 
-            'port' => $app->getEnv('DB_PORT'),
-            'name' => $app->getEnv('DB_NAME'),
-            'user' => $app->getEnv('DB_USER'),
-            'pass' => $app->getEnv('DB_PASS'),
-            'time' => $app->getEnv('DB_TIME', '+00:00')
-        ]));
         parent::setTable('books');
-        parent::setSchema([
-            'id' => 'integer',
-            'title' => 'string',
-            'publisher' => 'string',
-            'author' => 'string',
-            'year' => 'string',
-        ]);
+        parent::setDb($this->database, $this->database->connect([
+            'host' => $this->app->getEnv('DB_HOST'), 
+            'port' => $this->app->getEnv('DB_PORT'),
+            'name' => $this->app->getEnv('DB_NAME'),
+            'user' => $this->app->getEnv('DB_USER'),
+            'pass' => $this->app->getEnv('DB_PASS'),
+            'time' => $this->app->getEnv('DB_TIME', '+00:00')
+        ]));
+
+        $this->castDb->setPdo($this->database->conn[$this->id]);
     }
 
-    public function validateAndInsert($data) {
-        $bookData = $this->cast($data['book']);
+    public function getSchema($action, $context = array()) {
+        $std = $this->castStandard;
+        $db = $this->castDb;
+        $s = [];
 
-        if ($this->exists('WHERE title = ?', array($bookData['title']))) {
-            $this->addMessage('error', 'Title Already Exists.');
-            return false;
+        if (in_array($action, ['update', 'delete'])) {
+            $s += [
+                'id' => [
+                    $std->toInt(),
+                    $std->required(),
+                    $db->exists($this->table, 'id'),
+                ]
+            ];
         }
 
-        $this->insert($bookData);
-
-        $this->addMessage('success', 'Book created successfully.');
-
-        return true;
-    }
-
-    public function validateAndUpdate($data) {
-        $bookData = $this->cast($data['book']);
-        $bookOldData = $this->cast($data['book_old']);
-
-        if ($bookOldData['title'] !== $bookData['title'] && $this->exists('WHERE title = ?', array($bookData['title']))) {
-            $this->addMessage('error', 'Title Already Exists.');
-            return false;
+        if (in_array($action, ['insert', 'update'])) {
+            $s += [
+                'title' => [
+                    $std->toString(),
+                    $std->required(),
+                    $std->lengthMin(5),
+                    $std->lengthMax(30),
+                ],
+                'publisher' => [
+                    $std->toString(),
+                ],
+                'author' => [
+                    $std->toString(),
+                ],
+                'year' => [
+                    $std->toString(),
+                    $std->defaultValue(date('Y-m-d H:i:s')),
+                    $std->toDateTime(),
+                ]
+            ];
         }
 
-        $this->update($bookData);
-
-        $this->addMessage('success', 'Book updated successfully.');
-
-        return true;
-    }
-
-    public function validateAndDelete($data) {
-        $bookData = $this->cast($data['book']);
-
-        if (!$this->exists('WHERE id = ?', array($bookData['id']))) {
-            $this->addMessage('error', 'Book not found.');
-            return false;
+        if ($action === 'insert') {
+            $s['title'][] = $db->unique($this->table, 'title');
         }
 
-        $this->delete($bookData['id']);
+        if ($action === 'update') {
+            $bookOld = $context['book_old'];
+            $s['title'][] = $db->unique($this->table, 'title', $bookOld['title']);
+        }
 
-        $this->addMessage('success', 'Book deleted successfully.');
-
-        return true;
+        return $s;
     }
 }
 ?>

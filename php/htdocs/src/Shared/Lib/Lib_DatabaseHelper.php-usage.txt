@@ -19,12 +19,6 @@ $model->setDb($db, $db->connect([
     'time' => '+00:00'
 ]));
 $model->setTable('table_name', 'id');
-$model->setSchema([
-    'id' => 'integer',
-    'name' => 'string',
-    'email' => 'string',
-    'age' => 'integer',
-]);
 
 // Create table
 msg($model->create("
@@ -110,15 +104,6 @@ msg(is_numeric($userCount) && $userCount === 2, "validate count()");
 // Check if user with email exists
 $exists = $model->exists('WHERE email = ?', ['johndoe@example.com']);
 msg(is_bool($exists), "validate exists()");
-
-// Check if casting works
-$casted = $model->cast(['id' => '1', 'name' => 123, 'age' => '25']);
-msg(
-    $casted['id'] === 1 && is_int($casted['id']) &&
-    $casted['name'] === '123' && is_string($casted['name']) &&
-    $casted['age'] === 25 && is_int($casted['age']),
-    "validate cast()"
-);
 
 msg($model->drop(), "validate drop()");
 

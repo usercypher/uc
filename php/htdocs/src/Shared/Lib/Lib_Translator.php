@@ -2,13 +2,13 @@
 
 class Lib_Translator {
     var $translations = array();
-    var $pluralRule = null;
+    var $plural = null;
 
-    function setDefaultPluralRule() {
-        $this->pluralRule = array(&$this, 'simplePlural');
+    function setDefaultPlural() {
+        $this->plural = &$this;
     }
 
-    function simplePlural($n) {
+    function rule($n) {
         return $n == 0 ? 0 : ($n == 1 ? 1 : 2);
     }
 
@@ -29,7 +29,7 @@ class Lib_Translator {
 
         $isArray = is_array($value);
         if ($isArray && $count !== null) {
-            $form = $this->pluralRule[0]->{$this->pluralRule[1]}($count);
+            $form = $this->plural->rule($count);
             if (!isset($value[$form])) {
                 end($value);
                 $form = key($value);

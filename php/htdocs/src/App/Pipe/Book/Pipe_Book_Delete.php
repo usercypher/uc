@@ -19,7 +19,16 @@ class Pipe_Book_Delete {
 
         $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/');
 
-        $this->bookRepo->validateAndDelete($data);
+        list($book, $error) = $this->app->cast($data['book'], $this->bookRepo->getSchema('delete'));
+
+        if ($error) {
+            foreach ($error as $e) {
+                $this->bookRepo->addMessage($e['type'], $e['message'], $e['meta']);
+            }
+        } else {
+            $this->bookRepo->delete($book['id']);
+            $this->bookRepo->addMessage('success', 'book deleted successfully.');
+        }
 
         $this->session->set('flash', $this->bookRepo->getMessages());
 

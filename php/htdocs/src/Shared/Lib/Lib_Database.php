@@ -3,8 +3,8 @@
 class Lib_Database {
     var $conn = array();
 
-    function connect($config = array(), $key = '_') {
-        if (!isset($this->conn[$key])) {
+    function connect($config = array(), $id = '_') {
+        if (!isset($this->conn[$id])) {
             $host = isset($config['host']) ? $config['host'] : 'localhost';
             $port = isset($config['port']) ? $config['port'] : 3306;
             $name = isset($config['name']) ? $config['name'] : '';
@@ -13,18 +13,18 @@ class Lib_Database {
             $time = isset($config['time']) ? $config['time'] : '+00:00';
             $timeout = isset($config['timeout']) ? (int) $config['timeout'] : 5;
 
-            $this->conn[$key] = new PDO('mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name, $user, $pass, array(
+            $this->conn[$id] = new PDO('mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name, $user, $pass, array(
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
                 PDO::ATTR_TIMEOUT => $timeout,
             ));
-            $this->conn[$key]->exec('SET time_zone = "' . $time . '"');
+            $this->conn[$id]->exec('SET time_zone = "' . $time . '"');
         }
-        return $key;
+        return $id;
     }
 
-    function disconnect($key = '_') {
-        if (isset($this->conn[$key])) {
-            unset($this->conn[$key]);
+    function disconnect($id = '_') {
+        if (isset($this->conn[$id])) {
+            unset($this->conn[$id]);
         }
     }
 
@@ -32,36 +32,36 @@ class Lib_Database {
         $this->conn = array();
     }
 
-    function hasConnection($key = '_') {
-        return isset($this->conn[$key]);
+    function hasConnection($id = '_') {
+        return isset($this->conn[$id]);
     }
 
     // db operations
 
-    function begin($key = '_') {
-        return $this->conn[$key]->beginTransaction();
+    function begin($id = '_') {
+        return $this->conn[$id]->beginTransaction();
     }
 
-    function commit($key = '_') {
-        return $this->conn[$key]->commit();
+    function commit($id = '_') {
+        return $this->conn[$id]->commit();
     }
 
-    function rollback($key = '_') {
-        return $this->conn[$key]->rollBack();
+    function rollback($id = '_') {
+        return $this->conn[$id]->rollBack();
     }
 
-    function lastInsertId($key = '_') {
-        return $this->conn[$key]->lastInsertId();
+    function lastInsertId($id = '_') {
+        return $this->conn[$id]->lastInsertId();
     }
 
-    function execute($query, $key = '_') {
-        return $this->conn[$key]->exec($query);
+    function execute($query, $id = '_') {
+        return $this->conn[$id]->exec($query);
     }
 
-    function stmt($query, $param, $key = '_') {
-        $stmt = $this->conn[$key]->prepare($query);
+    function stmt($query, $param, $id = '_') {
+        $stmt = $this->conn[$id]->prepare($query);
         if (!$stmt) {
-            $error = $this->conn[$key]->errorInfo();
+            $error = $this->conn[$id]->errorInfo();
             trigger_error('Prepare failed: ' . $error[2], E_USER_WARNING);
             return false;
         }
