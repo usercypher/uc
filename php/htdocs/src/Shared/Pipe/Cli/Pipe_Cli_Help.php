@@ -17,7 +17,7 @@ class Pipe_Cli_Help {
         $seen = array();
 
         if (!$target) {
-            $route = isset($input->param['on-unknown-route']) ? $input->param['on-unknown-route'] : array('');
+            $route = isset($input->param['on-unknown-route']) ? array_map('rawurldecode', explode('/', $input->param['on-unknown-route'])) : array('');
             $message .= 'No route \'' . $route[0] . '\' found, list:' . "\n";
 
             for ($i = 0; $i < count($routes); $i++) {
