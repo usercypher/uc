@@ -1,7 +1,7 @@
 <?php
 
 class Lib_Standard {
-    function levenshtein_utf8($s1, $s2, $cost_ins = 1, $cost_rep = 1, $cost_del = 1) {
+    function levenshteinUtf8($s1, $s2, $cost_ins = 1, $cost_rep = 1, $cost_del = 1) {
         if (strlen($s1) > 255 || strlen($s2) > 255) {
             return -1;
         }

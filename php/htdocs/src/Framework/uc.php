@@ -395,7 +395,7 @@ class App {
         }
 
         foreach ($routeSegments as $index => $routeSegment) {
-            if ($routeSegment === '' && !(!$foundSegment && $last === $index)) {
+            if ($routeSegment === '' && ($foundSegment || $last !== $index)) {
                 continue;
             }
 
