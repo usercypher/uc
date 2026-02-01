@@ -207,7 +207,7 @@ class Lib_Cast_Standard_ToDate {
 
 class Lib_Cast_Standard_ToDateTime {
     function process($value) {
-        if (!$value) return null;
+        if (!$value) return array(null, null);
 
         $timestamp = strtotime($value);
         if (!$timestamp) {
