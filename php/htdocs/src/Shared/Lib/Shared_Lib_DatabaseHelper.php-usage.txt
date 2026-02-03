@@ -1,0 +1,110 @@
+<?php
+
+header('Content-Type: text/plain');
+require('Shared_Lib_Database.php');
+require('Shared_Lib_DatabaseHelper.php');
+
+function msg($success, $msg) {
+    echo ($success ? "[ ok ]" : "[fail]") . " " . $msg . "\n";
+}
+
+$db = new Shared_Lib_Database();
+$model = new Shared_Lib_DatabaseHelper();
+$model->setDb($db, $db->connect([
+    'host' => '127.0.0.1',
+    'port' => '3306',
+    'name' => 'test',
+    'user' => 'root',
+    'pass' => '',
+    'time' => '+00:00'
+]));
+$model->setTable('table_name', 'id');
+
+// Create table
+msg($model->create("
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    age INT NOT NULL
+") === true, "validate create()");
+
+// Test addMessage() and getMessages()
+$model->addMessage('success', 'Operation successful');
+$messages = $model->getMessages();
+msg(
+    $messages === [['type' => 'success', 'message' => 'Operation successful', 'meta' => ['table' => 'table_name']]],
+    "validate addMessage() & getMessages()"
+);
+
+// Insert single record
+$data = ['name' => 'John Doe', 'email' => 'johndoe@example.com', 'age' => 32];
+$lastInsertId = $model->insert($data);
+msg((int) $lastInsertId === 1, "validate insert()");
+
+// Insert batch using chunk helper
+$dataBatch = [
+    ['name' => 'John', 'email' => 'john@example.com', 'age' => 24],
+    ['name' => 'Jane', 'email' => 'jane@example.com', 'age' => 47],
+    ['name' => 'Mark', 'email' => 'mark@example.com', 'age' => 31],
+    ['name' => 'Sara', 'email' => 'sara@example.com', 'age' => 28],
+];
+$insertBatchCount = 0;
+while ($chunk = $model->chunk($dataBatch, 2)) {
+    $result = $model->insertBatch($chunk);
+    $insertBatchCount += $result === true ? count($chunk) : 0;
+}
+msg($insertBatchCount === 4, "validate insertBatch()");
+
+// Update single record
+$dataToUpdate = ['id' => 1, 'name' => 'John Updated', 'email' => 'johnupdated@example.com', 'age' => 32];
+$updateResult = $model->update($dataToUpdate);
+msg($updateResult === true, "validate update()");
+
+// Update batch with chunk helper
+$dataBatchUpdate = [
+    ['id' => 1, 'name' => 'John Updated Again', 'email' => 'johnagain@example.com', 'age' => 32],
+    ['id' => 2, 'name' => 'Jane Updated', 'email' => 'janeupdated@example.com', 'age' => 47],
+];
+$updateBatchResults = 0;
+while ($chunk = $model->chunk($dataBatchUpdate, 1)) {
+    $result = $model->updateBatch($chunk);
+    $updateBatchResults += $result === true ? count($chunk) : 0;
+}
+msg($updateBatchResults === 2, "validate updateBatch()");
+
+// Delete single record
+$deleteResult = $model->delete(3);
+msg($deleteResult === true, "validate delete()");
+
+// Delete batch with chunk helper
+$idsToDelete = [4, 5, 6]; // adjust IDs to exist
+$deleteBatchCount = 0;
+while ($chunk = $model->chunk($idsToDelete, 2)) {
+    $result = $model->deleteBatch($chunk);
+    $deleteBatchCount += $result === true ? count($chunk) : 0;
+}
+msg($deleteBatchCount === 3, "validate deleteBatch()");
+
+// all users older than 25
+$users = $model->all('WHERE age > ?', [25]);
+msg(is_array($users) && count($users) === 2, "validate all()");
+
+// Query users older than 25
+$usersByQuery = $model->query('SELECT * FROM ' . $model->table . ' WHERE age > ?', [25]);
+msg(is_array($usersByQuery) && count($usersByQuery) === 2, "validate query()");
+
+// Get one user older than 25
+$oneUser = $model->one('WHERE age > ?', [25]);
+msg(is_array($oneUser) && !empty($oneUser), "validate one()");
+
+// Count users older than 25
+$userCount = $model->count('WHERE age > ?', [25]);
+msg(is_numeric($userCount) && $userCount === 2, "validate count()");
+
+// Check if user with email exists
+$exists = $model->exists('WHERE email = ?', ['johndoe@example.com']);
+msg(is_bool($exists), "validate exists()");
+
+msg($model->drop(), "validate drop()");
+
+?>

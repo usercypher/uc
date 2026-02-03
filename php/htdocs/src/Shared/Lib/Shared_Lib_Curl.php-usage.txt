@@ -1,0 +1,33 @@
+<?php 
+
+$curl = new Shared_Lib_Curl();
+$response = $curl->send('https://api.example.com/data', [
+    'method' => 'POST',
+    'headers' => [
+        'Content-Type' => 'application/json',
+        'Authorization' => 'Bearer YOUR_TOKEN'
+    ],
+    'content' => json_encode(['key' => 'value']),
+    'timeout' => 30,
+    'verify_ssl' => true,
+    'ca_info' => '/path/to/cacert.pem',
+]);
+
+if ($response->code === 200) {
+    echo $response->content;
+} else {
+    echo "Error: " . $response->code;
+}
+
+/*
+
+return:
+
+$response->header
+$response->content
+$response->code
+$response->type
+$response->error
+$response->info
+
+*/
