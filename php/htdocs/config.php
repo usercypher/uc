@@ -2,6 +2,7 @@
 
 function config() {
     $env = array(
+        'APP_ID' => 'library_app',
         // Environment Settings
         'DIR_WEB' => 'web/',
         'URL_WEB' => '/web/', // URL path for web access
@@ -47,7 +48,7 @@ function config() {
             'compile.php' => 'dev',
         ),
         'env' => array(
-            'dev' => array_merge($env, array(
+            'dev' => array(
                 'ROUTE_REWRITE' => 0,
 
                 'DB_HOST' => '127.0.0.1',
@@ -56,8 +57,8 @@ function config() {
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
                 'DB_TIME' => '+08:00',
-            )),
-            'prod' => array_merge($env, array(
+            ) + $env,
+            'prod' => array(
                 'ROUTE_REWRITE' => 0,
 
                 'SHOW_ERRORS' => 0,
@@ -68,13 +69,13 @@ function config() {
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
                 'DB_TIME' => '+08:00',
-            )),
+            ) + $env,
         ),
         'ini' => array(
-            'dev' => array_merge($ini, array(
+            'dev' => array(
                 
-            )),
-            'prod' => array_merge($ini, array(
+            ) + $ini,
+            'prod' => array(
                 'display_errors' => 0,
                 'display_startup_errors' => 0,
                 'error_reporting' => E_ALL & ~E_NOTICE & ~E_DEPRECATED,
@@ -82,7 +83,7 @@ function config() {
 
                 'memory_limit' => '256M',
                 'max_execution_time' => 30,
-            )),
+            ) + $ini,
         )
     );
 }

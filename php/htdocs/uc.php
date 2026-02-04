@@ -121,17 +121,17 @@ class Input {
     var $frame = array();
     var $param = array();
 
-    function io($id = 0, $mark = '', $eol = "\n") {
+    function io($id = 0, $mark = '') {
         if ($mark === '') {
             return ($line = fgets($this->stream[$id])) !== false ? rtrim($line) : '';
         }
 
-        $lines = array();
-        while (($line = fgets($this->stream[$id])) !== false && ($line = rtrim($line)) !== $mark) {
-            $lines[] = $line;
+        $lines = '';
+        while (($line = fgets($this->stream[$id])) !== false && rtrim($line) !== $mark) {
+            $lines .= $line;
         }
 
-        return implode($eol, $lines);
+        return $lines;
     }
 }
 
