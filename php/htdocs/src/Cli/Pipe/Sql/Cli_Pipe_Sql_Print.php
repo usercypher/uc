@@ -15,6 +15,10 @@ class Cli_Pipe_Sql_Print {
 
         $files = $this->getFilesRecursive($directory);
 
+        sort($files);
+
+        $seen = array();
+
         for ($i = 0; $i < count($files); $i++) {
             $file = $files[$i];
             if (substr($file, -4) === '.sql') {
