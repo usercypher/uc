@@ -26,8 +26,8 @@ class Cli_Pipe_Route_Resolve {
 
         $result = $this->app->resolveRoute($method, $route);
 
-        if (isset($result['error'])) {
-            $message .= 'Route Error: ' . $result['error'] . "\n";
+        if (!$result) {
+            $message .= 'Route not found: ' . $route . "\n";
             $output->content = $message;
             $output->code = 1;
             return array($input, $output, $success);
@@ -46,7 +46,7 @@ class Cli_Pipe_Route_Resolve {
         $message .= '  Params  :' . "\n";
         if (!empty($result['param'])) {
             foreach ($result['param'] as $key => $value) {
-                $message .= '    ' . str_pad($key, 12) . ' = ' . (is_array($value) ? 'array(' . implode(', ', $value) . ')' : $value) . "\n";
+                $message .= '    ' . str_pad($key, 12) . ' = ' . $value . "\n";
             }
         }
 

@@ -38,14 +38,11 @@ function index() {
 
     list($input, $output) = $app->pipe($input, $output, $config['handler']);
 
-    $result = $app->resolveRoute($input->method, $input->route);
-
-    $input->param = $result['param'];
-
-    list($input, $output) = $app->pipe($input, $output, $result['handler']);
-
-    if (isset($result['error'])) {
-        trigger_error($result['error'], E_USER_WARNING);
+    if ($result = $app->resolveRoute($input->method, $input->route)) {
+        $input->param = $result['param'];
+        list($input, $output) = $app->pipe($input, $output, $result['handler']);
+    } else {
+        trigger_error('404|Route not found: ' . $input->method . ' ' . $input->route, E_USER_WARNING);
     }
 
     $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));

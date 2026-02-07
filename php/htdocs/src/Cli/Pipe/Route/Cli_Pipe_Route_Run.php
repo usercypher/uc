@@ -42,14 +42,12 @@ class Cli_Pipe_Route_Run {
             parse_str($input->query['query'], $tempInput->query);
         }
 
-        $result = $this->app->resolveRoute($tempInput->method, $tempInput->route);
-        $tempInput->param = $result['param'];
-
-        // Dispatch the request
-        list($_, $output) = $this->app->pipe($tempInput, $output, $result['handler']);
-
-        if (isset($result['error'])) {
-            trigger_error($result['error'], E_USER_WARNING);
+        if ($result = $this->app->resolveRoute($tempInput->method, $tempInput->route)) {
+            $tempInput->param = $result['param'];
+            // Dispatch the request
+            list($_, $output) = $this->app->pipe($tempInput, $output, $result['handler']);
+        } else {
+            trigger_error('404|Route not found: ' . $tempInput->method . ' ' . $tempInput->route, E_USER_WARNING);
         }
 
         return array($input, $output, $success);

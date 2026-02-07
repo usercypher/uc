@@ -377,7 +377,7 @@ class App {
 
     function resolveRoute($method, $route) {
         if (!isset($this->routes[$method])) {
-            return array('handler' => array(), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
+            return array();
         }
 
         $current = $this->routes[$method];
@@ -417,7 +417,7 @@ class App {
             }
 
             if (!$matched) {
-                return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+                return array();
             }
         }
 
@@ -433,7 +433,7 @@ class App {
             }
 
             if (!$matched) {
-                return array('handler' => array(), 'param' => array(), 'error' => '404|Route not found: ' . $method . ' ' . $route);
+                return array();
             }
         }
 
