@@ -54,6 +54,12 @@ class Shared_Lib_Cast_Standard {
         return $o;
     }
 
+    public function value($value) {
+        $o = new Shared_Lib_Cast_Standard_Value;
+        $o->value = $value;
+        return $o;
+    }
+
     public function defaultValue($defaultValue) {
         $o = new Shared_Lib_Cast_Standard_DefaultValue;
         $o->defaultValue = $defaultValue;
@@ -82,6 +88,12 @@ class Shared_Lib_Cast_Standard {
     public function passwordHash($algo = PASSWORD_DEFAULT) {
         $o = new Shared_Lib_Cast_Standard_PasswordHash;
         $o->algo = $algo;
+        return $o;
+    }
+    public function equalTo($value, $message = null) {
+        $o = new Shared_Lib_Cast_Standard_EqualTo;
+        $o->value = $value;
+        $o->message = $message;
         return $o;
     }
 }
@@ -181,6 +193,14 @@ class Shared_Lib_Cast_Standard_Enum {
     }
 }
 
+class Shared_Lib_Cast_Standard_Value {
+    var $value;
+
+    function process($value) {
+        return array($this->value, null);
+    }
+}
+
 class Shared_Lib_Cast_Standard_DefaultValue {
     var $defaultValue;
 
@@ -247,5 +267,17 @@ class Shared_Lib_Cast_Standard_PasswordHash {
         if (!$value) return array($value, null);
 
         return array(password_hash($value, $this->algo), null);
+    }
+}
+
+class Shared_Lib_Cast_Standard_EqualTo {
+    var $value;
+    var $message;
+
+    function process($value) {
+        if ($value !== $this->value) {
+            return array($value, isset($this->message) ? $this->message : "Is not equal.");
+        } 
+        return array($value, null);
     }
 }

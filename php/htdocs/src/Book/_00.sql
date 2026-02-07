@@ -1,7 +1,0 @@
-CREATE TABLE `book` (
-    `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `title` VARCHAR(255) NOT NULL,
-    `publisher` VARCHAR(255) NOT NULL,
-    `author` VARCHAR(255) NOT NULL,
-    `year` DATE NOT NULL
-);

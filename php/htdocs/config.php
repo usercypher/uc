@@ -2,7 +2,7 @@
 
 function config() {
     $env = array(
-        'APP_ID' => 'library_app',
+        'APP_ID' => 'test_app',
         // Environment Settings
         'DIR_WEB' => 'web/',
         'URL_WEB' => '/web/', // URL path for web access
@@ -53,7 +53,7 @@ function config() {
 
                 'DB_HOST' => '127.0.0.1',
                 'DB_PORT' => '3306',
-                'DB_NAME' => 'library',
+                'DB_NAME' => 'test_app',
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
                 'DB_TIME' => '+08:00',
@@ -65,7 +65,7 @@ function config() {
 
                 'DB_HOST' => '127.0.0.1',
                 'DB_PORT' => '3306',
-                'DB_NAME' => 'library',
+                'DB_NAME' => 'test_app',
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
                 'DB_TIME' => '+08:00',

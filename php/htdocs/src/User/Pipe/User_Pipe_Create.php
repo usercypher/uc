@@ -1,6 +1,6 @@
 <?php
 
-class Book_Pipe_Create {
+class User_Pipe_Create {
     private $app, $session;
 
     public function args($args) {
@@ -13,10 +13,11 @@ class Book_Pipe_Create {
     public function process($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dirRoot('src/Book/res/create.html.php'), array(
+        $output->content = $this->app->template($this->app->dirRoot('src/User/res/create.html.php'), array(
             'app' => $this->app,
             'current_route' => $input->route,
             'csrf_token' => $this->session->get('csrf_token'),
+            'user_roles' => $input->data['user_roles'],
             'partial_script' => $this->app->template($this->app->dirRoot('src/App/res/partial/script.html.php'), array(
                'flash' => $this->session->unset('flash'),
             )),

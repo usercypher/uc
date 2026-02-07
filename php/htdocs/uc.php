@@ -144,7 +144,7 @@ class Output {
     var $version = '1.1';
 
     function io($content, $id = 0) {
-        if ($this->header && !headers_sent()) {
+        if (php_sapi_name() !== 'cli' && !headers_sent()) {
             if (isset($this->header['location']) && (300 > $this->code || $this->code > 399)) {
                 $this->code = 302;
             }
@@ -376,23 +376,15 @@ class App {
     }
 
     function resolveRoute($method, $route) {
-        if (strlen($route) > 32640) {
-            return array('handler' => array(), 'param' => array(), 'error' => '414|URI too long (max 32640 bytes): ' . $route);
-        }
-
         if (!isset($this->routes[$method])) {
             return array('handler' => array(), 'param' => array(), 'error' => '405|Method not allowed: ' . $method . ' ' . $route);
         }
 
         $current = $this->routes[$method];
         $param = array();
-        $routeSegments = explode('/', $route, 129);
+        $routeSegments = explode('/', $route, 128);
         $foundSegment = false;
         $last = count($routeSegments) - 1;
-
-        if ($last === 128) {
-            unset($routeSegments[$last--]);
-        }
 
         foreach ($routeSegments as $index => $routeSegment) {
             if ($routeSegment === '' && ($foundSegment || $last !== $index)) {
@@ -400,10 +392,6 @@ class App {
             }
 
             $foundSegment = true;
-
-            if (strlen($routeSegment) > 255) {
-                return array('handler' => array(), 'param' => array(), 'error' => '400|Route segment too long (max 255 chars): ' . $routeSegment);
-            }
 
             if (isset($current[$routeSegment])) {
                 $current = $current[$routeSegment];
@@ -834,7 +822,7 @@ class App {
                 $slug .= '-';
             }
         }
-        return $slug;
+        return trim($slug, '-');
     }
 
     function htmlEncode($s) {
