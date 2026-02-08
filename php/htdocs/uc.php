@@ -263,7 +263,7 @@ class App {
     // Error Management
 
     function handleErrorDefault($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array(), $this->getEnv('HANDLE_ERROR_DEFAULT_ACCEPT', ''));
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('TRACE' => $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array()) + $this->getEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array()));
 
         if (!$e) {
             return true;
@@ -284,7 +284,7 @@ class App {
         exit($e['code'] > 255 ? 1 : $e['code']);
     }
 
-    function error($errno, $errstr, $errfile, $errline, $errtrace, $erraccept) {
+    function error($errno, $errstr, $errfile, $errline, $errcontext) {
         if (!($errno & error_reporting())) {
             return array();
         }
@@ -317,7 +317,7 @@ class App {
         if ($this->env['ERROR_DISPLAY']) {
             $error .= "\n\n";
 
-            foreach ($errtrace as $i => $frame) {
+            foreach ($errcontext['TRACE'] as $i => $frame) {
                 $error .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
             }
         } else {
@@ -325,7 +325,7 @@ class App {
         }
 
         $content = '';
-        $type = $this->mimeNegotiate($erraccept, array_keys($this->env['ERROR_TEMPLATES']));
+        $type = $this->mimeNegotiate($errcontext['ACCEPT'], array_keys($this->env['ERROR_TEMPLATES']));
         if ($type && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {

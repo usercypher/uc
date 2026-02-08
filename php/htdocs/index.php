@@ -31,7 +31,9 @@ function index() {
         $input->route = isset($input->query['route']) ? $input->query['route'] : '/';
     }
 
-    $app->setEnv('HANDLE_ERROR_DEFAULT_ACCEPT', isset($input->header['accept']) ? $input->header['accept'] : '');
+    $app->setEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array(
+        'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : ''
+    ));
 
     $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
     $output->version = $input->version;
