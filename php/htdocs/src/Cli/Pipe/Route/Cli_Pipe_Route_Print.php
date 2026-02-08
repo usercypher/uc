@@ -1,7 +1,8 @@
 <?php
 
 class Cli_Pipe_Route_Print {
-    var $app;
+    /** @var App */
+    protected $app;
 
     function args($args) {
         list($this->app) = $args;
@@ -9,76 +10,57 @@ class Cli_Pipe_Route_Print {
 
     function process($input, $output) {
         $success = true;
+        $unitList = $this->app->unitList ?? array();
+        
+        // Flatten the tree starting from the root
+        $flattened = $this->walk($this->app->routes);
+        
+        $message = '';
+        foreach ($flattened as $route) {
+            $path   = $route['path'];
+            $method = $route['method'];
+            $pipe   = $route['pipe'];
 
-        $unitList = isset($this->app->unitList) ? $this->app->unitList : array();
-        $routes = $this->app->routes;
+            // Map unit indexes to names
+            $handlerNames = array_map(function($unitIndex) use ($unitList) {
+                return $unitList[$unitIndex] ?? "Unknown($unitIndex)";
+            }, $pipe);
 
-        $routes = $this->flattenRoutesWithMethod($routes);
-
-        $message = 'ROUTES' . "\n";
-
-        foreach ($routes as $no => $route) {
-            $no++;
-            $line = '  ' . str_pad('\'' . $route['method'] . '\'', 6) . ' \'' . $route['path'] . '\'';
-
-            $handler = array();
-
-            foreach ($route['pipe'] as $i) {
-                $handler[] = $unitList[$i];
-            }
-
-            $line .= ' => ' . implode(' > ', $handler);
-
-            $message .= $line . "\n";
+            $message .= sprintf(
+                "  %-8s '%s' => %s\n",
+                "'$method'",
+                $path,
+                implode(' > ', $handlerNames)
+            );
         }
 
         $output->content = $message;
-
         return array($input, $output, $success);
     }
 
-    function flattenRoutesWithMethod($tree) {
+    /**
+     * Recursively traverses the route tree to find handlers.
+     */
+    private function walk($tree, $prefix = '') {
         $routes = array();
 
-        foreach ($tree as $method => $branches) {
-            $paths = $this->flattenRoutes($branches);
-            sort($paths);
-
-            foreach ($paths as $route) {
-                $route['method'] = $method;
-                $routes[] = $route;
-            }
-        }
-
-        return $routes;
-    }
-
-    function flattenRoutes($tree, $prefix = '') {
-        $routes = array();
-
-        foreach ($tree as $segment => $children) {
+        foreach ($tree as $segment => $node) {
+            // If we hit the handler key, we've found the methods (GET, POST, etc.)
             if ($segment === $this->app->ROUTE_HANDLER) {
+                foreach ($node as $method => $pipe) {
+                    $routes[] = array(
+                        'path'   => $prefix ?: '/',
+                        'method' => $method,
+                        'pipe'   => $pipe
+                    );
+                }
                 continue;
             }
 
-            $currentPath = $prefix === '' ? $segment : $prefix . '/' . $segment;
-
-            if (is_array($children)) {
-                $childKeys = array_keys($children);
-                $onlyMeta = empty(array_diff($childKeys, array($this->app->ROUTE_HANDLER)));
-
-                if ($onlyMeta) {
-                    $route = array('path' => $currentPath);
-
-                    if (isset($children[$this->app->ROUTE_HANDLER])) {
-                        $route['pipe'] = $children[$this->app->ROUTE_HANDLER];
-                    }
-
-                    $routes[] = $route;
-                } else {
-                    $childRoutes = $this->flattenRoutes($children, $currentPath);
-                    $routes = array_merge($routes, $childRoutes);
-                }
+            // Otherwise, keep digging deeper into the tree
+            if (is_array($node)) {
+                $currentPath = $prefix === '' ? $segment : $prefix . '/' . $segment;
+                $routes = array_merge($routes, $this->walk($node, $currentPath));
             }
         }
 

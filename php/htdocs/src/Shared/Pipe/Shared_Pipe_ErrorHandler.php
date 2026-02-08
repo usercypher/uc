@@ -27,7 +27,8 @@ class Shared_Pipe_ErrorHandler {
         if ($errno & $this->app->getEnv('ERROR_NON_FATAL')) {
             $result = $this->app->error($errno, $errstr, $errfile, $errline, array(
                 'TRACE' => $this->app->getEnv('ERROR_DISPLAY') ? debug_backtrace() : array(),
-                'ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : ''
+                'ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
+                'HEADER' => array()
             ));
 
             return true;
@@ -43,9 +44,11 @@ class Shared_Pipe_ErrorHandler {
 
         $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
             'TRACE' => $this->app->getEnv('ERROR_DISPLAY') ? $e->getTrace() : array(),
-            'ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : ''
+            'ACCEPT' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
+            'HEADER' => $this->output->header
         ));
-        $this->output->header = $result['header'] + $this->output->header;
+
+        $this->output->header = $result['header'];
         $this->output->content = $result['content'];
         $this->output->code = $result['code'];
         $this->output->version = $this->input->version;

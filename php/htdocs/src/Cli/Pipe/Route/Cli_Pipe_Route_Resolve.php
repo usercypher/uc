@@ -26,7 +26,7 @@ class Cli_Pipe_Route_Resolve {
 
         $result = $this->app->resolveRoute($method, $route);
 
-        if (!$result) {
+        if (isset($result['error'])) {
             $message .= 'Route not found: ' . $route . "\n";
             $output->content = $message;
             $output->code = 1;

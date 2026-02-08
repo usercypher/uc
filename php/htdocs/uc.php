@@ -276,7 +276,15 @@ class App {
         } else {
             if (!headers_sent()) {
                 header('HTTP/1.1 ' . $e['code']);
-                header('content-type: ' . $e['header']['content-type']);
+                foreach ($e['header'] as $key => $value) {
+                    if (is_array($value)) {
+                        foreach ($value as $v) {
+                            header($key . ': ' . $v, false);
+                        }
+                    } else {
+                        header($key . ': ' . $value);
+                    }
+                }
             }
             echo $e['content'];
         }
@@ -333,7 +341,7 @@ class App {
             $content = $code . '. An unexpected error occurred.' . "\n\n" . $error;
         }
 
-        return array('header' => array('content-type' => $type), 'content' => $content, 'code' => $code);
+        return array('header' => array('content-type' => $type) + $errcontext['HEADER'], 'content' => $content, 'code' => $code);
     }
 
     // Route Management
@@ -344,8 +352,8 @@ class App {
             $handler[] = $this->unit[$unit][$this->UNIT_LIST];
         }
 
-        $node = &$this->routes[$method];
-        $routeSegments = explode('/', trim($route, '/'));
+        $node = &$this->routes;
+        $routeSegments = explode('/', trim($route, '/') . '/' . $this->ROUTE_HANDLER);
         foreach ($routeSegments as $segment) {
             if (!isset($node[$segment])) {
                 $node[$segment] = array();
@@ -353,12 +361,12 @@ class App {
             $node = &$node[$segment];
         }
 
-        if (isset($node[$this->ROUTE_HANDLER])) {
+        if (isset($node[$method])) {
             user_error('Duplicate route detected: ' . $route, E_USER_WARNING);
             return;
         }
 
-        $node[$this->ROUTE_HANDLER] = $handler;
+        $node[$method] = $handler;
     }
 
     function groupRoute($group, $method, $route, $units, $ignore = array()) {
@@ -376,11 +384,7 @@ class App {
     }
 
     function resolveRoute($method, $route) {
-        if (!isset($this->routes[$method])) {
-            return array();
-        }
-
-        $current = $this->routes[$method];
+        $current = $this->routes;
         $param = array();
         $routeSegments = explode('/', $route, 128);
         $foundSegment = false;
@@ -417,7 +421,7 @@ class App {
             }
 
             if (!$matched) {
-                return array();
+                return array('error' => 404);
             }
         }
 
@@ -433,12 +437,18 @@ class App {
             }
 
             if (!$matched) {
-                return array();
+                return array('error' => 404);
             }
         }
 
+        $current = $current[$this->ROUTE_HANDLER];
+
+        if (!isset($current[$method])) {
+            return array('error' => 405, 'header' => array('allow' => implode(', ', array_keys($current))));
+        }
+
         $handler = array();
-        foreach ($current[$this->ROUTE_HANDLER] as $unit) {
+        foreach ($current[$method] as $unit) {
             $handler[] = $this->unitList[$unit];
         }
 

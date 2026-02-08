@@ -32,7 +32,8 @@ function index() {
     }
 
     $app->setEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array(
-        'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : ''
+        'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : '',
+        'HEADER' => array()
     ));
 
     $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
@@ -40,11 +41,24 @@ function index() {
 
     list($input, $output) = $app->pipe($input, $output, $config['handler']);
 
-    if ($result = $app->resolveRoute($input->method, $input->route)) {
+    $result = $app->resolveRoute($input->method, $input->route);
+
+    if (isset($result['error'])) {
+        $description = '';
+        if ($result['error'] === 405) {
+            $description = 'Method not allowed: ' . $input->method . ' ' . $input->route . '. allow: ' . $result['header']['allow'];
+            $app->setEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array(
+                'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : '',
+                'HEADER' => $result['header']
+            ));
+            $output->header += $result['header'];
+        } else {
+            $description = 'Route not found: ' . $input->method . ' ' . $input->route;
+        }
+        trigger_error($result['error'] . '|' . $description, E_USER_WARNING);
+    } else {
         $input->param = $result['param'];
         list($input, $output) = $app->pipe($input, $output, $result['handler']);
-    } else {
-        trigger_error('404|Route not found: ' . $input->method . ' ' . $input->route, E_USER_WARNING);
     }
 
     $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
