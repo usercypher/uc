@@ -199,6 +199,8 @@
         this.id = 0;
         this.ui = new El("lines");
         this.grandtotal = ElX.x("grandtotal");
+        this.pendingHtml = "";
+        this.pendingLines = [];
 
         this.grandtotal.tap(Cart.prototype.grandtotalVal, this);
 
@@ -206,21 +208,34 @@
         ElX.tap("removeline", Cart.prototype.removeline, this);
         ElX.tap("save", Cart.prototype.save, this);
     }
+    Cart.prototype.flushLines = Utils.debounce(function () {
+        if (this.pendingLines.length === 0) return;
+
+        this.ui.append(this.pendingHtml);
+        for (var i = 0; this.pendingLines.length > i; i++) {
+            this.pendingLines[i].init();
+        }
+
+        ElX.init(this.ui.el.getElementsByTagName("*"));
+    
+        this.grandtotalCalc();
+    
+        this.pendingHtml = "";
+        this.pendingLines = [];
+    }, 50);
     Cart.prototype.addline = function () {
         var product = new ProductModel(this.id, "1948 Porsche 356-A Roadster", "Cars", 1, 53.90);
-
         product.subtotal.tap(Cart.prototype.grandtotalCalc, this);
-
+    
         var line = new Line(product);
-
         this.lines[this.id] = line;
-        this.ui.append(line.yield());
-
-        line.init();
-        ElX.init(this.ui.el.getElementsByTagName("*"));
-
-        this.grandtotalCalc();
+    
+        this.pendingHtml += line.yield();
+        this.pendingLines.push(line);
+    
         this.id++;
+    
+        this.flushLines();
     };
     Cart.prototype.removeline = function (old, current) {
         var id = Number(current);
@@ -252,8 +267,11 @@
         this.grandtotal.val(grandtotal);
     };
 
-    new Cart();
-    
+    var cart = new Cart();
+    for (var i = 0; i < 1000; i++) {
+        cart.addline();
+    }
+
 });
 </script>
 

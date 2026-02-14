@@ -1,0 +1,40 @@
+<html>
+<body>
+    <div id="output"></div>
+    <script src="uc.js"></script>
+    <script>
+        
+const apiUrl = new Url("example.com");
+
+// Output element
+const output = new El("output");
+output.html("<p>Loading...</p>", true);
+
+// Create and send a request
+const newStack = new Callstack();
+newStack.setData('api', new Request(new XMLHttpRequest()));
+count = 0;
+retry = 0;
+newStack.add(function (self) {
+    console.log(count);
+  self.getData('api').send(apiUrl.toString(), {
+    method: "GET"
+  }, function (res) {
+    if (res.code === 200) {
+      output.html(`<pre>${res.content}</pre>`);
+    } else {
+        console.log(res);
+      output.html(`<p style="color:red;">Error ${res.code}</p>`);
+      if (retry < 3) {
+          retry++;
+        self.retry().next();
+      }
+    }
+  });
+}).next();
+
+console.log(Utils.objectToQuery({'test' : 'value'}));
+
+    </script>
+</body>
+</html>

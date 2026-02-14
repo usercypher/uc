@@ -86,52 +86,50 @@ url.sync();       // pushState
 url.sync(true);   // replaceState
 
 /**************************************************************
+ * 🔗 Callstack – Usage Examples
+ **************************************************************/
+
+const stack = new Callstack();
+
+stack.add(function (self) {
+    self.next(); // call next in stack
+});
+
+stack.inject(function (self) {
+
+});
+
+stack.retry();
+stack.retryAll();
+stack.reset();
+
+/**************************************************************
  * 📡 Request – Usage Examples
  **************************************************************/
 
 const req = new Request(new XMLHttpRequest());
 
-// Enable caching with limits
-req.setCache(true)
-   .setCacheSize(1)  // 1 MB max
-   .setCacheTTL(30); // 30 seconds TTL
-
-// Store custom data
-req.setData("authToken", "abc123");
-const token = req.getData("authToken");
-
-// Add a response handler
-req.addCallback((req, res) => {
-  console.log("Status:", res.code);
-  console.log("Body:", res.content);
-});
-
 // Send GET request
-req.send("https://api.example.com/info", {
+var response = req.send("https://api.example.com/info", {
   method: "GET",
   header: {
     "Accept": "application/json"
   },
   timeout: 5
-});
+}, responseProcessor);
 
-// Abort if needed
 // req.abort();
-
-// Retry logic
-req.retry();     // Retry last
-req.retryAll();  // Retry all previous
 
 /**************************************************************
  * 📥 Response – Usage Example
  **************************************************************/
 
-req.addCallback((request, response) => {
-  const status = response.code;
-  const content = response.content;
-  const header = response.header;
-  // Do something with response
-});
+function responseProcessor(response) {
+    // run after request
+    const status = response.code;
+    const content = response.content;
+    const header = response.header;
+}
 
 /**************************************************************
  * 🧩 El – Usage Examples
@@ -182,23 +180,20 @@ const output = new El("output");
 output.html("<p>Loading...</p>", true);
 
 // Create and send a request
-const dataReq = new Request(new XMLHttpRequest());
-dataReq
-  .setCache(true)
-  .setCacheSize(2)    // 2MB max
-  .setCacheTTL(60)    // 60s TTL
-  .addCallback((req, res) => {
+const newStack = new Callstack();
+newStack.setData('api', new Request(new XMLHttpRequest()));
+
+newStack.add(function (self) {
+  self.getData('api').send(apiUrl.toString(), {
+    method: "GET",
+    header: { "Accept": "application/json" }
+  }, function (res) {
     if (res.code === 200) {
       output.html(`<pre>${res.content}</pre>`);
     } else {
       output.html(`<p style="color:red;">Error ${res.code}</p>`);
-      req.retry().send(apiUrl.toString(), {
-        method: "GET",
-        header: { "Accept": "application/json" }
-      });
+      self.retry().next();
     }
-  })
-  .send(apiUrl.toString(), {
-    method: "GET",
-    header: { "Accept": "application/json" }
   });
+}).next();
+
