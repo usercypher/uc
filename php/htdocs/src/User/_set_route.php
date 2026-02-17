@@ -3,7 +3,7 @@
 // GET
 // ==========
 $group = array(
-    'prepend' => array('Shared_Pipe_CsrfGenerate'),
+    'prepend' => array('Shared_Pipe_SessionTokenGenerate'),
     'append' => array('Shared_Pipe_OutputCompression')
 );
 
@@ -15,7 +15,7 @@ $app->groupRoute($group, 'GET', 'user/create', array(
 // POST
 // ==========
 $group = array(
-    'prepend' => array('Shared_Pipe_CsrfValidate')
+    'prepend' => array('Shared_Pipe_SessionTokenValidate')
 );
 
 $app->groupRoute($group, 'POST', 'user/store', array(

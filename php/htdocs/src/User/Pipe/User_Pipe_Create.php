@@ -16,7 +16,7 @@ class User_Pipe_Create {
         $output->content = $this->app->template($this->app->dirRoot('src/User/res/create.html.php'), array(
             'app' => $this->app,
             'current_route' => $input->route,
-            'csrf_token' => $this->session->get('csrf_token'),
+            'session_token' => $this->session->get('session_token'),
             'user_roles' => $input->data['user_roles'],
             'partial_script' => $this->app->template($this->app->dirRoot('src/App/res/partial/script.html.php'), array(
                'flash' => $this->session->unset('flash'),

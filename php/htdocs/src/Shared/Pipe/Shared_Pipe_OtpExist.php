@@ -14,7 +14,7 @@ class Shared_Pipe_OtpExist {
 
         if (!$otpToken) {
             $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
-            $this->session->set('flash', array(array('type' => 'error', 'message' => 'Otp not found. please resend code again.')));
+            $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'Otp not found. please resend code again.'))));
             $success = false;
         }
 

@@ -18,7 +18,7 @@ class Shared_Lib_DatabaseHelper {
     }
 
     function addMessage($type, $message, $meta = array()) {
-        $this->messages[] = array('type' => $type, 'message' => $message, 'meta' => array('table' => $this->table) + $meta);
+        $this->messages[] = array('type' => 'message:' . $type, 'data' => array('content' => $message, 'table' => $this->table) + $meta);
     }
 
     function getMessages() {

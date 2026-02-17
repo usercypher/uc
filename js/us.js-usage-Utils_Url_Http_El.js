@@ -1,12 +1,5 @@
 /**************************************************************
  * 📚 Lightweight JS Utility Library
- * 
- * 📦 Modules:
- * - Utils: string size, debounce/throttle, query object utils
- * - Url: easy query/hash manipulation + history sync
- * - Request: XMLHttpRequest wrapper with caching and retry
- * - Response: wraps XHR into clean object
- * - El: simple DOM content handling
  **************************************************************/
 
 /**************************************************************
@@ -107,10 +100,10 @@ stack.reset();
  * 📡 Request – Usage Examples
  **************************************************************/
 
-const req = new Request(new XMLHttpRequest());
+const req = new Xhr(new XMLHttpRequest());
 
 // Send GET request
-var response = req.send("https://api.example.com/info", {
+req.send("https://api.example.com/info", {
   method: "GET",
   header: {
     "Accept": "application/json"
@@ -181,7 +174,7 @@ output.html("<p>Loading...</p>", true);
 
 // Create and send a request
 const newStack = new Callstack();
-newStack.setData('api', new Request(new XMLHttpRequest()));
+newStack.setData('api', new Xhr(new XMLHttpRequest()));
 
 newStack.add(function (self) {
   self.getData('api').send(apiUrl.toString(), {

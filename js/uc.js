@@ -29,10 +29,9 @@ limitations under the License.
                 callback();
             } else if (new Date().getTime() - startTime >= timeout) {
                 clearInterval(intervalId);
-                console.log("Utils.run: timeout reached without condition being true.");
+                window.console.log("Utils.run: timeout reached without condition being true.");
             }
-        },
-            interval);
+        }, interval);
     };
     Utils.htmlEncode = function (str) {
         return str.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;").split("\"").join("&quot;").split("'").join("&#39;");
@@ -178,8 +177,7 @@ limitations under the License.
                 } else if (Object.prototype.toString.call(obj[key]) === "[object Array]") {
                     obj[key].push(value);
                 } else {
-                    obj[key] = [obj[key],
-                        value];
+                    obj[key] = [obj[key], value];
                 }
                 return obj;
             }
@@ -351,10 +349,12 @@ limitations under the License.
     Callstack.prototype.getData = function (key, defaultValue) {
         return this.data[key] || (defaultValue !== undefined ? defaultValue: null);
     };
-    function Request(xhr) {
+    function Xhr(xhr) {
         this.xhr = xhr;
     }
-    Request.prototype.send = function (url, option, callback) {
+    Xhr.prototype.send = function (url, option, callback) {
+        option = option || {};
+        callback = callback || function () {};
         var method = option.method || "GET";
         var header = option.header || {};
         var content = option.content || "";
@@ -362,7 +362,6 @@ limitations under the License.
         var timeoutId;
         var self = this;
         this.xhr.open(method, url, true);
-        this.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         for (var key in header) {
             if (header.hasOwnProperty(key)) {
                 this.xhr.setRequestHeader(key, header[key]);
@@ -371,8 +370,8 @@ limitations under the License.
         if (timeout !== -1) {
             timeoutId = setTimeout(function () {
                 self.xhr.abort();
-                console.log("Request: Request timed out and was aborted.");
-                callback(new Response( {
+                window.console.log("Xhr: Xhr timed out and was aborted.");
+                callback(self.response({
                     "status": 408,
                     "responseText": "",
                     "getAllResponseHeaders": function () {
@@ -386,19 +385,24 @@ limitations under the License.
                 if (typeof timeoutId !== "undefined") {
                     clearTimeout(timeoutId);
                 }
-                callback(new Response(self.xhr));
+                callback(self.response(self.xhr));
             }
         };
         this.xhr.send(content);
     };
-    Request.prototype.abort = function () {
+    Xhr.prototype.abort = function () {
         if (this.xhr && this.xhr.readyState !== 4) {
             this.xhr.abort();
-            console.log("Request: Request aborted.");
+            window.console.log("Xhr: Xhr aborted.");
         }
     };
-    function Response(xhr) {
-        this.header = {};
+    Xhr.prototype.response = function (xhr) {
+        var result = {
+            header: {},
+            code: xhr.status,
+            content: xhr.responseText
+        };
+
         var headerStr = xhr.getAllResponseHeaders();
 
         if (headerStr) {
@@ -420,17 +424,14 @@ limitations under the License.
                 }
 
                 var key = Utils.trim(line.substring(0, colonPos)).toLowerCase();
-                if (key === "") {
-                    continue;
+                if (key) {
+                    result.header[key] = Utils.trim(line.substring(colonPos + 1));
                 }
-                var value = Utils.trim(line.substring(colonPos + 1));
-                this.header[key] = value;
             }
         }
 
-        this.code = xhr.status;
-        this.content = xhr.responseText;
-    }
+        return result;
+    };
     function El(input) {
         if (typeof input === 'string') {
             this.el = window.document.getElementById(input);
@@ -727,8 +728,7 @@ limitations under the License.
                         ElX.processEvent(ElX.queue.shift());
                     }
                     ElX.queueTimer = null;
-                },
-                    0);
+                }, 0);
             }
         }
 
@@ -918,8 +918,7 @@ limitations under the License.
     window.Utils = Utils;
     window.Url = Url;
     window.Callstack = Callstack;
-    window.Request = Request;
-    window.Response = Response;
+    window.Xhr = Xhr;
     window.El = El;
     window.ElX = ElX;
 

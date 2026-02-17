@@ -33,7 +33,7 @@ class User_Pipe_Store {
         if ($error) {
             $route = $input->query['redirect'];
             foreach ($error as $e) {
-                $this->userRepo->addMessage($e['type'], $e['message'], $e['meta']);
+                $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
             }
         } else {
             $this->userRepo->insert($user);

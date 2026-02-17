@@ -782,7 +782,7 @@ class App {
             foreach ($rules as $rule) {
                 list($valid[$field], $err) = $rule->process($valid[$field]);
                 if ($err) {
-                    $error[] = array('type' => 'error', 'message' => $err, 'meta' => array('field' => $field) + $meta);
+                    $error[] = array('type' => 'message:error', 'data' => array('content' => $err, 'field' => $field) + $meta);
                     break;
                 }
             }

@@ -3,7 +3,7 @@
 $app = $data['app'];
 $currentRoute = $data['current_route'];
 
-$csrfToken = $data['csrf_token'];
+$sessionToken = $data['session_token'];
 
 $userRoles = $data['user_roles'];
 
@@ -26,7 +26,7 @@ $partialScript = $data['partial_script'];
         method="post"
         action="<?php echo($app->urlRoute('user/store?redirect=:redirect&redirect_alt=:redirect_alt', array(':redirect' => $currentRoute, ':redirect_alt' => ''))); ?>" 
     >
-        <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+        <input type="hidden" name="session_token" value="<?php echo $sessionToken; ?>">
     
         <p>
             <label>

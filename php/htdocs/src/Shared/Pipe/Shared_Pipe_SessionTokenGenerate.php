@@ -1,6 +1,6 @@
 <?php
 
-class Shared_Pipe_CsrfGenerate {
+class Shared_Pipe_SessionTokenGenerate {
     var $app, $session;
 
     function args($args) {
@@ -10,7 +10,9 @@ class Shared_Pipe_CsrfGenerate {
     function process($input, $output) {
         $success = true;
 
-        $this->session->set('csrf_token', bin2hex(random_bytes(32)));
+        if (!$this->session->get('session_token')) {
+            $this->session->set('session_token', bin2hex(random_bytes(32)));
+        }
 
         return array($input, $output, $success);
     }

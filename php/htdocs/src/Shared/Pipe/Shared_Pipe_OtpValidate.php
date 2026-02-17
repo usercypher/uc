@@ -12,7 +12,7 @@ class Shared_Pipe_OtpValidate {
 
         if (!isset($input->frame['otp_token'])) {
             $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
-            $this->session->set('flash', array(array('type' => 'error', 'message' => 'invalid otp token')));
+            $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'invalid otp token'))));
             $success = false;
         }
 
@@ -20,13 +20,13 @@ class Shared_Pipe_OtpValidate {
 
         if (!$otpToken) {
             $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
-            $this->session->set('flash', array(array('type' => 'error', 'message' => 'invalid otp token')));
+            $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'invalid otp token'))));
             $success = false;
         }
 
         if ($input->frame['otp_token'] != $otpToken) {
             $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
-            $this->session->set('flash', array(array('type' => 'error', 'message' => 'invalid otp token')));
+            $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'invalid otp token'))));
             $success = false;
         }
 

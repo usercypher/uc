@@ -30,8 +30,8 @@ $app->setUnit('Shared_Pipe_ErrorHandler', array('args' => array('App')));
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Session')
 );
-$app->groupUnit($group, 'Shared_Pipe_CsrfGenerate');
-$app->groupUnit($group, 'Shared_Pipe_CsrfValidate');
+$app->groupUnit($group, 'Shared_Pipe_SessionTokenGenerate');
+$app->groupUnit($group, 'Shared_Pipe_SessionTokenValidate');
 
 $app->groupUnit($group, 'Shared_Pipe_OtpGenerate');
 $app->groupUnit($group, 'Shared_Pipe_OtpValidate');

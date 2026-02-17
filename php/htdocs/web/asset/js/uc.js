@@ -1,4 +1,3 @@
-
 /*
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -16,7 +15,7 @@ limitations under the License.
 */
 
 (function() {
-    var window = (typeof window !== "undefined") ? window : this;
+    var window = (typeof window !== "undefined") ? window: this;
 
     function Utils() {}
     Utils.run = function(condition, callback, options) {
@@ -30,7 +29,7 @@ limitations under the License.
                 callback();
             } else if (new Date().getTime() - startTime >= timeout) {
                 clearInterval(intervalId);
-                console.log("Utils.run: timeout reached without condition being true.");
+                window.console.log("Utils.run: timeout reached without condition being true.");
             }
         }, interval);
     };
@@ -42,15 +41,28 @@ limitations under the License.
     };
     Utils.trim = function(s) {
         var start = 0, end = s.length - 1, filter = Utils.trim.filter;
-        while (start <= end && filter[s.charCodeAt(start)]) { start++; }
-        while (end >= start && filter[s.charCodeAt(end)]) { end--; }
-        return s.substring(start, end + 1);        
+        while (start <= end && filter[s.charCodeAt(start)]) {
+            start++;
+        }
+        while (end >= start && filter[s.charCodeAt(end)]) {
+            end--;
+        }
+        return s.substring(start, end + 1);
     };
-    Utils.trim.filter = {32:1, 9:1, 10:1, 13:1, 11:1, 12:1};
+    Utils.trim.filter = {
+        32: 1,
+        9: 1,
+        10: 1,
+        13: 1,
+        11: 1,
+        12: 1
+    };
     Utils.strReplace = function (s, data) {
         var keys = [];
         for (var k in data) {
-            if (data.hasOwnProperty(k)) { keys.push(k.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, "\\$&")); }
+            if (data.hasOwnProperty(k)) {
+                keys.push(k.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, "\\$&"));
+            }
         }
         return s.replace(new RegExp(keys.join("|"), "g"), function(matched) {
             return data[matched];
@@ -86,9 +98,13 @@ limitations under the License.
             var context = this;
             var args = arguments;
             clearTimeout(timer);
-            timer = setTimeout(function () { callback.apply(context, args); }, time);
+            timer = setTimeout(function () {
+                callback.apply(context, args);
+            }, time);
         }
-        debounced.cancel = function () { clearTimeout(timer); };
+        debounced.cancel = function () {
+            clearTimeout(timer);
+        };
         return debounced;
     };
     Utils.throttle = function (callback, time) {
@@ -147,7 +163,9 @@ limitations under the License.
     };
     Utils.queryToObject = function(queryString) {
         var query = {};
-        if (!queryString) { return query; }
+        if (!queryString) {
+            return query;
+        }
         function setDeep(obj, keys, value) {
             var key = keys.shift();
             if (keys.length === 0) {
@@ -164,11 +182,17 @@ limitations under the License.
                 return obj;
             }
             if (key === "") {
-                if (Object.prototype.toString.call(obj) !== "[object Array]") { obj = []; }
-                if (obj.length === 0 || typeof obj[obj.length - 1] !== "object") { obj.push({}); }
+                if (Object.prototype.toString.call(obj) !== "[object Array]") {
+                    obj = [];
+                }
+                if (obj.length === 0 || typeof obj[obj.length - 1] !== "object") {
+                    obj.push({});
+                }
                 obj[obj.length - 1] = setDeep(obj[obj.length - 1], keys, value);
             } else {
-                if (!obj[key]) { obj[key] = {}; }
+                if (!obj[key]) {
+                    obj[key] = {};
+                }
                 obj[key] = setDeep(obj[key], keys, value);
             }
             return obj;
@@ -176,7 +200,9 @@ limitations under the License.
         var parts = queryString.split("&");
         for (var i = 0, ilen = parts.length; i < ilen; i++) {
             var part = parts[i];
-            if (!part) { continue; }
+            if (!part) {
+                continue;
+            }
             var kv = part.split("=");
             var rawKey = decodeURIComponent(kv[0]);
             var val = kv.length > 1 ? decodeURIComponent(kv[1]): "";
@@ -201,12 +227,16 @@ limitations under the License.
         var error = false;
 
         function loadNext() {
-            if (index >= urlsLength) { return successCallback(); }
+            if (index >= urlsLength) {
+                return successCallback();
+            }
             var rawUrl = urls[index++];
             var async = (rawUrl.substring(0, 7) == "async::");
-            var url = (async ? rawUrl.substring(7) : rawUrl);
+            var url = (async ? rawUrl.substring(7): rawUrl);
 
-            if (Utils.script.loadedScripts[url]) { return loadNext(); }
+            if (Utils.script.loadedScripts[url]) {
+                return loadNext();
+            }
 
             var script = window.document.createElement("script");
             script.type = "text/javascript";
@@ -215,7 +245,9 @@ limitations under the License.
                 if (!Utils.script.loadedScripts[url] && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
                     Utils.script.loadedScripts[url] = true;
                     script.onload = script.onreadystatechange = null;
-                    if (!async && !error) { loadNext(); }
+                    if (!async && !error) {
+                        loadNext();
+                    }
                 }
             };
             script.onerror = function() {
@@ -227,7 +259,9 @@ limitations under the License.
                 error = true;
             };
             window.document.getElementsByTagName("head")[0].appendChild(script);
-            if (async && !error) { loadNext(); }
+            if (async && !error) {
+                loadNext();
+            }
         }
         loadNext();
     };
@@ -237,7 +271,9 @@ limitations under the License.
         this.url = baseUrl || (window.location && window.location.href) || "";
         var parts = this.url.split("#");
         this.hash = "";
-        if (parts[1]) { this.hash = parts[1]; }
+        if (parts[1]) {
+            this.hash = parts[1];
+        }
         parts = parts[0].split("?");
         this.base = parts[0];
         this.query = parts[1] ? Utils.queryToObject(parts[1]): {};
@@ -269,169 +305,113 @@ limitations under the License.
             location.href = url;
         }
     };
-    function Request(xhr) {
-        this.xhr = xhr;
-        this.callstack = [];
-        this.callstackDone = [];
+    function Callstack() {
+        this.stack = [];
+        this.history = [];
         this.lastCall = null;
-        this.cacheEnabled = false;
-        this.cache = {};
-        this.cacheSizeLimit = -1;
-        this.cacheTotalSize = 0;
-        this.cacheTTL = -1;
         this.data = {};
     }
-    Request.prototype.send = function (url, option) {
+    Callstack.prototype.retry = function () {
+        if (this.lastCall) {
+            this.stack.unshift(this.lastCall);
+            this.lastCall = null;
+        }
+        return this;
+    };
+    Callstack.prototype.retryAll = function () {
+        this.stack = this.history.concat(this.stack);
+        this.history = [];
+        return this;
+    };
+    Callstack.prototype.add = function (callback) {
+        this.stack.push(callback);
+        return this;
+    };
+    Callstack.prototype.inject = function (callback) {
+        this.stack.unshift(callback);
+        return this;
+    };
+    Callstack.prototype.next = function () {
+        if (this.stack.length > 0) {
+            var callback = this.stack.shift();
+            this.lastCall = callback;
+            this.history.push(callback);
+            callback(this);
+        }
+    };
+    Callstack.prototype.reset = function () {
+        this.stack = [];
+    };
+    Callstack.prototype.setData = function (key, value) {
+        this.data[key] = value;
+        return this;
+    };
+    Callstack.prototype.getData = function (key, defaultValue) {
+        return this.data[key] || (defaultValue !== undefined ? defaultValue: null);
+    };
+    function Xhr(xhr) {
+        this.xhr = xhr;
+    }
+    Xhr.prototype.send = function (url, option, callback) {
+        option = option || {};
+        callback = callback || function () {};
         var method = option.method || "GET";
         var header = option.header || {};
         var content = option.content || "";
         var timeout = option.timeout || -1;
         var timeoutId;
         var self = this;
-        var cached = this.cacheEnabled ? this.getCacheEntry(url): null;
-        if (cached) {
-            this.nextCallback(this, new Response({
-                "status": 200,
-                "responseText": cached,
-                "getAllResponseHeaders": function () { return "X-Cache: HIT"; }
-            }));
-            return;
-        }
         this.xhr.open(method, url, true);
-        this.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         for (var key in header) {
-            if (header.hasOwnProperty(key)) { this.xhr.setRequestHeader(key, header[key]); }
+            if (header.hasOwnProperty(key)) {
+                this.xhr.setRequestHeader(key, header[key]);
+            }
         }
         if (timeout !== -1) {
             timeoutId = setTimeout(function () {
                 self.xhr.abort();
-                console.log("Request: Request timed out and was aborted.");
-                self.nextCallback(self, new Response({
+                window.console.log("Xhr: Xhr timed out and was aborted.");
+                callback(self.response({
                     "status": 408,
                     "responseText": "",
-                    "getAllResponseHeaders": function () { return "X-Timeout: true"; }
+                    "getAllResponseHeaders": function () {
+                        return "X-Timeout: true";
+                    }
                 }));
             }, timeout * 1000);
         }
         this.xhr.onreadystatechange = function () {
             if (self.xhr.readyState === 4) {
-                if (typeof timeoutId !== "undefined") { clearTimeout(timeoutId); }
-                var response = new Response(self.xhr);
-                if (response.code >= 200 && response.code < 300) {
-                    if (response.content) {
-                        if (self.cacheEnabled) { self.setCacheEntry(url, response.content); }
-                    }
+                if (typeof timeoutId !== "undefined") {
+                    clearTimeout(timeoutId);
                 }
-                self.nextCallback(self, response);
+                callback(self.response(self.xhr));
             }
         };
         this.xhr.send(content);
     };
-    Request.prototype.abort = function () {
+    Xhr.prototype.abort = function () {
         if (this.xhr && this.xhr.readyState !== 4) {
             this.xhr.abort();
-            this.nextCallback(this, new Response(this.xhr));
-            console.log("Request: Request aborted.");
+            window.console.log("Xhr: Xhr aborted.");
         }
     };
-    Request.prototype.retry = function () {
-        if (this.lastCall) {
-            this.callstack.unshift(this.lastCall);
-            this.lastCall = null;
-        }
-        return this;
-    };
-    Request.prototype.retryAll = function () {
-        this.callstack = this.callstackDone.concat(this.callstack);
-        this.callstackDone = [];
-        return this;
-    };
-    Request.prototype.addCallback = function (callback) {
-        this.callstack.push(callback);
-        return this;
-    };
-    Request.prototype.nextCallback = function (request, response) {
-        if (this.callstack.length > 0) {
-            var callback = this.callstack.shift();
-            this.lastCall = callback;
-            this.callstackDone.push(callback);
-            callback(request, response);
-        }
-    };
-    Request.prototype.resetCallstack = function () {
-        this.callstack = [];
-    };
-    Request.prototype.setCache = function (newCacheEnabled) {
-        this.cacheEnabled = newCacheEnabled;
-        return this;
-    };
-    Request.prototype.setCacheSize = function (newCacheSize) {
-        this.cacheSizeLimit = newCacheSize === -1 ? -1: newCacheSize * 1024 * 1024;
-        return this;
-    };
-    Request.prototype.setCacheTTL = function (seconds) {
-        this.cacheTTL = seconds === -1 ? -1: seconds * 1000;
-        return this;
-    };
-    Request.prototype.setCacheEntry = function (key, value) {
-        var now = new Date().getTime();
-        var oldEntry = this.cache[key];
-        if (oldEntry) { this.cacheTotalSize -= Utils.strSizeOf(oldEntry.value); }
-        this.cache[key] = {
-            value: value,
-            timestamp: now
+    Xhr.prototype.response = function (xhr) {
+        var result = {
+            header: {},
+            code: xhr.status,
+            content: xhr.responseText
         };
-        var size = Utils.strSizeOf(value);
-        this.cacheTotalSize += size;
-        this.cleanCache();
-    };
-    Request.prototype.getCacheEntry = function (key) {
-        var entry = this.cache[key];
-        if (!entry) { return null; }
-        var now = new Date().getTime();
-        if (now - entry.timestamp > this.cacheTTL && this.cacheTTL !== -1) {
-            delete this.cache[key];
-            return null;
-        }
-        return entry.value;
-    };
-    Request.prototype.removeCacheEntry = function (key) {
-        delete this.cache[key];
-    };
-    Request.prototype.cleanCache = function () {
-        if (this.cacheTotalSize <= this.cacheSizeLimit) { return; }
-        var keys = [];
-        for (var key in this.cache) {
-            if (this.cache.hasOwnProperty(key)) { keys.push(key); }
-        }
-        while (this.cacheTotalSize > this.cacheSizeLimit && keys.length > 0 && this.cacheSizeLimit !== -1) {
-            var oldestKey = keys.shift();
-            var entry = this.cache[oldestKey];
-            var defaultContentSize = Utils.strSizeOf(entry.value);
-            delete this.cache[oldestKey];
-            this.cacheTotalSize -= defaultContentSize;
-        }
-    };
-    Request.prototype.clearCache = function () {
-        this.cache = {};
-        this.cacheTotalSize = 0;
-    };
-    Request.prototype.setData = function (key, value) {
-        this.data[key] = value;
-        return this;
-    };
-    Request.prototype.getData = function (key, defaultValue) {
-        return this.data[key] || (defaultValue !== undefined ? defaultValue : null);
-    };
-    function Response(xhr) {
-        this.header = {};
+
         var headerStr = xhr.getAllResponseHeaders();
 
         if (headerStr) {
             var lines = headerStr.split("\n");
             for (var i = 0, ilen = lines.length; i < ilen; i++) {
                 var line = lines[i];
-                if (line === "") { continue; }
+                if (line === "") {
+                    continue;
+                }
                 var colonPos = -1;
                 for (var j = 0, jlen = line.length; j < jlen; j++) {
                     if (line.charAt(j) === ":") {
@@ -439,18 +419,19 @@ limitations under the License.
                         break;
                     }
                 }
-                if (colonPos === -1) { continue; }
+                if (colonPos === -1) {
+                    continue;
+                }
 
                 var key = Utils.trim(line.substring(0, colonPos)).toLowerCase();
-                if (key === "") { continue; }
-                var value = Utils.trim(line.substring(colonPos + 1));
-                this.header[key] = value;
+                if (key) {
+                    result.header[key] = Utils.trim(line.substring(colonPos + 1));
+                }
             }
         }
 
-        this.code = xhr.status;
-        this.content = xhr.responseText;
-    }
+        return result;
+    };
     function El(input) {
         if (typeof input === 'string') {
             this.el = window.document.getElementById(input);
@@ -467,14 +448,18 @@ limitations under the License.
     };
     El.prototype.restore = function () {
         if (this.isLastContentSaved) {
-            if (this.el.innerHTML !== this.lastContent) { this.el.innerHTML = this.lastContent; }
+            if (this.el.innerHTML !== this.lastContent) {
+                this.el.innerHTML = this.lastContent;
+            }
             this.lastContent = "";
             this.isLastContentSaved = false;
         }
         return this;
     };
     El.prototype.html = function (content) {
-        if (this.el.innerHTML !== content) { this.el.innerHTML = content; }
+        if (this.el.innerHTML !== content) {
+            this.el.innerHTML = content;
+        }
     };
     El.prototype.prepend = function (content) {
         this.el.insertAdjacentHTML("afterbegin", content);
@@ -489,10 +474,14 @@ limitations under the License.
         this.el.insertAdjacentHTML("afterend", content);
     };
     El.prototype.remove = function () {
-        if (this.el && this.el.parentNode) { this.el.parentNode.removeChild(this.el); }
+        if (this.el && this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+        }
     };
     El.prototype.contains = function(child) {
-        while (child && child !== this.el) { child = child.parentNode; }
+        while (child && child !== this.el) {
+            child = child.parentNode;
+        }
         return child === this.el;
     };
     function ElX() {}
@@ -520,7 +509,9 @@ limitations under the License.
                 var prefix = attr.name.substring(0, 6);
                 var key = attr.name.substring(6);
                 if (prefix === "x-ref-") {
-                    if (!ElX.refs[key]) { ElX.refs[key] = []; }
+                    if (!ElX.refs[key]) {
+                        ElX.refs[key] = [];
+                    }
                     var isDuplicate = false;
                     for (var k = 0, klen = ElX.refs[key].length; k < klen; k++) {
                         if (ElX.refs[key][k] === el) {
@@ -528,8 +519,12 @@ limitations under the License.
                             break;
                         }
                     }
-                    if (!isDuplicate) { ElX.refs[key].push(el); }
-                } else if (prefix === "x-val-" && !ElX.vals[key]) { ElX.vals[key] = attr.value !== "this" ? attr.value : (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : ""); }
+                    if (!isDuplicate) {
+                        ElX.refs[key].push(el);
+                    }
+                } else if (prefix === "x-val-" && !ElX.vals[key]) {
+                    ElX.vals[key] = attr.value !== "this" ? attr.value: (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString(): el.value || (el.children.length === 0 ? el.innerHTML: "");
+                }
             }
             if (tab.length >= 2) {
                 if (el.getAttribute("x-ref-" + tab[0]) !== null) {
@@ -543,25 +538,43 @@ limitations under the License.
             }
 
             if (el.getAttribute("x-on-click") !== null) {
-                if (el.getAttribute("tabindex") === null) { el.setAttribute("tabindex", 0); }
+                if (el.getAttribute("tabindex") === null) {
+                    el.setAttribute("tabindex", 0);
+                }
                 if (el.getAttribute("x-on-key") === null) {
                     el.setAttribute("x-on-key", "enter");
                     el.setAttribute("x-on-key-enter", el.getAttribute("x-on-click"));
                 }
                 el.onclick = ElX.onclick;
             }
-            if (el.getAttribute("x-on-enter") !== null) { el.onmouseenter = ElX.onenter; }
-            if (el.getAttribute("x-on-leave") !== null) { el.onmouseleave = ElX.onleave; }
-            if (el.getAttribute("x-on-focus") !== null) { el.onfocus = ElX.onfocus; }
-            if (el.getAttribute("x-on-blur") !== null) { el.onblur = ElX.onblur; }
-            if (el.getAttribute("x-on-submit") !== null) { el.onsubmit = ElX.onsubmit; }
-            if (el.getAttribute("x-on-input") !== null) { el.oninput = ElX.oninput; }
-            if (el.getAttribute("x-on-key") !== null) { el.onkeydown = ElX.onkey; }
+            if (el.getAttribute("x-on-enter") !== null) {
+                el.onmouseenter = ElX.onenter;
+            }
+            if (el.getAttribute("x-on-leave") !== null) {
+                el.onmouseleave = ElX.onleave;
+            }
+            if (el.getAttribute("x-on-focus") !== null) {
+                el.onfocus = ElX.onfocus;
+            }
+            if (el.getAttribute("x-on-blur") !== null) {
+                el.onblur = ElX.onblur;
+            }
+            if (el.getAttribute("x-on-submit") !== null) {
+                el.onsubmit = ElX.onsubmit;
+            }
+            if (el.getAttribute("x-on-input") !== null) {
+                el.oninput = ElX.oninput;
+            }
+            if (el.getAttribute("x-on-key") !== null) {
+                el.onkeydown = ElX.onkey;
+            }
             if (el.getAttribute("x-on-key-window") !== null) {
                 var keys = el.getAttribute("x-on-key-window").toLowerCase().split(" ");
                 for (var j = 0, jlen = keys.length; j < jlen; j++) {
                     var key = keys[j];
-                    if (!ElX.keys[key]) { ElX.keys[key] = []; }
+                    if (!ElX.keys[key]) {
+                        ElX.keys[key] = [];
+                    }
                     ElX.keys[key].push(el);
                 }
             }
@@ -573,10 +586,16 @@ limitations under the License.
     };
     ElX.getComboKey = function (e) {
         var modifiers = [];
-        if (e.ctrlKey) { modifiers.push("ctrl"); }
-        if (e.altKey) { modifiers.push("alt"); }
-        if (e.shiftKey) { modifiers.push("shift"); }
-        return (modifiers.length ? modifiers.join("-") + "-" : "") + ((e.key ? e.key: String.fromCharCode(e.keyCode || e.which)).toLowerCase());
+        if (e.ctrlKey) {
+            modifiers.push("ctrl");
+        }
+        if (e.altKey) {
+            modifiers.push("alt");
+        }
+        if (e.shiftKey) {
+            modifiers.push("shift");
+        }
+        return (modifiers.length ? modifiers.join("-") + "-": "") + ((e.key ? e.key: String.fromCharCode(e.keyCode || e.which)).toLowerCase());
     };
     ElX.clean = function(input) {
         ElX.mutationDepth++;
@@ -593,7 +612,9 @@ limitations under the License.
                         }
                     }
                     els.length = writeIndex;
-                    if (writeIndex === 0) { delete object[key]; }
+                    if (writeIndex === 0) {
+                        delete object[key];
+                    }
                 }
             }
         }
@@ -606,7 +627,9 @@ limitations under the License.
         return ElX.refs[key] || [];
     };
     ElX.tap = function(key, callback, context) {
-        if (!ElX.taps[key]) { ElX.taps[key] = []; }
+        if (!ElX.taps[key]) {
+            ElX.taps[key] = [];
+        }
         return ElX.taps[key].push([callback, context]) - 1;
     };
     ElX.untap = function(key, index) {
@@ -614,13 +637,15 @@ limitations under the License.
     };
     ElX.rot = function(key, value, el) {
         var states = value.split(" ", 2);
-        if (states[1] === undefined) { states[1] = states[0]; }
-        var els = (key == "this") ? [el] : (ElX.refs[key] || []);
+        if (states[1] === undefined) {
+            states[1] = states[0];
+        }
+        var els = (key == "this") ? [el]: (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
             var classList = Utils.trim(refEl.className).split(" ");
             var current = classList[classList.length - 1];
-            var newState = states[current === states[0] ? 1 : 0] || "_";
+            var newState = states[current === states[0] ? 1: 0] || "_";
             if (current !== newState) {
                 classList[classList.length - 1] = newState;
                 refEl.className = classList.join(" ");
@@ -629,26 +654,33 @@ limitations under the License.
     };
     ElX.set = function(key, attr, value, el) {
         var states = value.split("|", 2);
-        if (states[1] === undefined) { states[1] = states[0]; }
-        var els = (key == "this") ? [el] : (ElX.refs[key] || []);
+        if (states[1] === undefined) {
+            states[1] = states[0];
+        }
+        var els = (key == "this") ? [el]: (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
             var current = refEl.getAttribute(attr);
-            current = current !== null ? current : "null";
-            var newState = states[current === states[0] ? 1 : 0] || "";
-            if (current !== newState && newState !== "null") { refEl.setAttribute(attr, newState); }
-            else if (current !== "null" && newState === "null") { refEl.removeAttribute(attr); }
+            current = current !== null ? current: "null";
+            var newState = states[current === states[0] ? 1: 0] || "";
+            if (current !== newState && newState !== "null") {
+                refEl.setAttribute(attr, newState);
+            } else if (current !== "null" && newState === "null") {
+                refEl.removeAttribute(attr);
+            }
         }
     };
     ElX.txt = function(key, value, el) {
-        var els = (key == "this") ? [el] : (ElX.refs[key] || []);
+        var els = (key == "this") ? [el]: (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
             var tag = refEl.tagName.toUpperCase();
             if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
                 if (tag === "INPUT" && (refEl.type === "checkbox" || refEl.type === "radio")) {
                     value = (value === true || value === "true" || value === "1");
-                    if (value != refEl.checked) { refEl.checked = value; }
+                    if (value != refEl.checked) {
+                        refEl.checked = value;
+                    }
                 } else if (value != refEl.value) {
                     refEl.value = value;
                 }
@@ -664,7 +696,9 @@ limitations under the License.
             if (ElX.taps[keyTemp]) {
                 for (var j = 0, jlen = ElX.taps[keyTemp].length; j < jlen; j++) {
                     var tap = ElX.taps[keyTemp][j];
-                    if (tap) { tap[0].call(tap[1], old, value, event, key); }
+                    if (tap) {
+                        tap[0].call(tap[1], old, value, event, key);
+                    }
                 }
             }
         }
@@ -673,18 +707,26 @@ limitations under the License.
         var triggers = triggersStr.split(" ");
         for (var i = 0, ilen = triggers.length; i < ilen; i++) {
             var refs = ElX.refs[key] || [];
-            for (var j = 0, jlen = refs.length; j < jlen; j++) { ElX.queueEvent(triggers[i], refs[j]); }
+            for (var j = 0, jlen = refs.length; j < jlen; j++) {
+                ElX.queueEvent(triggers[i], refs[j]);
+            }
         }
     };
     ElX.queueEvent = function(type, target, e) {
         if (ElX.mutationDepth < 1 && !(e && e.stop)) {
-            if (e && target.getAttribute("x-stop") !== null) { e.stop = true; }
+            if (e && target.getAttribute("x-stop") !== null) {
+                e.stop = true;
+            }
 
-            ElX.queue.push({type: type, target: target});
+            ElX.queue.push({
+                type: type, target: target
+            });
 
             if (!ElX.queueTimer) {
                 ElX.queueTimer = setTimeout(function () {
-                    while (ElX.queue.length) { ElX.processEvent(ElX.queue.shift()); }
+                    while (ElX.queue.length) {
+                        ElX.processEvent(ElX.queue.shift());
+                    }
                     ElX.queueTimer = null;
                 }, 0);
             }
@@ -708,7 +750,9 @@ limitations under the License.
             rules = ruleStr.split(" ");
         }
 
-        for (var i = 0, ilen = rules.length; i < ilen; i++) { rulesObj[rules[i]] = true; }
+        for (var i = 0, ilen = rules.length; i < ilen; i++) {
+            rulesObj[rules[i]] = true;
+        }
 
         ElX.elThis = null;
         var tab = null;
@@ -723,51 +767,91 @@ limitations under the License.
             var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
             var key = keyAttrArr[0];
 
-            if (!(mode === "*" || (mode === "!" && !(rulesObj[key] || rulesObj[attrName])) || (mode === "" && (rulesObj[key] || rulesObj[attrName])))) { continue; }
+            if (!(mode === "*" || (mode === "!" && !(rulesObj[key] || rulesObj[attrName])) || (mode === "" && (rulesObj[key] || rulesObj[attrName])))) {
+                continue;
+            }
 
             if (attrValue === "this") {
-                if (!ElX.elThis) { ElX.elThis = (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : ""); }
+                if (!ElX.elThis) {
+                    ElX.elThis = (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString(): el.value || (el.children.length === 0 ? el.innerHTML: "");
+                }
                 attrValue = ElX.elThis;
             }
 
-            if (prefix === "x-rot") { ElX.rot(key, attrValue, el); }
-
-            else if (prefix === "x-set") { ElX.set(key, keyAttrArr.slice(1).join("."), attrValue, el); }
-
-            else if (prefix === "x-txt") { ElX.txt(key, attrValue, el); }
-
-            else if (prefix === "x-val") { ElX.val(key, attrValue, event); }
-
-            else if (prefix === "x-run") { ElX.run(key, attrValue); }
-
-            else if (!tab && prefix === "x-tab") {
+            if (prefix === "x-rot") {
+                ElX.rot(key, attrValue, el);
+            } else if (prefix === "x-set") {
+                ElX.set(key, keyAttrArr.slice(1).join("."), attrValue, el);
+            } else if (prefix === "x-txt") {
+                ElX.txt(key, attrValue, el);
+            } else if (prefix === "x-val") {
+                ElX.val(key, attrValue, event);
+            } else if (prefix === "x-run") {
+                ElX.run(key, attrValue);
+            } else if (!tab && prefix === "x-tab") {
                 tab = attrValue.split(":");
-                if (tab.length !== 2) { tab = [ElX.tab.default_first, ElX.tab.default_last]; }
+                if (tab.length !== 2) {
+                    tab = [ElX.tab.default_first,
+                        ElX.tab.default_last];
+                }
                 ElX.tab.first = null;
                 ElX.tab.last = null;
+            } else if (!focus && prefix === "x-focus") {
+                focus = attrValue;
             }
-
-            else if (!focus && prefix === "x-focus") { focus = attrValue; }
         }
 
         if (tab) {
-            if (ElX.refs[tab[0]]) { ElX.tab.first = ElX.refs[tab[0]][0]; }
-            if (ElX.refs[tab[1]]) { ElX.tab.last = ElX.refs[tab[1]][0]; }
+            if (ElX.refs[tab[0]]) {
+                ElX.tab.first = ElX.refs[tab[0]][0];
+            }
+            if (ElX.refs[tab[1]]) {
+                ElX.tab.last = ElX.refs[tab[1]][0];
+            }
         }
 
         if (focus && ElX.refs[focus]) {
-            if (ElX.isFocusing) { clearTimeout(ElX.isFocusing); }
+            if (ElX.isFocusing) {
+                clearTimeout(ElX.isFocusing);
+            }
             var focusRef = ElX.refs[focus][0];
-            ElX.isFocusing = setTimeout(function() { focusRef.focus(); }, 50);
+            var attempts = 0;
+
+            var tryFocus = function() {
+                attempts++;
+                if (!focusRef || !focusRef.focus || focusRef.disabled) {
+                    return;
+                }
+                focusRef.focus();
+                if (document.activeElement !== focusRef && attempts < 60) {
+                    ElX.isFocusing = setTimeout(tryFocus, 16);
+                }
+            };
+
+            tryFocus();
         }
     };
-    ElX.onclick = function (e) { return ElX.queueEvent("x-on-click", this, e || window.event); };
-    ElX.onenter = function (e) { ElX.queueEvent("x-on-enter", this); };
-    ElX.onleave = function (e) { ElX.queueEvent("x-on-leave", this); };
-    ElX.onfocus = function (e) { ElX.queueEvent("x-on-focus", this); };
-    ElX.onblur = function (e) { ElX.queueEvent("x-on-blur", this); };
-    ElX.onsubmit = function (e) { return ElX.queueEvent("x-on-submit", this, e || window.event); };
-    ElX.oninput = function (e) { return ElX.queueEvent("x-on-input", this, e || window.event); };
+    ElX.onclick = function (e) {
+        return ElX.queueEvent("x-on-click", this, e || window.event);
+    };
+    ElX.onenter = function (e) {
+        ElX.queueEvent("x-on-enter", this);
+    };
+    ElX.onleave = function (e) {
+        ElX.queueEvent("x-on-leave", this);
+    };
+    ElX.onfocus = function (e) {
+        ElX.queueEvent("x-on-focus", this);
+    };
+    ElX.onblur = function (e) {
+        ElX.queueEvent("x-on-blur", this);
+    };
+    ElX.onsubmit = function (e) {
+        return ElX.queueEvent("x-on-submit", this, e || window.event);
+    };
+    ElX.oninput = function (e) {
+        return ElX.queueEvent("x-on-input", this, e || window.event);
+    };
     ElX.onkey = function (e) {
         e = e || window.event;
         var key = ElX.getComboKey(e);
@@ -803,26 +887,48 @@ limitations under the License.
         this.key = key;
         this.elx.vals[key] = value;
     }
-    X.prototype.value = function() { return this.elx.vals[this.key]; };
-    X.prototype.ref = function() { return this.elx.refs[this.key] || []; };
-    X.prototype.tap = function(callback, context) { return this.elx.tap(this.key, callback, context); };
-    X.prototype.untap = function(index) { this.elx.untap(this.key, index); };
-    X.prototype.rot = function(value) { this.elx.rot(this.key, value); };
-    X.prototype.set = function(attr, value) { this.elx.set(this.key, attr, value); };
-    X.prototype.txt = function(value) { this.elx.txt(this.key, value); };
-    X.prototype.val = function(value, event) { this.elx.val(this.key, value, event); };
-    X.prototype.run = function(triggersStr) { this.elx.run(this.key, triggersStr); };
+    X.prototype.value = function() {
+        return this.elx.vals[this.key];
+    };
+    X.prototype.ref = function() {
+        return this.elx.refs[this.key] || [];
+    };
+    X.prototype.tap = function(callback, context) {
+        return this.elx.tap(this.key, callback, context);
+    };
+    X.prototype.untap = function(index) {
+        this.elx.untap(this.key, index);
+    };
+    X.prototype.rot = function(value) {
+        this.elx.rot(this.key, value);
+    };
+    X.prototype.set = function(attr, value) {
+        this.elx.set(this.key, attr, value);
+    };
+    X.prototype.txt = function(value) {
+        this.elx.txt(this.key, value);
+    };
+    X.prototype.val = function(value, event) {
+        this.elx.val(this.key, value, event);
+    };
+    X.prototype.run = function(triggersStr) {
+        this.elx.run(this.key, triggersStr);
+    };
 
     window.Utils = Utils;
     window.Url = Url;
-    window.Request = Request;
-    window.Response = Response;
+    window.Callstack = Callstack;
+    window.Xhr = Xhr;
     window.El = El;
     window.ElX = ElX;
 
     var init = window.init || [];
     window.init = {
-        push: function (fn) { fn(); }
+        push: function (fn) {
+            fn();
+        }
     };
-    for (var i = 0, ilen = init.length; i < ilen; i++) { init[i](); }
+    for (var i = 0, ilen = init.length; i < ilen; i++) {
+        init[i]();
+    }
 })();
