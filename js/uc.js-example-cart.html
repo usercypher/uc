@@ -30,22 +30,22 @@
     <p>
         Total value: <span x-ref-grandtotal>0.00</span>
     </p>
-    <button x-on-click x-val-addline>Add product</button>
-    <button x-on-click x-val-save>Submit order</button>
+    <button x-evt-click x-val-addline>Add product</button>
+    <button x-evt-click x-val-save>Submit order</button>
 
     <script type="text/html" id="line-html">
         <tr id="line-:id">
             <td>
                 <select 
                     x-ref-category-:id
-                    x-on-input
+                    x-evt-input
                     x-val-category-:id="this"
                 >:category</select>
             </td>
             <td>
                 <select 
                     x-ref-product-:id
-                    x-on-input
+                    x-evt-input
                     x-val-product-:id="this"
                 >:product</select>
             </td>
@@ -56,7 +56,7 @@
                 <input
                     type="number"
                     x-ref-qty-:id
-                    x-on-input
+                    x-evt-input
                     x-val-qty-:id="this"
                     value=":qty"
                 />
@@ -65,7 +65,7 @@
                 <span x-ref-subtotal-:id>:subtotal</span>
             </td>
             <td>
-                <a x-on-click x-prevent x-val-removeline=":id">Remove</a>
+                <a x-evt-click x-prevent x-val-removeline=":id">Remove</a>
             </td>
         </tr>
     </script>
@@ -79,7 +79,7 @@
     <!-- Load Script -->
 <script>
 (window.init = window.init || []).push(function () {
-    ElX.init(document.getElementsByTagName("*"), "tabfirst:tablast");
+    ElX.init(document.body, "tabfirst:tablast");
 
     var categoryTpl = document.getElementById("option-html").innerHTML;
     var productTpl = document.getElementById("option-html").innerHTML;
@@ -111,7 +111,7 @@
         var output = "";
         var that = this;
         this.options().forEach(function (opt) {
-            output += Utils.strReplace(that.tpl(), { ":value": opt });
+            output += Util.strReplace(that.tpl(), { ":value": opt });
         });
         return output;
     };
@@ -161,7 +161,7 @@
         var that = this;
         this.options().forEach(function (opt) {
             if (opt.category === that.product.category.value()) {
-                output += Utils.strReplace(that.tpl(), { ":value": opt.name });
+                output += Util.strReplace(that.tpl(), { ":value": opt.name });
             }
         });
         return output;
@@ -184,7 +184,7 @@
         this.product.subtotal.txt(current.toFixed(2));
     };
     Line.prototype.yield = function () {
-        return Utils.strReplace(this.tpl(), {
+        return Util.strReplace(this.tpl(), {
             ":category": this.categoryComponent.yield(),
             ":product": this.productComponent.yield(),
             ":id": this.product.id,
@@ -208,7 +208,7 @@
         ElX.tap("removeline", Cart.prototype.removeline, this);
         ElX.tap("save", Cart.prototype.save, this);
     }
-    Cart.prototype.flushLines = Utils.debounce(function () {
+    Cart.prototype.flushLines = Util.debounce(function () {
         if (this.pendingLines.length === 0) return;
 
         this.ui.append(this.pendingHtml);
@@ -216,7 +216,7 @@
             this.pendingLines[i].init();
         }
 
-        ElX.init(this.ui.el.getElementsByTagName("*"));
+        ElX.init(this.ui.el);
     
         this.grandtotalCalc();
     

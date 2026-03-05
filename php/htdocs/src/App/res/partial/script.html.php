@@ -1,37 +1,32 @@
 <?php 
 
+$app = $data['app'];
+
 $flash = $data['flash'];
 
 ?>
-    <span
-        x-ref-window
-        x-on-key-window="escape"        
-    ></span>
 
-    <span
-        x-ref--flash-open
-        x-on-click
-        x-rot--flash=""
-        x-rot--flash-content=""
-        x-focus="-flash-tab-last"
-        x-tab="-flash-tab-last:-flash-tab-last"
-        x-set-window.x-on-key-window-escape="-flash-close"
-        x-set-window.x-run--flash-close="x-on-click"
-    >
-    </span>
+    <span x-src="modal-open" data-ref="flash" style="display: none;"></span>
 
     <!-- Flash Messages Modal -->
-    <div class="modal hidden" x-ref--flash x-on-click x-run--flash-close="x-on-click">
-        <div class="form-container modal-content small" x-ref--flash-content x-on-click x-stop>
-            <span class="modal-close" x-ref--flash-close x-on-click x-rot--flash="hidden" x-rot--flash-content="small">&times;</span>
-            <h2>Notification</h2>
-            <ul id="flash"></ul>
-            <button type="button" class="button" x-ref--flash-tab-last x-on-click x-run--flash-close="x-on-click">Ok</button>
+    <div class="modal-overlay _" x-src="modal-overlay" data-ref="flash" data-static>
+        <div class="modal-container" x-src="modal-container">
+            <div class="modal-header">
+                <h3 x-src="modal-title" data-ref="flash">Notification</h3>
+                <button class="modal-close" x-src="modal-close modal-tab-first" data-ref="flash">&times</button>
+            </div>
+            <div class="modal-body" x-src="modal-desc" data-ref="flash">
+                <ul id="flash"></ul>
+            </div>
+            <div class="modal-footer">
+                <input type="button" x-src="modal-close modal-tab-last" data-ref="flash" value="Close" />
+            </div>
         </div>
     </div>
+
     <script>
         (window.init = window.init || []).push(function () {
-            Utils.run(function () {
+            Util.poll(function () {
                 return window.ElXInit;
             },
             function () {
@@ -39,7 +34,7 @@ $flash = $data['flash'];
 
                 if (flash) {
                     flashTpl(flash);
-                    ElX.run("-flash-open", "x-on-click");
+                    ElX.run("modal-open-flash", "x-on-click");
                 }
             });
 
@@ -55,7 +50,13 @@ $flash = $data['flash'];
 
     <script>
         (window.init = window.init || []).push(function () {
-            ElX.init(document.getElementsByTagName("*"));
-            window.ElXInit = true;
+            Util.script([
+                "<?php echo $app->urlWeb("asset/js/tag/modal.js"); ?>"
+            ], {
+                onload: function () {
+                    ElX.init(document.documentElement);
+                    window.ElXInit = true;
+                }
+            });
         })();
     </script>

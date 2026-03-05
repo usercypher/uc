@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width  initial-scale=1.0" />
   <title>ElX – Example Usage</title>
-  <script src="uc.js" defer></script>
-  <style>
-
+  <link rel="stylesheet" href="../css/uc.css">
+  <script src="src/modal.js"></script>
+  <script src="uc.js"></script>
+  
+<style>
 .button.neutral {
   background-color: #007bff;
   color: white;
@@ -28,71 +30,51 @@
 
   </style>
 </head>
-<body style="padding: 1em;">
+<body id="body" style="padding: 1em;">
 
 <h1>Control Structure Attribute</h1>
 
-<h2>Triggers</h2>
+<h2>Trigger</h2>
 <pre>
-x-on-click               // all
-x-on-click="name name2"  // only specified names
-x-on-click="!name name2" // all except specified names
-
-x-on-input               // all
-x-on-input="name name2"  // only specified names
-x-on-input="!name name2" // all except specified names
-
-x-on-enter               // all (hover enter)
-x-on-enter="name name2"  // only specified names
-x-on-enter="!name name2" // all except specified names
-
-x-on-leave               // all (hover leave)
-x-on-leave="name name2"  // only specified names
-x-on-leave="!name name2" // all except specified names
-
-x-on-focus               // all
-x-on-focus="name name2"  // only specified names
-x-on-focus="!name name2" // all except specified names
-
-x-on-blur                // all
-x-on-blur="name name2"   // only specified names
-x-on-blur="!name name2"  // all except specified names
-
-// Key triggers (element scope)
-x-on-key="key1 key2 ctrl-key"   // supports combos with ctrl, alt, shift using "-"
-x-on-key-[key]=""               // all
-x-on-key-[key]="name name2"     // only specified names
-x-on-key-[key]="!name name2"    // all except specified names
-
-// Key triggers (window scope)
-x-on-key-window="key1 key2 ctrl-key"
-x-on-key-window-[key]=""
-x-on-key-window-[key]="name name2"
-x-on-key-window-[key]="!name name2"
+x-evt-[event]               // all
+x-evt-[event]="name name2"  // only specified names
+x-evt-[event]="!name name2" // all except specified names
 </pre>
 
-<h2>Modifiers</h2>
+<h2>Trigger Modifier</h2>
 <pre>
-x-stop    // stop propagation (x-on-click, x-on-input, x-on-key only)
-x-prevent // prevent default (x-on-click, x-on-input, x-on-submit only)
+// key up/down
+.ctrl
+.alt
+.shift
+
+// mouse up/down
+.left
+.wheel
+.right
+
+// behaviour
+.stop       // stop propagation (only for x system)
+.prevent    // prevent default
+.window     // attach to window
 </pre>
 
 <h2>Actions</h2>
 <pre>
-// Reserved names
-this      // targets element itself (used in x-txt, x-val, x-rot, x-set)
+// Reserved [name]
+- this      // targets element itself (used in x-txt, x-val, x-rot, x-set)
 
-// Reserved values
-this      // use element’s value or innerHTML (must be alone)
-null      // in x-set removes attribute; in x-rot means no class (avoid 'null' CSS class)
+// Reserved [value]
+- this      // use element’s value or innerHTML (must be alone)
+- null      // in x-set removes attribute
 
 x-txt-[name]="value"
 x-val-[name]="value"
 x-rot-[name]="class1 class2"
-x-tab="name:name"                       // tab key range
+x-tab="name name"
 x-focus="name"
 x-set-[name].[attribute]="value|value"
-x-run-[name]="trigger1 trigger2"        // activate triggers
+x-run-[name]="trigger1 trigger2"
 </pre>
 
 <h2>Target</h2>
@@ -100,16 +82,15 @@ x-run-[name]="trigger1 trigger2"        // activate triggers
 x-ref-[name]
 </pre>
 
-
 <hr>
 
 <h2>Tab</h2>
 
 <button 
 
-class="button neutral"
+class="neutral button"
 
-x-on-click
+x-evt-click
 
 x-rot-tab1="show hide"
 x-rot-tab2="hide"
@@ -125,9 +106,9 @@ x-ref-button1
 
 <button 
 
-class="button _"
+class="_ button"
 
-x-on-click
+x-evt-click
 
 x-rot-tab1="hide"
 x-rot-tab2="show hide"
@@ -143,9 +124,9 @@ x-ref-button2
 
 <button 
 
-class="button _"
+class="_ button"
 
-x-on-click
+x-evt-click
 
 x-rot-tab1="hide"
 x-rot-tab2="hide"
@@ -159,15 +140,15 @@ x-ref-button3
 
 >tab3</button>
 
-<div class="block show" x-ref-tab1>tab1</div>
-<div class="block hide" x-ref-tab2>tab2</div>
-<div class="block hide" x-ref-tab3>tab3</div>
+<div class="show block" x-ref-tab1>tab1</div>
+<div class="hide block" x-ref-tab2>tab2</div>
+<div class="hide block" x-ref-tab3>tab3</div>
 
 <hr>
 
 <span
 
-x-on-key-window="escape"
+x-evt-keydown.escape.window=""
 
 x-txt-dialog-content=""
 ></span>
@@ -175,25 +156,25 @@ x-txt-dialog-content=""
 <h2>Reusable Dialog Box</h2>
 
 <button
-x-on-click
-x-on-key-window="ctrl-1"
+x-evt-click
+x-evt-keydown.1.ctrl.window
 
 x-txt-dialog-content="dialog1"
->dialog1</button>
+>dialog1 (ctrl + 1)</button>
 
 <button
-x-on-click
-x-on-key-window="ctrl-2"
+x-evt-click
+x-evt-keydown.2.ctrl.window
 
 x-txt-dialog-content="dialog2"
->dialog2</button>
+>dialog2 (ctrl + 2)</button>
 
 <button
-x-on-click
-x-on-key-window="ctrl-3"
+x-evt-click
+x-evt-keydown.3.ctrl.window
 
 x-txt-dialog-content="dialog3"
->dialog3</button>
+>dialog3 (ctrl + 3)</button>
 
 <div class="block">
 
@@ -203,7 +184,7 @@ x-txt-dialog-content="dialog3"
 
 <hr>
 <h2>Input binding</h2>
-<input x-on-input x-txt-name="this" value="Alice"/>
+<input x-evt-input x-txt-name="this" value="Alice"/>
 <p></p>
 <p x-ref-name>Alice</p>
 <input x-ref-name/>
@@ -213,7 +194,7 @@ x-txt-dialog-content="dialog3"
 <label>Volume: <span x-ref-volume-label>50</span>%</label>
 <input
   x-ref-volume
-  x-on-input
+  x-evt-input
   x-set-volume.aria-valuenow="this"  
   x-txt-volume-label="this"
   x-val-volume="this"
@@ -232,13 +213,13 @@ x-txt-dialog-content="dialog3"
 <p></p>
 
 <button
-x-on-click
+x-evt-click
 x-rot-box="show"
 x-set-this.x-rot-box="hide|show"
 >toggle</button>
 
 
-<div class="block hide"
+<div class="hide block"
 x-ref-box
 >content</div>
 
@@ -248,21 +229,21 @@ x-ref-box
 <p>Trigger rules</p>
 
 <p 
-class="tooltip hide" 
+class="hide tooltip" 
 x-ref-tooltip
-x-on-enter
-x-on-leave
+x-evt-mouseenter
+x-evt-mouseleave
 x-rot-tooltip="show hide"
 >
 I'm a tooltip!
 </p>
 <button
 
-x-on-enter="tooltip"
-x-on-leave="tooltip"
+x-evt-mouseenter="tooltip"
+x-evt-mouseleave="tooltip"
 x-rot-tooltip="show hide"
 
-x-on-click="!tooltip"
+x-evt-click="!tooltip"
 x-rot-list1="show hide"
 x-rot-list2="show hide"
 x-rot-list3="show hide"
@@ -271,37 +252,55 @@ Drawer
 </button>
 
 
-
-<div class="block hide" x-ref-list1>list1</div>
-<div class="block hide" x-ref-list2>list2</div>
-<div class="block hide" x-ref-list3>list3</div>
+<div class="hide block" x-ref-list1>list1</div>
+<div class="hide block" x-ref-list2>list2</div>
+<div class="hide block" x-ref-list3>list3</div>
 
 <hr>
 
 <h2>Var</h2>
 
 
-<input type="number" x-on-input x-val-price="this" placeholder="price" value="100"/>
-<select x-on-input x-val-qty="this">
+<input type="number" x-evt-input x-val-price="this" placeholder="price" value="100"/>
+<select x-evt-input x-val-qty="this">
     <option value="1">1x</option>
     <option value="2">2x</option>
     <option value="3">3x</option>
 </select>
+<br>
 
-<p><b x-ref-total></b></p>
+<p x-ref-total></p>
+
+<hr>
+
+<h2>Modifier</h2>
+
+<div class="block" x-evt-click x-rot-m="hide">
+    <div class="hide block" x-ref-m x-evt-click.stop>
+        <p>clicking outside of this will hide it (only inside outerbox)</p>
+    </div>
+    <br>
+
+    <button x-evt-click.stop x-rot-m="show">show</button>
+</div>
+
+<br>
+<p>
+    <a x-evt-click.prevent>prevent default</a>
+</p>
 
   <!-- Load Script -->
   <script>
+    // run when uc.js loads
     (window.init = window.init || []).push(function () {
-        ElX.init(document.getElementsByTagName("*"), "tabfirst:tablast");
-        // ElX.clean(); // clean dead references
+        ElX.init(document.body, "tabfirst tablast");
 
-        ElX.tap("*", Utils.debounce(function (old, current, event, key) {
+        ElX.tap("*", Util.debounce(function (old, current, event, key) {
             if (key == "qty" || key == "price") {
-                if (key == "price" && current < 0 && event.target) {
+                if (key == "price" && current < 0 && event.element) {
                     // event.type - base on the x-on-* events
-                    // event.target - element that trigger the event usually from x-val- 
-                    event.target.value = 0;
+                    // event.element - element that trigger the event usually from x-val- 
+                    event.element.value = 0;
                     ElX.vals.price = 0;
                     return;
                 }
@@ -311,17 +310,17 @@ Drawer
             }
         }, 300));
 
-        var volume = ElX.x("volume"); // easier state management
+        var volume = ElX.x("volume");
     
         this.volumeContext = ElX.x("volume-context", "");
-        this.volumeContext.tap(function (old, current) {
+        this.volumeContext.tap(function (old, current, event) {
             console.log("volume-context: " + current);
         });
-        volume.tap(Utils.debounce(function (old, current) {
+        volume.tap(Util.debounce(function (old, current, event) {
             volume.ref().forEach(function (el) {
                 console.log(el.getAttribute("aria-valuenow"));
             });
-            this.volumeContext.val(current); // access context
+            this.volumeContext.val(current, event); // access context
         }, 300), this); // can pass context
 
     });    
