@@ -10,7 +10,7 @@
   
 <style>
 .button.neutral {
-  background-color: #007bff;
+  background-color: grey;
   color: white;
 }
 
@@ -74,7 +74,7 @@ x-rot-[name]="class1 class2"
 x-tab="name name"
 x-focus="name"
 x-set-[name].[attribute]="value|value"
-x-run-[name]="trigger1 trigger2"
+x-run-[name]="trigger1 trigger2"         // only works with no modifier
 </pre>
 
 <h2>Target</h2>
@@ -165,6 +165,7 @@ x-txt-dialog-content="dialog1"
 <button
 x-evt-click
 x-evt-keydown.2.ctrl.window
+x-evt-keydown.j
 
 x-txt-dialog-content="dialog2"
 >dialog2 (ctrl + 2)</button>
@@ -267,7 +268,7 @@ Drawer
     <option value="2">2x</option>
     <option value="3">3x</option>
 </select>
-<br>
+<p></p>
 
 <p x-ref-total></p>
 
@@ -275,13 +276,13 @@ Drawer
 
 <h2>Modifier</h2>
 
-<div class="block" x-evt-click x-rot-m="hide">
+<div class="block" x-evt-click x-rot-m="hide" x-txt-mshow="show" x-set-mshow.x-txt-mshow="show">
     <div class="hide block" x-ref-m x-evt-click.stop>
         <p>clicking outside of this will hide it (only inside outerbox)</p>
     </div>
     <br>
 
-    <button x-evt-click.stop x-rot-m="show">show</button>
+    <button x-ref-mshow x-evt-click.stop x-rot-m="show hide" x-set-this.x-txt-mshow="show|hide" x-txt-mshow="show">show</button>
 </div>
 
 <br>
@@ -289,6 +290,19 @@ Drawer
     <a x-evt-click.prevent>prevent default</a>
 </p>
 
+<hr>
+
+<h2>Tab Trap</h2>
+
+<button x-ref-tabtrap x-evt-click x-tab="f l" x-focus="f">tab</button>
+<button x-ref-f x-evt-click x-tab x-focus="tabtrap">first</button>
+<button x-evt-click x-tab x-focus="tabtrap">_</button>
+<button x-evt-click x-tab x-focus="tabtrap">_</button>
+<button x-evt-click x-tab x-focus="tabtrap">_</button>
+<button x-evt-click x-tab x-focus="tabtrap">_</button>
+<button x-evt-click x-tab x-focus="tabtrap">_</button>
+<button x-evt-click x-tab x-focus="tabtrap">_</button>
+<button x-ref-l x-evt-click x-tab x-focus="tabtrap">last</button>
   <!-- Load Script -->
   <script>
     // run when uc.js loads

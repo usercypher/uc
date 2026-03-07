@@ -67,9 +67,10 @@ limitations under the License.
     Util.strReplace = function(text, map) {
         var keys = [];
         for (var k in map) {
-            if (Object.prototype.hasOwnProperty.call(map, k)) {
-                keys.push(k.replace(Util.strReplace.escape, "\\$&"));
+            if (!Object.prototype.hasOwnProperty.call(map, k)) {
+                continue;
             }
+            keys.push(k.replace(Util.strReplace.escape, "\\$&"));
         }
         if (keys.length === 0) {
             return text;
@@ -150,27 +151,28 @@ limitations under the License.
     };
     Util.queryBuild.build = function(map, prefix, query) {
         for (var key in map) {
-            if (Object.prototype.hasOwnProperty.call(map, key)) {
-                var value = map[key],
-                    k = prefix ? prefix + "[" + key + "]" : key,
-                    type = Object.prototype.toString.call(value);
-                if (value === null || typeof value === "undefined") {
-                    continue;
-                }
-                if (type === "[object Array]") {
-                    for (var i = 0, len = value.length; i < len; i++) {
-                        var v = value[i];
-                        if (v !== null && typeof v === "object") {
-                            Util.queryBuild.build(v, k + "[" + i + "]", query);
-                        } else {
-                            query.push(k + "[]=" + encodeURIComponent(v));
-                        }
+            if (!Object.prototype.hasOwnProperty.call(map, key)) {
+                continue;
+            }
+            var value = map[key],
+                k = prefix ? prefix + "[" + key + "]" : key,
+                type = Object.prototype.toString.call(value);
+            if (value === null || typeof value === "undefined") {
+                continue;
+            }
+            if (type === "[object Array]") {
+                for (var i = 0, len = value.length; i < len; i++) {
+                    var v = value[i];
+                    if (v !== null && typeof v === "object") {
+                        Util.queryBuild.build(v, k + "[" + i + "]", query);
+                    } else {
+                        query.push(k + "[]=" + encodeURIComponent(v));
                     }
-                } else if (typeof value === "object") {
-                    Util.queryBuild.build(value, k, query);
-                } else {
-                    query.push(k + "=" + encodeURIComponent(value));
                 }
+            } else if (typeof value === "object") {
+                Util.queryBuild.build(value, k, query);
+            } else {
+                query.push(k + "=" + encodeURIComponent(value));
             }
         }
     };
@@ -422,15 +424,16 @@ limitations under the License.
         var self = this;
         this.xhr.open(method, url, true);
         for (var key in header) {
-            if (header.hasOwnProperty(key)) {
-                var value = header[key];
-                if (Object.prototype.toString.call(value) === "[object Array]") {
-                    for (var i = 0; i < value.length; i = i + 1) {
-                        this.xhr.setRequestHeader(key, value[i]);
-                    }
-                } else {
-                    this.xhr.setRequestHeader(key, value);
+            if (!Object.prototype.hasOwnProperty.call(header, key)) {
+                continue;
+            }
+            var value = header[key];
+            if (Object.prototype.toString.call(value) === "[object Array]") {
+                for (var i = 0; i < value.length; i = i + 1) {
+                    this.xhr.setRequestHeader(key, value[i]);
                 }
+            } else {
+                this.xhr.setRequestHeader(key, value);
             }
         }
         if (timeout !== -1) {
@@ -548,7 +551,7 @@ limitations under the License.
     };
     ElX.mutationDepth = 0;
     ElX.queue = [];
-    ElX.eventT = {
+    ElX.bitEK = {
         "ctrl": 1,
         "alt": 2,
         "shift": 4,
@@ -557,7 +560,7 @@ limitations under the License.
         "right": 32,
         "meta": 64
     };
-    ElX.eventB = {
+    ElX.bitEB = {
         "stop": 1,
         "prevent": 2,
         "window": 4
@@ -578,11 +581,18 @@ limitations under the License.
         ElX.mutationDepth--;
     };
     ElX.processElement = function(el, tab) {
+        if (!el._x_action) {
+            el._x_action = {};
+        }
+
         for (var i = 0; i < el.attributes.length; i++) {
             var attr = el.attributes[i];
-            var prefix = attr.name.substring(0, 6);
-            var key = attr.name.substring(6);
-            if (prefix === "x-ref-") {
+            var attrValue = attr.value;
+            var attrNameArr = attr.name.split("-");
+            var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
+            var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
+            var key = keyAttrArr[0];
+            if (prefix === "x-ref") {
                 if (!ElX.refs[key]) {
                     ElX.refs[key] = [];
                 }
@@ -604,33 +614,28 @@ limitations under the License.
                     ElX.tab.last = el;
                     ElX.tab.default_last = tab[1];
                 }
-            } else if (prefix === "x-val-" && !ElX.vals[key]) {
-                ElX.vals[key] = attr.value !== "this" ? attr.value : (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : "");
-            } else if (prefix === "x-src-") {
+            } else if (prefix === "x-src") {
                 ElX.srcs[key](el);
-            } else if (prefix === "x-evt-") {
-                var parts = key.split(".");
-                var event = parts[0];
+            } else if (prefix === "x-evt") {
+                var parts = keyAttrArr.slice(1);
+                var event = key;
                 var eventKey = "";
-                var maskB = 0;
-                var maskT = 0;
-                for (var j = 1; j < parts.length; j++) {
+                var eventMask = 0;
+                var mask = 0;
+                for (var j = 0, jlen = parts.length; j < jlen; j++) {
                     var p = parts[j];
-                    if (ElX.eventB[p]) {
-                        maskB |= ElX.eventB[p];
-                    } else if (ElX.eventT[p] && (event === "keydown" || event === "keyup" || event === "mousedown" || event === "mouseup")) {
-                        maskT |= ElX.eventT[p];
+                    if (ElX.bitEB[p]) {
+                        mask |= ElX.bitEB[p];
+                    } else if ((ElX.bitEK[p] && (event === "keydown" || event === "keyup")) || (ElX.bitEK[p] && (event === "mousedown" || event === "mouseup"))) {
+                        eventMask |= ElX.bitEK[p];
                     } else if (event === "keydown" || event === "keyup") {
                         eventKey = p;
                     }
                 }
-                if ((event === "mousedown" || event === "mouseup") && !(ElX.eventT.left & maskT || ElX.eventT.wheel & maskT || ElX.eventT.right & maskT)) {
-                    maskT |= ElX.eventT.left;
-                }
-                var signature = event + "-" + eventKey + "-" + maskT;
-                el["_x_mask_" + signature] = maskB;
-                el["_x_rule_" + signature] = attr.value;
-                if (maskB & ElX.eventB.window) {
+                var signature = event + "_" + eventKey + "_" + eventMask;
+                el["_x_mask_" + signature] = mask;
+                el["_x_rule_" + signature] = attrValue;
+                if (mask & ElX.bitEB.window) {
                     if (!ElX.objs[signature]) {
                         ElX.objs[signature] = [];
                     }
@@ -639,6 +644,11 @@ limitations under the License.
                 } else {
                     el["on" + event] = ElX.queueEvent;
                 }
+            } else if (prefix === "x-rot" || prefix === "x-txt" || prefix === "x-set" || prefix === "x-val" || prefix === "x-run" || prefix === "x-tab" || prefix === "x-focus") {
+                if (prefix === "x-val" && !ElX.vals[key]) {
+                    ElX.vals[key] = attrValue !== "this" ? attrValue : (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : "");
+                }
+                el._x_action[attr.name] = [Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join(".")];
             }
         }
     };
@@ -647,24 +657,25 @@ limitations under the License.
         el = el || window.document.documentElement;
         for (var i = 0, object = ElX.refs; i < 2; i++, object = ElX.objs) {
             for (var key in object) {
-                if (object.hasOwnProperty(key)) {
-                    var els = object[key];
-                    var writeIndex = 0;
-                    for (var readIndex = 0; readIndex < els.length; readIndex++) {
-                        var node = els[readIndex];
-                        while (node && node !== el) {
-                            node = node.parentNode;
-                        }
-                        if (node === el) {
-                            els[writeIndex] = els[readIndex];
-                            writeIndex++;
-                        }
+                if (!Object.prototype.hasOwnProperty.call(object, key)) {
+                    continue;
+                }
+                var els = object[key];
+                var writeIndex = 0;
+                for (var readIndex = 0; readIndex < els.length; readIndex++) {
+                    var node = els[readIndex];
+                    while (node && node !== el) {
+                        node = node.parentNode;
                     }
-                    if (writeIndex === 0) {
-                        delete object[key];
-                    } else {
-                        els.length = writeIndex;
+                    if (node === el) {
+                        els[writeIndex] = els[readIndex];
+                        writeIndex++;
                     }
+                }
+                if (writeIndex === 0) {
+                    delete object[key];
+                } else {
+                    els.length = writeIndex;
                 }
             }
         }
@@ -721,8 +732,15 @@ limitations under the License.
             current = current !== null ? current : "null";
             var newState = states[current === states[0] ? 1 : 0] || "";
             if (current !== newState && newState !== "null") {
+                var attrNameArr = attr.split("-");
+                var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
+                var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
+                if (prefix === "x-rot" || prefix === "x-txt" || prefix === "x-set" || prefix === "x-val" || prefix === "x-run" || prefix === "x-tab" || prefix === "x-focus") {
+                    refEl._x_action[attr] = [Util.trim(newState), prefix, keyAttrArr[0], keyAttrArr.slice(1).join(".")];
+                }
                 refEl.setAttribute(attr, newState);
             } else if (current !== "null" && newState === "null") {
+                delete refEl._x_action[attr];
                 refEl.removeAttribute(attr);
             }
         }
@@ -731,7 +749,7 @@ limitations under the License.
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
-            var tag = refEl.tagName.toUpperCase();
+            var tag = refEl.tagName;
             if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
                 if (tag === "INPUT" && (refEl.type === "checkbox" || refEl.type === "radio")) {
                     value = (value === true || value === "true" || value === "1");
@@ -763,9 +781,9 @@ limitations under the License.
         }
     };
     ElX.run = function(key, triggers) {
+        var refs = ElX.refs[key] || [];
         triggers = triggers.split(" ");
         for (var i = 0, ilen = triggers.length; i < ilen; i++) {
-            var refs = ElX.refs[key] || [];
             for (var j = 0, jlen = refs.length; j < jlen; j++) {
                 ElX.queueEvent.call(refs[j], {
                     type: triggers[i]
@@ -775,23 +793,12 @@ limitations under the License.
     };
     ElX.queueEvent = function(e) {
         e = e || window.event;
-        var maskT = 0;
-        var key = "";
+        var key = (e.type === "keydown" || e.type === "keyup") ? (e.key ? e.key : String.fromCharCode(e.keyCode || e.which)).toLowerCase() : "";
+        var signature = e.type + "_" + key + "_" + (e.type === "keydown" || e.type === "keyup" || e.type === "mousedown" || e.type === "mouseup" ? ((e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0");
+        var mask = this["_x_mask_" + signature] || 0;
 
-        if (e.type === "keydown" || e.type === "keyup") {
-            maskT |= (e.ctrlKey ? ElX.eventT.ctrl : 0) | (e.altKey ? ElX.eventT.alt : 0) | (e.shiftKey ? ElX.eventT.shift : 0);
-            key = (e.key ? e.key : String.fromCharCode(e.keyCode || e.which)).toLowerCase();
-        }
-
-        if (e.type === "mousedown" || e.type === "mouseup") {
-            maskT |= (e.button === 0 ? ElX.eventT.left : 0) | (e.button === 1 ? ElX.eventT.wheel : 0) | (e.button === 2 ? ElX.eventT.right : 0);
-        }
-
-        var signature = e.type + "-" + key + "-" + maskT;
-        var maskB = this["_x_mask_" + signature] || 0;
-
-        if (ElX.mutationDepth < 1 && !(e._x_stop)) {
-            if (maskB & ElX.eventB.stop) {
+        if (ElX.mutationDepth < 1 && !(e._x_stop) && (this["_x_mask_" + signature] !== undefined || this === window)) {
+            if (mask & ElX.bitEB.stop) {
                 e._x_stop = true;
             }
 
@@ -809,10 +816,10 @@ limitations under the License.
                 if (key === "tab") {
                     if (e.shiftKey && window.document.activeElement === ElX.tab.first) {
                         ElX.tab.last.focus();
-                        maskB |= ElX.eventB.prevent;
+                        mask |= ElX.bitEB.prevent;
                     } else if (!e.shiftKey && window.document.activeElement === ElX.tab.last) {
                         ElX.tab.first.focus();
-                        maskB |= ElX.eventB.prevent;
+                        mask |= ElX.bitEB.prevent;
                     }
                 }
             } else {
@@ -832,7 +839,7 @@ limitations under the License.
             }
         }
 
-        return !(maskB & ElX.eventB.prevent);
+        return !(mask & ElX.bitEB.prevent);
     };
     ElX.processEvent = function(event) {
         var el = event.element;
@@ -857,31 +864,28 @@ limitations under the License.
         ElX.elThis = null;
         var tab = null;
         var focus = null;
-        var elAttributes = el.attributes;
-        for (var i = 0, ilen = elAttributes.length; i < ilen; i++) {
-            var attr = elAttributes[i];
-            var attrName = attr.name;
-            var attrValue = Util.trim(attr.value);
-            var attrNameArr = attrName.split("-");
-            var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
-            var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
-            var key = keyAttrArr[0];
 
+        for (var attrName in el._x_action) {
+            if (!Object.prototype.hasOwnProperty.call(el._x_action, attrName)) {
+                continue;
+            }
+            var attr = el._x_action[attrName];
+            var attrValue = attr[0];
+            var prefix = attr[1];
+            var key = attr[2];
             if (!(mode === "*" || (mode === "!" && !(rulesObj[key] || rulesObj[attrName])) || (mode === "" && (rulesObj[key] || rulesObj[attrName])))) {
                 continue;
             }
-
             if (attrValue === "this") {
                 if (!ElX.elThis) {
-                    ElX.elThis = (el.tagName.toUpperCase() === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : "");
+                    ElX.elThis = (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : "");
                 }
                 attrValue = ElX.elThis;
             }
-
             if (prefix === "x-rot") {
                 ElX.rot(key, attrValue, el);
             } else if (prefix === "x-set") {
-                ElX.set(key, keyAttrArr.slice(1).join("."), attrValue, el);
+                ElX.set(key, attr[3], attrValue, el);
             } else if (prefix === "x-txt") {
                 ElX.txt(key, attrValue, el);
             } else if (prefix === "x-val") {
