@@ -785,35 +785,10 @@ limitations under the License.
         var refs = ElX.refs[key] || [];
         triggers = triggers.split(" ");
         for (var i = 0, ilen = triggers.length; i < ilen; i++) {
-            var parts = triggers[i].split(".");
-            var e = {};
-            e.type = parts[0];
-            for (var j = 1, jlen = parts.length; j < jlen; j++) {
-                switch (parts[j]) {
-                    case "ctrl":
-                        e.ctrlKey = 1;
-                        break;
-                    case "alt":
-                        e.altKey = 1;
-                        break;
-                    case "shift":
-                        e.shiftKey = 1;
-                        break;
-                    case "left":
-                        e.button = 0;
-                        break;
-                    case "wheel":
-                        e.button = 1;
-                        break;
-                    case "right":
-                        e.button = 2;
-                        break;
-                    default:
-                        e.key = parts[j];
-                }
-            }
             for (var j = 0, jlen = refs.length; j < jlen; j++) {
-                ElX.queueEvent.call(refs[j], e);
+                ElX.queueEvent.call(refs[j], {
+                    type: triggers[i]
+                });
             }
         }
     };
