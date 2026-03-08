@@ -558,7 +558,6 @@ limitations under the License.
         "left": 8,
         "wheel": 16,
         "right": 32,
-        "meta": 64
     };
     ElX.bitEB = {
         "stop": 1,
@@ -786,10 +785,35 @@ limitations under the License.
         var refs = ElX.refs[key] || [];
         triggers = triggers.split(" ");
         for (var i = 0, ilen = triggers.length; i < ilen; i++) {
+            var parts = triggers[i].split(".");
+            var e = {};
+            e.type = parts[0];
+            for (var j = 1, jlen = parts.length; j < jlen; j++) {
+                switch (parts[j]) {
+                    case "ctrl":
+                        e.ctrlKey = 1;
+                        break;
+                    case "alt":
+                        e.altKey = 1;
+                        break;
+                    case "shift":
+                        e.shiftKey = 1;
+                        break;
+                    case "left":
+                        e.button = 0;
+                        break;
+                    case "wheel":
+                        e.button = 1;
+                        break;
+                    case "right":
+                        e.button = 2;
+                        break;
+                    default:
+                        e.key = parts[j];
+                }
+            }
             for (var j = 0, jlen = refs.length; j < jlen; j++) {
-                ElX.queueEvent.call(refs[j], {
-                    type: triggers[i]
-                });
+                ElX.queueEvent.call(refs[j], e);
             }
         }
     };
@@ -797,7 +821,7 @@ limitations under the License.
         e = e || window.event;
         if (ElX.mutationDepth < 1 && !(e._x_stop)) {
             var key = (e.type === "keydown" || e.type === "keyup") ? (e.key ? e.key : String.fromCharCode(e.keyCode || e.which)).toLowerCase() : "";
-            var signature = e.type + "_" + key + "_" + (e.type === "keydown" || e.type === "keyup" || e.type === "mousedown" || e.type === "mouseup" ? ((e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0");
+            var signature = e.type + "_" + key + "_" + (e.type === "keydown" || e.type === "keyup" || e.type === "mousedown" || e.type === "mouseup" ? ((~~e.ctrlKey * ElX.bitEK.ctrl) | (~~e.altKey * ElX.bitEK.alt) | (~~e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0");
             var mask = 0;
 
             if (this === window) {
