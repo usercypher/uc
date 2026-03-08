@@ -578,6 +578,8 @@ limitations under the License.
             ElX.processElement(elements[i], tab);
         }
 
+        window.onkeydown = ElX.queueEvent;
+
         ElX.mutationDepth--;
     };
     ElX.processElement = function(el, tab) {
@@ -614,7 +616,7 @@ limitations under the License.
                     ElX.tab.last = el;
                     ElX.tab.default_last = tab[1];
                 }
-            } else if (prefix === "x-src") {
+            } else if (prefix === "x-src" && ElX.srcs[key]) {
                 ElX.srcs[key](el);
             } else if (prefix === "x-evt") {
                 var parts = keyAttrArr.slice(1);
@@ -793,16 +795,13 @@ limitations under the License.
     };
     ElX.queueEvent = function(e) {
         e = e || window.event;
-        var key = (e.type === "keydown" || e.type === "keyup") ? (e.key ? e.key : String.fromCharCode(e.keyCode || e.which)).toLowerCase() : "";
-        var signature = e.type + "_" + key + "_" + (e.type === "keydown" || e.type === "keyup" || e.type === "mousedown" || e.type === "mouseup" ? ((e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0");
-        var mask = this["_x_mask_" + signature] || 0;
-
-        if (ElX.mutationDepth < 1 && !(e._x_stop) && (this["_x_mask_" + signature] !== undefined || this === window)) {
-            if (mask & ElX.bitEB.stop) {
-                e._x_stop = true;
-            }
+        if (ElX.mutationDepth < 1 && !(e._x_stop)) {
+            var key = (e.type === "keydown" || e.type === "keyup") ? (e.key ? e.key : String.fromCharCode(e.keyCode || e.which)).toLowerCase() : "";
+            var signature = e.type + "_" + key + "_" + (e.type === "keydown" || e.type === "keyup" || e.type === "mousedown" || e.type === "mouseup" ? ((e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0");
+            var mask = 0;
 
             if (this === window) {
+                console.log(signature);
                 if (ElX.objs[signature]) {
                     var els = ElX.objs[signature];
                     for (var i = 0, ilen = els.length; i < ilen; i++) {
@@ -813,7 +812,7 @@ limitations under the License.
                         });
                     }
                 }
-                if (key === "tab") {
+                if (e.type === "keydown" && key === "tab") {
                     if (e.shiftKey && window.document.activeElement === ElX.tab.first) {
                         ElX.tab.last.focus();
                         mask |= ElX.bitEB.prevent;
@@ -822,14 +821,19 @@ limitations under the License.
                         mask |= ElX.bitEB.prevent;
                     }
                 }
-            } else {
+            } else if (this["_x_mask_" + signature] !== undefined) {
+                mask = this["_x_mask_" + signature];
+                if (mask & ElX.bitEB.stop) {
+                    e._x_stop = true;
+                }
                 ElX.queue.push({
                     type: e.type,
                     element: this,
                     signature: signature
                 });
             }
-            if (!ElX.queueTimer) {
+
+            if (!ElX.queueTimer && ElX.queue.length) {
                 ElX.queueTimer = setTimeout(function() {
                     while (ElX.queue.length) {
                         ElX.processEvent(ElX.queue.shift());
@@ -837,9 +841,9 @@ limitations under the License.
                     ElX.queueTimer = null;
                 }, 0);
             }
-        }
 
-        return !(mask & ElX.bitEB.prevent);
+            return !(mask & ElX.bitEB.prevent);
+        }
     };
     ElX.processEvent = function(event) {
         var el = event.element;

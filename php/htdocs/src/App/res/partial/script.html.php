@@ -6,35 +6,27 @@ $flash = $data['flash'];
 
 ?>
 
-    <span x-src="modal-open" data-ref="flash" style="display: none;"></span>
+    <span style="display: none;" data-ref="flash" x-src-modal-open></span>
 
     <!-- Flash Messages Modal -->
-    <div class="modal-overlay _" x-src="modal-overlay" data-ref="flash" data-static>
-        <div class="modal-container" x-src="modal-container">
-            <div class="modal-header">
-                <h3 x-src="modal-title" data-ref="flash">Notification</h3>
-                <button class="modal-close" x-src="modal-close modal-tab-first" data-ref="flash">&times</button>
-            </div>
-            <div class="modal-body" x-src="modal-desc" data-ref="flash">
-                <ul id="flash"></ul>
-            </div>
-            <div class="modal-footer">
-                <input type="button" x-src="modal-close modal-tab-last" data-ref="flash" value="Close" />
-            </div>
+    <div class="_ modal" data-ref="flash" x-src-modal>
+        <div class="modal-content" data-ref="flash" x-src-modal-content>
+            <h3 data-ref="flash" x-src-modal-label>Notification</h3>
+            <ul style="overflow: auto;" data-ref="flash" x-src-modal-description></ul>
+            <input type="button" style="float: right; margin-left: 1em;" value="Close" data-ref="flash" x-src-modal-close x-src-modal-tab-start x-src-modal-tab-end />
         </div>
     </div>
-
+<div id="test"></div>
     <script>
         (window.init = window.init || []).push(function () {
             Util.poll(function () {
                 return window.ElXInit;
-            },
-            function () {
+            }, function () {
                 var flash = <?php echo json_encode($flash); ?>;
 
                 if (flash) {
                     flashTpl(flash);
-                    ElX.run("modal-open-flash", "x-on-click");
+                    ElX.run("modal-open-flash", "click");
                 }
             });
 
@@ -43,7 +35,7 @@ $flash = $data['flash'];
                 for (var i = 0, ilen = flash.length; i < ilen; i++) {
                     flashHtml += `<li><b>${flash[i].type}: </b>${JSON.stringify(flash[i].data)}</li>`;
                 }
-                document.getElementById("flash").innerHTML = flashHtml;
+                document.getElementById("modal-description-flash").innerHTML = flashHtml;                
             }
         })();
     </script>
@@ -51,7 +43,7 @@ $flash = $data['flash'];
     <script>
         (window.init = window.init || []).push(function () {
             Util.script([
-                "<?php echo $app->urlWeb("asset/js/tag/modal.js"); ?>"
+                "async::<?php echo $app->urlWeb("asset/js/src/modal.js"); ?>"
             ], {
                 onload: function () {
                     ElX.init(document.documentElement);
