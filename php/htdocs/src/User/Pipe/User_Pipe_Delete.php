@@ -1,6 +1,6 @@
 <?php
 
-class User_Pipe_Store {
+class User_Pipe_Delete {
     private $app, $session;
     private $userRepo;
 
@@ -17,12 +17,25 @@ class User_Pipe_Store {
 
         $route = $input->query['redirect_alt'];
         $user = $input->frame['user'];
-        $userRoles = $input->data['user_roles'];
+        $userSession = $this->session->get('user');
 
-        list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('insert', array(
-            'user_roles' => $userRoles,
-            'is_user_role_root' => false
-        )));
+        if ($userSession['role'] !== 'root') {
+            $user['id'] = $userSession['id'];
+        }
+
+        $error = [];
+
+        if (!password_verify($user['password'], $userSession['password'])) {
+            $error[] = [
+                'data' => [
+                    'content' => 'Password is incorrect'
+                ]
+            ];
+        }
+
+        if (!$error) {
+            list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('delete'));
+        }
 
         if ($error) {
             $route = $input->query['redirect'];
@@ -30,8 +43,8 @@ class User_Pipe_Store {
                 $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
             }
         } else {
-            $this->userRepo->insert($user);
-            $this->userRepo->addMessage('success', 'user created successfully.');
+            $this->userRepo->delete($user['id']);
+            $this->userRepo->addMessage('success', 'user deleted successfully.');
         }
 
         $this->session->set('flash', $this->userRepo->getMessages());

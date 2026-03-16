@@ -54,9 +54,10 @@ class Shared_Lib_Cast_Standard {
         return $o;
     }
 
-    public function value($value) {
+    public function value($value, $override = true) {
         $o = new Shared_Lib_Cast_Standard_Value;
         $o->value = $value;
+        $o->override = $override;
         return $o;
     }
 
@@ -195,9 +196,10 @@ class Shared_Lib_Cast_Standard_Enum {
 
 class Shared_Lib_Cast_Standard_Value {
     var $value;
+    var $override;
 
     function process($value) {
-        return array($this->value, null);
+        return array($this->override ? $this->value : $value, null);
     }
 }
 

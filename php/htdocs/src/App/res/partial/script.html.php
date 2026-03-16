@@ -2,21 +2,24 @@
 
 $app = $data['app'];
 
-$flash = $data['flash'];
+$flash = empty($data['flash']) ? null : $data['flash'];
 
 ?>
 
-    <span style="display: none;" data-ref="flash" x-src-modal-open></span>
+    <span style="display: none;" data-ref="flash" x-use-modal-open></span>
 
     <!-- Flash Messages Modal -->
-    <div class="_ modal" data-ref="flash" x-src-modal>
-        <div class="modal-content" data-ref="flash" x-src-modal-content>
-            <h3 data-ref="flash" x-src-modal-label>Notification</h3>
-            <ul style="overflow: auto;" data-ref="flash" x-src-modal-description></ul>
-            <input type="button" style="float: right; margin-left: 1em;" value="Close" data-ref="flash" x-src-modal-close x-src-modal-tab-start x-src-modal-tab-end />
+    <div class="_ modal" data-ref="flash" x-use-modal>
+        <div class="modal-content" data-ref="flash" x-use-modal-content>
+            <div style="padding: 1em;">
+                <h3 data-ref="flash" x-use-modal-label>Notification</h3>
+
+                <ul style="overflow: auto;" data-ref="flash" x-use-modal-description></ul>
+                <input type="button" style="float: right; margin-bottom: 1em;" value="Close" data-ref="flash" x-use-modal-close x-use-modal-tab-start x-use-modal-tab-end />
+            </div>
         </div>
     </div>
-<div id="test"></div>
+
     <script>
         (window.init = window.init || []).push(function () {
             Util.poll(function () {
@@ -43,7 +46,7 @@ $flash = $data['flash'];
     <script>
         (window.init = window.init || []).push(function () {
             Util.script([
-                "async::<?php echo $app->urlWeb("asset/js/src/modal.js"); ?>"
+                "async::<?php echo $app->urlWeb("asset/js/use/modal.js"); ?>"
             ], {
                 onload: function () {
                     ElX.init(document.documentElement);

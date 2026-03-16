@@ -7,5 +7,5 @@ $group = array(
 );
 
 $app->groupRoute($group, 'GET', '', array(
-    'App_Pipe_Default'
+    'User_Pipe_Init', 'Shared_Pipe_SessionTokenGenerate', 'App_Pipe_Default'
 ));

@@ -1,6 +1,6 @@
 <?php
 
-class User_Pipe_Store {
+class User_Pipe_SessionVerify {
     private $app, $session;
     private $userRepo;
 
@@ -17,12 +17,26 @@ class User_Pipe_Store {
 
         $route = $input->query['redirect_alt'];
         $user = $input->frame['user'];
-        $userRoles = $input->data['user_roles'];
 
-        list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('insert', array(
-            'user_roles' => $userRoles,
-            'is_user_role_root' => false
-        )));
+        $error = [];
+
+        $userFound = $this->userRepo->one('WHERE username = ? OR email = ?', array($user['username'], $user['username']));
+
+        if (!$userFound) {
+            $error[] = [
+                'data' => [
+                    'content' => 'User not found.'
+                ]
+            ];
+        }
+
+        if ($userFound && !password_verify($user['password'], $userFound['password'])) {
+            $error[] = [
+                'data' => [
+                    'content' => 'Incorrect password.'
+                ]
+            ];
+        }
 
         if ($error) {
             $route = $input->query['redirect'];
@@ -30,8 +44,7 @@ class User_Pipe_Store {
                 $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
             }
         } else {
-            $this->userRepo->insert($user);
-            $this->userRepo->addMessage('success', 'user created successfully.');
+            $this->session->set("user", $userFound);
         }
 
         $this->session->set('flash', $this->userRepo->getMessages());

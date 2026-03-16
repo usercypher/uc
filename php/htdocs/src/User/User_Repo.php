@@ -41,45 +41,45 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
             );
         }
 
-        $accountFields = array(
-            'username' => array(
-                $std->toString(),
-                $std->required(),
-                $std->lengthMax(50)
-            ),
-            'email' => array(
-                $std->toString(),
-                $std->lengthMax(100)
-            ),
-        );
+        if (in_array($action, array('insert', 'update'))) {
+            $accountFields = array(
+                'username' => array(
+                    $std->toString(),
+                    $std->required(),
+                    $std->lengthMax(50)
+                ),
+                'email' => array(
+                    $std->toString(),
+                    $std->lengthMax(100)
+                ),
+                'first_name' => array(
+                    $std->toString(),
+                    $std->lengthMax(255)
+                ),
+                'last_name' => array(
+                    $std->toString()
+                ),
+                'role' => array(
+                    $std->toString(),
+                    $std->defaultValue('user'),
+                    $std->value('user', empty($context['is_session_user_role_root'])),
+                    $std->enum($context['user_roles'])
+                ),
+            );
 
-        $profileFields = array(
-            'first_name' => array(
-                $std->toString(),
-                $std->lengthMax(255)
-            ),
-            'last_name' => array(
-                $std->toString()
-            ),
-            'role' => array(
-                $std->toString(),
-                $std->defaultValue('user'),
-                $std->enum($context['user_roles'])
-            ),
-        );
-
-        $passwordField = array(
-            'password' => array(
-                $std->toString(),
-                $std->required(),
-                $std->lengthMin(8),
-                $std->lengthMax(72),
-                $std->passwordHash()
-            ),
-        );
+            $passwordField = array(
+                'password' => array(
+                    $std->toString(),
+                    $std->required(),
+                    $std->lengthMin(8),
+                    $std->lengthMax(72),
+                    $std->passwordHash()
+                ),
+            );
+        }
 
         if ($action === 'insert') {
-            $s += $accountFields + $profileFields + $passwordField;
+            $s += $accountFields + $passwordField;
 
             $s['username'][] = $db->unique($this->table, 'username');
             $s['email'][] = $db->unique($this->table, 'email');
@@ -91,10 +91,6 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
                 $old = $context['user_old'];
                 $s['username'][] = $db->unique($this->table, 'username', $old['username']);
                 $s['email'][] = $db->unique($this->table, 'email', $old['email']);
-            }
-
-            if (isset($context['update_profile'])) {
-                $s += $profileFields;
             }
 
             if (isset($context['update_password'])) {

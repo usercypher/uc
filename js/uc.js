@@ -542,7 +542,7 @@ limitations under the License.
     ElX.objs = {};
     ElX.vals = {};
     ElX.taps = {};
-    ElX.srcs = {};
+    ElX.uses = {};
     ElX.tab = {
         first: null,
         last: null,
@@ -615,8 +615,8 @@ limitations under the License.
                     ElX.tab.last = el;
                     ElX.tab.default_last = tab[1];
                 }
-            } else if (prefix === "x-src" && ElX.srcs[key]) {
-                ElX.srcs[key](el);
+            } else if (prefix === "x-use" && ElX.uses[key]) {
+                ElX.uses[key](el);
             } else if (prefix === "x-evt") {
                 var parts = keyAttrArr.slice(1);
                 var event = key;
@@ -686,8 +686,8 @@ limitations under the License.
         delete ElX.vals[key];
         delete ElX.taps[key];
     };
-    ElX.src = function(key, func) {
-        ElX.srcs[key] = func;
+    ElX.use = function(key, func) {
+        ElX.uses[key] = func;
     };
     ElX.x = function(key, value) {
         return new X(ElX, key, value);

@@ -3,7 +3,7 @@
     body.setAttribute("x-ref-root", "");
     body.setAttribute("x-evt-keyup.escape.window", "");
 
-    ElX.src("modal-open", function (el) {
+    ElX.use("modal-open", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.setAttribute("aria-haspopup", "dialog");
@@ -19,7 +19,7 @@
         el.setAttribute("x-focus", "modal-tab-start-" + ref);
     });
 
-    ElX.src("modal-close", function (el) {
+    ElX.use("modal-close", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.setAttribute("aria-label", "close modal");
@@ -33,14 +33,18 @@
         el.setAttribute("x-focus", "modal-open-" + ref);
     });
 
-    ElX.src("modal", function (el) {
+    ElX.use("modal", function (el) {
         var ref = el.getAttribute("data-ref");
+
+        el.className = "_ modal " + el.className;
 
         el.setAttribute("x-ref-modal-" + ref, "");
     });
 
-    ElX.src("modal-content", function (el) {
+    ElX.use("modal-content", function (el) {
         var ref = el.getAttribute("data-ref", "");
+
+        el.className = "modal-content " + el.className;
 
         el.id = "modal-content-" + ref;
         
@@ -52,25 +56,25 @@
         el.setAttribute("x-evt-click.stop", "");
     });
 
-    ElX.src("modal-label", function (el) {
+    ElX.use("modal-label", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.id = "modal-label-" + ref;
     });
 
-    ElX.src("modal-description", function (el) {
+    ElX.use("modal-description", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.id = "modal-description-" + ref;
     });
 
-    ElX.src("modal-tab-start", function (el) {
+    ElX.use("modal-tab-start", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.setAttribute("x-ref-modal-tab-start-" + ref, "");
     });
 
-    ElX.src("modal-tab-end", function (el) {
+    ElX.use("modal-tab-end", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.setAttribute("x-ref-modal-tab-end-" + ref, "");
