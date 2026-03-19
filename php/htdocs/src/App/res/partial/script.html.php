@@ -29,7 +29,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
 
                 if (flash) {
                     flashTpl(flash);
-                    ElX.run("modal-open-flash", "click");
+                    ElX.sig("modal-open-flash", "click");
                 }
             });
 

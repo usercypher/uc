@@ -343,6 +343,21 @@ limitations under the License.
         next(0);
     };
     Util.script.cache = {};
+    Util.deepProperty = function(obj, keys, value) {
+        var lastIdx = keys.length - 1;
+        var lastProp = keys[lastIdx];
+        for (var j = 0; j < lastIdx; j++) {
+            obj = obj[keys[j]];
+            if (!obj) {
+                return;
+            }
+        }
+        if (obj && typeof value === "undefined") {
+            return obj[lastProp];
+        } else if (obj && obj[lastProp] !== value) {
+            obj[lastProp] = value;
+        }
+    };
 
     function Url(url) {
         this.url = url || window.location.href || "";
@@ -645,9 +660,9 @@ limitations under the License.
                 } else {
                     el["on" + event] = ElX.queueEvent;
                 }
-            } else if (prefix === "x-rot" || prefix === "x-txt" || prefix === "x-set" || prefix === "x-val" || prefix === "x-run" || prefix === "x-tab" || prefix === "x-focus") {
+            } else if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
                 if (prefix === "x-val" && !ElX.vals[key]) {
-                    ElX.vals[key] = attrValue !== "this" ? attrValue : (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : "");
+                    ElX.vals[key] = attrValue !== "" && attrValue.substring(0, 5) === "this." ? Util.deepProperty(el, attrValue.substring(5).split(".")) : attrValue;
                 }
                 el._x_action[attr.name] = [Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join(".")];
             }
@@ -704,19 +719,41 @@ limitations under the License.
     ElX.untap = function(key, index) {
         ElX.taps[key][index] = null;
     };
-    ElX.rot = function(key, value, el) {
-        var states = value.split(" ", 2);
-        if (states[1] === undefined) {
-            states[1] = states[0];
+    ElX.css = function(key, value, el) {
+        if (value === "") {
+            return;
         }
+
+        var mode = value.charAt(0);
+        if (mode !== "!" && mode !== "^") {
+            mode = "";
+        } else {
+            value = value.substring(1);
+        }
+
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
             var classList = Util.trim(refEl.className).split(" ");
-            var current = classList[0];
-            var newState = states[current === states[0] ? 1 : 0] || "_";
-            if (current !== newState) {
-                classList[0] = newState;
+            var current = -1;
+            for (var j = 0, jlen = classList.length; j < jlen; j++) {
+                if (value === classList[j]) {
+                    current = j;
+                    break;
+                }
+            }
+            if (mode === "^") {
+                if (current !== -1) {
+                    classList.splice(current, 1);
+                } else {
+                    classList.push(value);
+                }
+                refEl.className = classList.join(" ");
+            } else if (mode === "!" && current !== -1) {
+                classList.splice(current, 1);
+                refEl.className = classList.join(" ");
+            } else if (mode === "" && current === -1) {
+                classList.push(value);
                 refEl.className = classList.join(" ");
             }
         }
@@ -736,7 +773,7 @@ limitations under the License.
                 var attrNameArr = attr.split("-");
                 var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
                 var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
-                if (prefix === "x-rot" || prefix === "x-txt" || prefix === "x-set" || prefix === "x-val" || prefix === "x-run" || prefix === "x-tab" || prefix === "x-focus") {
+                if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
                     refEl._x_action[attr] = [Util.trim(newState), prefix, keyAttrArr[0], keyAttrArr.slice(1).join(".")];
                 }
                 refEl.setAttribute(attr, newState);
@@ -746,23 +783,22 @@ limitations under the License.
             }
         }
     };
-    ElX.txt = function(key, value, el) {
+    ElX.dom = function(key, attr, value, el) {
+        var parts = attr.split(".");
+        var partsLength = parts.length;
+
+        for (var i = 0, ilen = partsLength; i < ilen; i++) {
+            var str = parts[i];
+            var words = str.split("-");
+            parts[i] = words[0];
+            for (var j = 1, jlen = words.length; j < jlen; j++) {
+                parts[i] += words[j].charAt(0).toUpperCase() + words[j].substring(1);
+            }
+        }
+
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
-            var refEl = els[i];
-            var tag = refEl.tagName;
-            if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
-                if (tag === "INPUT" && (refEl.type === "checkbox" || refEl.type === "radio")) {
-                    value = (value === true || value === "true" || value === "1");
-                    if (value != refEl.checked) {
-                        refEl.checked = value;
-                    }
-                } else if (value != refEl.value) {
-                    refEl.value = value;
-                }
-            } else if (refEl.children.length === 0 && value != refEl.innerHTML) {
-                refEl.innerHTML = Util.htmlEncode(String(value));
-            }
+            Util.deepProperty(els[i], parts, value);
         }
     };
     ElX.val = function(key, value, event) {
@@ -781,14 +817,41 @@ limitations under the License.
             }
         }
     };
-    ElX.run = function(key, triggers) {
+    ElX.sig = function(key, triggers) {
         var refs = ElX.refs[key] || [];
         triggers = triggers.split(" ");
         for (var i = 0, ilen = triggers.length; i < ilen; i++) {
+            var parts = triggers[i].split(".");
+            var e = {
+                type: parts[0]
+            };
+            for (var j = 1, jlen = parts.length; j < jlen; j++) {
+                switch (parts[j]) {
+                    case "ctrl":
+                        e.ctrlKey = 1;
+                        break;
+                    case "alt":
+                        e.altKey = 1;
+                        break;
+                    case "shift":
+                        e.shiftKey = 1;
+                        break;
+                    case "left":
+                        e.button = 0;
+                        break;
+                    case "wheel":
+                        e.button = 1;
+                        break;
+                    case "right":
+                        e.button = 2;
+                        break;
+                    default:
+                        e.key = parts[j];
+                        break;
+                }
+            }
             for (var j = 0, jlen = refs.length; j < jlen; j++) {
-                ElX.queueEvent.call(refs[j], {
-                    type: triggers[i]
-                });
+                ElX.queueEvent.call(refs[j], e);
             }
         }
     };
@@ -800,7 +863,6 @@ limitations under the License.
             var mask = 0;
 
             if (this === window) {
-                console.log(signature);
                 if (ElX.objs[signature]) {
                     var els = ElX.objs[signature];
                     for (var i = 0, ilen = els.length; i < ilen; i++) {
@@ -864,7 +926,7 @@ limitations under the License.
             rulesObj[rules[i]] = true;
         }
 
-        ElX.elThis = null;
+        ElX.elThis = {};
         var tab = null;
         var focus = null;
 
@@ -879,22 +941,23 @@ limitations under the License.
             if (!(mode === "*" || (mode === "!" && !(rulesObj[key] || rulesObj[attrName])) || (mode === "" && (rulesObj[key] || rulesObj[attrName])))) {
                 continue;
             }
-            if (attrValue === "this") {
-                if (!ElX.elThis) {
-                    ElX.elThis = (el.tagName === "INPUT" && (el.type === "checkbox" || el.type === "radio")) ? el.checked.toString() : el.value || (el.children.length === 0 ? el.innerHTML : "");
+            if (attrValue !== "" && attrValue.substring(0, 5) === "this.") {
+                var attrValue2 = attrValue.substring(5);
+                if (!ElX.elThis[attrValue2]) {
+                    ElX.elThis[attrValue2] = Util.deepProperty(el, attrValue2.split("."));
                 }
-                attrValue = ElX.elThis;
+                attrValue = ElX.elThis[attrValue2];
             }
-            if (prefix === "x-rot") {
-                ElX.rot(key, attrValue, el);
+            if (prefix === "x-css") {
+                ElX.css(key, attrValue, el);
             } else if (prefix === "x-set") {
                 ElX.set(key, attr[3], attrValue, el);
-            } else if (prefix === "x-txt") {
-                ElX.txt(key, attrValue, el);
+            } else if (prefix === "x-dom") {
+                ElX.dom(key, attr[3], attrValue, el);
             } else if (prefix === "x-val") {
                 ElX.val(key, attrValue, event);
-            } else if (prefix === "x-run") {
-                ElX.run(key, attrValue);
+            } else if (prefix === "x-sig") {
+                ElX.sig(key, attrValue);
             } else if (!tab && prefix === "x-tab") {
                 tab = attrValue.split(" ");
                 if (tab.length !== 2) {
@@ -957,20 +1020,20 @@ limitations under the License.
     X.prototype.untap = function(index) {
         this.elx.untap(this.key, index);
     };
-    X.prototype.rot = function(value) {
-        this.elx.rot(this.key, value);
+    X.prototype.css = function(value) {
+        this.elx.css(this.key, value);
     };
     X.prototype.set = function(attr, value) {
         this.elx.set(this.key, attr, value);
     };
-    X.prototype.txt = function(value) {
-        this.elx.txt(this.key, value);
+    X.prototype.dom = function(attr, value) {
+        this.elx.dom(this.key, attr, value);
     };
     X.prototype.val = function(value, event) {
         this.elx.val(this.key, value, event);
     };
-    X.prototype.run = function(triggers) {
-        this.elx.run(this.key, triggers);
+    X.prototype.sig = function(triggers) {
+        this.elx.sig(this.key, triggers);
     };
     X.prototype.clear = function() {
         this.elx.clear(this.key);

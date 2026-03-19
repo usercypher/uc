@@ -16,6 +16,7 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>default</title>
   <script src="<?= $app->urlWeb('asset/js/uc.js') ?>"></script>
   <link rel="stylesheet" href="<?= $app->urlWeb('asset/css/uc.css') ?>">

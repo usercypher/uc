@@ -39,14 +39,14 @@
                 <select 
                     x-ref-category-:id
                     x-evt-input
-                    x-val-category-:id="this"
+                    x-val-category-:id="this.value"
                 >:category</select>
             </td>
             <td>
                 <select 
                     x-ref-product-:id
                     x-evt-input
-                    x-val-product-:id="this"
+                    x-val-product-:id="this.value"
                 >:product</select>
             </td>
             <td>
@@ -57,7 +57,7 @@
                     type="number"
                     x-ref-qty-:id
                     x-evt-input
-                    x-val-qty-:id="this"
+                    x-val-qty-:id="this.value"
                     value=":qty"
                 />
             </td>
@@ -135,7 +135,7 @@
         ];
     };
     Product.prototype.priceVal = function (old, current) {
-        this.product.price.txt(current.toFixed(2));
+        this.product.price.dom("text-content", current.toFixed(2));
     };
     Product.prototype.updatePrice = function (old, current) {
         var that = this;
@@ -181,7 +181,7 @@
         this.ui = new El("line-" + this.product.id);
     };
     Line.prototype.subtotalVal = function (old, current) {
-        this.product.subtotal.txt(current.toFixed(2));
+        this.product.subtotal.dom("text-content", current.toFixed(2));
     };
     Line.prototype.yield = function () {
         return Util.strReplace(this.tpl(), {
@@ -241,7 +241,7 @@
         var id = Number(current);
         this.lines[id].ui.remove();
         delete this.lines[id];
-        ElX.clean();
+        ElX.prune();
         this.grandtotalCalc();
     };
     Cart.prototype.save = function () {
@@ -256,7 +256,7 @@
         alert(JSON.stringify(products));
     };
     Cart.prototype.grandtotalVal = function (old, current) {
-        this.grandtotal.txt(current.toFixed(2));
+        this.grandtotal.dom("text-content", current.toFixed(2));
     };
     Cart.prototype.grandtotalCalc = function () {
         var grandtotal = 0;

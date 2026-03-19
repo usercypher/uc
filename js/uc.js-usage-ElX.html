@@ -20,10 +20,6 @@
   margin-top: 1em;
 }
 
-.show {
-  display: block;
-}
-
 .hide {
   display: none;
 }
@@ -53,7 +49,7 @@ x-evt-[event]="!name name2" // all except specified names
 .wheel
 .right
 
-// behaviour
+// behaviour (only works on x-evt-[name])
 .stop       // stop propagation (only for x system)
 .prevent    // prevent default
 .window     // attach to window
@@ -62,19 +58,19 @@ x-evt-[event]="!name name2" // all except specified names
 <h2>Actions</h2>
 <pre>
 // Reserved [name]
-- this      // targets element itself (used in x-txt, x-val, x-rot, x-set)
+- this      // targets element itself (used in x-txt, x-val, x-css, x-set)
 
 // Reserved [value]
-- this      // use element’s value or innerHTML (must be alone)
+- this      // use dom property eg. this.value, this.innerHTML
 - null      // in x-set removes attribute
 
 x-txt-[name]="value"
 x-val-[name]="value"
-x-rot-[name]="class1 class2"
+x-css-[name]="active"                    // (!active = remove, ^active = toggle)
 x-tab="name name"
 x-focus="name"
 x-set-[name].[attribute]="value|value"
-x-run-[name]="trigger1 trigger2"         // only works with no modifier
+x-sig-[name]="trigger1 trigger2"
 </pre>
 
 <h2>Target</h2>
@@ -93,17 +89,17 @@ x-use-[name]
 
 <button 
 
-class="neutral button"
+class="button neutral"
 
 x-evt-click
 
-x-rot-tab1="show hide"
-x-rot-tab2="hide"
-x-rot-tab3="hide"
+x-css-tab1="^hide"
+x-css-tab2="hide"
+x-css-tab3="hide"
 
-x-rot-button1="neutral _"
-x-rot-button2=""
-x-rot-button3=""
+x-css-button1="^neutral"
+x-css-button2="!neutral"
+x-css-button3="!neutral"
 
 x-ref-button1
 
@@ -111,17 +107,17 @@ x-ref-button1
 
 <button 
 
-class="_ button"
+class="button"
 
 x-evt-click
 
-x-rot-tab1="hide"
-x-rot-tab2="show hide"
-x-rot-tab3="hide"
+x-css-tab1="hide"
+x-css-tab2="^hide"
+x-css-tab3="hide"
 
-x-rot-button1=""
-x-rot-button2="neutral _"
-x-rot-button3=""
+x-css-button1="!neutral"
+x-css-button2="^neutral"
+x-css-button3="!neutral"
 
 x-ref-button2
 
@@ -129,25 +125,25 @@ x-ref-button2
 
 <button 
 
-class="_ button"
+class="button"
 
 x-evt-click
 
-x-rot-tab1="hide"
-x-rot-tab2="hide"
-x-rot-tab3="show hide"
+x-css-tab1="hide"
+x-css-tab2="hide"
+x-css-tab3="^hide"
 
-x-rot-button1=""
-x-rot-button2=""
-x-rot-button3="neutral _"
+x-css-button1="!neutral"
+x-css-button2="!neutral"
+x-css-button3="^neutral"
 
 x-ref-button3
 
 >tab3</button>
 
-<div class="show block" x-ref-tab1>tab1</div>
-<div class="hide block" x-ref-tab2>tab2</div>
-<div class="hide block" x-ref-tab3>tab3</div>
+<div class="block" x-ref-tab1>tab1</div>
+<div class="block hide" x-ref-tab2>tab2</div>
+<div class="block hide" x-ref-tab3>tab3</div>
 
 <hr>
 
@@ -155,7 +151,7 @@ x-ref-button3
 
 x-evt-keydown.escape.window=""
 
-x-txt-dialog-content=""
+x-dom-dialog-content.inner-h-t-m-l=""
 ></span>
 
 <h2>Reusable Dialog Box</h2>
@@ -164,7 +160,7 @@ x-txt-dialog-content=""
 x-evt-click
 x-evt-keydown.1.ctrl.window
 
-x-txt-dialog-content="dialog1"
+x-dom-dialog-content.inner-h-t-m-l="dialog1"
 >dialog1 (ctrl + 1)</button>
 
 <button
@@ -172,14 +168,14 @@ x-evt-click
 x-evt-keydown.2.ctrl.window
 x-evt-keydown.j
 
-x-txt-dialog-content="dialog2"
+x-dom-dialog-content.inner-h-t-m-l="dialog2"
 >dialog2 (ctrl + 2)</button>
 
 <button
 x-evt-click
 x-evt-keydown.3.ctrl.window
 
-x-txt-dialog-content="dialog3"
+x-dom-dialog-content.inner-h-t-m-l="dialog3"
 >dialog3 (ctrl + 3)</button>
 
 <div class="block">
@@ -190,9 +186,9 @@ x-txt-dialog-content="dialog3"
 
 <hr>
 <h2>Input binding</h2>
-<input x-evt-input x-txt-name="this" value="Alice"/>
+<input x-evt-input x-dom-name.inner-h-t-m-l="this.value" x-dom-name.value="this.value" value="Alice"/>
 <p></p>
-<p x-ref-name>Alice</p>
+<div x-ref-name>Alice</div>
 <input x-ref-name/>
 
 <p></p>
@@ -201,9 +197,9 @@ x-txt-dialog-content="dialog3"
 <input
   x-ref-volume
   x-evt-input
-  x-set-volume.aria-valuenow="this"  
-  x-txt-volume-label="this"
-  x-val-volume="this"
+  x-set-volume.aria-valuenow="this.value"  
+  x-dom-volume-label.inner-h-t-m-l="this.value"
+  x-val-volume="this.value"
   type="range"
   min="0"
   max="100"
@@ -220,12 +216,12 @@ x-txt-dialog-content="dialog3"
 
 <button
 x-evt-click
-x-rot-box="show"
-x-set-this.x-rot-box="hide|show"
+x-css-box="!hide"
+x-set-this.x-css-box="!hide|hide"
 >toggle</button>
 
 
-<div class="hide block"
+<div class="block hide"
 x-ref-box
 >content</div>
 
@@ -235,11 +231,11 @@ x-ref-box
 <p>Trigger rules</p>
 
 <p 
-class="hide tooltip" 
+class="tooltip hide" 
 x-ref-tooltip
 x-evt-mouseenter
 x-evt-mouseleave
-x-rot-tooltip="show hide"
+x-css-tooltip="^hide"
 >
 I'm a tooltip!
 </p>
@@ -247,28 +243,28 @@ I'm a tooltip!
 
 x-evt-mouseenter="tooltip"
 x-evt-mouseleave="tooltip"
-x-rot-tooltip="show hide"
+x-css-tooltip="^hide"
 
 x-evt-click="!tooltip"
-x-rot-list1="show hide"
-x-rot-list2="show hide"
-x-rot-list3="show hide"
+x-css-list1="^hide"
+x-css-list2="^hide"
+x-css-list3="^hide"
 >
 Drawer
 </button>
 
 
-<div class="hide block" x-ref-list1>list1</div>
-<div class="hide block" x-ref-list2>list2</div>
-<div class="hide block" x-ref-list3>list3</div>
+<div class="block hide" x-ref-list1>list1</div>
+<div class="block hide" x-ref-list2>list2</div>
+<div class="block hide" x-ref-list3>list3</div>
 
 <hr>
 
 <h2>Var</h2>
 
 
-<input type="number" x-evt-input x-val-price="this" placeholder="price" value="100"/>
-<select x-evt-input x-val-qty="this">
+<input type="number" x-evt-input x-val-price="this.value" placeholder="price" value="100"/>
+<select x-evt-input x-val-qty="this.value">
     <option value="1">1x</option>
     <option value="2">2x</option>
     <option value="3">3x</option>
@@ -281,13 +277,13 @@ Drawer
 
 <h2>Modifier</h2>
 
-<div class="block" x-evt-click x-rot-m="hide" x-txt-mshow="show" x-set-mshow.x-txt-mshow="show">
+<div class="block" x-evt-click x-css-m="hide" x-dom-mshow.inner-h-t-m-l="show" x-set-mshow.x-dom-mshow.inner-h-t-m-l="show">
     <div class="hide block" x-ref-m x-evt-click.stop>
         <p>clicking outside of this will hide it (only inside outerbox)</p>
     </div>
     <br>
 
-    <button x-ref-mshow x-evt-click.stop x-rot-m="show hide" x-set-this.x-txt-mshow="show|hide" x-txt-mshow="show">show</button>
+    <button x-ref-mshow x-evt-click.stop x-css-m="^hide" x-set-this.x-dom-mshow.inner-h-t-m-l="show|hide" x-dom-mshow.inner-h-t-m-l="show">show</button>
 </div>
 
 <br>
@@ -308,11 +304,12 @@ Drawer
 <button x-evt-click x-tab x-focus="tabtrap">_</button>
 <button x-evt-click x-tab x-focus="tabtrap">_</button>
 <button x-ref-l x-evt-click x-tab x-focus="tabtrap">last</button>
+
   <!-- Load Script -->
   <script>
     // run when uc.js loads
     (window.init = window.init || []).push(function () {
-        ElX.init(document.body, "tabfirst tablast");
+        ElX.init(window.document.body, "tabfirst tablast");
 
         ElX.tap("*", Util.debounce(function (old, current, event, key) {
             if (key == "qty" || key == "price") {

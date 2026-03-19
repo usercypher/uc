@@ -12,7 +12,7 @@
 
         el.setAttribute("x-ref-modal-open-" + ref, "");
         el.setAttribute("x-evt-click", "");
-        el.setAttribute("x-rot-modal-" + ref, "active");
+        el.setAttribute("x-css-modal-" + ref, "active");
         el.setAttribute("x-set-root.x-run-modal-close-" + ref, "click");
         el.setAttribute("x-set-this.aria-expanded", "true");
         el.setAttribute("x-tab", "modal-tab-start-" + ref + " " + "modal-tab-end-" + ref);
@@ -26,7 +26,7 @@
 
         el.setAttribute("x-ref-modal-close-" + ref, "");
         el.setAttribute("x-evt-click", "");
-        el.setAttribute("x-rot-modal-" + ref, "_");
+        el.setAttribute("x-css-modal-" + ref, "!active");
         el.setAttribute("x-set-root.x-run-modal-close-" + ref, "null");
         el.setAttribute("x-set-modal-open-" + ref + ".aria-expanded", "false");
         el.setAttribute("x-tab", "");

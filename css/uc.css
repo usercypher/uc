@@ -104,8 +104,16 @@ code,
 kbd,
 samp,
 var {
-    background-color: #f4f4f4;
-    font-family: monospace;
+    background-color: #f7f7f7;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+    padding: 0 3px;
+    margin: 0 1px;
+    /* This prevents the 1px border from overlapping table lines */
+    vertical-align: text-bottom; 
+    font-size: 0.9em;
 }
 
 pre {
@@ -208,6 +216,7 @@ textarea,
 select,
 button,
 .button {
+    border: 1px solid #d4d4d4;
     font-family: inherit;
     font-size: 1em;
     line-height: 1.5;
@@ -217,7 +226,6 @@ input,
 .input,
 textarea,
 select {
-    background-color: #f4f4f4;
     padding: 0.5em 0.75em;
 }
 
@@ -239,6 +247,7 @@ button,
 
 button,
 .button {
+    border: 1px solid transparent;
     background-color: #3399ff;
     color: #fff;
     cursor: pointer;
