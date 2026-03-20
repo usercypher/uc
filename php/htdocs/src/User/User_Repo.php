@@ -100,5 +100,15 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
 
         return $s;
     }
+
+    function passwordVerify($input, $current, $message, $meta) {
+        if (!password_verify($input, $current)) {
+            return array(
+                'data' => array(
+                    'content' => $message
+                ) + $meta
+            );
+        }
+    }
 }
 ?>

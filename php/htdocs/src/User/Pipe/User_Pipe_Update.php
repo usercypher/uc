@@ -26,17 +26,9 @@ class User_Pipe_Update {
             $user['id'] = $userSession['id'];
         }
 
-        $error = [];
+        $error = array();
 
-        if (isset($context['update_password']) && !password_verify($userOld['password'], $userSession['password'])) {
-            $error[] = [
-                'data' => [
-                    'content' => 'Current password is incorrect'
-                ]
-            ];
-        }
-
-        if (!$error) {
+        if (!isset($context['update_password']) || !($error[0] = $this->userRepo->passwordVerify($userOld['password'], $userSession['password'], 'Current password is incorrect', array('field' => 'old_assword')))) {
             list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('update', array_merge($context, array(
                 'user_old' => $userOld,
                 'user_roles' => $userRoles,

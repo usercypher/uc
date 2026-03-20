@@ -23,17 +23,9 @@ class User_Pipe_Delete {
             $user['id'] = $userSession['id'];
         }
 
-        $error = [];
+        $error = array();
 
-        if (!password_verify($user['password'], $userSession['password'])) {
-            $error[] = [
-                'data' => [
-                    'content' => 'Password is incorrect'
-                ]
-            ];
-        }
-
-        if (!$error) {
+        if (!($error[0] = $this->userRepo->passwordVerify($user['password'], $userSession['password'], 'Password is incorrect', array('field' => 'password')))) {
             list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('delete'));
         }
 
