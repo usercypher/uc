@@ -49,7 +49,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
                 "async::<?php echo $app->urlWeb("asset/js/use/modal.js"); ?>"
             ], {
                 onload: function () {
-                    ElX.init(document.documentElement);
+                    ElX.init(window.document.documentElement);
                     window.ElXInit = true;
                 }
             });

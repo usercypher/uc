@@ -1,8 +1,7 @@
-(window.init = window.init || []).push(function () {
-    var body = window.document.body;
-    body.setAttribute("x-ref-root", "");
-    body.setAttribute("x-evt-keyup.escape.window", "");
+window.document.documentElement.setAttribute("x-ref-root", "");
+window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
 
+(window.init = window.init || []).push(function () {
     ElX.use("modal-open", function (el) {
         var ref = el.getAttribute("data-ref");
 
@@ -13,7 +12,7 @@
         el.setAttribute("x-ref-modal-open-" + ref, "");
         el.setAttribute("x-evt-click", "");
         el.setAttribute("x-css-modal-" + ref, "active");
-        el.setAttribute("x-set-root.x-run-modal-close-" + ref, "click");
+        el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "click");
         el.setAttribute("x-set-this.aria-expanded", "true");
         el.setAttribute("x-tab", "modal-tab-start-" + ref + " " + "modal-tab-end-" + ref);
         el.setAttribute("x-focus", "modal-tab-start-" + ref);
@@ -27,7 +26,7 @@
         el.setAttribute("x-ref-modal-close-" + ref, "");
         el.setAttribute("x-evt-click", "");
         el.setAttribute("x-css-modal-" + ref, "!active");
-        el.setAttribute("x-set-root.x-run-modal-close-" + ref, "null");
+        el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "null");
         el.setAttribute("x-set-modal-open-" + ref + ".aria-expanded", "false");
         el.setAttribute("x-tab", "");
         el.setAttribute("x-focus", "modal-open-" + ref);

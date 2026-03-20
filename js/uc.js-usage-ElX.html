@@ -58,7 +58,8 @@ x-evt-[event]="!name name2" // all except specified names
 <h2>Actions</h2>
 <pre>
 // Reserved [name]
-- this      // targets element itself (used in x-txt, x-val, x-css, x-set)
+- window    // targets element window (used in x-dom, x-run)
+- this      // targets element itself (used in x-val, x-css, x-set, x-dom, x-run)
 
 // Reserved [value]
 - this      // use dom property eg. this.value, this.innerHTML
@@ -309,9 +310,9 @@ Drawer
   <script>
     // run when uc.js loads
     (window.init = window.init || []).push(function () {
-        ElX.init(window.document.body, "tabfirst tablast");
+        ElX.init(window.document.documentElement, "tabfirst tablast");
 
-        ElX.tap("*", Util.debounce(function (old, current, event, key) {
+        ElX.tap("*", Util.debounce(function (current, old, event, key) {
             if (key == "qty" || key == "price") {
                 if (key == "price" && current < 0 && event.element) {
                     // event.type - base on the x-on-* events
@@ -329,10 +330,10 @@ Drawer
         var volume = ElX.x("volume");
     
         this.volumeContext = ElX.x("volume-context", "");
-        this.volumeContext.tap(function (old, current, event) {
+        this.volumeContext.tap(function (current) {
             console.log("volume-context: " + current);
         });
-        volume.tap(Util.debounce(function (old, current, event) {
+        volume.tap(Util.debounce(function (current, old, event) {
             volume.ref().forEach(function (el) {
                 console.log(el.getAttribute("aria-valuenow"));
             });

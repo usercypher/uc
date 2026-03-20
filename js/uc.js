@@ -343,20 +343,20 @@ limitations under the License.
         next(0);
     };
     Util.script.cache = {};
-    Util.deepProperty = function(obj, keys, value) {
-        var lastIdx = keys.length - 1;
-        var lastProp = keys[lastIdx];
-        for (var j = 0; j < lastIdx; j++) {
-            obj = obj[keys[j]];
-            if (!obj) {
+    Util.path = function(obj, keys, value) {
+        var len = keys.length;
+        var current = obj;
+        for (var i = 0; i < len - 1; i++) {
+            current = current[keys[i]];
+            if (current == null) {
                 return;
             }
         }
-        if (obj && typeof value === "undefined") {
-            return obj[lastProp];
-        } else if (obj && obj[lastProp] !== value) {
-            obj[lastProp] = value;
+        var lastKey = keys[len - 1];
+        if (value === undefined) {
+            return current[lastKey];
         }
+        current[lastKey] = value;
     };
 
     function Url(url) {
@@ -608,7 +608,10 @@ limitations under the License.
             var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
             var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
             var key = keyAttrArr[0];
-            if (prefix === "x-ref") {
+
+            if (prefix === "x-use" && ElX.uses[key]) {
+                ElX.uses[key](el);
+            } else if (prefix === "x-ref") {
                 if (!ElX.refs[key]) {
                     ElX.refs[key] = [];
                 }
@@ -630,8 +633,6 @@ limitations under the License.
                     ElX.tab.last = el;
                     ElX.tab.default_last = tab[1];
                 }
-            } else if (prefix === "x-use" && ElX.uses[key]) {
-                ElX.uses[key](el);
             } else if (prefix === "x-evt") {
                 var parts = keyAttrArr.slice(1);
                 var event = key;
@@ -662,9 +663,20 @@ limitations under the License.
                 }
             } else if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
                 if (prefix === "x-val" && !ElX.vals[key]) {
-                    ElX.vals[key] = attrValue !== "" && attrValue.substring(0, 5) === "this." ? Util.deepProperty(el, attrValue.substring(5).split(".")) : attrValue;
+                    ElX.vals[key] = attrValue !== "" && attrValue.substring(0, 5) === "this." ? Util.path(el, attrValue.substring(5).split(".")) : attrValue;
                 }
-                el._x_action[attr.name] = [Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join(".")];
+                var parts = null;
+                if (prefix === "x-dom") {
+                    parts = keyAttrArr.slice(1);
+                    for (var j = 0, jlen = parts.length; j < jlen; j++) {
+                        var words = parts[j].split("-");
+                        parts[j] = words[0];
+                        for (var k = 1, klen = words.length; k < klen; k++) {
+                            parts[j] += words[k].charAt(0).toUpperCase() + words[k].substring(1);
+                        }
+                    }
+                }
+                el._x_action[attr.name] = [Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts];
             }
         }
     };
@@ -742,17 +754,11 @@ limitations under the License.
                     break;
                 }
             }
-            if (mode === "^") {
-                if (current !== -1) {
-                    classList.splice(current, 1);
-                } else {
-                    classList.push(value);
-                }
-                refEl.className = classList.join(" ");
-            } else if (mode === "!" && current !== -1) {
+
+            if (current !== -1 && (mode === "^" || mode === "!")) {
                 classList.splice(current, 1);
                 refEl.className = classList.join(" ");
-            } else if (mode === "" && current === -1) {
+            } else if (current === -1 && (mode === "^" || mode === "")) {
                 classList.push(value);
                 refEl.className = classList.join(" ");
             }
@@ -768,13 +774,28 @@ limitations under the License.
             var refEl = els[i];
             var current = refEl.getAttribute(attr);
             current = current !== null ? current : "null";
-            var newState = states[current === states[0] ? 1 : 0] || "";
+            var newState = Util.trim(states[current === states[0] ? 1 : 0] || "");
             if (current !== newState && newState !== "null") {
-                var attrNameArr = attr.split("-");
-                var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
-                var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
-                if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
-                    refEl._x_action[attr] = [Util.trim(newState), prefix, keyAttrArr[0], keyAttrArr.slice(1).join(".")];
+                if (refEl._x_action[attr]) {
+                    refEl._x_action[attr][0] = newState;
+                } else {
+                    var attrNameArr = attr.split("-");
+                    var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
+                    var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
+                    var parts = null;
+                    if (prefix === "x-dom") {
+                        parts = keyAttrArr.slice(1);
+                        for (var j = 0, jlen = parts.length; j < jlen; j++) {
+                            var words = parts[j].split("-");
+                            parts[j] = words[0];
+                            for (var k = 1, klen = words.length; k < klen; k++) {
+                                parts[j] += words[k].charAt(0).toUpperCase() + words[k].substring(1);
+                            }
+                        }
+                    }
+                    if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
+                        refEl._x_action[attr] = [newState, prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts];
+                    }
                 }
                 refEl.setAttribute(attr, newState);
             } else if (current !== "null" && newState === "null") {
@@ -783,25 +804,16 @@ limitations under the License.
             }
         }
     };
-    ElX.dom = function(key, attr, value, el) {
-        var parts = attr.split(".");
-        var partsLength = parts.length;
-
-        for (var i = 0, ilen = partsLength; i < ilen; i++) {
-            var str = parts[i];
-            var words = str.split("-");
-            parts[i] = words[0];
-            for (var j = 1, jlen = words.length; j < jlen; j++) {
-                parts[i] += words[j].charAt(0).toUpperCase() + words[j].substring(1);
-            }
-        }
-
-        var els = (key == "this") ? [el] : (ElX.refs[key] || []);
+    ElX.dom = function(key, keys, value, el) {
+        var els = (key == "this") ? [el] : (key == "window" ? [window] : (ElX.refs[key] || []));
         for (var i = 0, ilen = els.length; i < ilen; i++) {
-            Util.deepProperty(els[i], parts, value);
+            Util.path(els[i], keys, value);
         }
     };
     ElX.val = function(key, value, event) {
+        event = event || {
+            type: "sys"
+        };
         var old = ElX.vals[key];
         ElX.vals[key] = value;
         for (var i = 0, keyTemp = key; i < 2; i++, keyTemp = "*") {
@@ -809,16 +821,14 @@ limitations under the License.
                 for (var j = 0, jlen = ElX.taps[keyTemp].length; j < jlen; j++) {
                     var tap = ElX.taps[keyTemp][j];
                     if (tap) {
-                        tap[0].call(tap[1], old, value, event || {
-                            type: "sys"
-                        }, key);
+                        tap[0].call(tap[1], value, old, event, key);
                     }
                 }
             }
         }
     };
-    ElX.sig = function(key, triggers) {
-        var refs = ElX.refs[key] || [];
+    ElX.sig = function(key, triggers, el) {
+        var els = (key == "this") ? [el] : (key == "window" ? [window] : (ElX.refs[key] || []));
         triggers = triggers.split(" ");
         for (var i = 0, ilen = triggers.length; i < ilen; i++) {
             var parts = triggers[i].split(".");
@@ -850,8 +860,8 @@ limitations under the License.
                         break;
                 }
             }
-            for (var j = 0, jlen = refs.length; j < jlen; j++) {
-                ElX.queueEvent.call(refs[j], e);
+            for (var j = 0, jlen = els.length; j < jlen; j++) {
+                ElX.queueEvent.call(els[j], e);
             }
         }
     };
@@ -944,7 +954,7 @@ limitations under the License.
             if (attrValue !== "" && attrValue.substring(0, 5) === "this.") {
                 var attrValue2 = attrValue.substring(5);
                 if (!ElX.elThis[attrValue2]) {
-                    ElX.elThis[attrValue2] = Util.deepProperty(el, attrValue2.split("."));
+                    ElX.elThis[attrValue2] = Util.path(el, attrValue2.split("."));
                 }
                 attrValue = ElX.elThis[attrValue2];
             }
@@ -953,11 +963,11 @@ limitations under the License.
             } else if (prefix === "x-set") {
                 ElX.set(key, attr[3], attrValue, el);
             } else if (prefix === "x-dom") {
-                ElX.dom(key, attr[3], attrValue, el);
+                ElX.dom(key, attr[4], attrValue, el);
             } else if (prefix === "x-val") {
                 ElX.val(key, attrValue, event);
             } else if (prefix === "x-sig") {
-                ElX.sig(key, attrValue);
+                ElX.sig(key, attrValue, el);
             } else if (!tab && prefix === "x-tab") {
                 tab = attrValue.split(" ");
                 if (tab.length !== 2) {
@@ -1026,8 +1036,8 @@ limitations under the License.
     X.prototype.set = function(attr, value) {
         this.elx.set(this.key, attr, value);
     };
-    X.prototype.dom = function(attr, value) {
-        this.elx.dom(this.key, attr, value);
+    X.prototype.dom = function(keys, value) {
+        this.elx.dom(this.key, keys, value);
     };
     X.prototype.val = function(value, event) {
         this.elx.val(this.key, value, event);

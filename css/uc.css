@@ -96,30 +96,41 @@ dd {
 blockquote {
     border-left: 4px solid #d4d4d4;
     font-style: italic;
+    margin-bottom: 1em;
     padding: 1em 1.5em;
 }
+
 
 pre,
 code,
 kbd,
 samp,
 var {
-    background-color: #f7f7f7;
-    border-top: 1px solid #ffffff;
-    border-left: 1px solid #ffffff;
-    border-right: 1px solid #999999;
-    border-bottom: 1px solid #999999;
-    padding: 0 3px;
-    margin: 0 1px;
-    /* This prevents the 1px border from overlapping table lines */
-    vertical-align: text-bottom; 
-    font-size: 0.9em;
+    font-family: monospace;
+    font-size: 1em;
+    line-height: 1.4;
 }
 
 pre {
-    font-size: 1em;
+    border-left: 4px solid #3399ff;
+    margin-bottom: 1em;
     overflow: auto;
-    padding: 1em;
+    padding: 1em 1.5em;
+}
+
+pre code {
+    border: none;
+}
+
+code,
+kbd,
+samp {
+    border: 1px solid #d4d4d4;
+}
+
+var {
+    font-style: italic;
+    font-family: serif;
 }
 
 hr {

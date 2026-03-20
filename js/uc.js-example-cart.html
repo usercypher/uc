@@ -134,16 +134,16 @@
             {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
         ];
     };
-    Product.prototype.priceVal = function (old, current) {
-        this.product.price.dom("text-content", current.toFixed(2));
+    Product.prototype.priceVal = function (current) {
+        this.product.price.dom(["textContent"], current.toFixed(2));
     };
-    Product.prototype.updatePrice = function (old, current) {
+    Product.prototype.updatePrice = function (current) {
         var that = this;
         this.options().forEach(function (opt) {
             if (opt.name === current) that.product.price.val(opt.price);
         });
     };
-    Product.prototype.updateName = function (old, current) {
+    Product.prototype.updateName = function (current) {
         var that = this;
         var found = false;
         this.options().forEach(function (opt) {
@@ -180,8 +180,8 @@
     Line.prototype.init = function () {
         this.ui = new El("line-" + this.product.id);
     };
-    Line.prototype.subtotalVal = function (old, current) {
-        this.product.subtotal.dom("text-content", current.toFixed(2));
+    Line.prototype.subtotalVal = function (current) {
+        this.product.subtotal.dom(["textContent"], current.toFixed(2));
     };
     Line.prototype.yield = function () {
         return Util.strReplace(this.tpl(), {
@@ -237,7 +237,7 @@
     
         this.flushLines();
     };
-    Cart.prototype.removeline = function (old, current) {
+    Cart.prototype.removeline = function (current) {
         var id = Number(current);
         this.lines[id].ui.remove();
         delete this.lines[id];
@@ -255,8 +255,8 @@
         }
         alert(JSON.stringify(products));
     };
-    Cart.prototype.grandtotalVal = function (old, current) {
-        this.grandtotal.dom("text-content", current.toFixed(2));
+    Cart.prototype.grandtotalVal = function (current) {
+        this.grandtotal.dom(["textContent"], current.toFixed(2));
     };
     Cart.prototype.grandtotalCalc = function () {
         var grandtotal = 0;
