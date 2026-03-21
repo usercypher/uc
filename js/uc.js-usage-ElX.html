@@ -62,7 +62,7 @@ x-evt-[event]="!name name2" // all except specified names
 - this      // targets element itself (used in x-val, x-css, x-set, x-dom, x-run)
 
 // Reserved [value]
-- this      // use dom property eg. this.value, this.innerHTML
+- $         // use in accessing $vals, $this, $window
 - null      // in x-set removes attribute
 
 x-txt-[name]="value"
@@ -187,7 +187,7 @@ x-dom-dialog-content.inner-h-t-m-l="dialog3"
 
 <hr>
 <h2>Input binding</h2>
-<input x-evt-input x-dom-name.inner-h-t-m-l="this.value" x-dom-name.value="this.value" value="Alice"/>
+<input x-evt-input x-dom-name.inner-h-t-m-l="$this.value" x-dom-name.value="$this.value" value="Alice"/>
 <p></p>
 <div x-ref-name>Alice</div>
 <input x-ref-name/>
@@ -198,9 +198,9 @@ x-dom-dialog-content.inner-h-t-m-l="dialog3"
 <input
   x-ref-volume
   x-evt-input
-  x-set-volume.aria-valuenow="this.value"  
-  x-dom-volume-label.inner-h-t-m-l="this.value"
-  x-val-volume="this.value"
+  x-set-volume.aria-valuenow="$this.value"  
+  x-dom-volume-label.inner-h-t-m-l="$this.value"
+  x-val-volume="$this.value"
   type="range"
   min="0"
   max="100"
@@ -264,8 +264,8 @@ Drawer
 <h2>Var</h2>
 
 
-<input type="number" x-evt-input x-val-price="this.value" placeholder="price" value="100"/>
-<select x-evt-input x-val-qty="this.value">
+<input type="number" x-evt-input x-val-price="$this.value" placeholder="price" value="100"/>
+<select x-evt-input x-val-qty="$this.value">
     <option value="1">1x</option>
     <option value="2">2x</option>
     <option value="3">3x</option>
@@ -306,6 +306,27 @@ Drawer
 <button x-evt-click x-tab x-focus="tabtrap">_</button>
 <button x-ref-l x-evt-click x-tab x-focus="tabtrap">last</button>
 
+<hr>
+
+<h2>Tap as event</h2>
+
+<textarea
+    x-evt-input
+    x-val-textarea="$this.value"
+></textarea>
+<button
+    class="button"
+    x-evt-click
+    x-set-output.x-evt-tap.textarea="|_"
+    x-css-this="^neutral"
+    x-val-textarea="$vals.textarea"
+>Sync</button>
+<div
+    x-ref-output
+    x-evt-tap.textarea=""
+    x-dom-this.inner-h-t-m-l="$vals.textarea"
+    class="block"
+></div>
   <!-- Load Script -->
   <script>
     // run when uc.js loads

@@ -9,7 +9,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
     <span style="display: none;" data-ref="flash" x-use-modal-open></span>
 
     <!-- Flash Messages Modal -->
-    <div class="_ modal" data-ref="flash" x-use-modal>
+    <div class="modal" data-ref="flash" x-use-modal>
         <div class="modal-content" data-ref="flash" x-use-modal-content>
             <div style="padding: 1em;">
                 <h3 data-ref="flash" x-use-modal-label>Notification</h3>
