@@ -599,6 +599,7 @@ limitations under the License.
     };
     ElX.processElement = function(el, tab) {
         var xAttr = [];
+        var xData = {};
         var paths = {
             window: window,
             this: el,
@@ -674,7 +675,7 @@ limitations under the License.
                 }
             }
 
-            if (prefix === "x-evt" || prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
+            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
                 if (prefix === "x-val" && ElX.vals[key] === undefined) {
                     ElX.vals[key] = attrValue !== "" && attrValue.charAt(0) === "$" ? Util.path(paths, attrValue.substring(1).split(".")) : attrValue;
                 }
@@ -691,8 +692,13 @@ limitations under the License.
                 }
                 xAttr.push([attr.name, Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
             }
+
+            if (prefix === "x-evt" || prefix === "x-alt") {
+                xData[attr.name] = Util.trim(attrValue);
+            }
         }
         el._x_attr = xAttr;
+        el._x_data = xData;
     };
     ElX.prune = function(el) {
         ElX.mutationDepth++;
@@ -780,34 +786,45 @@ limitations under the License.
             }
         }
     };
-    ElX.set = function(key, attr, value, el) {
-        var states = value.split("|", 2);
-        if (states[1] === undefined) {
-            states[1] = states[0];
-        }
-
+    ElX.set = function(key, attr, states, el) {
         var prefix = attr.substring(0, 5);
-        var isAction = prefix === "x-evt" || prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus";
-        var attrNameArr = isAction ? attr.split("-") : null;
-        var keyAttrArr = isAction ? attrNameArr.slice(2).join("-").split(".") : null;
+        var isAttr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus";
+        var isData = prefix === "x-evt" || prefix === "x-alt";
+        var attrNameArr = null;
+        var keyAttrArr = null;
+
+        if (isAttr) {
+            attrNameArr = attr.split("-");
+            keyAttrArr = attrNameArr.slice(2).join("-").split(".");
+        }
 
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
-            var current = refEl.getAttribute(attr);
-            current = current !== null ? current : "null";
+            var xAttrIdx = -1;
+            var current = null;
+            if (isAttr) {
+                for (var j = 0, jlen = refEl._x_attr.length; j < jlen; j++) {
+                    if (refEl._x_attr[j][0] === attr) {
+                        xAttrIdx = j;
+                        current = refEl._x_attr[j][1];
+                        break;
+                    }
+                }
+            } else if (isData) {
+                current = refEl._x_data[attr];
+            } else {
+                current = refEl.getAttribute(attr);
+            }
+
+            if (current == null) {
+                current = "null";
+            }
+
             var newState = Util.trim(states[current === states[0] ? 1 : 0] || "");
             if (current !== newState && newState !== "null") {
-                if (isAction) {
-                    var isFound = false;
-                    for (var j = 0, jlen = refEl._x_attr.length; j < jlen; j++) {
-                        if (refEl._x_attr[j][0] === attr) {
-                            refEl._x_attr[j][1] = newState;
-                            isFound = true;
-                            break;
-                        }
-                    }
-                    if (!isFound) {
+                if (isAttr) {
+                    if (current === "null") {
                         var parts = null;
                         if (prefix === "x-dom") {
                             parts = keyAttrArr.slice(1);
@@ -820,18 +837,19 @@ limitations under the License.
                             }
                         }
                         refEl._x_attr.push([attr, newState, prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
+                    } else {
+                        refEl._x_attr[xAttrIdx][1] = newState;
                     }
+                } else if (isData) {
+                    refEl._x_data[attr] = newState;
                 }
 
                 refEl.setAttribute(attr, newState);
             } else if (current !== "null" && newState === "null") {
-                if (isAction) {
-                    for (var j = 0, jlen = refEl._x_attr.length; j < jlen; j++) {
-                        if (refEl._x_attr[j][0] === attr) {
-                            refEl._x_attr.splice(j, 1);
-                            break;
-                        }
-                    }
+                if (isAttr) {
+                    refEl._x_attr.splice(xAttrIdx, 1);
+                } else if (isData) {
+                    delete refEl._x_data[attr];
                 }
                 refEl.removeAttribute(attr);
             }
@@ -964,14 +982,7 @@ limitations under the License.
         var mode = "";
         var rules = [];
         var rulesObj = {};
-        var ruleStr = "null";
-
-        for (var i = 0, ilen = el._x_attr.length; i < ilen; i++) {
-            if (el["_x_rule_" + event.signature] === el._x_attr[i][0]) {
-                ruleStr = Util.trim(el._x_attr[i][1]);
-                break;
-            }
-        }
+        var ruleStr = el._x_data[el["_x_rule_" + event.signature]];
 
         if (ruleStr === "") {
             mode = "*";
@@ -1014,7 +1025,8 @@ limitations under the License.
             if (prefix === "x-css") {
                 ElX.css(key, attrValue, el);
             } else if (prefix === "x-set") {
-                ElX.set(key, attr[4], attrValue, el);
+                var alt = el._x_data["x-alt-" + key + "." + attr[4]];
+                ElX.set(key, attr[4], [attrValue, (alt && alt.charAt(0) === "$" ? Util.path(paths, alt.substring(1).split(".")) : alt) || attrValue], el);
             } else if (prefix === "x-dom") {
                 ElX.dom(key, attr[5], attrValue, el);
             } else if (prefix === "x-val") {
@@ -1086,8 +1098,8 @@ limitations under the License.
     X.prototype.css = function(value) {
         this.elx.css(this.key, value);
     };
-    X.prototype.set = function(attr, value) {
-        this.elx.set(this.key, attr, value);
+    X.prototype.set = function(attr, states) {
+        this.elx.set(this.key, attr, states);
     };
     X.prototype.dom = function(keys, value) {
         this.elx.dom(this.key, keys, value);

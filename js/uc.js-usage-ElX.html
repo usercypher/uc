@@ -70,7 +70,8 @@ x-val-[name]="value"
 x-css-[name]="active"                    // (!active = remove, ^active = toggle)
 x-tab="name name"
 x-focus="name"
-x-set-[name].[attribute]="value|value"
+x-set-[name].[attribute]="value"
+x-alt-[name].[attribute]="value"         // use with x-set to be used for toggle state
 x-sig-[name]="trigger1 trigger2"
 </pre>
 
@@ -218,7 +219,8 @@ x-dom-dialog-content.inner-h-t-m-l="dialog3"
 <button
 x-evt-click
 x-css-box="!hide"
-x-set-this.x-css-box="!hide|hide"
+x-set-this.x-css-box="!hide"
+x-alt-this.x-css-box="hide"
 >toggle</button>
 
 
@@ -284,7 +286,7 @@ Drawer
     </div>
     <br>
 
-    <button x-ref-mshow x-evt-click.stop x-css-m="^hide" x-set-this.x-dom-mshow.inner-h-t-m-l="show|hide" x-dom-mshow.inner-h-t-m-l="show">show</button>
+    <button x-ref-mshow x-evt-click.stop x-css-m="^hide" x-set-this.x-dom-mshow.inner-h-t-m-l="show" x-alt-this.x-dom-mshow.inner-h-t-m-l="hide" x-dom-mshow.inner-h-t-m-l="show">show</button>
 </div>
 
 <br>
@@ -317,7 +319,8 @@ Drawer
 <button
     class="button"
     x-evt-click
-    x-set-output.x-evt-tap.textarea="|_"
+    x-set-output.x-evt-tap.textarea=""
+    x-alt-output.x-evt-tap.textarea="_"
     x-css-this="^neutral"
     x-val-textarea="$vals.textarea"
 >Sync</button>
