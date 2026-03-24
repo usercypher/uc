@@ -249,7 +249,7 @@ limitations under the License.
         var errs = [];
         var len = urls.length;
         var cache = Util.script.cache;
-        var head = document.getElementsByTagName("head")[0] || document.documentElement;
+        var head = window.document.getElementsByTagName("head")[0] || window.document.documentElement;
 
         function next(idx) {
             if (idx >= len) {
@@ -309,7 +309,7 @@ limitations under the License.
                 });
             } else {
                 entry.state = 2;
-                el = document.createElement("script");
+                el = window.document.createElement("script");
                 el.type = "text/javascript";
 
                 el.tid = setTimeout(function() {
@@ -516,7 +516,7 @@ limitations under the License.
     };
 
     function El(input) {
-        this.el = typeof input === 'string' ? document.getElementById(input) : input;
+        this.el = typeof input === 'string' ? window.document.getElementById(input) : input;
         this.lastContent = "";
         this.isSaved = false;
     }
@@ -598,8 +598,8 @@ limitations under the License.
         ElX.mutationDepth--;
     };
     ElX.processElement = function(el, tab) {
-        var xAttr = [];
-        var xData = {};
+        var xArr = [];
+        var xObj = {};
         var paths = {
             window: window,
             this: el,
@@ -675,7 +675,7 @@ limitations under the License.
                 }
             }
 
-            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
+            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig") {
                 if (prefix === "x-val" && ElX.vals[key] === undefined) {
                     ElX.vals[key] = attrValue !== "" && attrValue.charAt(0) === "$" ? Util.path(paths, attrValue.substring(1).split(".")) : attrValue;
                 }
@@ -690,15 +690,15 @@ limitations under the License.
                         }
                     }
                 }
-                xAttr.push([attr.name, Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
+                xArr.push([attr.name, Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
             }
 
-            if (prefix === "x-evt" || prefix === "x-alt") {
-                xData[attr.name] = Util.trim(attrValue);
+            if (prefix === "x-evt" || prefix === "x-alt" || prefix === "x-tab" || prefix === "x-focus") {
+                xObj[attr.name] = Util.trim(attrValue);
             }
         }
-        el._x_attr = xAttr;
-        el._x_data = xData;
+        el._x_arr = xArr;
+        el._x_obj = xObj;
     };
     ElX.prune = function(el) {
         ElX.mutationDepth++;
@@ -788,12 +788,12 @@ limitations under the License.
     };
     ElX.set = function(key, attr, states, el) {
         var prefix = attr.substring(0, 5);
-        var isAttr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus";
-        var isData = prefix === "x-evt" || prefix === "x-alt";
+        var isArr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig";
+        var isObj = prefix === "x-evt" || prefix === "x-alt" || prefix === "x-tab" || prefix === "x-focus";
         var attrNameArr = null;
         var keyAttrArr = null;
 
-        if (isAttr) {
+        if (isArr) {
             attrNameArr = attr.split("-");
             keyAttrArr = attrNameArr.slice(2).join("-").split(".");
         }
@@ -801,18 +801,18 @@ limitations under the License.
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
-            var xAttrIdx = -1;
+            var xArrIdx = -1;
             var current = null;
-            if (isAttr) {
-                for (var j = 0, jlen = refEl._x_attr.length; j < jlen; j++) {
-                    if (refEl._x_attr[j][0] === attr) {
-                        xAttrIdx = j;
-                        current = refEl._x_attr[j][1];
+            if (isArr) {
+                for (var j = 0, jlen = refEl._x_arr.length; j < jlen; j++) {
+                    if (refEl._x_arr[j][0] === attr) {
+                        xArrIdx = j;
+                        current = refEl._x_arr[j][1];
                         break;
                     }
                 }
-            } else if (isData) {
-                current = refEl._x_data[attr];
+            } else if (isObj) {
+                current = refEl._x_obj[attr];
             } else {
                 current = refEl.getAttribute(attr);
             }
@@ -823,7 +823,7 @@ limitations under the License.
 
             var newState = Util.trim(states[current === states[0] ? 1 : 0] || "");
             if (current !== newState && newState !== "null") {
-                if (isAttr) {
+                if (isArr) {
                     if (current === "null") {
                         var parts = null;
                         if (prefix === "x-dom") {
@@ -836,20 +836,20 @@ limitations under the License.
                                 }
                             }
                         }
-                        refEl._x_attr.push([attr, newState, prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
+                        refEl._x_arr.push([attr, newState, prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
                     } else {
-                        refEl._x_attr[xAttrIdx][1] = newState;
+                        refEl._x_arr[xArrIdx][1] = newState;
                     }
-                } else if (isData) {
-                    refEl._x_data[attr] = newState;
+                } else if (isObj) {
+                    refEl._x_obj[attr] = newState;
                 }
 
                 refEl.setAttribute(attr, newState);
             } else if (current !== "null" && newState === "null") {
-                if (isAttr) {
-                    refEl._x_attr.splice(xAttrIdx, 1);
-                } else if (isData) {
-                    delete refEl._x_data[attr];
+                if (isArr) {
+                    refEl._x_arr.splice(xArrIdx, 1);
+                } else if (isObj) {
+                    delete refEl._x_obj[attr];
                 }
                 refEl.removeAttribute(attr);
             }
@@ -928,7 +928,7 @@ limitations under the License.
     };
     ElX.queueEvent = function(e) {
         e = e || window.event;
-        if (ElX.mutationDepth < 1 && !(e._x_stop)) {
+        if (ElX.mutationDepth < 1 && !e._x_stop) {
             var key = (e.type === "keydown" || e.type === "keyup" || e.type === "tap") ? (e.key ? e.key : String.fromCharCode(e.keyCode || e.which)).toLowerCase() : "";
             var signature = e.type + "_" + key + "_" + (e.type === "keydown" || e.type === "keyup" || e.type === "mousedown" || e.type === "mouseup" ? ((~~e.ctrlKey * ElX.bitEK.ctrl) | (~~e.altKey * ElX.bitEK.alt) | (~~e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0");
             var mask = 0;
@@ -955,9 +955,7 @@ limitations under the License.
                 }
             } else if (this["_x_mask_" + signature] !== undefined) {
                 mask = this["_x_mask_" + signature];
-                if (mask & ElX.bitEB.stop) {
-                    e._x_stop = true;
-                }
+                e._x_stop = !!(mask & ElX.bitEB.stop);
                 ElX.queue.push({
                     type: e.type,
                     element: this,
@@ -982,7 +980,7 @@ limitations under the License.
         var mode = "";
         var rules = [];
         var rulesObj = {};
-        var ruleStr = el._x_data[el["_x_rule_" + event.signature]];
+        var ruleStr = el._x_obj[el["_x_rule_" + event.signature]];
 
         if (ruleStr === "") {
             mode = "*";
@@ -998,15 +996,13 @@ limitations under the License.
         }
 
         ElX.elThis = {};
-        var tab = null;
-        var focus = null;
         var paths = {
             window: window,
             this: el,
             vals: ElX.vals
         };
-        for (var i = 0; i < el._x_attr.length; i++) {
-            var attr = el._x_attr[i];
+        for (var i = 0; i < el._x_arr.length; i++) {
+            var attr = el._x_arr[i];
             var attrName = attr[0];
             var attrValue = attr[1];
             var prefix = attr[2];
@@ -1022,10 +1018,11 @@ limitations under the License.
                 }
                 attrValue = ElX.elThis[attrValue2];
             }
+
             if (prefix === "x-css") {
                 ElX.css(key, attrValue, el);
             } else if (prefix === "x-set") {
-                var alt = el._x_data["x-alt-" + key + "." + attr[4]];
+                var alt = el._x_obj["x-alt-" + key + "." + attr[4]];
                 ElX.set(key, attr[4], [attrValue, (alt && alt.charAt(0) === "$" ? Util.path(paths, alt.substring(1).split(".")) : alt) || attrValue], el);
             } else if (prefix === "x-dom") {
                 ElX.dom(key, attr[5], attrValue, el);
@@ -1033,47 +1030,36 @@ limitations under the License.
                 ElX.val(key, attrValue, event);
             } else if (prefix === "x-sig") {
                 ElX.sig(key, attrValue, el);
-            } else if (!tab && prefix === "x-tab") {
-                tab = attrValue.split(" ");
-                if (tab.length !== 2) {
-                    tab = [ElX.tab.default_first,
-                        ElX.tab.default_last
-                    ];
-                }
-                ElX.tab.first = null;
-                ElX.tab.last = null;
-            } else if (!focus && prefix === "x-focus") {
-                focus = attrValue;
             }
         }
 
-        if (tab) {
-            if (ElX.refs[tab[0]]) {
-                ElX.tab.first = ElX.refs[tab[0]][0];
+        if (el._x_obj["x-tab"] !== undefined) {
+            var tab = el._x_obj["x-tab"].split(" ");
+            if (tab.length !== 2) {
+                tab = [ElX.tab.default_first,
+                    ElX.tab.default_last
+                ];
             }
-            if (ElX.refs[tab[1]]) {
-                ElX.tab.last = ElX.refs[tab[1]][0];
-            }
+            ElX.tab.first = ElX.refs[tab[0]] ? ElX.refs[tab[0]][0] : null;
+            ElX.tab.last = ElX.refs[tab[1]] ? ElX.refs[tab[1]][0] : null;
         }
 
-        if (focus && ElX.refs[focus]) {
+        if (el._x_obj["x-focus"] !== undefined && ElX.refs[el._x_obj["x-focus"]]) {
             if (ElX.isFocusing) {
                 clearTimeout(ElX.isFocusing);
             }
-            var focusRef = ElX.refs[focus][0];
+            var focusRef = ElX.refs[el._x_obj["x-focus"]][0];
             var attempts = 0;
-
             var tryFocus = function() {
                 attempts++;
                 if (!focusRef || !focusRef.focus || focusRef.disabled) {
                     return;
                 }
                 focusRef.focus();
-                if (document.activeElement !== focusRef && attempts < 60) {
+                if (window.document.activeElement !== focusRef && attempts < 60) {
                     ElX.isFocusing = setTimeout(tryFocus, 16);
                 }
             };
-
             tryFocus();
         }
     };
