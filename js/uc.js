@@ -1055,7 +1055,7 @@ limitations under the License.
                         }
                     };
                     tryFocus();
-                })(ElX.refs[attrValue], window, ElX);
+                })(ElX.refs[attrValue][0], window, ElX);
             }
         }
     };
