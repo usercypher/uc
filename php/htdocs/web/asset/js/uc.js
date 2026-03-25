@@ -675,7 +675,7 @@ limitations under the License.
                 }
             }
 
-            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig") {
+            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
                 if (prefix === "x-val" && ElX.vals[key] === undefined) {
                     ElX.vals[key] = attrValue !== "" && attrValue.charAt(0) === "$" ? Util.path(paths, attrValue.substring(1).split(".")) : attrValue;
                 }
@@ -693,7 +693,7 @@ limitations under the License.
                 xArr.push([attr.name, Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
             }
 
-            if (prefix === "x-evt" || prefix === "x-alt" || prefix === "x-tab" || prefix === "x-focus") {
+            if (prefix === "x-evt" || prefix === "x-alt") {
                 xObj[attr.name] = Util.trim(attrValue);
             }
         }
@@ -788,8 +788,8 @@ limitations under the License.
     };
     ElX.set = function(key, attr, states, el) {
         var prefix = attr.substring(0, 5);
-        var isArr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig";
-        var isObj = prefix === "x-evt" || prefix === "x-alt" || prefix === "x-tab" || prefix === "x-focus";
+        var isArr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus";
+        var isObj = prefix === "x-evt" || prefix === "x-alt";
         var attrNameArr = null;
         var keyAttrArr = null;
 
@@ -1030,37 +1030,33 @@ limitations under the License.
                 ElX.val(key, attrValue, event);
             } else if (prefix === "x-sig") {
                 ElX.sig(key, attrValue, el);
-            }
-        }
-
-        if (el._x_obj["x-tab"] !== undefined) {
-            var tab = el._x_obj["x-tab"].split(" ");
-            if (tab.length !== 2) {
-                tab = [ElX.tab.default_first,
-                    ElX.tab.default_last
-                ];
-            }
-            ElX.tab.first = ElX.refs[tab[0]] ? ElX.refs[tab[0]][0] : null;
-            ElX.tab.last = ElX.refs[tab[1]] ? ElX.refs[tab[1]][0] : null;
-        }
-
-        if (el._x_obj["x-focus"] !== undefined && ElX.refs[el._x_obj["x-focus"]]) {
-            if (ElX.isFocusing) {
-                clearTimeout(ElX.isFocusing);
-            }
-            var focusRef = ElX.refs[el._x_obj["x-focus"]][0];
-            var attempts = 0;
-            var tryFocus = function() {
-                attempts++;
-                if (!focusRef || !focusRef.focus || focusRef.disabled) {
-                    return;
+            } else if (prefix === "x-tab") {
+                var tab = attrValue.split(" ");
+                if (tab.length !== 2) {
+                    tab = [ElX.tab.default_first,
+                        ElX.tab.default_last
+                    ];
                 }
-                focusRef.focus();
-                if (window.document.activeElement !== focusRef && attempts < 60) {
-                    ElX.isFocusing = setTimeout(tryFocus, 16);
+                ElX.tab.first = ElX.refs[tab[0]] ? ElX.refs[tab[0]][0] : null;
+                ElX.tab.last = ElX.refs[tab[1]] ? ElX.refs[tab[1]][0] : null;
+            } else if (prefix === "x-focus" && ElX.refs[attrValue]) {
+                if (ElX.isFocusing) {
+                    clearTimeout(ElX.isFocusing);
                 }
-            };
-            tryFocus();
+                (function(refEl, window, ElX) {
+                    var attempts = 0;
+                    var tryFocus = function() {
+                        if (!refEl || !refEl.focus || refEl.disabled) {
+                            return;
+                        }
+                        refEl.focus();
+                        if (window.document.activeElement !== refEl && ++attempts < 60) {
+                            ElX.isFocusing = setTimeout(tryFocus, 16);
+                        }
+                    };
+                    tryFocus();
+                })(ElX.refs[attrValue], window, ElX);
+            }
         }
     };
 
