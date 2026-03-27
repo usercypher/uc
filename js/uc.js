@@ -566,7 +566,7 @@ limitations under the License.
         default_last: ""
     };
     ElX.mutationDepth = 0;
-    ElX.queue = [];
+    ElX.events = [];
     ElX.bitEK = {
         "ctrl": 1,
         "alt": 2,
@@ -929,19 +929,20 @@ limitations under the License.
     ElX.event = function(e) {
         e = e || window.event;
         if (ElX.mutationDepth < 1 && !e._x_stop) {
-            var isMouse = e.type.substring(0, 5) === "mouse";
-            var isScroll = e.type === "scroll";
+            var mask = 0;
             var key = (e.key || String.fromCharCode(e.keyCode || e.which) || "").toLowerCase();
             var bitEK = e.type === "keydown" || e.type === "mousedown" || e.type === "keyup" || e.type === "mouseup" ? ((~~e.ctrlKey * ElX.bitEK.ctrl) | (~~e.altKey * ElX.bitEK.alt) | (~~e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0";
             var signature = e.type + "_" + key + "_" + bitEK;
             var signatureAll = e.type + "__" + bitEK;
             var isUnique = signature !== signatureAll;
-            var mask = 0;
 
+            var isMouse = e.type.substring(0, 5) === "mouse";
             var clientX = isMouse ? e.clientX || 0 : 0;
             var clientY = isMouse ? e.clientY || 0 : 0;
-            var scrollX = isScroll ? (window.document.documentElement.scrollLeft || (window.document.body ? window.document.body.scrollLeft : 0) || 0) : 0;
-            var scrollY = isScroll ? (window.document.documentElement.scrollTop || (window.document.body ? window.document.body.scrollTop : 0) || 0) : 0;
+
+            var isScroll = e.type === "scroll";
+            var scrollX = isScroll ? this !== window ? this : (window.document.documentElement.scrollLeft || (window.document.body ? window.document.body.scrollLeft : 0) || 0) : 0;
+            var scrollY = isScroll ? this !== window ? this : (window.document.documentElement.scrollTop || (window.document.body ? window.document.body.scrollTop : 0) || 0) : 0;
 
             if (this === window) {
                 if (isUnique && !ElX.refsWin[signature]) {
@@ -950,7 +951,7 @@ limitations under the License.
                 if (ElX.refsWin[signature]) {
                     var els = ElX.refsWin[signature];
                     for (var i = 0, ilen = els.length; i < ilen; i++) {
-                        ElX.queue.push({
+                        ElX.events.push({
                             type: e.type,
                             key: key,
                             mod: bitEK,
@@ -979,7 +980,7 @@ limitations under the License.
                 if (this["_x_mask_" + signature] !== undefined) {
                     mask = this["_x_mask_" + signature];
                     e._x_stop = !!(mask & ElX.bitEB.stop);
-                    ElX.queue.push({
+                    ElX.events.push({
                         type: e.type,
                         key: key,
                         mod: bitEK,
@@ -995,12 +996,12 @@ limitations under the License.
                 }
             }
 
-            if (!ElX.queueTimer && ElX.queue.length) {
-                ElX.queueTimer = setTimeout(function() {
-                    while (ElX.queue.length) {
-                        ElX.processEvent(ElX.queue.shift());
+            if (!ElX.eventsTimer && ElX.events.length) {
+                ElX.eventsTimer = setTimeout(function() {
+                    while (ElX.events.length) {
+                        ElX.processEvent(ElX.events.shift());
                     }
-                    ElX.queueTimer = null;
+                    ElX.eventsTimer = null;
                 }, 0);
             }
 
