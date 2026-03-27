@@ -112,10 +112,9 @@ var {
 }
 
 pre {
-    border-left: 4px solid #3399ff;
     margin-bottom: 1em;
     overflow: auto;
-    padding: 1em 1.5em;
+    padding: 1em;
 }
 
 pre code {
