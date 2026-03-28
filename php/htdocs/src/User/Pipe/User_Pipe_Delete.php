@@ -15,7 +15,7 @@ class User_Pipe_Delete {
     public function process($input, $output) {
         $success = true;
 
-        $route = $input->query['redirect_alt'];
+        $route = $input->query['redirect'];
         $user = $input->frame['user'];
         $userSession = $this->session->get('user');
 
@@ -23,19 +23,25 @@ class User_Pipe_Delete {
             $user['id'] = $userSession['id'];
         }
 
+        $errorEarly = array();
         $error = array();
 
-        if (!($error[0] = $this->userRepo->passwordVerify($user['password'], $userSession['password'], 'Password is incorrect', array('field' => 'password')))) {
+        if ($tmp = $this->userRepo->passwordVerify($user['password'], $userSession['password'], 'Password is incorrect', array('field' => 'password'))) {
+            $errorEarly[] = $tmp;
+        }
+
+        if (!$errorEarly) {
             list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('delete'));
         }
 
+        $error = array_merge($errorEarly, $error);
+
         if ($error) {
-            $route = $input->query['redirect'];
             foreach ($error as $e) {
                 $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
             }
-        } else {
-            $this->userRepo->delete($user['id']);
+        } elseif ($this->userRepo->delete($user['id'])) {
+            $route = $input->query['redirect_alt'];
             $this->userRepo->addMessage('success', 'user deleted successfully.');
         }
 

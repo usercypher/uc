@@ -15,9 +15,11 @@ class User_Pipe_Store {
     public function process($input, $output) {
         $success = true;
 
-        $route = $input->query['redirect_alt'];
+        $route = $input->query['redirect'];
         $user = $input->frame['user'];
         $userRoles = $input->data['user_roles'];
+
+        $error = array();
 
         list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('insert', array(
             'user_roles' => $userRoles,
@@ -25,12 +27,11 @@ class User_Pipe_Store {
         )));
 
         if ($error) {
-            $route = $input->query['redirect'];
             foreach ($error as $e) {
                 $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
             }
-        } else {
-            $this->userRepo->insert($user);
+        } elseif ($this->userRepo->insert($user)) {
+            $route = $input->query['redirect_alt'];
             $this->userRepo->addMessage('success', 'user created successfully.');
         }
 

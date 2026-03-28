@@ -15,7 +15,7 @@ class User_Pipe_Update {
     public function process($input, $output) {
         $success = true;
 
-        $route = $input->query['redirect_alt'];
+        $route = $input->query['redirect'];
         $user = $input->frame['user'];
         $userOld = $input->frame['user_old'];
         $context = $input->frame['context'];
@@ -26,9 +26,14 @@ class User_Pipe_Update {
             $user['id'] = $userSession['id'];
         }
 
+        $errorEarly = array();
         $error = array();
 
-        if (!isset($context['update_password']) || !($error[0] = $this->userRepo->passwordVerify($userOld['password'], $userSession['password'], 'Current password is incorrect', array('field' => 'old_assword')))) {
+        if (isset($context['update_password']) && $temp = $this->userRepo->passwordVerify($userOld['password'], $userSession['password'], 'Current password is incorrect', array('field' => 'old_password'))) {
+            $errorEarly[] = $temp;
+        }
+
+        if (!$errorEarly) {
             list($user, $error) = $this->app->cast($user, $this->userRepo->getSchema('update', array_merge($context, array(
                 'user_old' => $userOld,
                 'user_roles' => $userRoles,
@@ -36,17 +41,18 @@ class User_Pipe_Update {
             ))));
         }
 
+        $error = array_merge($errorEarly, $error);
+
         if ($error) {
-            $route = $input->query['redirect'];
             foreach ($error as $e) {
                 $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
             }
-        } else {
+        } elseif ($this->userRepo->update($user)) {
+            $route = $input->query['redirect_alt'];
             foreach ($user as $field => $value) {
                 $userSession[$field] = $value;
             }
             $this->session->set('user', $userSession);
-            $this->userRepo->update($user);
             $this->userRepo->addMessage('success', 'user updated successfully.');
         }
 

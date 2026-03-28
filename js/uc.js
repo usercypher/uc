@@ -593,8 +593,6 @@ limitations under the License.
             ElX.processElement(elements[i], tab);
         }
 
-        window.onkeydown = ElX.event;
-
         ElX.mutationDepth--;
     };
     ElX.processElement = function(el, tab) {
@@ -930,40 +928,20 @@ limitations under the License.
         e = e || window.event;
         if (ElX.mutationDepth < 1 && !e._x_stop) {
             var mask = 0;
+            var els = null;
             var key = (e.key || String.fromCharCode(e.keyCode || e.which) || "").toLowerCase();
             var bitEK = e.type === "keydown" || e.type === "mousedown" || e.type === "keyup" || e.type === "mouseup" ? ((~~e.ctrlKey * ElX.bitEK.ctrl) | (~~e.altKey * ElX.bitEK.alt) | (~~e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0";
             var signature = e.type + "_" + key + "_" + bitEK;
-            var signatureAll = e.type + "__" + bitEK;
-            var isUnique = signature !== signatureAll;
-
-            var isMouse = e.type.substring(0, 5) === "mouse";
-            var clientX = isMouse ? e.clientX || 0 : 0;
-            var clientY = isMouse ? e.clientY || 0 : 0;
-
-            var isScroll = e.type === "scroll";
-            var scrollX = isScroll ? this !== window ? this : (window.document.documentElement.scrollLeft || (window.document.body ? window.document.body.scrollLeft : 0) || 0) : 0;
-            var scrollY = isScroll ? this !== window ? this : (window.document.documentElement.scrollTop || (window.document.body ? window.document.body.scrollTop : 0) || 0) : 0;
 
             if (this === window) {
-                if (isUnique && !ElX.refsWin[signature]) {
-                    signature = signatureAll;
+                if (!ElX.refsWin[signature]) {
+                    signature = e.type + "__" + bitEK;
                 }
+
                 if (ElX.refsWin[signature]) {
-                    var els = ElX.refsWin[signature];
-                    for (var i = 0, ilen = els.length; i < ilen; i++) {
-                        ElX.events.push({
-                            type: e.type,
-                            key: key,
-                            mod: bitEK,
-                            clientX: clientX,
-                            clientY: clientY,
-                            scrollX: scrollX,
-                            scrollY: scrollY,
-                            element: els[i],
-                            signature: signature
-                        });
-                    }
+                    els = ElX.refsWin[signature];
                 }
+
                 if (e.type === "keydown" && key === "tab") {
                     if (e.shiftKey && window.document.activeElement === ElX.tab.first) {
                         ElX.tab.last.focus();
@@ -974,12 +952,27 @@ limitations under the License.
                     }
                 }
             } else {
-                if (isUnique && this["_x_mask_" + signature] === undefined) {
-                    signature = signatureAll;
+                if (this["_x_mask_" + signature] === undefined) {
+                    signature = e.type + "__" + bitEK;
                 }
+
                 if (this["_x_mask_" + signature] !== undefined) {
+                    els = [this];
                     mask = this["_x_mask_" + signature];
                     e._x_stop = !!(mask & ElX.bitEB.stop);
+                }
+            }
+
+            if (els) {
+                var isMouse = e.type.substring(0, 5) === "mouse";
+                var clientX = isMouse ? e.clientX || 0 : 0;
+                var clientY = isMouse ? e.clientY || 0 : 0;
+
+                var isScroll = e.type === "scroll";
+                var scrollX = isScroll ? this !== window ? this : (window.document.documentElement.scrollLeft || (window.document.body ? window.document.body.scrollLeft : 0) || 0) : 0;
+                var scrollY = isScroll ? this !== window ? this : (window.document.documentElement.scrollTop || (window.document.body ? window.document.body.scrollTop : 0) || 0) : 0;
+
+                for (var i = 0, ilen = els.length; i < ilen; i++) {
                     ElX.events.push({
                         type: e.type,
                         key: key,
@@ -988,11 +981,9 @@ limitations under the License.
                         clientY: clientY,
                         scrollX: scrollX,
                         scrollY: scrollY,
-                        element: this,
+                        element: els[i],
                         signature: signature
                     });
-                } else {
-                    mask = 0;
                 }
             }
 
@@ -1128,6 +1119,8 @@ limitations under the License.
     X.prototype.clear = function() {
         this.elx.clear(this.key);
     };
+
+    window.onkeydown = ElX.event;
 
     window.Util = Util;
     window.Url = Url;

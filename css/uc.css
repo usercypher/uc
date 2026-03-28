@@ -96,10 +96,8 @@ dd {
 blockquote {
     border-left: 4px solid #d4d4d4;
     font-style: italic;
-    margin-bottom: 1em;
     padding: 1em 1.5em;
 }
-
 
 pre,
 code,
@@ -112,13 +110,7 @@ var {
 }
 
 pre {
-    margin-bottom: 1em;
     overflow: auto;
-    padding: 1em;
-}
-
-pre code {
-    border: none;
 }
 
 code,
@@ -130,6 +122,10 @@ samp {
 var {
     font-style: italic;
     font-family: serif;
+}
+
+span {
+    font-family: inherit;
 }
 
 hr {
