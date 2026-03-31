@@ -67,7 +67,7 @@ x-evt-[event]="!name name2" // all except specified names
 
 x-txt-[name]="value"
 x-val-[name]="value"
-x-css-[name]="active"                    // (!active = remove, ^active = toggle)
+x-css-[name].[class]=""                  // values "toggle", "remove", ""
 x-tab="name name"
 x-focus="name"
 x-set-[name].[attribute]="value"
@@ -95,13 +95,13 @@ class="button neutral"
 
 x-evt-click
 
-x-css-tab1="^hide"
-x-css-tab2="hide"
-x-css-tab3="hide"
+x-css-tab1.hide="toggle"
+x-css-tab2.hide
+x-css-tab3.hide
 
-x-css-button1="^neutral"
-x-css-button2="!neutral"
-x-css-button3="!neutral"
+x-css-button1.neutral="toggle"
+x-css-button2.neutral="remove"
+x-css-button3.neutral="remove"
 
 x-ref-button1
 
@@ -113,13 +113,13 @@ class="button"
 
 x-evt-click
 
-x-css-tab1="hide"
-x-css-tab2="^hide"
-x-css-tab3="hide"
+x-css-tab1.hide
+x-css-tab2.hide="toggle"
+x-css-tab3.hide
 
-x-css-button1="!neutral"
-x-css-button2="^neutral"
-x-css-button3="!neutral"
+x-css-button1.neutral="remove"
+x-css-button2.neutral="toggle"
+x-css-button3.neutral="remove"
 
 x-ref-button2
 
@@ -131,13 +131,13 @@ class="button"
 
 x-evt-click
 
-x-css-tab1="hide"
-x-css-tab2="hide"
-x-css-tab3="^hide"
+x-css-tab1.hide
+x-css-tab2.hide
+x-css-tab3.hide="toggle"
 
-x-css-button1="!neutral"
-x-css-button2="!neutral"
-x-css-button3="^neutral"
+x-css-button1.neutral="remove"
+x-css-button2.neutral="remove"
+x-css-button3.neutral="toggle"
 
 x-ref-button3
 
@@ -151,9 +151,9 @@ x-ref-button3
 
 <span
 
-x-evt-keydown.escape.window=""
+x-evt-keydown.escape.window
 
-x-dom-dialog-content.inner-h-t-m-l=""
+x-dom-dialog-content.inner-h-t-m-l
 ></span>
 
 <h2>Reusable Dialog Box</h2>
@@ -218,9 +218,9 @@ x-dom-dialog-content.inner-h-t-m-l="dialog3"
 
 <button
 x-evt-click
-x-css-box="!hide"
-x-set-this.x-css-box="!hide"
-x-alt-this.x-css-box="hide"
+x-css-box.hide="remove"
+x-set-this.x-css-box.hide="remove"
+x-alt-this.x-css-box.hide=""
 >toggle</button>
 
 
@@ -238,7 +238,7 @@ class="tooltip hide"
 x-ref-tooltip
 x-evt-mouseenter
 x-evt-mouseleave
-x-css-tooltip="^hide"
+x-css-tooltip.hide="toggle"
 >
 I'm a tooltip!
 </p>
@@ -246,12 +246,12 @@ I'm a tooltip!
 
 x-evt-mouseenter="tooltip"
 x-evt-mouseleave="tooltip"
-x-css-tooltip="^hide"
+x-css-tooltip.hide="toggle"
 
 x-evt-click="!tooltip"
-x-css-list1="^hide"
-x-css-list2="^hide"
-x-css-list3="^hide"
+x-css-list1.hide="toggle"
+x-css-list2.hide="toggle"
+x-css-list3.hide="toggle"
 >
 Drawer
 </button>
@@ -280,13 +280,13 @@ Drawer
 
 <h2>Modifier</h2>
 
-<div class="block" x-evt-click x-css-m="hide" x-dom-mshow.inner-h-t-m-l="show" x-set-mshow.x-dom-mshow.inner-h-t-m-l="show">
+<div class="block" x-evt-click x-css-m.hide x-dom-mshow.inner-h-t-m-l="show" x-set-mshow.x-dom-mshow.inner-h-t-m-l="show">
     <div class="hide block" x-ref-m x-evt-click.stop>
         <p>clicking outside of this will hide it (only inside outerbox)</p>
     </div>
     <br>
 
-    <button x-ref-mshow x-evt-click.stop x-css-m="^hide" x-set-this.x-dom-mshow.inner-h-t-m-l="show" x-alt-this.x-dom-mshow.inner-h-t-m-l="hide" x-dom-mshow.inner-h-t-m-l="show">show</button>
+    <button x-ref-mshow x-evt-click.stop x-css-m.hide="toggle" x-set-this.x-dom-mshow.inner-h-t-m-l="show" x-alt-this.x-dom-mshow.inner-h-t-m-l="hide" x-dom-mshow.inner-h-t-m-l="show">show</button>
 </div>
 
 <br>
@@ -319,14 +319,14 @@ Drawer
 <button
     class="button"
     x-evt-click
-    x-set-output.x-evt-tap.textarea=""
+    x-set-output.x-evt-tap.textarea
     x-alt-output.x-evt-tap.textarea="_"
-    x-css-this="^neutral"
+    x-css-this.neutral="toggle"
     x-val-textarea="$vals.textarea"
 >Sync</button>
 <div
     x-ref-output
-    x-evt-tap.textarea=""
+    x-evt-tap.textarea
     x-dom-this.inner-h-t-m-l="$vals.textarea"
     class="block"
 ></div>

@@ -11,7 +11,7 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
 
         el.setAttribute("x-ref-modal-open-" + ref, "");
         el.setAttribute("x-evt-click", "");
-        el.setAttribute("x-css-modal-" + ref, "active");
+        el.setAttribute("x-css-modal-" + ref + ".active", "");
         el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "click");
         el.setAttribute("x-set-this.aria-expanded", "true");
         el.setAttribute("x-tab", "modal-tab-start-" + ref + " " + "modal-tab-end-" + ref);
@@ -25,7 +25,7 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
 
         el.setAttribute("x-ref-modal-close-" + ref, "");
         el.setAttribute("x-evt-click", "");
-        el.setAttribute("x-css-modal-" + ref, "!active");
+        el.setAttribute("x-css-modal-" + ref + ".active", "remove");
         el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "null");
         el.setAttribute("x-set-modal-open-" + ref + ".aria-expanded", "false");
         el.setAttribute("x-tab", "");

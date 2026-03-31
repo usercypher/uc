@@ -751,35 +751,24 @@ limitations under the License.
     ElX.untap = function(key, index) {
         ElX.taps[key][index] = null;
     };
-    ElX.css = function(key, value, el) {
-        if (value === "") {
-            return;
-        }
-
-        var mode = value.charAt(0);
-        if (mode !== "!" && mode !== "^") {
-            mode = "";
-        } else {
-            value = value.substring(1);
-        }
-
+    ElX.css = function(key, attr, value, el) {
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
         for (var i = 0, ilen = els.length; i < ilen; i++) {
             var refEl = els[i];
             var classList = Util.trim(refEl.className).split(" ");
             var current = -1;
             for (var j = 0, jlen = classList.length; j < jlen; j++) {
-                if (value === classList[j]) {
+                if (attr === classList[j]) {
                     current = j;
                     break;
                 }
             }
 
-            if (current !== -1 && (mode === "^" || mode === "!")) {
+            if (current !== -1 && (value === "toggle" || value === "remove")) {
                 classList.splice(current, 1);
                 refEl.className = classList.join(" ");
-            } else if (current === -1 && (mode === "^" || mode === "")) {
-                classList.push(value);
+            } else if (current === -1 && (value === "toggle" || value === "")) {
+                classList.push(attr);
                 refEl.className = classList.join(" ");
             }
         }
@@ -1044,10 +1033,10 @@ limitations under the License.
             }
 
             if (prefix === "x-css") {
-                ElX.css(key, attrValue, el);
+                ElX.css(key, attr[4], attrValue, el);
             } else if (prefix === "x-set") {
                 var alt = el._x_obj["x-alt-" + key + "." + attr[4]];
-                ElX.set(key, attr[4], [attrValue, (alt && alt.charAt(0) === "$" ? Util.path(paths, alt.substring(1).split(".")) : alt) || attrValue], el);
+                ElX.set(key, attr[4], [attrValue, (alt && alt.charAt(0) === "$" ? Util.path(paths, alt.substring(1).split(".")) : (alt !== undefined ? alt : attrValue))], el);
             } else if (prefix === "x-dom") {
                 ElX.dom(key, attr[5], attrValue, el);
             } else if (prefix === "x-val") {
