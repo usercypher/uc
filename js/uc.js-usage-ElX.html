@@ -296,20 +296,6 @@ Drawer
 
 <hr>
 
-<h2>Tab Trap</h2>
-
-<button x-ref-tabtrap x-evt-click x-tab="f l" x-focus="f">tab</button>
-<button x-ref-f x-evt-click x-tab x-focus="tabtrap">first</button>
-<button x-evt-click x-tab x-focus="tabtrap">_</button>
-<button x-evt-click x-tab x-focus="tabtrap">_</button>
-<button x-evt-click x-tab x-focus="tabtrap">_</button>
-<button x-evt-click x-tab x-focus="tabtrap">_</button>
-<button x-evt-click x-tab x-focus="tabtrap">_</button>
-<button x-evt-click x-tab x-focus="tabtrap">_</button>
-<button x-ref-l x-evt-click x-tab x-focus="tabtrap">last</button>
-
-<hr>
-
 <h2>Tap as event</h2>
 
 <textarea
@@ -334,7 +320,7 @@ Drawer
   <script>
     // run when uc.js loads
     (window.init = window.init || []).push(function () {
-        ElX.init(window.document.documentElement, "tabfirst tablast");
+        ElX.init(window.document.documentElement);
 
         ElX.tap("*", Util.debounce(function (current, old, event, key) {
             if (key == "qty" || key == "price") {

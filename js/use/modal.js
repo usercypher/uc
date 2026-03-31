@@ -14,8 +14,7 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
         el.setAttribute("x-css-modal-" + ref + ".active", "");
         el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "click");
         el.setAttribute("x-set-this.aria-expanded", "true");
-        el.setAttribute("x-tab", "modal-tab-start-" + ref + " " + "modal-tab-end-" + ref);
-        el.setAttribute("x-focus", "modal-tab-start-" + ref);
+        el.setAttribute("x-lit-modal-tab-start-" + ref, "");
     });
 
     ElX.use("modal-close", function (el) {
@@ -24,12 +23,11 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
         el.setAttribute("aria-label", "close modal");
 
         el.setAttribute("x-ref-modal-close-" + ref, "");
-        el.setAttribute("x-evt-click", "");
+        el.setAttribute("x-evt-click", "modal-" + ref + " modal-open-" + ref + " root");
         el.setAttribute("x-css-modal-" + ref + ".active", "remove");
         el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "null");
         el.setAttribute("x-set-modal-open-" + ref + ".aria-expanded", "false");
-        el.setAttribute("x-tab", "");
-        el.setAttribute("x-focus", "modal-open-" + ref);
+        el.setAttribute("x-lit-modal-open-" + ref, "");
     });
 
     ElX.use("modal", function (el) {
@@ -67,11 +65,15 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
         var ref = el.getAttribute("data-ref");
 
         el.setAttribute("x-ref-modal-tab-start-" + ref, "");
+        el.setAttribute("x-evt-keydown.tab.shift.prevent", "modal-tab-end-" + ref);
+        el.setAttribute("x-lit-modal-tab-end-" + ref, "");
     });
 
     ElX.use("modal-tab-end", function (el) {
         var ref = el.getAttribute("data-ref");
 
         el.setAttribute("x-ref-modal-tab-end-" + ref, "");
+        el.setAttribute("x-evt-keydown.tab.prevent", "modal-tab-start-" + ref);
+        el.setAttribute("x-lit-modal-tab-start-" + ref, "");
     });
 });

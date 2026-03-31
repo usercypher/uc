@@ -559,12 +559,6 @@ limitations under the License.
     ElX.vals = {};
     ElX.taps = {};
     ElX.uses = {};
-    ElX.tab = {
-        first: null,
-        last: null,
-        default_first: "",
-        default_last: ""
-    };
     ElX.mutationDepth = 0;
     ElX.events = [];
     ElX.bitEK = {
@@ -580,22 +574,18 @@ limitations under the License.
         "prevent": 2,
         "window": 4
     };
-    ElX.init = function(el, tab) {
+    ElX.init = function(el) {
         ElX.mutationDepth++;
 
-        tab = Util.trim(tab || "").split(" ");
-        if (tab[1] === undefined) {
-            tab = [ElX.tab.default_first, ElX.tab.default_last];
-        }
-        ElX.processElement(el, tab);
+        ElX.processElement(el);
         var elements = el.getElementsByTagName("*");
         for (var i = 0; i < elements.length; i++) {
-            ElX.processElement(elements[i], tab);
+            ElX.processElement(elements[i]);
         }
 
         ElX.mutationDepth--;
     };
-    ElX.processElement = function(el, tab) {
+    ElX.processElement = function(el) {
         var xArr = [];
         var xObj = {};
         var paths = {
@@ -627,14 +617,6 @@ limitations under the License.
                 }
                 if (!isDuplicate) {
                     ElX.refs[key].push(el);
-                }
-                if (tab[0] === key) {
-                    ElX.tab.first = el;
-                    ElX.tab.default_first = tab[0];
-                }
-                if (tab[1] === key) {
-                    ElX.tab.last = el;
-                    ElX.tab.default_last = tab[1];
                 }
             } else if (prefix === "x-evt") {
                 var parts = keyAttrArr.slice(1);
@@ -673,7 +655,7 @@ limitations under the License.
                 }
             }
 
-            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus") {
+            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-lit") {
                 if (prefix === "x-val" && ElX.vals[key] === undefined) {
                     ElX.vals[key] = attrValue !== "" && attrValue.charAt(0) === "$" ? Util.path(paths, attrValue.substring(1).split(".")) : attrValue;
                 }
@@ -775,7 +757,7 @@ limitations under the License.
     };
     ElX.set = function(key, attr, states, el) {
         var prefix = attr.substring(0, 5);
-        var isArr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-tab" || prefix === "x-focus";
+        var isArr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-lit";
         var isObj = prefix === "x-evt" || prefix === "x-alt";
         var attrNameArr = null;
         var keyAttrArr = null;
@@ -930,16 +912,6 @@ limitations under the License.
                 if (ElX.refsWin[signature]) {
                     els = ElX.refsWin[signature];
                 }
-
-                if (e.type === "keydown" && key === "tab") {
-                    if (e.shiftKey && window.document.activeElement === ElX.tab.first) {
-                        ElX.tab.last.focus();
-                        mask |= ElX.bitEB.prevent;
-                    } else if (!e.shiftKey && window.document.activeElement === ElX.tab.last) {
-                        ElX.tab.first.focus();
-                        mask |= ElX.bitEB.prevent;
-                    }
-                }
             } else {
                 if (this["_x_mask_" + signature] === undefined) {
                     signature = e.type + "__" + bitEK;
@@ -1043,16 +1015,7 @@ limitations under the License.
                 ElX.val(key, attrValue, event);
             } else if (prefix === "x-sig") {
                 ElX.sig(key, attrValue, el);
-            } else if (prefix === "x-tab") {
-                var tab = attrValue.split(" ");
-                if (tab.length !== 2) {
-                    tab = [ElX.tab.default_first,
-                        ElX.tab.default_last
-                    ];
-                }
-                ElX.tab.first = ElX.refs[tab[0]] ? ElX.refs[tab[0]][0] : null;
-                ElX.tab.last = ElX.refs[tab[1]] ? ElX.refs[tab[1]][0] : null;
-            } else if (prefix === "x-focus" && ElX.refs[attrValue]) {
+            } else if (prefix === "x-lit" && ElX.refs[key]) {
                 if (ElX.isFocusing) {
                     clearTimeout(ElX.isFocusing);
                 }
@@ -1068,7 +1031,7 @@ limitations under the License.
                         }
                     };
                     tryFocus();
-                })(ElX.refs[attrValue][0], window, ElX);
+                })(ElX.refs[key][0], window, ElX);
             }
         }
     };
@@ -1108,8 +1071,6 @@ limitations under the License.
     X.prototype.clear = function() {
         this.elx.clear(this.key);
     };
-
-    window.onkeydown = ElX.event;
 
     window.Util = Util;
     window.Url = Url;
