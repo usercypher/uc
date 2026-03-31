@@ -1090,8 +1090,8 @@ limitations under the License.
     X.prototype.untap = function(index) {
         this.elx.untap(this.key, index);
     };
-    X.prototype.css = function(value) {
-        this.elx.css(this.key, value);
+    X.prototype.css = function(attr, value) {
+        this.elx.css(this.key, attr, value);
     };
     X.prototype.set = function(attr, states) {
         this.elx.set(this.key, attr, states);
