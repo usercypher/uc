@@ -767,7 +767,7 @@ limitations under the License.
             if (current !== -1 && (value === "toggle" || value === "remove")) {
                 classList.splice(current, 1);
                 refEl.className = classList.join(" ");
-            } else if (current === -1 && (value === "toggle" || value === "")) {
+            } else if (current === -1 && (value === "toggle" || value === "" || value === "add")) {
                 classList.push(attr);
                 refEl.className = classList.join(" ");
             }
