@@ -39,14 +39,14 @@
                 <select 
                     x-ref-category-:id
                     x-evt-input
-                    x-val-category-:id="this.value"
+                    x-val-category-:id="$this.value"
                 >:category</select>
             </td>
             <td>
                 <select 
                     x-ref-product-:id
                     x-evt-input
-                    x-val-product-:id="this.value"
+                    x-val-product-:id="$this.value"
                 >:product</select>
             </td>
             <td>
@@ -57,7 +57,7 @@
                     type="number"
                     x-ref-qty-:id
                     x-evt-input
-                    x-val-qty-:id="this.value"
+                    x-val-qty-:id="$this.value"
                     value=":qty"
                 />
             </td>
@@ -79,7 +79,7 @@
     <!-- Load Script -->
 <script>
 (window.init = window.init || []).push(function () {
-    ElX.init(document.body, "tabfirst:tablast");
+    ElX.init(document.body);
 
     var categoryTpl = document.getElementById("option-html").innerHTML;
     var productTpl = document.getElementById("option-html").innerHTML;

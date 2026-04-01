@@ -598,15 +598,15 @@ limitations under the License.
 
         for (var i = 0; i < el.attributes.length; i++) {
             var attr = el.attributes[i];
+            var attrName = attr.name;
             var attrValue = attr.value;
-            var attrNameArr = attr.name.split("-");
-            var prefix = attrNameArr[0] + "-" + (attrNameArr[1] || "");
-            var keyAttrArr = attrNameArr.slice(2).join("-").split(".");
+            var prefix = attrName.substring(0, 6);
+            var keyAttrArr = attrName.substring(6).split(".");
             var key = keyAttrArr[0];
 
-            if (prefix === "x-use" && ElX.uses[key]) {
+            if (prefix === "x-use-" && ElX.uses[key]) {
                 ElX.uses[key](el);
-            } else if (prefix === "x-ref") {
+            } else if (prefix === "x-ref-") {
                 if (!ElX.refs[key]) {
                     ElX.refs[key] = [];
                 }
@@ -620,7 +620,7 @@ limitations under the License.
                 if (!isDuplicate) {
                     ElX.refs[key].push(el);
                 }
-            } else if (prefix === "x-evt") {
+            } else if (prefix === "x-evt-") {
                 var parts = keyAttrArr.slice(1);
                 var event = key;
                 var eventKey = "";
@@ -639,7 +639,7 @@ limitations under the License.
                 var object = null;
                 var signature = event + "_" + eventKey + "_" + eventMask;
                 el["_x_mask_" + signature] = mask;
-                el["_x_rule_" + signature] = attr.name;
+                el["_x_rule_" + signature] = attrName;
                 if (mask & ElX.bitEB.window) {
                     object = ElX.refsWin;
                     window["on" + event] = ElX.event;
@@ -657,12 +657,12 @@ limitations under the License.
                 }
             }
 
-            if (prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-lit") {
-                if (prefix === "x-val" && ElX.vals[key] === undefined) {
+            if (prefix === "x-css-" || prefix === "x-dom-" || prefix === "x-set-" || prefix === "x-val-" || prefix === "x-sig-" || prefix === "x-lit-") {
+                if (prefix === "x-val-" && ElX.vals[key] === undefined) {
                     ElX.vals[key] = attrValue !== "" && attrValue.charAt(0) === "$" ? Util.path(paths, attrValue.substring(1).split(".")) : attrValue;
                 }
                 var parts = null;
-                if (prefix === "x-dom") {
+                if (prefix === "x-dom-") {
                     parts = keyAttrArr.slice(1);
                     for (var j = 0, jlen = parts.length; j < jlen; j++) {
                         var words = parts[j].split("-");
@@ -672,11 +672,11 @@ limitations under the License.
                         }
                     }
                 }
-                xArr.push([attr.name, Util.trim(attrValue), prefix, keyAttrArr[0], keyAttrArr.slice(1).join("."), parts]);
+                xArr.push([attrName, Util.trim(attrValue), prefix, key, keyAttrArr.slice(1).join("."), parts]);
             }
 
-            if (prefix === "x-evt" || prefix === "x-alt") {
-                xObj[attr.name] = Util.trim(attrValue);
+            if (prefix === "x-evt-" || prefix === "x-alt-") {
+                xObj[attrName] = Util.trim(attrValue);
             }
         }
         el._x_arr = xArr;
@@ -758,15 +758,13 @@ limitations under the License.
         }
     };
     ElX.set = function(key, attr, states, el) {
-        var prefix = attr.substring(0, 5);
-        var isArr = prefix === "x-css" || prefix === "x-dom" || prefix === "x-set" || prefix === "x-val" || prefix === "x-sig" || prefix === "x-lit";
-        var isObj = prefix === "x-evt" || prefix === "x-alt";
-        var attrNameArr = null;
+        var prefix = attr.substring(0, 6);
+        var isArr = prefix === "x-css-" || prefix === "x-dom-" || prefix === "x-set-" || prefix === "x-val-" || prefix === "x-sig-" || prefix === "x-lit-";
+        var isObj = prefix === "x-evt-" || prefix === "x-alt-";
         var keyAttrArr = null;
 
         if (isArr) {
-            attrNameArr = attr.split("-");
-            keyAttrArr = attrNameArr.slice(2).join("-").split(".");
+            keyAttrArr = attr.substring(6).split(".");
         }
 
         var els = (key == "this") ? [el] : (ElX.refs[key] || []);
@@ -797,7 +795,7 @@ limitations under the License.
                 if (isArr) {
                     if (current === "null") {
                         var parts = null;
-                        if (prefix === "x-dom") {
+                        if (prefix === "x-dom-") {
                             parts = keyAttrArr.slice(1);
                             for (var j = 0, jlen = parts.length; j < jlen; j++) {
                                 var words = parts[j].split("-");
@@ -903,7 +901,7 @@ limitations under the License.
             var mask = 0;
             var els = null;
             var key = (e.key || String.fromCharCode(e.keyCode || e.which) || "").toLowerCase();
-            var bitEK = e.type === "keydown" || e.type === "mousedown" || e.type === "keyup" || e.type === "mouseup" ? ((~~e.ctrlKey * ElX.bitEK.ctrl) | (~~e.altKey * ElX.bitEK.alt) | (~~e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right)) : "0";
+            var bitEK = (e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right);
             var signature = e.type + "_" + key + "_" + bitEK;
 
             if (this === window) {
@@ -927,13 +925,19 @@ limitations under the License.
             }
 
             if (els) {
-                var isMouse = e.type.substring(0, 5) === "mouse";
-                var clientX = isMouse ? e.clientX || 0 : 0;
-                var clientY = isMouse ? e.clientY || 0 : 0;
+                var clientX = 0;
+                var clientY = 0;
+                if (e.type.substring(0, 5) === "mouse") {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
 
-                var isScroll = e.type === "scroll";
-                var scrollX = isScroll ? this !== window ? this : (window.document.documentElement.scrollLeft || (window.document.body ? window.document.body.scrollLeft : 0) || 0) : 0;
-                var scrollY = isScroll ? this !== window ? this : (window.document.documentElement.scrollTop || (window.document.body ? window.document.body.scrollTop : 0) || 0) : 0;
+                var scrollX = 0;
+                var scrollY = 0;
+                if (e.type === "scroll") {
+                    scrollX = this !== window ? this.scrollLeft : (window.document.documentElement.scrollLeft || (window.document.body ? window.document.body.scrollLeft : 0) || 0);
+                    scrollY = this !== window ? this.scrollTop : (window.document.documentElement.scrollTop || (window.document.body ? window.document.body.scrollTop : 0) || 0);
+                }
 
                 for (var i = 0, ilen = els.length; i < ilen; i++) {
                     ElX.events.push({
@@ -1006,18 +1010,18 @@ limitations under the License.
                 attrValue = ElX.elThis[attrValue2];
             }
 
-            if (prefix === "x-css") {
+            if (prefix === "x-css-") {
                 ElX.css(key, attr[4], attrValue, el);
-            } else if (prefix === "x-set") {
+            } else if (prefix === "x-set-") {
                 var alt = el._x_obj["x-alt-" + key + "." + attr[4]];
                 ElX.set(key, attr[4], [attrValue, (alt && alt.charAt(0) === "$" ? Util.path(paths, alt.substring(1).split(".")) : (alt !== undefined ? alt : attrValue))], el);
-            } else if (prefix === "x-dom") {
+            } else if (prefix === "x-dom-") {
                 ElX.dom(key, attr[5], attrValue, el);
-            } else if (prefix === "x-val") {
+            } else if (prefix === "x-val-") {
                 ElX.val(key, attrValue, event);
-            } else if (prefix === "x-sig") {
+            } else if (prefix === "x-sig-") {
                 ElX.sig(key, attrValue, el);
-            } else if (prefix === "x-lit" && ElX.refs[key]) {
+            } else if (prefix === "x-lit-" && ElX.refs[key]) {
                 if (ElX.isFocusing) {
                     clearTimeout(ElX.isFocusing);
                 }
