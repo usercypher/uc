@@ -356,7 +356,9 @@ limitations under the License.
         if (value === undefined) {
             return current[lastKey];
         }
-        current[lastKey] = value;
+        if (current[lastKey] !== value) {
+            current[lastKey] = value;
+        }
     };
 
     function Url(url) {
