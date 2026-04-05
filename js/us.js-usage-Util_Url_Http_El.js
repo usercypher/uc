@@ -132,31 +132,46 @@ function responseProcessor(response) {
  * 🧩 El – Usage Examples
  **************************************************************/
 
-const el = new El("output");
+/*
+El(
+    tag,         // "#id", "div", {El: arguments}, undefined or null creates fragmenr
+    attr,        // [["name", "value"]]
+    ...children, // [...children], El(), {El: arguments, replace: bool}, "string"
+) : return Element
+*/
+var pElement = El("p", null, "Hello, world!");
 
-// Replace content
-el.html("<p>Hello, world!</p>");
+/*
+El(...same with El()) : return {El: arguments}
+*/
+// note: using as child in El would reuse the child node if .replace = true, since it's not define by default it will reuse children 
+var pElObject = El.use("p", null, "Hello, world!");
 
-// Append new HTML (temporarily backed up content)
-el.store().append("<div>New content</div>");
+/*
+El.insert(
+    position,   // "inner", "append", "prepend", "before", "after"
+    parentNode, // element
+    childNode   // element
+) : null
+*/
+El.insert("append", El("#root"), El("div", null, "New content"));
 
-// Restore previous content (when temp was set)
-el.restore().append("<span>Updated again</span>");
+/*
+El.buffer(
+    position,   // "inner", "append", "prepend", "before", "after"
+    parentNode, // element
+    childNode   // element
+    milliseconds// time debounced
+) : null
+*/
+// note: changing position will run debounced so to avoid breaking layout
+El.buffer("append", El("#root"), El("div", null, "New content"), 100);
 
-// Prepend content
-el.prepend("<h1>Header</h1>");
+// remove element
+El.remove(El("#root"));
 
-// insert html in before of element, store() & restore() will not affect it
-el.before("<span>before</span>");
-
-// insert html in after of element, store() & restore() will not affect it
-el.after("<span>after</span>");
-
-// Direct DOM access still possible
-el.el.addEventListener("click", () => alert("Clicked!"));
-
-// remove an element
-new El('element').remove();
+// clear children nodes / content
+El.clear(El("#root"));
 
 /**************************************************************
  * 🚀 Combine All – Practical Flow
@@ -166,7 +181,7 @@ var resolve = {
   api: new Xhr(new XMLHttpRequest()),
   apiUrl: new Url("https://api.example.com/data"),
   maxRetry: 3,
-  output: new El("output")
+  output: El("#output")
 };
 
 function urlWrapper(url) {
@@ -182,7 +197,7 @@ urlWrapper(resolve.apiUrl);
 urlWrapper(new Url()).sync(true);
 
 // Output element
-resolve.output.html("<p>Loading...</p>");
+El.insert("inner", resolve.output, El("p", null, "Loading..."));
 
 // Create and send a request
 const newStep = new Step();
@@ -193,9 +208,9 @@ newStep.add(function (self, data) {
     header: { "Accept": "application/json" },
     onload: function (res) {
       if (res.code === 200) {
-        data.output.html(`<pre>${res.content}</pre>`);
+        El.insert("inner", data.output, El("pre", null, `${res.content}`));
       } else if (0 !== data.maxRetry--) {
-        data.output.html(`<p style="color:red;">Error ${res.code}</p>`);
+        El.insert("inner", data.output, El("p", [["style", "color:red;"]], `Error ${res.code}`));
         self.run(data);
       }
     }

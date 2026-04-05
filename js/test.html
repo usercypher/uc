@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="uc.js" defer></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        (window.init = window.init || []).push(function () {
+            function Timer() {
+                this.second = 0;
+                this.interval = null;
+                this.el = this.render();
+            }
+            Timer.prototype.startInterval = function () {
+                var that = this;
+                this.interval = setInterval(function () {
+                    that.second++;
+                    that.render();
+                }, 1000);
+            };
+            Timer.prototype.toggleInterval = function () {
+                if (this._state.interval == null) {
+                    this._state.startInterval();
+                } else {
+                    clearInterval(this._state.interval);
+                    this._state.interval = null;
+                }
+                this._state.render();
+            };
+            Timer.prototype.resetInterval = function () {
+                this._state.second = 0;
+                clearInterval(this._state.interval);
+                this._state.interval = null;
+                this._state.render();
+            };
+            Timer.prototype.render = function () {
+                var that = this;
+                return El(this.el || "div", null, 
+                    El("p", null, this.second + ' second' + (this.second !== 1 ? "s" : "")),
+                    El.use("button", [
+                        ["onclick", Timer.prototype.toggleInterval],
+                        ["_state", this],
+                    ], this.interval == null ? "Start timer" : "Stop timer"),
+                    El.use("button", [
+                        ["onclick", Timer.prototype.resetInterval],
+                        ["_state", this],
+                    ], "Reset timer"),
+                    
+                );
+            }
+
+            var timers = [];
+            for (var i =0, ilen = 1000; i < ilen; i++) {
+                timers.push(new Timer());
+            }
+
+            El("#root", null, timers.map(function (timer) { return timer.el; }));
+        });
+    </script>
+</body>
+</html>

@@ -360,6 +360,11 @@ limitations under the License.
             current[lastKey] = value;
         }
     };
+    Util.id = function() {
+        return Util.id.prefix + (Util.id.counter++).toString(36);
+    };
+    Util.id.counter = 0;
+    Util.id.prefix = new Date().getTime().toString(36) + Math.random().toString(36).slice(2, 5);
 
     function Url(url) {
         this.url = url || window.location.href || "";
@@ -517,44 +522,145 @@ limitations under the License.
         return result;
     };
 
-    function El(input) {
-        this.el = typeof input === 'string' ? window.document.getElementById(input) : input;
-        this.lastContent = "";
-        this.isSaved = false;
-    }
-    El.prototype.store = function() {
-        this.lastContent = this.el.innerHTML;
-        this.isSaved = true;
-        return this;
-    };
-    El.prototype.restore = function() {
-        if (this.isSaved) {
-            if (this.el.innerHTML !== this.lastContent) {
-                this.el.innerHTML = this.lastContent;
+    function El(tag, attrs) {
+        var el = null;
+        if (tag && tag.El) {
+            return El.apply(null, tag.El);
+        } else if (tag && tag.nodeType) {
+            el = tag;
+        } else if (typeof tag === 'string') {
+            el = tag.charAt(0) === '#' ? document.getElementById(tag.substring(1)) : document.createElement(tag);
+        } else {
+            el = document.createDocumentFragment();
+        }
+        if (attrs) {
+            for (var i = 0, ilen = attrs.length; i < ilen; i++) {
+                if (attrs[i][0] in el || attrs[i][0].charAt(0) === "_") {
+                    if (el[attrs[i][0]] !== attrs[i][1]) {
+                        el[attrs[i][0]] = attrs[i][1];
+                    }
+                } else if (el.getAttribute(attrs[i][0]) !== (attrs[i][1] || "")) {
+                    el.setAttribute(attrs[i][0], attrs[i][1] || "");
+                }
             }
-            this.isSaved = false;
         }
-        return this;
-    };
-    El.prototype.prepend = function(html) {
-        this.el.insertAdjacentHTML("afterbegin", html);
-    };
-    El.prototype.append = function(html) {
-        this.el.insertAdjacentHTML("beforeend", html);
-    };
-    El.prototype.before = function(html) {
-        this.el.insertAdjacentHTML("beforebegin", html);
-    };
-    El.prototype.after = function(html) {
-        this.el.insertAdjacentHTML("afterend", html);
-    };
-    El.prototype.remove = function() {
-        if (this.el && this.el.parentNode) {
-            this.el.parentNode.removeChild(this.el);
+        if (arguments.length > 2) {
+            var currentChild = el.firstChild;
+            for (var i = 2, ilen = arguments.length; i < ilen; i++) {
+                var normalized = (Object.prototype.toString.call(arguments[i]) === '[object Array]') ? arguments[i] : [arguments[i]];
+                for (var j = 0, jlen = normalized.length; j < jlen; j++) {
+                    var newNode = normalized[j];
+                    if (newNode) {
+                        if (typeof newNode === "object" && newNode.El) {
+                            newNode.El[0] = (!newNode.replace ? currentChild : null) || newNode.El[0];
+                            newNode = El.apply(null, newNode.El);
+                        } else if (typeof newNode === "string" || typeof newNode === "number") {
+                            newNode = document.createTextNode(newNode);
+                        }
+                        if (currentChild) {
+                            if (currentChild !== newNode) {
+                                el.replaceChild(newNode, currentChild);
+                            }
+                            currentChild = newNode.nextSibling;
+                        } else {
+                            el.appendChild(newNode);
+                        }
+                    }
+                }
+            }
+            while (currentChild) {
+                var next = currentChild.nextSibling;
+                el.removeChild(currentChild);
+                currentChild = next;
+            }
         }
+        return el;
+    }
+    El.use = function() {
+        return {
+            El: arguments
+        };
+    };
+    El.insert = function(method, el, content) {
+        if (method === "inner") {
+            El.clear(el);
+            el.appendChild(content);
+        } else if (method === "append") {
+            el.appendChild(content);
+        } else if (method === "prepend") {
+            el.insertBefore(content, el.firstChild);
+        } else if (method === "before" && el.parentNode) {
+            el.parentNode.insertBefore(content, el);
+        } else if (method === "after" && el.parentNode) {
+            el.parentNode.insertBefore(content, el.nextSibling);
+        }
+    };
+    El.clear = function(el) {
+        while (el.firstChild) {
+            el.removeChild(el.firstChild);
+        }
+    };
+    El.remove = function(el) {
+        if (el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    };
+    El.buffer = function(method, el, content, ms) {
+        if (!el._bufE) {
+            el._bufE = El();
+        }
+        var _bufF = function() {
+            El.insert(el._bufM, el, el._bufE);
+            el._bufM = undefined;
+            clearTimeout(el._bufT);
+        };
+        if (el._bufM && el._bufM !== method) {
+            _bufF();
+        }
+        el._bufM = method;
+        if (el._bufT) {
+            clearTimeout(el._bufT);
+        }
+        El.insert(method, el._bufE, content);
+        el._bufT = setTimeout(_bufF, ms || 100);
     };
 
-    function ElX() {}
+    function ElX(key, value) {
+        this.key = key;
+        if (ElX.vals[key] === undefined) {
+            ElX.vals[key] = value;
+        }
+    }
+    ElX.prototype.value = function() {
+        return ElX.vals[this.key];
+    };
+    ElX.prototype.ref = function() {
+        return ElX.refs[this.key] || [];
+    };
+    ElX.prototype.tap = function(func, context) {
+        return ElX.tap(this.key, func, context);
+    };
+    ElX.prototype.untap = function(index) {
+        ElX.untap(this.key, index);
+    };
+    ElX.prototype.css = function(attr, value) {
+        ElX.css(this.key, attr, value);
+    };
+    ElX.prototype.set = function(attr, states) {
+        ElX.set(this.key, attr, states);
+    };
+    ElX.prototype.dom = function(keys, value) {
+        ElX.dom(this.key, keys, value);
+    };
+    ElX.prototype.val = function(value, event) {
+        ElX.val(this.key, value, event);
+    };
+    ElX.prototype.sig = function(triggers) {
+        ElX.sig(this.key, triggers);
+    };
+    ElX.prototype.clear = function() {
+        ElX.clear(this.key);
+    };
     ElX.refs = {};
     ElX.refsWin = {};
     ElX.refsTap = {};
@@ -684,6 +790,7 @@ limitations under the License.
     };
     ElX.prune = function(el) {
         ElX.mutationDepth++;
+
         el = el || window.document.documentElement;
         var objects = [ElX.refs, ElX.refsWin, ElX.refsTap];
         for (var i = 0, ilen = objects.length; i < ilen; i++) {
@@ -711,6 +818,7 @@ limitations under the License.
                 }
             }
         }
+
         ElX.mutationDepth--;
     };
     ElX.clear = function(key) {
@@ -719,9 +827,6 @@ limitations under the License.
     };
     ElX.use = function(key, func) {
         ElX.uses[key] = func;
-    };
-    ElX.x = function(key, value) {
-        return new X(ElX, key, value);
     };
     ElX.ref = function(key) {
         return ElX.refs[key] || [];
@@ -901,7 +1006,7 @@ limitations under the License.
             var mask = 0;
             var els = null;
             var key = (e.key || String.fromCharCode(e.keyCode || e.which) || "").toLowerCase();
-            var bitEK = (e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right);
+            var bitEK = (e.type === "keydown" || e.type === "mousedown" || e.type === "keyup" || e.type === "mouseup") ? (e.ctrlKey * ElX.bitEK.ctrl) | (e.altKey * ElX.bitEK.alt) | (e.shiftKey * ElX.bitEK.shift) | ((e.button === 0) * ElX.bitEK.left) | ((e.button === 1) * ElX.bitEK.wheel) | ((e.button === 2) * ElX.bitEK.right) : 0;
             var signature = e.type + "_" + key + "_" + bitEK;
 
             if (this === window) {
@@ -1040,42 +1145,6 @@ limitations under the License.
                 })(ElX.refs[key][0], window, ElX);
             }
         }
-    };
-
-    function X(elx, key, value) {
-        this.elx = elx;
-        this.key = key;
-        this.elx.vals[key] = value;
-    }
-    X.prototype.value = function() {
-        return this.elx.vals[this.key];
-    };
-    X.prototype.ref = function() {
-        return this.elx.refs[this.key] || [];
-    };
-    X.prototype.tap = function(func, context) {
-        return this.elx.tap(this.key, func, context);
-    };
-    X.prototype.untap = function(index) {
-        this.elx.untap(this.key, index);
-    };
-    X.prototype.css = function(attr, value) {
-        this.elx.css(this.key, attr, value);
-    };
-    X.prototype.set = function(attr, states) {
-        this.elx.set(this.key, attr, states);
-    };
-    X.prototype.dom = function(keys, value) {
-        this.elx.dom(this.key, keys, value);
-    };
-    X.prototype.val = function(value, event) {
-        this.elx.val(this.key, value, event);
-    };
-    X.prototype.sig = function(triggers) {
-        this.elx.sig(this.key, triggers);
-    };
-    X.prototype.clear = function() {
-        this.elx.clear(this.key);
     };
 
     window.Util = Util;
