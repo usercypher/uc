@@ -7,57 +7,187 @@
 </head>
 <body>
     <div id="root"></div>
+
     <script>
         (window.init = window.init || []).push(function () {
-            function Timer() {
-                this.second = 0;
-                this.interval = null;
+            var optionsProduct = [
+                {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
+                {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
+                {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
+                {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
+            ];
+            var optionsCategory = ["Cars", "Planes"];
+
+            function Table(optionsProduct, optionsCategory) {
+                this.optionsProduct = optionsProduct;
+                this.optionsCategory = optionsCategory;
+                this.products = [];
+                this.tbody = new Tbody(this);
                 this.el = this.render();
+                this._this = this;
             }
-            Timer.prototype.startInterval = function () {
+            Table.prototype.addProduct = function () {
+                var product = {name: "1948 Porsche 356-A Roadster", category: "Cars", qty: Math.floor(Math.random() * 20), price: 53.90};
+                this._this.products.push(product);
+                this._this.tbody.append(product);
+            };
+            Table.prototype.submit = function () {
+                alert(JSON.stringify(this._this.products.map(function (value) {
+                    return {
+                        productName: value.name,
+                        quantity: value.qty
+                    };
+                })));
+            };
+            Table.prototype.grandTotalCalc = function () {
+                var total = 0;
+                this.products.forEach(function (value) {
+                    total += (value.qty || 1) * value.price;
+                });
+                this.grandTotal = total;
+                this.render();
+            };
+            Table.prototype.subtotalSort = function () {
+                this._this.tbody.render();
+            };
+            Table.prototype.render = function () {
                 var that = this;
-                this.interval = setInterval(function () {
-                    that.second++;
-                    that.render();
-                }, 1000);
-            };
-            Timer.prototype.toggleInterval = function () {
-                if (this._state.interval == null) {
-                    this._state.startInterval();
-                } else {
-                    clearInterval(this._state.interval);
-                    this._state.interval = null;
-                }
-                this._state.render();
-            };
-            Timer.prototype.resetInterval = function () {
-                this._state.second = 0;
-                clearInterval(this._state.interval);
-                this._state.interval = null;
-                this._state.render();
-            };
-            Timer.prototype.render = function () {
-                var that = this;
-                return El(this.el || "div", null, 
-                    El("p", null, this.second + ' second' + (this.second !== 1 ? "s" : "")),
-                    El.use("button", [
-                        ["onclick", Timer.prototype.toggleInterval],
-                        ["_state", this],
-                    ], this.interval == null ? "Start timer" : "Stop timer"),
-                    El.use("button", [
-                        ["onclick", Timer.prototype.resetInterval],
-                        ["_state", this],
-                    ], "Reset timer"),
-                    
+                return El(this.el || "div", null,
+                    new El("table", null,
+                        new El("thead", null,
+                            new El("tr", null,
+                                El("td", null, "Category"),
+                                El("td", null, "Product"),
+                                El("td", null, "Price"),
+                                El("td", null, "Quantity"),
+                                new El("td", null,
+                                    new El("button", [["_this", this], ["onclick", Table.prototype.subtotalSort]], "Subtotal"),
+                                ),
+                                El("td", null, ""),
+                            )
+                        ),
+                        new El(this.tbody.el)
+                    ),
+                    El("p", null,
+                        "Total value: ",
+                        El("span", null, (this.grandTotal || 0).toFixed(2)),
+                    ),
+                    new El("button", [
+                        ["_this", this],
+                        ["onclick", Table.prototype.addProduct],
+                    ], "Add product"),
+                    new El("button", [
+                        ["_this", this],
+                        ["onclick", Table.prototype.submit],
+                    ], "Submit order")
                 );
+            };
+            function Tbody(parent) {
+                this.parent = parent;
+                this.el = this.render();
+                this._this = this;
             }
-
-            var timers = [];
-            for (var i =0, ilen = 1000; i < ilen; i++) {
-                timers.push(new Timer());
+            Tbody.prototype.append = function (product) {
+                product.row = new Row(this.parent, product, this.parent.optionsProduct, this.parent.optionsCategory);
+                El.buffer("append", this.el, product.row.el);
+            };
+            Tbody.prototype.render = function () {
+                this.parent.products.sort(function (a, b) {
+                    return ((a.qty || 1) * a.price) - ((b.qty || 1) * b.price);
+                });
+                return El(this.el || "tbody", null, 
+                    this.parent.products.map(function (a) {
+                        return a.row.el
+                    })
+                );
+            };
+            function Row(parent, product, optionProduct, optionCategory) {
+                this.parent = parent;
+                this.product = product;
+                this.optionProduct = optionProduct;
+                this.optionCategory = optionCategory;console.log();
+                this.el = this.render();
+                this._this = this;
             }
+            Row.prototype.remove = function (product) {
+                El.remove(this._this.el);
+            };
+            Row.prototype.categoryChange = function () {
+                this._this.product.category = this.value;
+                this._this.productChange();
+            };
+            Row.prototype.productChange = function () {
+                var that = this;
+                var found = false;
+                options = this._this.optionProduct.filter(function (value) {
+                    return that._this.product.category === value.category;
+                }).map(function (value) {
+                    if (!found && (that.value || that._this.product.name) === value.name) {
+                        found = value;
+                    }
+                    return value;
+                });
+                
+                if (!found) {
+                    found = options[0];
+                }
+                this._this.product.name = found.name;
+                this._this.product.category = found.category;
+                this._this.product.price = found.price;
+                this._this.render();
+            };
+            Row.prototype.qtyChange = function () {
+                this._this.product.qty = this.value;
+                this._this.render();
+            };
+            Row.prototype.render = function () {
+                this.parent.grandTotalCalc();
+                var that = this;
+                return El(this.el || "tr", null,
+                    new El("td", null, 
+                        new El("select", [["_this", this], ["oninput", Row.prototype.categoryChange]], 
+                            this.optionCategory.map(function (value) {
+                                return El("option", [["selected", value === that.product.category]], value);
+                            })
+                        )
+                    ),
+                    new El("td", null, 
+                        new El("select", [["_this", this], ["oninput", Row.prototype.productChange]], 
+                            this.optionProduct.filter(function (value) {
+                                return that.product.category === value.category;
+                            }).map(function (value) {
+                                return El("option", [["selected", value.name === that.product.name]], value.name);
+                            })
+                        )
+                    ),
+                    El("td", null,
+                        El("span", null, this.product.price.toFixed(2))
+                    ),
+                    new El("td", null,
+                        new El("input", [
+                            ["type", "number"],
+                            ["_this", this],
+                            ["oninput", Row.prototype.qtyChange],
+                            ["value", this.product.qty || 1],
+                        ])
+                    ),
+                    El("td", null,
+                        El("span", null, ((this.product.qty || 1) * this.product.price).toFixed(2))
+                    ),
+                    El("td", null,
+                        El("a", [
+                            ["_this", this],
+                            ["onclick", Row.prototype.remove],
+                        ], "Remove")
+                    ),
+                );
+            };
 
-            El("#root", null, timers.map(function (timer) { return timer.el; }));
+            var table = new Table(optionsProduct, optionsCategory);
+            for (var i = 0; i < 1000; i++) {
+                table.addProduct();
+            }
+            El("#root", null, table.el);
         });
     </script>
 </body>

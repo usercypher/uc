@@ -523,9 +523,13 @@ limitations under the License.
     };
 
     function El(tag, attrs) {
+        if (this instanceof El) {
+            this.arguments = arguments;
+            return;
+        }
         var el = null;
-        if (tag && tag.El) {
-            return El.apply(null, tag.El);
+        if (tag && tag instanceof El) {
+            return El.apply(null, tag.arguments);
         } else if (tag && tag.nodeType) {
             el = tag;
         } else if (typeof tag === 'string') {
@@ -539,7 +543,7 @@ limitations under the License.
                     if (el[attrs[i][0]] !== attrs[i][1]) {
                         el[attrs[i][0]] = attrs[i][1];
                     }
-                } else if (el.getAttribute(attrs[i][0]) !== (attrs[i][1] || "")) {
+                } else if (el.getAttribute(attrs[i][0]) !== attrs[i][1]) {
                     el.setAttribute(attrs[i][0], attrs[i][1] || "");
                 }
             }
@@ -551,14 +555,17 @@ limitations under the License.
                 for (var j = 0, jlen = normalized.length; j < jlen; j++) {
                     var newNode = normalized[j];
                     if (newNode) {
-                        if (typeof newNode === "object" && newNode.El) {
-                            newNode.El[0] = (!newNode.replace ? currentChild : null) || newNode.El[0];
-                            newNode = El.apply(null, newNode.El);
-                        } else if (typeof newNode === "string" || typeof newNode === "number") {
+                        var nodeType = typeof newNode;
+                        if (nodeType === "string" || nodeType === "number") {
                             newNode = document.createTextNode(newNode);
+                        } else if (newNode instanceof El) {
+                            if (!newNode.replace && currentChild) {
+                                newNode.arguments[0] = currentChild;
+                            }
+                            newNode = El.apply(null, newNode.arguments);
                         }
                         if (currentChild) {
-                            if (currentChild !== newNode) {
+                            if (newNode.nodeType !== currentChild.nodeType || currentChild !== newNode) {
                                 el.replaceChild(newNode, currentChild);
                             }
                             currentChild = newNode.nextSibling;
@@ -576,11 +583,6 @@ limitations under the License.
         }
         return el;
     }
-    El.use = function() {
-        return {
-            El: arguments
-        };
-    };
     El.insert = function(method, el, content) {
         if (method === "inner") {
             El.clear(el);
