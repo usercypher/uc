@@ -46,11 +46,13 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
                 'username' => array(
                     $std->toString(),
                     $std->required(),
-                    $std->lengthMax(50)
+                    $std->lengthMin(3),
+                    $std->lengthMax(50),
                 ),
                 'email' => array(
                     $std->toString(),
-                    $std->lengthMax(100)
+                    $std->lengthMax(100),
+                    $std->emptyToNull()
                 ),
                 'first_name' => array(
                     $std->toString(),

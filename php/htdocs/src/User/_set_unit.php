@@ -27,3 +27,14 @@ $app->groupUnit($group, 'User_Pipe_SessionUnset', array('args' => array()));
 $app->groupUnit($group, 'User_Pipe_SessionVerify', array('args' => array('User_Repo')));
 $app->groupUnit($group, 'User_Pipe_IsAuth', array('args' => array()));
 $app->groupUnit($group, 'User_Pipe_IsNotAuth', array('args' => array()));
+
+/**
+ * ------------------------------------------------------------------------
+ * Pipe/Cli
+ * ------------------------------------------------------------------------
+ */
+ 
+$group = array(
+    'args_prepend' => array('App')
+);
+$app->groupUnit($group, 'User_Pipe_Cli_Create', array('args' => array()));

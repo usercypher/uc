@@ -15,7 +15,7 @@ class Cli_Pipe_Sql_Print {
 
         $files = $this->getFilesRecursive($directory);
 
-        sort($files);
+        uasort($files, array($this, 'compareByBasenameCi'));
 
         $seen = array();
 
@@ -28,6 +28,12 @@ class Cli_Pipe_Sql_Print {
 
         $output->content = $message;
         return array($input, $output, $success);
+    }
+
+    function compareByBasenameCi($a, $b) {
+        $an = basename($a);
+        $bn = basename($b);
+        return strcasecmp($an, $bn);
     }
 
     function getFilesRecursive($dir, &$files = array()) {

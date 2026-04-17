@@ -163,10 +163,8 @@ class Output {
             }
         }
 
-        if (!isset($this->header['location'])) {
-            fwrite($this->stream[$id], $content);
-            flush();
-        }
+        fwrite($this->stream[$id], $content);
+        flush();
     }
 }
 
@@ -325,7 +323,7 @@ class App {
         if ($this->env['ERROR_DISPLAY']) {
             $error .= "\n\n";
 
-            foreach ($errcontext['TRACE'] as $i => $frame) {
+            foreach ((isset($errcontext['TRACE']) ? $errcontext['TRACE'] : array()) as $i => $frame) {
                 $error .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
             }
         } else {
@@ -333,7 +331,7 @@ class App {
         }
 
         $content = '';
-        $type = $this->mimeNegotiate($errcontext['ACCEPT'], array_keys($this->env['ERROR_TEMPLATES']));
+        $type = $this->mimeNegotiate(isset($errcontext['ACCEPT']) ? $errcontext['ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
         if ($type && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
@@ -341,7 +339,7 @@ class App {
             $content = $code . '. An unexpected error occurred.' . "\n\n" . $error;
         }
 
-        return array('header' => array('content-type' => $type) + $errcontext['HEADER'], 'content' => $content, 'code' => $code);
+        return array('header' => array('content-type' => $type) + (isset($errcontext['HEADER']) ? $errcontext['HEADER'] : array()), 'content' => $content, 'code' => $code);
     }
 
     // Route Management

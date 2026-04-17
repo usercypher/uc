@@ -3,6 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Scroller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #0052a3;
+        }
+
+        #scroller {
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow-y: auto;
+            position: relative;
+            background: white;
+        }
+
+        .item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .item:hover {
+            background: #f9f9f9;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-id {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .item-detail {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .item-index {
+            color: #ccc;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .stats {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        textarea {
+            height: 120px;
+            font-size: 11px;
+        }
+
+        .error {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
     <script src="uc.js" defer></script>
 </head>
 <body>
@@ -10,184 +147,200 @@
 
     <script>
         (window.init = window.init || []).push(function () {
-            var optionsProduct = [
-                {name: "1948 Porsche 356-A Roadster", category: "Cars", price: 53.90},
-                {name: "1948 Porsche Type 356 Roadster", category: "Cars", price: 62.16},
-                {name: "1900s Vintage Bi-Plane", category: "Planes", price: 34.25},
-                {name: "1900s Vintage Tri-Plane", category: "Planes", price: 36.23}
-            ];
-            var optionsCategory = ["Cars", "Planes"];
 
-            function Table(optionsProduct, optionsCategory) {
-                this.optionsProduct = optionsProduct;
-                this.optionsCategory = optionsCategory;
-                this.products = [];
-                this.tbody = new Tbody(this);
-                this.el = this.render();
-                this._this = this;
+            function VirtualScroller(options) {
+                this.items = options.items || [];
+                this.itemHeight = options.itemHeight || 60;
+                this.template = options.template || this.defaultTemplate;
+                this.buffer = options.buffer || 5;
+                this.scrollTop = 0;
+                this.visibleRange = { start: 0, end: 0 };
+                this.init();
             }
-            Table.prototype.addProduct = function () {
-                var product = {name: "1948 Porsche 356-A Roadster", category: "Cars", qty: Math.floor(Math.random() * 20), price: 53.90};
-                this._this.products.push(product);
-                this._this.tbody.append(product);
-            };
-            Table.prototype.submit = function () {
-                alert(JSON.stringify(this._this.products.map(function (value) {
-                    return {
-                        productName: value.name,
-                        quantity: value.qty
-                    };
-                })));
-            };
-            Table.prototype.grandTotalCalc = function () {
-                var total = 0;
-                this.products.forEach(function (value) {
-                    total += (value.qty || 1) * value.price;
-                });
-                this.grandTotal = total;
+
+            VirtualScroller.prototype.init = function() {
+                this.scrollContainer = El("#scroller");
+                this.contentWrapper = El("div", [["style", "position: relative;"]]);
+                this.spacer = El("div", [["style", "position: absolute; top: 0; left: 0; width: 1px; pointer-events: none;"]]);
+                this.viewport = El("div", [["style", "position: absolute; top: 0; left: 0; width: 100%;"]]);
+
+                El.insert("append", this.contentWrapper, this.spacer);
+                El.insert("append", this.contentWrapper, this.viewport);
+                El.insert("inner", this.scrollContainer, this.contentWrapper);
+
+                this.updateDimensions();
+                this.bindEvents();
                 this.render();
             };
-            Table.prototype.subtotalSort = function () {
-                this._this.tbody.render();
-            };
-            Table.prototype.render = function () {
-                var that = this;
-                return El(this.el || "div", null,
-                    new El("table", null,
-                        new El("thead", null,
-                            new El("tr", null,
-                                El("td", null, "Category"),
-                                El("td", null, "Product"),
-                                El("td", null, "Price"),
-                                El("td", null, "Quantity"),
-                                new El("td", null,
-                                    new El("button", [["_this", this], ["onclick", Table.prototype.subtotalSort]], "Subtotal"),
-                                ),
-                                El("td", null, ""),
-                            )
-                        ),
-                        new El(this.tbody.el)
-                    ),
-                    El("p", null,
-                        "Total value: ",
-                        El("span", null, (this.grandTotal || 0).toFixed(2)),
-                    ),
-                    new El("button", [
-                        ["_this", this],
-                        ["onclick", Table.prototype.addProduct],
-                    ], "Add product"),
-                    new El("button", [
-                        ["_this", this],
-                        ["onclick", Table.prototype.submit],
-                    ], "Submit order")
-                );
-            };
-            function Tbody(parent) {
-                this.parent = parent;
-                this.el = this.render();
-                this._this = this;
-            }
-            Tbody.prototype.append = function (product) {
-                product.row = new Row(this.parent, product, this.parent.optionsProduct, this.parent.optionsCategory);
-                El.buffer("append", this.el, product.row.el);
-            };
-            Tbody.prototype.render = function () {
-                this.parent.products.sort(function (a, b) {
-                    return ((a.qty || 1) * a.price) - ((b.qty || 1) * b.price);
-                });
-                return El(this.el || "tbody", null, 
-                    this.parent.products.map(function (a) {
-                        return a.row.el
-                    })
-                );
-            };
-            function Row(parent, product, optionProduct, optionCategory) {
-                this.parent = parent;
-                this.product = product;
-                this.optionProduct = optionProduct;
-                this.optionCategory = optionCategory;console.log();
-                this.el = this.render();
-                this._this = this;
-            }
-            Row.prototype.remove = function (product) {
-                El.remove(this._this.el);
-            };
-            Row.prototype.categoryChange = function () {
-                this._this.product.category = this.value;
-                this._this.productChange();
-            };
-            Row.prototype.productChange = function () {
-                var that = this;
-                var found = false;
-                options = this._this.optionProduct.filter(function (value) {
-                    return that._this.product.category === value.category;
-                }).map(function (value) {
-                    if (!found && (that.value || that._this.product.name) === value.name) {
-                        found = value;
-                    }
-                    return value;
-                });
-                
-                if (!found) {
-                    found = options[0];
-                }
-                this._this.product.name = found.name;
-                this._this.product.category = found.category;
-                this._this.product.price = found.price;
-                this._this.render();
-            };
-            Row.prototype.qtyChange = function () {
-                this._this.product.qty = this.value;
-                this._this.render();
-            };
-            Row.prototype.render = function () {
-                this.parent.grandTotalCalc();
-                var that = this;
-                return El(this.el || "tr", null,
-                    new El("td", null, 
-                        new El("select", [["_this", this], ["oninput", Row.prototype.categoryChange]], 
-                            this.optionCategory.map(function (value) {
-                                return El("option", [["selected", value === that.product.category]], value);
-                            })
-                        )
-                    ),
-                    new El("td", null, 
-                        new El("select", [["_this", this], ["oninput", Row.prototype.productChange]], 
-                            this.optionProduct.filter(function (value) {
-                                return that.product.category === value.category;
-                            }).map(function (value) {
-                                return El("option", [["selected", value.name === that.product.name]], value.name);
-                            })
-                        )
-                    ),
-                    El("td", null,
-                        El("span", null, this.product.price.toFixed(2))
-                    ),
-                    new El("td", null,
-                        new El("input", [
-                            ["type", "number"],
-                            ["_this", this],
-                            ["oninput", Row.prototype.qtyChange],
-                            ["value", this.product.qty || 1],
-                        ])
-                    ),
-                    El("td", null,
-                        El("span", null, ((this.product.qty || 1) * this.product.price).toFixed(2))
-                    ),
-                    El("td", null,
-                        El("a", [
-                            ["_this", this],
-                            ["onclick", Row.prototype.remove],
-                        ], "Remove")
-                    ),
-                );
+
+            VirtualScroller.prototype.updateDimensions = function() {
+                var containerHeight = this.scrollContainer.clientHeight;
+                this.visibleCount = Math.ceil(containerHeight / this.itemHeight) + this.buffer;
+                this.totalHeight = this.items.length * this.itemHeight;
+                this.spacer.style.height = this.totalHeight + 'px';
             };
 
-            var table = new Table(optionsProduct, optionsCategory);
-            for (var i = 0; i < 1000; i++) {
-                table.addProduct();
+            VirtualScroller.prototype.bindEvents = function() {
+                var self = this;
+                this.scrollContainer.addEventListener('scroll', function() {
+                    self.onScroll();
+                });
+                window.addEventListener('resize', function() {
+                    self.updateDimensions();
+                    self.render();
+                });
+            };
+
+            VirtualScroller.prototype.onScroll = function() {
+                this.scrollTop = this.scrollContainer.scrollTop;
+                this.render();
+            };
+
+            VirtualScroller.prototype.render = function() {
+                var startIndex = Math.max(0, Math.floor(this.scrollTop / this.itemHeight) - this.buffer);
+                var endIndex = Math.min(this.items.length, startIndex + this.visibleCount);
+
+                this.visibleRange = { start: startIndex, end: endIndex };
+
+                var offsetTop = startIndex * this.itemHeight;
+                this.viewport.style.transform = 'translateY(' + offsetTop + 'px)';
+
+                El.clear(this.viewport);
+
+                for (var i = startIndex; i < endIndex; i++) {
+                    var itemEl = this.template(this.items[i], i);
+                    El.insert("append", this.viewport, itemEl);
+                }
+            };
+
+            VirtualScroller.prototype.defaultTemplate = function(item, index) {
+                return El("div", [["class", "item"]], [
+                    El("div", [["class", "item-content"]], [
+                        El("div", [["class", "item-id"]], item.id || "Item " + (index + 1)),
+                        El("div", [["class", "item-detail"]], item.value || item.name || "No data")
+                    ]),
+                    El("div", [["class", "item-index"]], "#" + (index + 1))
+                ]);
+            };
+
+            VirtualScroller.prototype.setItems = function(items) {
+                this.items = items;
+                this.scrollTop = 0;
+                this.scrollContainer.scrollTop = 0;
+                this.updateDimensions();
+                this.render();
+            };
+
+            VirtualScroller.prototype.getStats = function() {
+                return {
+                    totalItems: this.items.length,
+                    visibleItems: this.visibleRange.end - this.visibleRange.start,
+                    renderedStart: this.visibleRange.start + 1,
+                    renderedEnd: this.visibleRange.end
+                };
+            };
+
+            function App() {
+                this.items = [];
+                this.scroller = null;
+                this.templateFn = null;
+                this.render();
             }
-            El("#root", null, table.el);
+
+            App.prototype.render = function() {
+                var self = this;
+                var appEl = El("div", [["class", "app-container"]], [
+                    El("div", [["class", "panel"]], [
+                        El("h2", [], "Configuration"),
+                        El("div", [["class", "input-group"]], [
+                            El("label", [], "Items (JSON Array):"),
+                            El("textarea", [["id", "itemsInput"], ["placeholder", '[{"id":"item1","value":"value1"},{"id":"item2","value":"value2"}]']], "")
+                        ]),
+                        El("div", [["class", "input-group"]], [
+                            El("label", [], "Custom Template (JavaScript Function):"),
+                            El("textarea", [["id", "templateInput"], ["placeholder", "function(item, index) { return El('div', [['class', 'item']], item.id); }"]], "")
+                        ]),
+                        El("button", [["id", "loadBtn"]], "Load Items"),
+                        El("div", [["id", "error"], ["class", "error"]], ""),
+                        El("div", [["id", "stats"], ["class", "stats"]], "Ready")
+                    ]),
+                    El("div", [["class", "panel"]], [
+                        El("h2", [], "Virtual Scroller Preview"),
+                        El("div", [["id", "scroller"]], "")
+                    ])
+                ]);
+
+                El.insert("inner", El("#root"), appEl);
+
+                this.scroller = new VirtualScroller({
+                    items: [],
+                    itemHeight: 60,
+                    template: function(item, index) {
+                        return El("div", [["class", "item"]], [
+                            El("div", [["class", "item-content"]], [
+                                El("div", [["class", "item-id"]], item.id || "Item " + (index + 1)),
+                                El("div", [["class", "item-detail"]], item.value || item.name || "No data")
+                            ]),
+                            El("div", [["class", "item-index"]], "#" + (index + 1))
+                        ]);
+                    }
+                });
+
+                this.templateFn = this.scroller.template;
+
+                document.getElementById("loadBtn").addEventListener('click', function() {
+                    self.loadItems();
+                });
+
+                document.getElementById("itemsInput").addEventListener('keydown', function(e) {
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        self.loadItems();
+                    }
+                });
+            };
+
+            App.prototype.loadItems = function() {
+                var itemsInput = document.getElementById("itemsInput").value;
+                var templateInput = document.getElementById("templateInput").value;
+                var errorDiv = document.getElementById("error");
+                var statsDiv = document.getElementById("stats");
+
+                errorDiv.textContent = "";
+
+                try {
+                    this.items = JSON.parse(itemsInput || "[]");
+                    if (!Array.isArray(this.items)) {
+                        throw new Error("Items must be an array");
+                    }
+                } catch (e) {
+                    errorDiv.textContent = "Invalid items JSON: " + e.message;
+                    return;
+                }
+
+                if (templateInput.trim()) {
+                    try {
+                        this.templateFn = eval("(" + templateInput + ")");
+                        if (typeof this.templateFn !== 'function') {
+                            throw new Error("Template must be a function");
+                        }
+                    } catch (e) {
+                        errorDiv.textContent = "Invalid template: " + e.message;
+                        return;
+                    }
+                }
+
+                this.scroller.template = this.templateFn;
+                this.scroller.setItems(this.items);
+                this.updateStats();
+            };
+
+            App.prototype.updateStats = function() {
+                var stats = this.scroller.getStats();
+                var statsDiv = document.getElementById("stats");
+                statsDiv.innerHTML = '<strong>Statistics:</strong><br>Total Items: ' + stats.totalItems + '<br>Visible Items: ' + stats.visibleItems + '<br>Rendering: #' + stats.renderedStart + ' - #' + stats.renderedEnd;
+            };
+
+            new App();
         });
     </script>
 </body>

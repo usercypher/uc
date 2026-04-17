@@ -35,6 +35,16 @@ class Shared_Lib_Cast_Db {
         $o->column = $column;
         return $o;
     }
+
+    function unchanged($table, $column, $id) {
+        $o = new Shared_Lib_Cast_Db_Unchanged;
+        $o->db = $this->db;
+        $o->table = $table;
+        $o->column = $column;
+        $o->id = $id;
+        return $o;
+    }
+
 }
 
 class Shared_Lib_Cast_Db_Unique {
@@ -76,6 +86,27 @@ class Shared_Lib_Cast_Db_Exists {
 
         if (!$result || $result['count'] == 0) {
             return array($value, $value . ' not found in ' . $table);
+        }
+
+        return array($value, null);
+    }
+}
+
+class Shared_Lib_Cast_Db_Unchanged {
+    var $db, $table, $column, $id;
+
+    function process($value) {
+        $table = $this->table;
+        $column = $this->column;
+        $id = $this->id;
+
+        $sql = "SELECT `{$column}` FROM `{$table}` WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        $result = $stmt->fetch();
+
+        if ($result && $result[$column] === $value) {
+            return array($value, 'cannot set to ' . $value . ': ' . $column . ' is already set to ' . $result[$column]);
         }
 
         return array($value, null);

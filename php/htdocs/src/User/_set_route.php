@@ -33,3 +33,21 @@ $app->groupRoute($group, 'POST', 'user/delete', array(
 $app->groupRoute($group, 'POST', 'user/session-verify', array(
     'User_Pipe_Init', 'User_Pipe_SessionVerify'
 ));
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Cli
+ * ------------------------------------------------------------------------
+ */
+$group = array(
+
+);
+
+$app->groupRoute($group, '', 'cli/user/:on-unknown-option*', array(
+    'User_Pipe_Cli_Help'
+));
+
+$app->groupRoute($group, '', 'cli/user/create/:*', array(
+    'User_Pipe_Init', 'User_Pipe_Cli_Create', 'User_Pipe_Store', 'Shared_Pipe_ExtractFlash'
+));

@@ -19,7 +19,7 @@ $userRoles = $data['user_roles'];
     <p>
         <label>
             Username<br>
-            <input type="text" name="user[username]" required>
+            <input type="text" name="user[username]" required x-use-modal-tab-start data-ref="register">
         </label>
     </p>
 
@@ -60,14 +60,14 @@ $userRoles = $data['user_roles'];
     <p>
         <label>
             Password<br>
-            <input type="password" name="user[password]" required>
+            <input id="password" type="password" name="user[password]" required>
         </label>
     </p>
     
     <p>
         <label>
             Confirm Password<br>
-            <input type="password" name="user_confirm[password]" required>
+            <input id="confirm" type="password" name="user_confirm[password]" required>
         </label>
     </p>
 
@@ -75,3 +75,17 @@ $userRoles = $data['user_roles'];
         <button type="submit">Submit</button>
     </p>
 </form>
+
+<script>
+    (function () {
+        const pw = document.getElementById('password');
+        const confirm = document.getElementById('confirm');
+        function validateConfirm() {
+          confirm.setCustomValidity(
+            confirm.value && pw.value !== confirm.value ? 'Passwords do not match.' : ''
+          );
+        }
+        pw.oninput = validateConfirm;
+        confirm.oninput = validateConfirm;
+    })();
+</script>

@@ -20,7 +20,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
         </div>
     </div>
 
-    <script>
+        <script>
         (window.init = window.init || []).push(function () {
             Util.poll(function () {
                 return window.ElXInit;
@@ -36,7 +36,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
             function flashTpl(flash) {
                 var flashHtml = "";
                 for (var i = 0, ilen = flash.length; i < ilen; i++) {
-                    flashHtml += `<li><b>${flash[i].type}: </b>${JSON.stringify(flash[i].data)}</li>`;
+                    flashHtml += `<li><b>${flash[i].type}: </b><span style="white-space: pre-wrap;">${JSON.stringify(flash[i].data, null, 2)}</span></li>`;
                 }
                 document.getElementById("modal-description-flash").innerHTML = flashHtml;                
             }

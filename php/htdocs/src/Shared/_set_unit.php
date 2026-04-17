@@ -32,6 +32,7 @@ $group = array(
 );
 $app->groupUnit($group, 'Shared_Pipe_SessionTokenGenerate');
 $app->groupUnit($group, 'Shared_Pipe_SessionTokenValidate');
+$app->groupUnit($group, 'Shared_Pipe_ExtractFlash');
 
 $app->groupUnit($group, 'Shared_Pipe_OtpGenerate');
 $app->groupUnit($group, 'Shared_Pipe_OtpValidate');
