@@ -9,8 +9,8 @@ $flash = empty($data['flash']) ? null : $data['flash'];
     <span style="display: none;" data-ref="flash" x-use-modal-open></span>
 
     <!-- Flash Messages Modal -->
-    <div class="modal" data-ref="flash" x-use-modal>
-        <div class="modal-content" data-ref="flash" x-use-modal-content>
+    <div class="uc-modal" data-ref="flash" x-use-modal>
+        <div class="uc-modal-content" data-ref="flash" x-use-modal-content>
             <div style="padding: 1em;">
                 <h3 data-ref="flash" x-use-modal-label>Notification</h3>
 
@@ -20,7 +20,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
         </div>
     </div>
 
-        <script>
+    <script>
         (window.init = window.init || []).push(function () {
             Util.poll(function () {
                 return window.ElXInit;

@@ -290,3 +290,21 @@ img {
     max-width: 100%;
     vertical-align: middle;
 }
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.row .item {
+    float: left;
+}
+
+.row.right .item {
+    float: right;
+}
+
+.row.col .item {
+    float: none;
+}

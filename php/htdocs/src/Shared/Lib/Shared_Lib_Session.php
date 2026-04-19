@@ -2,14 +2,20 @@
 
 class Shared_Lib_Session {
     function set($key, $value) {
+        $this->start();
+
         $_SESSION[$key] = $value;
     }
 
     function get($key) {
+        $this->start();
+
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
 
     function unset($key) {
+        $this->start();
+
         $value = null;
 
         if (isset($_SESSION[$key])) {
@@ -27,16 +33,22 @@ class Shared_Lib_Session {
     }
 
     function destroy() {
-        session_unset();
-        session_destroy();
+        if (session_id() != '') {
+            session_unset();
+            session_destroy();
+        }
     }
 
     function regenerate() {
-        session_regenerate_id(true);
+        if (session_id() != '') {
+            session_regenerate_id(true);
+        }
     }
 
     function close() {
-        session_write_close();
+        if (session_id() != '') {
+            session_write_close();
+        }
     }
 
     function id() {

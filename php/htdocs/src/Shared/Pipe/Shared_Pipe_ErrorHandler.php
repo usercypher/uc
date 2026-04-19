@@ -63,5 +63,6 @@ class Shared_Pipe_ErrorHandler {
         if (($error = error_get_last()) !== null) {
             $this->error($error['type'], $error['message'], $error['file'], $error['line']);
         }
-    }
+    }   
+    
 }

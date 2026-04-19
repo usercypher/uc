@@ -1,6 +1,6 @@
 <?php
 
-class Cli_Pipe_Sql_Print {
+class Cli_Pipe_Db_Print {
     var $app;
 
     function args($args) {
@@ -21,7 +21,7 @@ class Cli_Pipe_Sql_Print {
 
         for ($i = 0; $i < count($files); $i++) {
             $file = $files[$i];
-            if (substr($file, -4) === '.sql') {
+            if (substr($file, -3) === '.db') {
                 $message .= "\n" . file_get_contents($file) . "\n";
             }
         }

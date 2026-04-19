@@ -1,11 +1,11 @@
 <?php
 
-function config() {
+function config($app) {
     $env = array(
-        'APP_ID' => 'test_app',
+        'APP_ID' => 'it_borrowing',
         // Environment Settings
         'DIR_WEB' => 'web/',
-        'URL_WEB' => '/web/', // URL path for web access
+        'URL_WEB' => '/', // URL path for web access
         // Error Settings
         'ERROR_TEMPLATES' => array(
             'text/plain' => 'src/App/res/error/text.plain.php',
@@ -49,26 +49,20 @@ function config() {
         ),
         'env' => array(
             'dev' => array(
-                'ROUTE_REWRITE' => 0,
+                'ROUTE_REWRITE' => 1,
 
-                'DB_HOST' => '127.0.0.1',
-                'DB_PORT' => '3306',
-                'DB_NAME' => 'test_app',
+                'DB_DSN' => 'sqlite:' . $app->getEnv('DIR_ROOT', '') . '/var/data/.sqlite',
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
-                'DB_TIME' => '+08:00',
             ) + $env,
             'prod' => array(
-                'ROUTE_REWRITE' => 0,
+                'ROUTE_REWRITE' => 1,
 
                 'SHOW_ERRORS' => 0,
 
-                'DB_HOST' => '127.0.0.1',
-                'DB_PORT' => '3306',
-                'DB_NAME' => 'test_app',
+                'DB_DSN' => 'sqlite:' . $app->getEnv('DIR_ROOT', '') . '/var/data/.sqlite',
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
-                'DB_TIME' => '+08:00',
             ) + $env,
         ),
         'ini' => array(

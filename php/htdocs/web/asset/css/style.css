@@ -3,14 +3,10 @@
 *:after {
     box-sizing: border-box;
 }
-
-body {
-    padding: 1em;
-}
 /* **********
-modal
+uc-modal
  */
-.modal {
+.uc-modal {
     background: rgba(0, 0, 0, 0.5);
     visibility: hidden;
     height: 100%;
@@ -20,10 +16,10 @@ modal
     width: 100%;
     z-index: 1000;
 }
-.modal.active {
+.uc-modal.active {
     visibility: visible;
 }
-.modal-content {
+.uc-modal-content {
     background: #fff;
     border: 1px solid #d4d4d4;
     bottom: 0;

@@ -5,19 +5,16 @@ class Shared_Lib_Database {
 
     function connect($config = array(), $id = '_') {
         if (!isset($this->conn[$id])) {
-            $host = isset($config['host']) ? $config['host'] : 'localhost';
-            $port = isset($config['port']) ? $config['port'] : 3306;
-            $name = isset($config['name']) ? $config['name'] : '';
+            $dsn = isset($config['dsn']) ? $config['dsn'] : '';
             $user = isset($config['user']) ? $config['user'] : '';
             $pass = isset($config['pass']) ? $config['pass'] : '';
             $time = isset($config['time']) ? $config['time'] : '+00:00';
             $timeout = isset($config['timeout']) ? (int) $config['timeout'] : 5;
 
-            $this->conn[$id] = new PDO('mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name, $user, $pass, array(
+            $this->conn[$id] = new PDO($dsn, $user, $pass, array(
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
                 PDO::ATTR_TIMEOUT => $timeout,
             ));
-            $this->conn[$id]->exec('SET time_zone = "' . $time . '"');
         }
         return $id;
     }

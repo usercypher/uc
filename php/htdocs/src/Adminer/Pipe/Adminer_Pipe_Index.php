@@ -1,19 +1,18 @@
 <?php
 
-class App_Pipe_Init {
-    private $app, $session;
+class Adminer_Pipe_Index {
+    private $app;
 
     public function args($args) {
         list(
             $this->app, 
-            $this->session,
         ) = $args;
     } 
 
     public function process($input, $output) {
         $success = true;
 
-        $this->session->name($this->app->getEnv('APP_ID') . ':session');
+        $output->content = $this->app->template($this->app->dirRoot('src/Adminer/res/index.php'));
 
         return array($input, $output, $success);
     }

@@ -80,17 +80,21 @@ $app->groupRoute($group, '', 'cli/file/find-replace/:*', array(
 
 /**
  * ------------------------------------------------------------------------
- * sql
+ * db
  * ------------------------------------------------------------------------
  */
 $group = array(
 
 );
 
-$app->groupRoute($group, '', 'cli/sql/:on-unknown-option*', array(
-    'Cli_Pipe_Sql_Help'
+$app->groupRoute($group, '', 'cli/db/:on-unknown-option*', array(
+    'Cli_Pipe_Db_Help'
 ));
 
-$app->groupRoute($group, '', 'cli/sql/print/:*', array(
-    'Cli_Pipe_Sql_Print'
+$app->groupRoute($group, '', 'cli/db/print/:*', array(
+    'Cli_Pipe_Db_Print'
+));
+
+$app->groupRoute($group, '', 'cli/db/exec/:db/:*', array(
+    'Cli_Pipe_Db_Exec'
 ));

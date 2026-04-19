@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Version 0.0.1
+// Version 0.0.2
 
-while (@ob_end_clean());
+while (ob_get_length() !== false) {
+    ob_end_clean();
+}
 
 function d($var, $detailed = false, $limit = 8192) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) {
@@ -267,7 +269,9 @@ class App {
             return true;
         }
 
-        while (@ob_end_clean());
+        while (ob_get_length() !== false) {
+            ob_end_clean();
+        }
 
         if ($this->env['SAPI'] === 'cli') {
             fwrite(fopen('php://stderr', 'wb'), $e['content']);
@@ -310,7 +314,7 @@ class App {
             $errstr = substr($errstr, 0, $this->env['ERROR_MAX_LENGTH']) . '...';
         }
 
-        $error = '[php error ' . $errno . '] [' . $this->env['SAPI'] . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
+        $error = '[php ' . $errno . '] [' . $this->env['SAPI'] . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
 
         if ($this->env['ERROR_LOGGING']) {
             $this->log($error, $this->env['ERROR_LOG_FILE']);

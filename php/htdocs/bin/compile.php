@@ -9,7 +9,7 @@ function compile() {
 
     $app->setEnv('DIR_ROOT', $app->dir(dirname(__FILE__)) . '/../');
 
-    $config = config();
+    $config = config($app);
     $mode = $config['mode'][basename(__FILE__)];
 
     foreach ($config['ini'][$mode] as $key => $value) {

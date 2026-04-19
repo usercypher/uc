@@ -10,9 +10,7 @@ class Shared_Lib_Cast_Db {
         ) = $args;
 
         $this->db = $database->conn[$database->connect([
-            'host' => $app->getEnv('DB_HOST'), 
-            'port' => $app->getEnv('DB_PORT'),
-            'name' => $app->getEnv('DB_NAME'),
+            'dsn' => $app->getEnv('DB_DSN'),
             'user' => $app->getEnv('DB_USER'),
             'pass' => $app->getEnv('DB_PASS'),
             'time' => $app->getEnv('DB_TIME', '+00:00')
@@ -79,7 +77,7 @@ class Shared_Lib_Cast_Db_Exists {
         $table = $this->table;
         $column = $this->column;
 
-        $sql = "SELECT COUNT(*) as count FROM `{$table}` WHERE `{$column}` = ?";
+        $sql = "SELECT COUNT(*) as count FROM {$table} WHERE {$column} = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$value]);
         $result = $stmt->fetch();
@@ -100,7 +98,7 @@ class Shared_Lib_Cast_Db_Unchanged {
         $column = $this->column;
         $id = $this->id;
 
-        $sql = "SELECT `{$column}` FROM `{$table}` WHERE id = ?";
+        $sql = "SELECT {$column} FROM {$table} WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         $result = $stmt->fetch();

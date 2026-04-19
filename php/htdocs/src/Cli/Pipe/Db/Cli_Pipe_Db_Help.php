@@ -1,6 +1,6 @@
 <?php
 
-class Cli_Pipe_Sql_Help {
+class Cli_Pipe_Db_Help {
     function process($input, $output) {
         $success = true;
 
@@ -10,9 +10,10 @@ class Cli_Pipe_Sql_Help {
             $message .= 'Error: Missing or unknown option \'' . $option[0] . '\'.' . PHP_EOL;
         }
 
-        $message .= 'Usage: php [file] sql [option]' . PHP_EOL;
+        $message .= 'Usage: php [file] db [option]' . PHP_EOL;
         $message .= 'Options:' . PHP_EOL;
-        $message .= '  print       aggregate sql files' . PHP_EOL;
+        $message .= '  print          aggregate db files' . PHP_EOL;
+        $message .= '  exec [code]    execute db code' . PHP_EOL;
         $output->content = $message;
         $output->code = 1;
 

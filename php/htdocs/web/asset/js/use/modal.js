@@ -19,6 +19,7 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
 
     ElX.use("modal-close", function (el) {
         var ref = el.getAttribute("data-ref");
+        var noFocus = el.getAttribute("data-no-focus");
 
         el.setAttribute("aria-label", "close modal");
 
@@ -27,7 +28,9 @@ window.document.documentElement.setAttribute("x-evt-keyup.escape.window", "");
         el.setAttribute("x-css-modal-" + ref + ".active", "remove");
         el.setAttribute("x-set-root.x-sig-modal-close-" + ref, "null");
         el.setAttribute("x-set-modal-open-" + ref + ".aria-expanded", "false");
-        el.setAttribute("x-lit-modal-open-" + ref, "");
+        if (noFocus === null) {
+            el.setAttribute("x-lit-modal-open-" + ref, "");
+        }
     });
 
     ElX.use("modal", function (el) {

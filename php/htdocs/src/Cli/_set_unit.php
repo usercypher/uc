@@ -17,4 +17,5 @@ $app->groupUnit($group, 'Cli_Pipe_Route_Resolve');
 $app->groupUnit($group, 'Cli_Pipe_Route_Run');
 $app->groupUnit($group, 'Cli_Pipe_File_Find');
 $app->groupUnit($group, 'Cli_Pipe_File_FindReplace');
-$app->groupUnit($group, 'Cli_Pipe_Sql_Print');
+$app->groupUnit($group, 'Cli_Pipe_Db_Print');
+$app->groupUnit($group, 'Cli_Pipe_Db_Exec', array('args' => array('Shared_Lib_Database')));

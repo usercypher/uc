@@ -44,6 +44,9 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 
 
 <?php if ($isAuth): ?>
+    <ul>
+        <li><a href="<?= $app->urlRoute('user/session-unset') ?>">Logout</a></li>
+    </ul>
 
     <h1>Edit</h1>
     <fieldset>

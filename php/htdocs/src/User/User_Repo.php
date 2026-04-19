@@ -18,12 +18,9 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
         parent::setDb(
             $this->database,
             $this->database->connect(array(
-                'host' => $this->app->getEnv('DB_HOST'),
-                'port' => $this->app->getEnv('DB_PORT'),
-                'name' => $this->app->getEnv('DB_NAME'),
+                'dsn' => $this->app->getEnv('DB_DSN'),
                 'user' => $this->app->getEnv('DB_USER'),
                 'pass' => $this->app->getEnv('DB_PASS'),
-                'time' => $this->app->getEnv('DB_TIME', '+00:00'),
             ))
         );
     }
