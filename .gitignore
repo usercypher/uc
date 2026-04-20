@@ -1,5 +1,6 @@
 config.php
 var/*
+!var/
 var/data/*
 !var/data/
 var/log/*
