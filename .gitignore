@@ -1,4 +1,5 @@
 config.php
-var/
-!var/*.dir
 !.dir
+var/*
+!var/.dir
+!var/**/.dir
