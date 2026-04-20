@@ -48,14 +48,34 @@ cd uc
 
 ---
 
-## 3. Start the Project
+## 3. Setup UC Framework
+
+Copy the default configuration file:
+
+```bash
+sudo cp config.php.default config.php
+```
+
+Compile routes and units:
+
+```bash
+sudo php bin/compile.php
+```
+
+This serializes your application's routes and units for optimized performance. **Run this command every time you change routes or units.**
+
+---
+
+## 4. Start the Project
 
 ```bash
 sudo chmod +x boot.sh
 sudo ./boot.sh
 ```
 
-If the boot script fails due to PHP version mismatch:
+**If the boot script fails due to PHP version mismatch:**
+
+Find your installed PHP-FPM version then run the boot script with your version:
 
 ```bash
 sudo ./boot.sh php-fpm8.3
@@ -65,7 +85,7 @@ Replace `8.3` with your installed PHP version.
 
 ---
 
-## 4. Access Your Application
+## 5. Access Your Application
 
 Open your browser and navigate to:
 
