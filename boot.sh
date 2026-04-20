@@ -11,11 +11,13 @@ CURRENT_GROUP="$(id -gn)"
 LIGHTTPD_BIN="lighttpd"
 PHP_FPM_BIN="php-fpm"
 
-case "$1" in
-  lighttpd*) LIGHTTPD_BIN="$1"; shift ;;
-  *fpm*) PHP_FPM_BIN="$1"; shift ;;
-  *) echo "Usage: $0 [lighttpd*] [*fpm*]" >&2; exit 1 ;;
-esac
+while [ $# -gt 0 ]; do
+  case "$1" in
+    lighttpd*) LIGHTTPD_BIN="$1"; shift ;;
+    *fpm*) PHP_FPM_BIN="$1"; shift ;;
+    *) echo "Usage: $0 [lighttpd*] [*fpm*]" >&2; exit 1 ;;
+  esac
+done
 
 substitute() {
   sed \
