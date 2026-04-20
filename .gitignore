@@ -1,9 +1,3 @@
 config.php
 var/*
-!var/
-var/data/*
-!var/data/
-var/log/*
-!var/log/
-var/run/*
-!var/run/
+!**/.dir
