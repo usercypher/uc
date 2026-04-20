@@ -13,7 +13,6 @@ class Shared_Lib_Cast_Db {
             'dsn' => $app->getEnv('DB_DSN'),
             'user' => $app->getEnv('DB_USER'),
             'pass' => $app->getEnv('DB_PASS'),
-            'time' => $app->getEnv('DB_TIME', '+00:00')
         ])];
     }
 

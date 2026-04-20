@@ -1,5 +1,6 @@
-<?php
-/*
+<?php /*
+Version: 0.0.4
+
 Copyright 2025 Lloyd Miles M. Bersabe
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-// Version 0.0.2
 
 while (ob_get_length() !== false) {
     ob_end_clean();
@@ -59,7 +58,8 @@ function input_http($in) {
 function input_cli($in) {
     $in->stream = array(fopen('php://stdin', 'rb'));
 
-    global $argc, $argv;
+    global $argc,
+    $argv;
 
     $in->argc = isset($argc) ? $argc : 0;
     $in->argv = isset($argv) ? $argv : array();
@@ -343,7 +343,11 @@ class App {
             $content = $code . '. An unexpected error occurred.' . "\n\n" . $error;
         }
 
-        return array('header' => array('content-type' => $type) + (isset($errcontext['HEADER']) ? $errcontext['HEADER'] : array()), 'content' => $content, 'code' => $code);
+        $header = isset($errcontext['HEADER']) ? $errcontext['HEADER'] : array();
+        $header['content-type'] = $type;
+        unset($header['location']);
+
+        return array('header' => $header, 'content' => $content, 'code' => $code);
     }
 
     // Route Management

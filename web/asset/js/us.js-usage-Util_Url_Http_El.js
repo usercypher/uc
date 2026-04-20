@@ -145,7 +145,7 @@ var pElement = El("p", null, "Hello, world!");
 El(...same with El()) : return {El: arguments}
 */
 // note: using as child in El would reuse the child node if .replace = true, since it's not define by default it will reuse children 
-var pElObject = El.use("p", null, "Hello, world!");
+var pElObject = new El("p", null, "Hello, world!");
 
 /*
 El.insert(
