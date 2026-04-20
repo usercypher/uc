@@ -48,15 +48,13 @@ chmod +x boot.sh
 ./boot.sh
 ```
 
-**If the unversioned `php-fpm` command is not available:**
-
-Specify your installed PHP-FPM version explicitly:
+**To use a specific PHP-FPM or Lighttpd binary:**
 
 ```bash
-./boot.sh php-fpm8.3
+./boot.sh php-fpm8.3 lighttpd
 ```
 
-Replace `8.3` with your actual PHP version (e.g., `8.2`, `8.1`).
+The boot script accepts optional arguments for `php-fpm` (with or without version) and `lighttpd`. Pass only the binaries you need to override.
 
 ---
 
