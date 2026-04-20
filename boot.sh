@@ -13,8 +13,8 @@ PHP_FPM_BIN="php-fpm"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    lighttpd) LIGHTTPD_BIN=lighttpd; shift ;;
-    php-fpm*) PHP_FPM_BIN="$1"; shift ;;
+    lighttpd*) LIGHTTPD_BIN=lighttpd; shift ;;
+    php*) PHP_FPM_BIN="$1"; shift ;;
     *) echo "Usage: $0 [lighttpd] [php-fpm|php-fpm*|...]" >&2; exit 1 ;;
   esac
 done
