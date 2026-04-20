@@ -1,4 +1,4 @@
-# 3LP (ELP Stack): [L]inux + [L]ighttpd + sq[L]ite + [P]HP
+# Uc Framework
 
 ## 1. Install Dependencies
 
