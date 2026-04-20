@@ -1,87 +1,62 @@
 # 3LP (ELP Stack): [L]inux + [L]ighttpd + sq[L]ite + [P]HP
 
-A lightweight, efficient web stack optimized for simplicity and performance.
-
----
-
 ## 1. Install Dependencies
 
-### Debian/Ubuntu
+Install the required packages using your package manager:
+
 ```bash
-sudo apt update
-sudo apt install lighttpd php-fpm php-sqlite3
+apt install lighttpd php-fpm php-pdo php-sqlite3
 ```
 
-### Red Hat/CentOS/Fedora
-```bash
-sudo dnf install lighttpd php-fpm php-pdo php-sqlite
-```
-
-For CentOS 7:
-```bash
-sudo yum install lighttpd php-fpm php-pdo php-sqlite
-```
-
-### Arch Linux
-```bash
-sudo pacman -S lighttpd php-fpm php-sqlite
-```
-
-### Alpine Linux
-```bash
-apk add lighttpd php82-fpm php82-pdo_sqlite
-```
-
-### openSUSE
-```bash
-sudo zypper install lighttpd php-fpm php-pdo php-sqlite
-```
+*(Adjust package names for `yum`, `pacman`, etc.)*
 
 ---
 
-## 2. Clone UC Framework Repository
+## 2. Clone the UC Framework Repository
 
 ```bash
-sudo git clone https://github.com/usercypher/uc.git
+git clone https://github.com/usercypher/uc.git
 cd uc
 ```
 
 ---
 
-## 3. Setup UC Framework
+## 3. Configure and Compile the Framework
 
-Copy the default configuration file:
+Copy the default configuration:
 
 ```bash
-sudo cp config.php.default config.php
+cp config.php.default config.php
 ```
 
 Compile routes and units:
 
 ```bash
-sudo php bin/compile.php
+php bin/compile.php
 ```
 
-This serializes your application's routes and units for optimized performance. **Run this command every time you change routes or units.**
+**Important:** Rerun this command whenever you modify routes or units.
 
 ---
 
-## 4. Start the Project
+## 4. Start the Application
+
+Make the boot script executable and run it:
 
 ```bash
-sudo chmod +x boot.sh
-sudo ./boot.sh
+chmod +x boot.sh
+./boot.sh
 ```
 
-**If the boot script fails due to PHP version mismatch:**
+**If the unversioned `php-fpm` command is not available:**
 
-Find your installed PHP-FPM version then run the boot script with your version:
+Specify your installed PHP-FPM version explicitly:
 
 ```bash
-sudo ./boot.sh php-fpm8.3
+./boot.sh php-fpm8.3
 ```
 
-Replace `8.3` with your installed PHP version.
+Replace `8.3` with your actual PHP version (e.g., `8.2`, `8.1`).
 
 ---
 
