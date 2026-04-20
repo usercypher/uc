@@ -27,13 +27,13 @@ substitute() {
     "$1" >  "$2"
 }
 
-substitute "$SCRIPT_DIR/boot.php-fpm.conf" "$SCRIPT_DIR/var/data/php-fpm.conf"
-substitute "$SCRIPT_DIR/boot.lighttpd.conf" "$SCRIPT_DIR/var/data/lighttpd.conf"
+substitute "$SCRIPT_DIR/boot.php-fpm.conf" "$SCRIPT_DIR/var/dat/php-fpm.conf"
+substitute "$SCRIPT_DIR/boot.lighttpd.conf" "$SCRIPT_DIR/var/dat/lighttpd.conf"
 
-"$PHP_FPM_BIN" -y "$SCRIPT_DIR/var/data/php-fpm.conf" --nodaemonize &
+"$PHP_FPM_BIN" -y "$SCRIPT_DIR/var/dat/php-fpm.conf" --nodaemonize &
 FPM_PID=$!
 
-"$LIGHTTPD_BIN" -D -f "$SCRIPT_DIR/var/data/lighttpd.conf" &
+"$LIGHTTPD_BIN" -D -f "$SCRIPT_DIR/var/dat/lighttpd.conf" &
 LIGHTTPD_PID=$!
 
 wait $FPM_PID $LIGHTTPD_PID

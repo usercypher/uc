@@ -23,7 +23,7 @@ function index() {
         $app->setEnv($key, $value);
     }
 
-    $app->load('var/data/app.state.dat');
+    $app->load('var/dat/app.state.dat');
 
     $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
     if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {

@@ -42,7 +42,7 @@ function compile() {
         require $file;
     }
 
-    $appStateFile = 'var/data/app.state.dat';
+    $appStateFile = 'var/dat/app.state.dat';
 
     $app->save($appStateFile);
 
