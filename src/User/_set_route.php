@@ -11,7 +11,6 @@ $app->groupRoute($group, 'GET', 'user/session-unset', array(
     'User_Pipe_Init', 'User_Pipe_SessionUnset'
 ));
 
-
 // POST
 // ==========
 $group = array(
