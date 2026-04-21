@@ -31,4 +31,4 @@ EXPOSE 8080
 
 USER www-data
 
-CMD ["./boot.sh", "php83-fpm"]
+CMD ["./boot.sh"]
