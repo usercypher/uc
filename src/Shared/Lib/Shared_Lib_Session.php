@@ -7,13 +7,13 @@ class Shared_Lib_Session {
         }
     }
 
-    function open() {
+    function connect() {
         if (session_id() == '') {
             session_start();
         }
     }
 
-    function close() {
+    function disconnect() {
         if (session_id() != '') {
             session_write_close();
         }
@@ -40,6 +40,10 @@ class Shared_Lib_Session {
         }
 
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
+    }
+
+    function del($key) {
+        unset($_SESSION[$key]);
     }
 
     function remove($key) {

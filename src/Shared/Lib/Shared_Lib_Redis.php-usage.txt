@@ -1,0 +1,18 @@
+<?php
+
+require 'Shared_Lib_Redis.php';
+
+$redis = new Shared_Lib_Redis;
+
+// $redis->execute($config, $id = '_')
+$id = $redis->connect(array(
+    'host' => '127.0.0.1',
+    'port' => 6379
+), '_');
+
+// $redis->execute($args, $id = '_')
+$redis->execute(array('SET', 'key', 'value'), $id);
+$redis->execute(array('GET', 'key'));
+$redis->execute(array('DEL', 'key'));
+
+// more...

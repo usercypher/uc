@@ -25,10 +25,6 @@ class Shared_Lib_Database {
         }
     }
 
-    function disconnectAll() {
-        $this->conn = array();
-    }
-
     function hasConnection($id = '_') {
         return isset($this->conn[$id]);
     }
