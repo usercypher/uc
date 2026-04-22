@@ -66,11 +66,7 @@ The boot script accepts optional arguments for `php-fpm` (with or without versio
 
 ## 5. Access Your Application
 
-Open your browser and navigate to:
-
-```
-http://127.0.0.1:8080
-```
+Open your browser and navigate to [http://127.0.0.1:8080](http://127.0.0.1:8080)
 
 The application runs in the foreground. Stop it with **Ctrl+C** or close the terminal.
 
@@ -82,11 +78,7 @@ Adminer is a reusable user-land unit included in this project for convenient dat
 
 ### Access Adminer
 
-Navigate to:
-
-```
-http://127.0.0.1:8080/adminer
-```
+Navigate to [http://127.0.0.1:8080/adminer](http://127.0.0.1:8080/adminer)
 
 ### Authentication
 
