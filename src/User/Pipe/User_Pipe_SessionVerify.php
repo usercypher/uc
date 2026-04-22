@@ -20,9 +20,7 @@ class User_Pipe_SessionVerify {
 
         $error = [];
 
-        $userFound = $this->userRepo->one('WHERE username = ? OR email = ?', array($user['username'], $user['username']));
-
-        if (!$userFound) {
+        if (empty($user['username']) || empty($user['password'])) {
             $error[] = [
                 'data' => [
                     'content' => 'User not found.'
@@ -30,7 +28,15 @@ class User_Pipe_SessionVerify {
             ];
         }
 
-        if ($userFound && !password_verify($user['password'], $userFound['password'])) {
+        if (!$error && !($userFound = $this->userRepo->one('WHERE username = ? OR email = ?', array($user['username'], $user['username'])))) {
+            $error[] = [
+                'data' => [
+                    'content' => 'User not found.'
+                ]
+            ];
+        }
+
+        if (!$error && $userFound && !password_verify($user['password'], $userFound['password'])) {
             $error[] = [
                 'data' => [
                     'content' => 'Incorrect password.'
