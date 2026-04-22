@@ -1,0 +1,18 @@
+<?php
+
+require 'Shared_Lib_Datastore.php';
+
+$ds = new Shared_Lib_Datastore;
+
+// $ds->execute($config, $id = '_')
+$id = $ds->connect(array(
+    'host' => '127.0.0.1',
+    'port' => 6379
+), '_');
+
+// $ds->execute($args, $id = '_')
+$ds->execute(array('SET', 'key', 'value'), $id);
+$ds->execute(array('GET', 'key'));
+$ds->execute(array('DEL', 'key'));
+
+// more...

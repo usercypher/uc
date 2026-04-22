@@ -1,6 +1,6 @@
 <?php
 
-class Shared_Lib_Redis {
+class Shared_Lib_Datastore {
     var $conn;
 
     function connect($config = array(), $id = '_') {
@@ -46,7 +46,7 @@ class Shared_Lib_Redis {
             case '+':
                 return $payload;
             case '-':
-                trigger_error("Redis Error: " . $payload, E_USER_WARNING);
+                trigger_error("Datastore Error: " . $payload, E_USER_WARNING);
                 return false;
             case ':':
                 return (int)$payload;
@@ -66,7 +66,7 @@ class Shared_Lib_Redis {
                 fread($this->conn[$id], 2);
                 return $data;
             default:
-                trigger_error("Redis Error: Unknown RESP type: $type", E_USER_WARNING);
+                trigger_error("Datastore Error: Unknown RESP type: $type", E_USER_WARNING);
                 return false;
         }
     }
