@@ -1,20 +1,51 @@
 <?php
 
 class Shared_Lib_Session {
+    function init($config) {
+        if (session_id() == '') {
+            session_name(isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT');
+        }
+    }
+
+    function open() {
+        if (session_id() == '') {
+            session_start();
+        }
+    }
+
+    function close() {
+        if (session_id() != '') {
+            session_write_close();
+        }
+    }
+
+    function destroy() {
+        if (session_id() != '') {
+            $this->clear();
+            session_destroy();
+        }
+    }
+
     function set($key, $value) {
-        $this->start();
+        if (session_id() == '') {
+            session_start();
+        }
 
         $_SESSION[$key] = $value;
     }
 
     function get($key) {
-        $this->start();
+        if (session_id() == '') {
+            session_start();
+        }
 
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
 
-    function unset($key) {
-        $this->start();
+    function remove($key) {
+        if (session_id() == '') {
+            session_start();
+        }
 
         $value = null;
 
@@ -26,38 +57,9 @@ class Shared_Lib_Session {
         return $value;
     }
 
-    function start() {
-        if (session_id() == '') {
-            session_start();
-        }
-    }
-
-    function destroy() {
+    function clear() {
         if (session_id() != '') {
             session_unset();
-            session_destroy();
-        }
-    }
-
-    function regenerate() {
-        if (session_id() != '') {
-            session_regenerate_id(true);
-        }
-    }
-
-    function close() {
-        if (session_id() != '') {
-            session_write_close();
-        }
-    }
-
-    function id() {
-        return session_id();
-    }
-
-    function name($name) {
-        if (session_id() == '') {
-            session_name($name);
         }
     }
 }

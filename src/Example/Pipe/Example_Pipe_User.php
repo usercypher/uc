@@ -13,7 +13,7 @@ class Example_Pipe_User {
     public function process($input, $output) {
         $success = true;
 
-        $flash = $this->session->unset('flash');
+        $flash = $this->session->remove('flash');
         $sessionToken = $this->session->get('session_token');
         $userSession = $this->session->get('user');
         $userRoles = $input->data['user_roles'];
