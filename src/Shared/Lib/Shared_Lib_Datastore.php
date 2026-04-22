@@ -7,7 +7,7 @@ class Shared_Lib_Datastore {
         if (!isset($this->conn[$id])) {
             $this->conn[$id] = @fsockopen(isset($config['host']) ? $config['host'] : '127.0.0.1', isset($config['port']) ? $config['port'] : 6379, $errno, $errstr, 3);
             if (!$this->conn[$id]) {
-                trigger_error("Connection failed: $errstr", E_USER_ERROR);
+                trigger_error('Datastore Error: Connection failed: ' . $errstr, E_USER_ERROR);
             }
         }
         return $id;
@@ -24,7 +24,7 @@ class Shared_Lib_Datastore {
         return isset($this->conn[$id]);
     }
 
-    // redis operations
+    // Datastore operations
 
     function execute($args, $id = '_') {
         fwrite($this->conn[$id], '*' . count($args) . "\r\n");
@@ -36,6 +36,10 @@ class Shared_Lib_Datastore {
             fwrite($this->conn[$id], $arg . "\r\n");
         }
 
+        return $this->_parse($id);
+    }
+
+    function _parse($id = '_') {
         $line = fgets($this->conn[$id], 512);
         if (!$line) return false;
 
@@ -46,7 +50,7 @@ class Shared_Lib_Datastore {
             case '+':
                 return $payload;
             case '-':
-                trigger_error("Datastore Error: " . $payload, E_USER_WARNING);
+                trigger_error('Datastore Error: ' . $payload, E_USER_WARNING);
                 return false;
             case ':':
                 return (int)$payload;
@@ -65,11 +69,19 @@ class Shared_Lib_Datastore {
                 }
                 fread($this->conn[$id], 2);
                 return $data;
+            case '*':
+                $count = (int)$payload;
+                if ($count === -1) {
+                    return null;
+                }
+                $results = array();
+                for ($i = 0; $count > $i; $i++) {
+                    $results[] = $this->_parse($id);
+                }
+                return $results;
             default:
-                trigger_error("Datastore Error: Unknown RESP type: $type", E_USER_WARNING);
+                trigger_error('Datastore Error: Unknown RESP type: ' . $type, E_USER_WARNING);
                 return false;
         }
     }
 }
-?>
-

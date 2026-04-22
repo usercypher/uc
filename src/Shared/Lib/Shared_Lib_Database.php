@@ -29,7 +29,7 @@ class Shared_Lib_Database {
         return isset($this->conn[$id]);
     }
 
-    // db operations
+    // Database operations
 
     function begin($id = '_') {
         return $this->conn[$id]->beginTransaction();
