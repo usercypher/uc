@@ -18,3 +18,7 @@ services:
       - var:/var/www/var
       - web:/var/www/web
     restart: always
+
+volumes:
+  var:
+  web:
