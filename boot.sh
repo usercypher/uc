@@ -31,9 +31,9 @@ substitute "$SCRIPT_DIR/boot.php-fpm.conf" "$SCRIPT_DIR/var/dat/php-fpm.conf"
 substitute "$SCRIPT_DIR/boot.lighttpd.conf" "$SCRIPT_DIR/var/dat/lighttpd.conf"
 
 "$PHP_FPM_BIN" -y "$SCRIPT_DIR/var/dat/php-fpm.conf" --nodaemonize &
-FPM_PID=$!
+FPM_PID=$! || exit 1
 
 "$LIGHTTPD_BIN" -D -f "$SCRIPT_DIR/var/dat/lighttpd.conf" &
-LIGHTTPD_PID=$!
+LIGHTTPD_PID=$! || exit 1
 
 wait $FPM_PID $LIGHTTPD_PID
