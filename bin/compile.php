@@ -46,6 +46,8 @@ function compile() {
 
     $app->save($appStateFile);
 
+    $app->term();
+
     exit('File created: ' . $appStateFile . "\n");
 }
 

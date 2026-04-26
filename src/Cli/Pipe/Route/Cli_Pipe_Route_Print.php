@@ -46,7 +46,7 @@ class Cli_Pipe_Route_Print {
 
         foreach ($tree as $segment => $node) {
             // If we hit the handler key, we've found the methods (GET, POST, etc.)
-            if ($segment === $this->app->ROUTE_HANDLER) {
+            if ($segment === APP_ROUTE_HANDLER) {
                 foreach ($node as $method => $pipe) {
                     $routes[] = array(
                         'path'   => $prefix ?: '/',

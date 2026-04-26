@@ -1,5 +1,5 @@
 <?php /*
-Version: 0.0.4
+Version: 1.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -15,6 +15,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+define('APP_UNIT_LIST', 0);
+define('APP_UNIT_PATH', 1);
+define('APP_UNIT_FILE', 2);
+define('APP_UNIT_LOAD', 3);
+define('APP_UNIT_ARGS', 4);
+define('APP_UNIT_INST_CACHE', 5);
+define('APP_ROUTE_HANDLER', '!');
+
+$GLOBALS['app_id'] = 0;
+$GLOBALS['app_unit_inst_cache'] = array();
+$GLOBALS['app_unit_path_cache'] = array('App' => true, 'Input' => true, 'Output' => true);
 
 while (ob_get_length() !== false) {
     ob_end_clean();
@@ -171,14 +183,7 @@ class Output {
 }
 
 class App {
-    var $UNIT_LIST = 0;
-    var $UNIT_PATH = 1;
-    var $UNIT_FILE = 2;
-    var $UNIT_LOAD = 3;
-    var $UNIT_ARGS = 4;
-    var $UNIT_INST_CACHE = 5;
-    var $ROUTE_HANDLER = '!';
-
+    var $id = null;
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -186,9 +191,6 @@ class App {
     var $path = array();
     var $pathList = array();
     var $pathListIndex = 0;
-    var $unitInstCache = array();
-    var $unitPathCache = array();
-
     var $env = array(
         'SAPI' => '',
 
@@ -218,18 +220,30 @@ class App {
     // Application Setup
 
     function init() {
+        if ($this->id !== null) {
+            return;
+        }
+
+        $this->id = $GLOBALS['app_id'] === 2147483647 ? ($GLOBALS['app_id'] = 0) : $GLOBALS['app_id']++;
+        $GLOBALS['app_unit_inst_cache'][$this->id] = array();
+
         $this->env['SAPI'] = php_sapi_name();
         $this->env['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
 
-        if (!isset($this->unit['App'])) {
-            $this->addUnit('App');
-            $this->setUnit('App', array('cache' => true));
+        foreach (array('App', 'Input', 'Output') as $unit) {
+            $this->addUnit($unit);
         }
-        $this->unitInstCache['App'] = $this;
-        $this->unitPathCache['App'] = true;
+        $this->setUnit('App', array('cache' => true));
+        $GLOBALS['app_unit_inst_cache'][$this->id]['App'] = $this;
 
         set_error_handler(array($this, 'handleErrorDefault'));
+    }
+
+    function term() {
+        if (isset($GLOBALS['app_unit_inst_cache'][$this->id])) {
+            unset($GLOBALS['app_unit_inst_cache'][$this->id]);
+        }
     }
 
     function setEnv($key, $value) {
@@ -355,11 +369,11 @@ class App {
     function setRoute($method, $route, $units) {
         $handler = array();
         foreach ($units as $unit) {
-            $handler[] = $this->unit[$unit][$this->UNIT_LIST];
+            $handler[] = $this->unit[$unit][APP_UNIT_LIST];
         }
 
         $node = &$this->routes;
-        $routeSegments = explode('/', trim($route, '/') . '/' . $this->ROUTE_HANDLER);
+        $routeSegments = explode('/', trim($route, '/') . '/' . APP_ROUTE_HANDLER);
         foreach ($routeSegments as $segment) {
             if (!isset($node[$segment])) {
                 $node[$segment] = array();
@@ -415,7 +429,7 @@ class App {
                     $current = $value;
                     if (substr($key, -1) === '*') {
                         $param[substr($key, 1, -1)] = implode('/', array_slice($routeSegments, $index));
-                        if (isset($current[$this->ROUTE_HANDLER])) {
+                        if (isset($current[APP_ROUTE_HANDLER])) {
                             break 2;
                         }
                     } else {
@@ -431,7 +445,7 @@ class App {
             }
         }
 
-        while (!isset($current[$this->ROUTE_HANDLER])) {
+        while (!isset($current[APP_ROUTE_HANDLER])) {
             $matched = false;
 
             foreach ($current as $key => $value) {
@@ -447,7 +461,7 @@ class App {
             }
         }
 
-        $current = $current[$this->ROUTE_HANDLER];
+        $current = $current[APP_ROUTE_HANDLER];
 
         if (!isset($current[$method])) {
             return array('error' => 405, 'header' => array('allow' => implode(', ', array_keys($current))));
@@ -524,7 +538,7 @@ class App {
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
         if (isset($this->unit[$unit])) {
-            if (($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE])) {
+            if (($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE])) {
                 user_error('Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
             }
             return;
@@ -538,16 +552,16 @@ class App {
     function setUnit($unit, $option) {
         $test = $this->unit[$unit];
 
-        $map = array('args' => $this->UNIT_ARGS, 'load' => $this->UNIT_LOAD);
+        $map = array('args' => APP_UNIT_ARGS, 'load' => APP_UNIT_LOAD);
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $tmpUnit) {
-                    $this->unit[$unit][$value][] = $this->unit[$tmpUnit][$this->UNIT_LIST];
+                    $this->unit[$unit][$value][] = $this->unit[$tmpUnit][APP_UNIT_LIST];
                 }
             }
         }
 
-        $this->unit[$unit][$this->UNIT_INST_CACHE] = isset($option['cache']) ? $option['cache'] : $this->unit[$unit][$this->UNIT_INST_CACHE];
+        $this->unit[$unit][APP_UNIT_INST_CACHE] = isset($option['cache']) ? $option['cache'] : $this->unit[$unit][APP_UNIT_INST_CACHE];
     }
 
     function groupUnit($group, $unit, $option = array()) {
@@ -573,7 +587,7 @@ class App {
                 return;
             }
 
-            if (isset($this->unitPathCache[$unit])) {
+            if (isset($GLOBALS['app_unit_path_cache'][$unit])) {
                 if (0 > $top) {
                     return;
                 }
@@ -582,7 +596,7 @@ class App {
                 continue;
             }
 
-            $load = $this->unit[$unit][$this->UNIT_LOAD];
+            $load = $this->unit[$unit][APP_UNIT_LOAD];
             if ($load) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, count($load));
@@ -599,12 +613,12 @@ class App {
 
             unset($seen[$previousUnit]);
 
-            require $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][$this->UNIT_PATH]] . $this->unit[$unit][$this->UNIT_FILE] . '.php';
-            $this->unitPathCache[$unit] = true;
+            include $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
+            $GLOBALS['app_unit_path_cache'][$unit] = true;
         }
     }
 
-    function makeUnit($unit, $new = false) {
+    function &makeUnit($unit, $new = false) {
         $stack = array($unit);
         $top = 0;
         $seen = array();
@@ -622,18 +636,18 @@ class App {
                 return;
             }
 
-            $cache = !$new && $this->unit[$unit][$this->UNIT_INST_CACHE];
-            if ($cache && isset($this->unitInstCache[$unit])) {
+            $cache = !$new && $this->unit[$unit][APP_UNIT_INST_CACHE];
+            if ($cache && isset($GLOBALS['app_unit_inst_cache'][$this->id][$unit])) {
                 if (0 > $top) {
-                    return $this->unitInstCache[$unit];
+                    return $GLOBALS['app_unit_inst_cache'][$this->id][$unit];
                 }
 
                 unset($seen[$previousUnit]);
-                $resolvedArgs[$previousUnit][] = $this->unitInstCache[$unit];
+                $resolvedArgs[$previousUnit][] = &$GLOBALS['app_unit_inst_cache'][$this->id][$unit];
                 continue;
             }
 
-            $args = $this->unit[$unit][$this->UNIT_ARGS];
+            $args = $this->unit[$unit][APP_UNIT_ARGS];
             if ($args) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, count($args));
@@ -659,7 +673,7 @@ class App {
             }
 
             if ($cache) {
-                $this->unitInstCache[$unit] = $class;
+                $GLOBALS['app_unit_inst_cache'][$this->id][$unit] = $class;
             }
 
             $resolvedArgs[$previousUnit][] = $class;
@@ -669,7 +683,7 @@ class App {
     }
 
     function resetUnit($unit) {
-        unset($this->unitInstCache[$unit]);
+        unset($GLOBALS['app_unit_inst_cache'][$this->id][$unit]);
     }
 
     // Utility
@@ -709,8 +723,9 @@ class App {
         $msg = date(sprintf('[Y-m-d H:i:s.%06d O]', $micro * 1000000), $time) . ' ' . $msg . "\n";
 
         if ($this->env['LOG_HANDLER']) {
-            list($obj, $method) = $this->env['LOG_HANDLER'];
-            $obj->$method($msg, $file);
+            $handler = $this->env['LOG_HANDLER'];
+            $handler[0]-> {
+                $handler[1]}($msg, $file);
             return;
         }
 

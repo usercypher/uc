@@ -49,7 +49,7 @@ class Cli_Pipe_Help {
         $suggestions = [];
         foreach ($tree as $key => $value) {
             // Skip the handler meta-key and dynamic parameters (starting with :)
-            if ($key === $this->app->ROUTE_HANDLER || (isset($key[0]) && $key[0] === ':')) {
+            if ($key === APP_ROUTE_HANDLER || (isset($key[0]) && $key[0] === ':')) {
                 continue;
             }
             $suggestions[] = "  " . $key;
