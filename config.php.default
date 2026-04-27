@@ -37,8 +37,8 @@ function config($app) {
         // General Settings
         'default_charset' => 'UTF-8',
         // Performance Settings
-        'memory_limit' => '128M',
-        'max_execution_time' => 7200,
+        'memory_limit' => '16M',
+        'max_execution_time' => 30,
     );
 
     return array(
@@ -74,9 +74,6 @@ function config($app) {
                 'display_startup_errors' => 0,
                 'error_reporting' => E_ALL & ~E_NOTICE & ~E_DEPRECATED,
                 'log_errors' => 1,
-
-                'memory_limit' => '256M',
-                'max_execution_time' => 30,
             ) + $ini,
         )
     );
