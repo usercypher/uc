@@ -60,7 +60,8 @@ class Cli_Pipe_Route_Run {
         } else {
             $tempInput->param = $result['param'];
             // Dispatch the request
-            list($_, $output) = $this->app->pipe($tempInput, $output, $result['handler']);
+            $tempInput->data['handler'] = $result['handler'];
+            list($_, $output) = $this->app->pipe($tempInput, $output);
         }
 
         return array($input, $output, $success);

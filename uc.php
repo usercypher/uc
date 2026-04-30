@@ -1,5 +1,5 @@
 <?php /*
-Version: 1.0.0
+Version: 1.1.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -23,10 +23,6 @@ define('APP_UNIT_LOAD', 3);
 define('APP_UNIT_ARGS', 4);
 define('APP_UNIT_INST_CACHE', 5);
 define('APP_ROUTE_HANDLER', '!');
-
-$GLOBALS['app_id'] = 0;
-$GLOBALS['app_unit_inst_cache'] = array();
-$GLOBALS['app_unit_path_cache'] = array('App' => true, 'Input' => true, 'Output' => true);
 
 while (ob_get_length() !== false) {
     ob_end_clean();
@@ -183,7 +179,6 @@ class Output {
 }
 
 class App {
-    var $id = null;
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -216,34 +211,26 @@ class App {
         'LOG_RETENTION_DAYS' => 7,
         'LOG_MAX_FILES' => 10,
     );
+    var $unitInstCache = array();
 
     // Application Setup
 
     function init() {
-        if ($this->id !== null) {
-            return;
-        }
-
-        $this->id = $GLOBALS['app_id'] === 2147483647 ? ($GLOBALS['app_id'] = 0) : $GLOBALS['app_id']++;
-        $GLOBALS['app_unit_inst_cache'][$this->id] = array();
-
         $this->env['SAPI'] = php_sapi_name();
         $this->env['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
-
         foreach (array('App', 'Input', 'Output') as $unit) {
-            $this->addUnit($unit);
+            if (!isset($this->unit[$unit])) {
+                $this->addUnit($unit);
+            }
         }
         $this->setUnit('App', array('cache' => true));
-        $GLOBALS['app_unit_inst_cache'][$this->id]['App'] = $this;
-
+        $this->unitInstCache['App'] = $this;
         set_error_handler(array($this, 'handleErrorDefault'));
     }
 
     function term() {
-        if (isset($GLOBALS['app_unit_inst_cache'][$this->id])) {
-            unset($GLOBALS['app_unit_inst_cache'][$this->id]);
-        }
+        $this->unitInstCache = array();
     }
 
     function setEnv($key, $value) {
@@ -549,7 +536,7 @@ class App {
         $this->unitList[$unitListIndex] = $unit;
     }
 
-    function setUnit($unit, $option) {
+    function setUnit($unit, $option = array()) {
         $test = $this->unit[$unit];
 
         $map = array('args' => APP_UNIT_ARGS, 'load' => APP_UNIT_LOAD);
@@ -572,6 +559,8 @@ class App {
     }
 
     function loadUnit($unit) {
+        static $unitPathCache = array('App' => true, 'Input' => true, 'Output' => true);
+
         $stack = array($unit);
         $top = 0;
         $seen = array();
@@ -587,7 +576,7 @@ class App {
                 return;
             }
 
-            if (isset($GLOBALS['app_unit_path_cache'][$unit])) {
+            if (isset($unitPathCache[$unit])) {
                 if (0 > $top) {
                     return;
                 }
@@ -613,8 +602,8 @@ class App {
 
             unset($seen[$previousUnit]);
 
-            include $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
-            $GLOBALS['app_unit_path_cache'][$unit] = true;
+            require $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
+            $unitPathCache[$unit] = true;
         }
     }
 
@@ -633,17 +622,17 @@ class App {
 
             if (isset($seen[$unit])) {
                 user_error('Circular args detected: ' . implode(' -> ', array_slice($stack, 0, $top + 2)), E_USER_WARNING);
-                return;
+                return $class;
             }
 
             $cache = !$new && $this->unit[$unit][APP_UNIT_INST_CACHE];
-            if ($cache && isset($GLOBALS['app_unit_inst_cache'][$this->id][$unit])) {
+            if ($cache && isset($this->unitInstCache[$unit])) {
                 if (0 > $top) {
-                    return $GLOBALS['app_unit_inst_cache'][$this->id][$unit];
+                    return $this->unitInstCache[$unit];
                 }
 
                 unset($seen[$previousUnit]);
-                $resolvedArgs[$previousUnit][] = &$GLOBALS['app_unit_inst_cache'][$this->id][$unit];
+                $resolvedArgs[$previousUnit][] = &$this->unitInstCache[$unit];
                 continue;
             }
 
@@ -673,7 +662,7 @@ class App {
             }
 
             if ($cache) {
-                $GLOBALS['app_unit_inst_cache'][$this->id][$unit] = $class;
+                $this->unitInstCache[$unit] = $class;
             }
 
             $resolvedArgs[$previousUnit][] = $class;
@@ -683,7 +672,7 @@ class App {
     }
 
     function resetUnit($unit) {
-        unset($GLOBALS['app_unit_inst_cache'][$this->id][$unit]);
+        unset($this->unitInstCache[$unit]);
     }
 
     // Utility
@@ -783,8 +772,8 @@ class App {
         }
     }
 
-    function pipe($input, $output, $pipe) {
-        foreach ($pipe as $p) {
+    function process($input, $output) {
+        foreach ($input->data['handler'] as $p) {
             $p = $this->makeUnit($p);
             list($input, $output, $success) = $p->process($input, $output);
             if (!$success) {
