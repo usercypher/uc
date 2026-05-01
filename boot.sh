@@ -36,4 +36,6 @@ FPM_PID=$!
 command "$LIGHTTPD_BIN" -D -f "$SCRIPT_DIR/var/dat/lighttpd.conf" &
 LIGHTTPD_PID=$!
 
-wait $FPM_PID $LIGHTTPD_PID
+while kill -0 "$FPM_PID" 2>/dev/null && kill -0 "$LIGHTTPD_PID" 2>/dev/null; do
+  sleep 1
+done
