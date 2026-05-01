@@ -1,5 +1,5 @@
 <?php /*
-Version: 1.1.0
+Version: 2.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -772,8 +772,8 @@ class App {
         }
     }
 
-    function process($input, $output) {
-        foreach ($input->data['handler'] as $p) {
+    function pipe($input, $output, $pipe) {
+        foreach ($pipe as $p) {
             $p = $this->makeUnit($p);
             list($input, $output, $success) = $p->process($input, $output);
             if (!$success) {

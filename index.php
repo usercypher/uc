@@ -39,8 +39,7 @@ function index() {
     $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
     $output->version = $input->version;
 
-    $input->data['handler'] = $config['handler'];
-    list($input, $output) = $app->process($input, $output);
+    list($input, $output) = $app->pipe($input, $output, $config['handler']);
 
     $result = $app->resolveRoute($input->method, $input->route);
 
@@ -59,8 +58,7 @@ function index() {
         trigger_error($result['error'] . '|' . $description, E_USER_WARNING);
     } else {
         $input->param = $result['param'];
-        $input->data['handler'] = $result['handler'];
-        list($input, $output) = $app->process($input, $output);
+        list($input, $output) = $app->pipe($input, $output, $result['handler']);
     }
 
     $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
