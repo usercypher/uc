@@ -1,5 +1,5 @@
 <?php /*
-Version: 2.0.0
+Version: 2.1.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -143,6 +143,12 @@ class Input {
 
         return $lines;
     }
+
+    function term() {
+        foreach ($this->stream as $stream) {
+            fclose($stream);
+        }
+    }
 }
 
 class Output {
@@ -153,8 +159,10 @@ class Output {
     var $code = 0;
     var $version = '1.1';
 
+    var $headersSent = false;
+
     function io($content, $id = 0) {
-        if (php_sapi_name() !== 'cli' && !headers_sent()) {
+        if (!$this->headersSent && !headers_sent()) {
             if (isset($this->header['location']) && (300 > $this->code || $this->code > 399)) {
                 $this->code = 302;
             }
@@ -173,8 +181,15 @@ class Output {
             }
         }
 
+        $this->headersSent = true;
         fwrite($this->stream[$id], $content);
         flush();
+    }
+
+    function term() {
+        foreach ($this->stream as $stream) {
+            fclose($stream);
+        }
     }
 }
 
@@ -275,7 +290,9 @@ class App {
         }
 
         if ($this->env['SAPI'] === 'cli') {
-            fwrite(fopen('php://stderr', 'wb'), $e['content']);
+            $stream = fopen('php://stderr', 'wb');
+            fwrite($stream, $e['content']);
+            fclose($stream);
         } else {
             if (!headers_sent()) {
                 header('HTTP/1.1 ' . $e['code']);

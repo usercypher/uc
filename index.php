@@ -64,6 +64,8 @@ function index() {
     $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
 
     $app->term();
+    $input->term();
+    $output->term();
 
     if ($app->getEnv('SAPI') === 'cli') {
         exit($output->code);

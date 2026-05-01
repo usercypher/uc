@@ -38,7 +38,7 @@ class Shared_Pipe_ErrorHandler {
     }
 
     function exception($e) {
-        while (ob_get_level()) {
+        while (ob_get_length() !== false) {
             ob_end_clean();
         }
 
@@ -54,9 +54,14 @@ class Shared_Pipe_ErrorHandler {
         $this->output->version = $this->input->version;
 
         $app = $this->app;
+        $input = $this->input;
         $output = $this->output;
 
         $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
+
+        $app->term();
+        $input->term();
+        $output->term();
     }
 
     function shutdown() {
