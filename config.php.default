@@ -37,7 +37,7 @@ function config($app) {
         // General Settings
         'default_charset' => 'UTF-8',
         // Performance Settings
-        'memory_limit' => '16M',
+        'memory_limit' => '8M',
         'max_execution_time' => 30,
     );
 
