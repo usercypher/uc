@@ -1,5 +1,5 @@
 <?php /*
-Version: 3.0.0
+Version: 4.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -66,17 +66,17 @@ function input_http($in) {
 function input_cli($in) {
     $in->stream = array(fopen('php://stdin', 'rb'));
 
-    global $argc,
-    $argv;
+    if (php_sapi_name() !== 'cli') {
+        return $in;
+    }
 
-    $in->argc = isset($argc) ? $argc : 0;
-    $in->argv = isset($argv) ? $argv : array();
+    global $argc, $argv;
 
     $route = '';
     $query = array();
 
-    for ($i = 1; $in->argc > $i; $i++) {
-        $arg = $in->argv[$i];
+    for ($i = 1; $argc > $i; $i++) {
+        $arg = $argv[$i];
         if (substr($arg, 0, 2) === '--') {
             $eq = strpos($arg, '=');
             if ($eq !== false) {
@@ -91,7 +91,7 @@ function input_cli($in) {
 
     $queryStr = implode('&', $query);
 
-    $in->uri = $route . '?' . $queryStr;
+    $in->uri = 'cli://' . $argv[0] . $route . '?' . $queryStr;
     $in->route = $route;
 
     parse_str($queryStr, $in->query);
@@ -121,9 +121,6 @@ class Input {
     var $version = '1.1';
     var $method = '';
     var $uri = '/';
-
-    var $argc = 0;
-    var $argv = array();
 
     var $route = '/';
     var $cookie = array();
@@ -285,25 +282,22 @@ class App {
             ob_end_clean();
         }
 
-        if ($this->env['SAPI'] === 'cli') {
-            $stream = fopen('php://stderr', 'wb');
-            fwrite($stream, $e['content']);
-            fclose($stream);
-        } else {
-            if (!headers_sent()) {
-                header('HTTP/1.1 ' . $e['code']);
-                foreach ($e['header'] as $key => $value) {
-                    if (is_array($value)) {
-                        foreach ($value as $v) {
-                            header($key . ': ' . $v, false);
-                        }
-                    } else {
-                        header($key . ': ' . $value);
+        if ($this->env['SAPI'] !== 'cli' && !headers_sent()) {
+            header('HTTP/1.1 ' . $e['code']);
+            foreach ($e['header'] as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $v) {
+                        header($key . ': ' . $v, false);
                     }
+                } else {
+                    header($key . ': ' . $value);
                 }
             }
-            echo $e['content'];
         }
+
+        $stream = fopen($this->env['SAPI'] === 'cli' ? 'php://stderr' : 'php://output', 'wb');
+        fwrite($stream, $e['content']);
+        fclose($stream);
 
         exit($e['code'] > 255 ? 1 : $e['code']);
     }
@@ -685,7 +679,7 @@ class App {
     }
 
     function resetUnit($unit) {
-        unset($this->unitInstCache[$unit]);
+        $this->unitInstCache[$unit] = null;
     }
 
     // Utility
