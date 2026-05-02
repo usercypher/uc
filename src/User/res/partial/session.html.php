@@ -11,7 +11,7 @@ $sessionToken = $data['session_token'];
     onsubmit="this.querySelector('button').disabled=true; return true;"
     target="_top"
     method="post"
-    action="<?php echo($app->urlRoute('user/session-verify?redirect=:redirect&redirect_alt=:redirect_alt', array(':redirect' => $redirect, ':redirect_alt' => $redirectAlt))); ?>" 
+    action="<?php echo($app->url('ROUTE', 'user/session-verify?redirect=:redirect&redirect_alt=:redirect_alt', array(':redirect' => $redirect, ':redirect_alt' => $redirectAlt))); ?>" 
 >
     <input type="hidden" name="session_token" value="<?php echo $app->htmlEncode($sessionToken); ?>">
 

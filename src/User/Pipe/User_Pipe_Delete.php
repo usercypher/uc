@@ -47,7 +47,7 @@ class User_Pipe_Delete {
 
         $this->session->set('flash', $this->userRepo->getMessages());
 
-        $output->header['location'] = $this->app->urlRoute(trim($route, '/'));
+        $output->header['location'] = $this->app->url('ROUTE', trim($route, '/'));
 
         return array($input, $output, $success);
     }

@@ -4,7 +4,7 @@ function config($app) {
     $env = array(
         'APP_ID' => 'uc_app',
         // Environment Settings
-        'DIR_WEB' => 'web/',
+        'DIR_WEB' => $app->dir('ROOT', 'web/'),
         'URL_WEB' => '/', // URL path for web access
         // Error Settings
         'ERROR_TEMPLATES' => array(
@@ -37,7 +37,7 @@ function config($app) {
         // General Settings
         'default_charset' => 'UTF-8',
         // Performance Settings
-        'memory_limit' => '8M',
+        'memory_limit' => '16M',
         'max_execution_time' => 30,
     );
 
@@ -51,7 +51,7 @@ function config($app) {
             'dev' => array(
                 'ROUTE_REWRITE' => 1,
 
-                'DB_DSN' => 'sqlite:' . $app->getEnv('DIR_ROOT', '') . '/var/dat/.sqlite',
+                'DB_DSN' => 'sqlite:' . $app->dir('ROOT', '/var/dat/.sqlite'),
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
             ) + $env,
@@ -60,7 +60,7 @@ function config($app) {
 
                 'SHOW_ERRORS' => 0,
 
-                'DB_DSN' => 'sqlite:' . $app->getEnv('DIR_ROOT', '') . '/var/dat/.sqlite',
+                'DB_DSN' => 'sqlite:' . $app->dir('ROOT', '/var/dat/.sqlite'),
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
             ) + $env,

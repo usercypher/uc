@@ -12,7 +12,7 @@ class App_Pipe_PhpInfo {
     public function process($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dirRoot('src/App/res/php-info.html.php'));
+        $output->content = $this->app->template($this->app->dir('ROOT', 'src/App/res/php-info.html.php'));
 
         return array($input, $output, $success);
     }

@@ -11,7 +11,7 @@ class Shared_Pipe_SessionTokenValidate {
         $success = true;
 
         if (!isset($input->frame['session_token'])) {
-            $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
+            $output->header['location'] = $this->app->url('ROUTE', $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
             $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'invalid session token'))));
             $success = false;
         }
@@ -19,13 +19,13 @@ class Shared_Pipe_SessionTokenValidate {
         $csrfToken = $this->session->get('session_token');
 
         if (!$csrfToken) {
-            $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
+            $output->header['location'] = $this->app->url('ROUTE', $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
             $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'invalid session token'))));
             $success = false;
         }
 
         if ($input->frame['session_token'] != $csrfToken) {
-            $output->header['location'] = $this->app->urlRoute($route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
+            $output->header['location'] = $this->app->url('ROUTE', $route = trim(isset($input->query['redirect']) ? $input->query['redirect'] : '', '/'));
             $this->session->set('flash', array(array('type' => 'message:error', 'data' => array('content' => 'invalid session token'))));
             $success = false;
         }

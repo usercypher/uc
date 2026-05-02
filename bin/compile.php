@@ -7,7 +7,7 @@ function compile() {
     $app = new App();
     $app->init();
 
-    $app->setEnv('DIR_ROOT', $app->dir(dirname(__FILE__)) . '/../');
+    $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/../');
 
     $config = config($app);
     $mode = $config['mode'][basename(__FILE__)];
@@ -26,7 +26,7 @@ function compile() {
         'set_route' => array(),
     );
 
-    scan_dir($app->dirRoot('src'), $files);
+    scan_dir($app->dir('ROOT', 'src'), $files);
 
     require str_replace('\\', '/', dirname(__FILE__)) . '/../src/_auto_add_unit.php';
 

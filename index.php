@@ -10,7 +10,7 @@ function index() {
     $app = new App();
     $app->init();
 
-    $app->setEnv('DIR_ROOT', $app->dir(dirname(__FILE__)) . '/');
+    $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/');
 
     $config = config($app);
     $mode = $config['mode'][basename(__FILE__)];
@@ -27,7 +27,7 @@ function index() {
 
     $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
     if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
-        $app->setEnv('URL_ROUTE', $input->route . '?route=/');
+        $app->setEnv('URL_ROUTE', $app->getEnv('URL_ROOT', '/') . $input->route . '?route=/');
         $input->route = isset($input->query['route']) ? $input->query['route'] : '/';
     }
 

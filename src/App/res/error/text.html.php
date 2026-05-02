@@ -35,7 +35,7 @@ list($title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap
 </head>
 <body>
     <h1><?php echo $title; ?></h1>
-    <p><b><?php echo $code; ?>.</b> <?php echo $description; ?> <a href="<?php echo $app->urlRoute(''); ?>">Go to homepage</a></p>
+    <p><b><?php echo $code; ?>.</b> <?php echo $description; ?> <a href="<?php echo $app->url('ROUTE', ''); ?>">Go to homepage</a></p>
     <pre><?php echo $app->htmlEncode($error); ?></pre>
 </body>
 </html>

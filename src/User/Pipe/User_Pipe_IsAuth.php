@@ -18,7 +18,7 @@ class User_Pipe_IsAuth {
 
         $user = $this->session->get('user');
         if (!$user) {
-            $output->header['location'] = $app->urlRoute($route . '?redirect=:redirect', array(
+            $output->header['location'] = $app->url('ROUTE', $route . '?redirect=:redirect', array(
                 ':redirect' => urlencode($input->route),
             ));
             $success = false;

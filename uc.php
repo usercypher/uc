@@ -1,5 +1,5 @@
 <?php /*
-Version: 2.1.0
+Version: 3.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -205,10 +205,6 @@ class App {
         'SAPI' => '',
 
         'DIR_ROOT' => '',
-        'DIR_WEB' => '',
-
-        'URL_ROOT' => '/',
-        'URL_WEB' => '/',
         'URL_ROUTE' => '/',
 
         'ERROR_TEMPLATES' => array(),
@@ -232,7 +228,7 @@ class App {
 
     function init() {
         $this->env['SAPI'] = php_sapi_name();
-        $this->env['DIR_ROOT'] = $this->dir(dirname(__FILE__)) . '/';
+        $this->env['DIR_ROOT'] = $this->dirToUnix(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
         foreach (array('App', 'Input', 'Output') as $unit) {
             if (!isset($this->unit[$unit])) {
@@ -694,31 +690,19 @@ class App {
 
     // Utility
 
-    function dir($s) {
+    function dirToUnix($s) {
         return str_replace('\\', '/', $s);
     }
 
-    function dirRoot($s = '') {
-        return $this->env['DIR_ROOT'] . $s;
+    function dir($k, $s = '') {
+        return $this->env['DIR_' . $k] . $s;
     }
 
-    function dirWeb($s = '') {
-        return $this->env['DIR_ROOT'] . $this->env['DIR_WEB'] . $s;
-    }
-
-    function urlRoot($s = '') {
-        return $this->env['URL_ROOT'] . $s;
-    }
-
-    function urlWeb($s = '', $param = array()) {
-        return $this->env['URL_WEB'] . ($param ? strtr($s, $param) : $s);
-    }
-
-    function urlRoute($s = '', $param = array()) {
-        if (strpos($this->env['URL_ROUTE'], '?') !== false) {
-            $s = str_replace('?', '&', $s);
+    function url($k, $s = '', $param = array()) {
+        if (strpos($this->env['URL_' . $k], '?') !== false && ($q = strpos($s, '?')) !== false) {
+            $s[$q] = '&';
         }
-        return $this->env['URL_ROUTE'] . ($param ? strtr($s, $param) : $s);
+        return $this->env['URL_' . $k] . ($param ? strtr($s, $param) : $s);
     }
 
     function log($msg, $file) {

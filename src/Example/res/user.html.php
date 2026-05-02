@@ -19,9 +19,9 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Example - User</title>
-  <script src="<?= $app->urlWeb('asset/js/uc.js') ?>"></script>
-  <link rel="stylesheet" href="<?= $app->urlWeb('asset/css/uc.css') ?>">
-  <link rel="stylesheet" href="<?= $app->urlWeb('asset/css/style.css') ?>">
+  <script src="<?= $app->url('WEB', 'asset/js/uc.js') ?>"></script>
+  <link rel="stylesheet" href="<?= $app->url('WEB', 'asset/css/uc.css') ?>">
+  <link rel="stylesheet" href="<?= $app->url('WEB', 'asset/css/style.css') ?>">
   <style>
       .section { padding: 1em; }
   </style>
@@ -34,7 +34,7 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 <?php if (!$isAuth): ?>
         
         <ul>
-            <li><a href="<?= $app->urlRoute('') ?>">Home</a></li>
+            <li><a href="<?= $app->url('ROUTE', '') ?>">Home</a></li>
         </ul>
     
     </div>
@@ -65,8 +65,8 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 <?php if ($isAuth): ?>
 
         <ul>
-            <li><a href="<?= $app->urlRoute('') ?>">Home</a></li>
-            <li><a href="<?= $app->urlRoute('user/session-unset?redirect=:redirect', array(':redirect' => trim($route, '/'))) ?>">Logout</a></li>
+            <li><a href="<?= $app->url('ROUTE', '') ?>">Home</a></li>
+            <li><a href="<?= $app->url('ROUTE', 'user/session-unset?redirect=:redirect', array(':redirect' => trim($route, '/'))) ?>">Logout</a></li>
         </ul>
     </div>
 

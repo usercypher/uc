@@ -12,7 +12,7 @@ $user = $data['user'];
     onsubmit="this.querySelector('button').disabled=true; return true;"
     target="_top"
     method="post"
-    action="<?php echo($app->urlRoute('user/update?redirect=:redirect&redirect_alt=:redirect_alt', array(':redirect' => $redirect, ':redirect_alt' => $redirectAlt))); ?>" 
+    action="<?php echo($app->url('ROUTE', 'user/update?redirect=:redirect&redirect_alt=:redirect_alt', array(':redirect' => $redirect, ':redirect_alt' => $redirectAlt))); ?>" 
 >
     <input type="hidden" name="session_token" value="<?php echo $app->htmlEncode($sessionToken); ?>">
     <input type="hidden" name="context[update_password]" value="1">

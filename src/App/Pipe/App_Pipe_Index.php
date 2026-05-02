@@ -12,7 +12,7 @@ class App_Pipe_Index {
     public function process($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dirRoot('src/App/res/index.html.php'), array(
+        $output->content = $this->app->template($this->app->dir('ROOT', 'src/App/res/index.html.php'), array(
             'app' => $this->app
         ));
 
