@@ -17,7 +17,6 @@ services:
     volumes:
       - var:/var/www/var
       - web:/var/www/web
-    restart: always
     mem_limit: 128m
     memswap_limit: 128m
 

@@ -47,20 +47,28 @@ php bin/index.php db print | php bin/index.php db exec
 
 ## 4. Start the Application
 
-Make the boot script executable and run it:
+Make the init script executable and run it:
 
 ```bash
-chmod +x boot.sh
-./boot.sh
+chmod +x init.sh
+./init.sh
 ```
 
 **To use a specific PHP-FPM or Lighttpd binary:**
 
 ```bash
-./boot.sh php-fpm8.3 lighttpd
+./init.sh [-l lighttpd_path] [-p php-fpm_path]
 ```
 
-The boot script accepts optional arguments for `php-fpm` (with or without version) and `lighttpd`. Pass only the binaries you need to override.
+The init script accepts optional arguments to override the default binaries. Use `-l` for lighttpd and `-p` for php-fpm.
+
+Examples:
+
+```bash
+./init.sh -p php-fpm8.3 -l lighttpd
+./init.sh -p /usr/local/bin/php-fpm8.3
+./init.sh -l /opt/lighttpd/bin/lighttpd
+```
 
 ---
 

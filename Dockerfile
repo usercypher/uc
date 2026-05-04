@@ -25,4 +25,4 @@ EXPOSE 8080
 
 USER www-data
 
-CMD ["./boot.sh"]
+CMD ["./init.sh"]
