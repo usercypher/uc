@@ -47,27 +47,27 @@ php bin/index.php db print | php bin/index.php db exec
 
 ## 4. Start the Application
 
-Make the init script executable and run it:
+Make the uc shell script executable and run it:
 
 ```bash
-chmod +x init.sh
-./init.sh
+chmod +x uc.sh
+./uc.sh
 ```
 
 **To use a specific PHP-FPM or Lighttpd binary:**
 
 ```bash
-./init.sh [-l lighttpd_path] [-p php-fpm_path]
+./uc.sh [-l lighttpd_path] [-p php-fpm_path]
 ```
 
-The init script accepts optional arguments to override the default binaries. Use `-l` for lighttpd and `-p` for php-fpm.
+The uc shell script accepts optional arguments to override the default binaries. Use `-l` for lighttpd and `-p` for php-fpm.
 
 Examples:
 
 ```bash
-./init.sh -p php-fpm8.3 -l lighttpd
-./init.sh -p /usr/local/bin/php-fpm8.3
-./init.sh -l /opt/lighttpd/bin/lighttpd
+./uc.sh -p php-fpm8.3 -l lighttpd
+./uc.sh -p /usr/local/bin/php-fpm8.3
+./uc.sh -l /opt/lighttpd/bin/lighttpd
 ```
 
 ---

@@ -19,10 +19,10 @@ RUN mkdir -p /var/www/var && \
     chmod -R 755 /var/www && \
     chmod -R 775 /var/www/var && \
     chmod -R 775 /var/www/web && \
-    chmod +x init.sh
+    chmod +x uc.sh
 
 EXPOSE 8080
 
 USER www-data
 
-CMD ["./init.sh"]
+CMD ["./uc.sh"]

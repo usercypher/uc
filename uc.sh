@@ -1,4 +1,19 @@
 #!/bin/sh
+#v1.0.0
+#
+# Copyright 2025 Lloyd Miles M. Bersabe
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 RUNNING=1
 
@@ -21,7 +36,7 @@ while [ $# -gt 0 ]; do
 done
 
 escape_sed() {
-    printf '%s' "$1" | sed 's/[\/&|]/\\&/g'
+    printf '%s' "$1" | sed 's/[\/&]/\\&/g'
 }
 
 substitute() {
@@ -32,9 +47,9 @@ substitute() {
         "$1" > "$2"
 }
 
-substitute "$SCRIPT_DIR/init.lighttpd.conf" "$SCRIPT_DIR/var/dat/lighttpd.conf"
-substitute "$SCRIPT_DIR/init.php-fpm.conf" "$SCRIPT_DIR/var/dat/php-fpm.conf"
-substitute "$SCRIPT_DIR/init.php.ini" "$SCRIPT_DIR/var/dat/php.ini"
+substitute "$SCRIPT_DIR/uc.sh.lighttpd.conf" "$SCRIPT_DIR/var/dat/lighttpd.conf"
+substitute "$SCRIPT_DIR/uc.sh.php-fpm.conf" "$SCRIPT_DIR/var/dat/php-fpm.conf"
+substitute "$SCRIPT_DIR/uc.sh.php.ini" "$SCRIPT_DIR/var/dat/php.ini"
 
 while [ "$RUNNING" -eq 1 ]; do
     if [ -z "${FPM_PID:-}" ] || ! kill -0 "$FPM_PID" 2>/dev/null; then
