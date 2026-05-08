@@ -1,5 +1,5 @@
 #!/bin/sh
-#v1.0.0
+#v1.0.1
 #
 # Copyright 2025 Lloyd Miles M. Bersabe
 #
@@ -16,24 +16,11 @@
 # limitations under the License.
 
 RUNNING=1
+ROOT=$(cd "$(dirname "$0")" && pwd) || exit 1
+UID=$(id -u)
+GID=$(id -g)
 
 trap 'RUNNING=0' HUP INT TERM
-
-SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd) || exit 1
-CURRENT_USER=$(id -u)
-CURRENT_GROUP=$(id -g)
-
-LIGHTTPD_BIN=lighttpd
-PHP_FPM_BIN=php-fpm
-
-# --- args ---
-while [ $# -gt 0 ]; do
-    case $1 in
-        -l) [ $# -ge 2 ] || { printf "%s: -l requires a value\n" "$0" >&2; exit 1; }; LIGHTTPD_BIN=$2; shift 2 ;;
-        -p) [ $# -ge 2 ] || { printf "%s: -p requires a value\n" "$0" >&2; exit 1; }; PHP_FPM_BIN=$2; shift 2 ;;
-        *) printf "%s: Unknown option '%s'\nUsage: %s [-l lighttpd_path] [-p php-fpm_path]\n" "$0" "$1" "$0" >&2; exit 1 ;;
-    esac
-done
 
 escape_sed() {
     printf '%s' "$1" | sed 's/[\/&]/\\&/g'
@@ -41,47 +28,58 @@ escape_sed() {
 
 substitute() {
     sed \
-        -e "s|{ROOT}|$(escape_sed "$SCRIPT_DIR")|g" \
-        -e "s|{USER}|$(escape_sed "$CURRENT_USER")|g" \
-        -e "s|{GROUP}|$(escape_sed "$CURRENT_GROUP")|g" \
+        -e "s|{ROOT}|$(escape_sed "$ROOT")|g" \
+        -e "s|{UID}|$(escape_sed "$UID")|g" \
+        -e "s|{GID}|$(escape_sed "$GID")|g" \
         "$1" > "$2"
 }
 
-substitute "$SCRIPT_DIR/uc.sh.lighttpd.conf" "$SCRIPT_DIR/var/dat/lighttpd.conf"
-substitute "$SCRIPT_DIR/uc.sh.php-fpm.conf" "$SCRIPT_DIR/var/dat/php-fpm.conf"
-substitute "$SCRIPT_DIR/uc.sh.php.ini" "$SCRIPT_DIR/var/dat/php.ini"
+substitute "$ROOT/uc.sh.lighttpd.conf" "$ROOT/var/dat/lighttpd.conf"
+substitute "$ROOT/uc.sh.php-fpm.conf" "$ROOT/var/dat/php-fpm.conf"
+substitute "$ROOT/uc.sh.php.ini" "$ROOT/var/dat/php.ini"
+
+help() {
+    printf "Usage: %s [-l lighttpd_path] [-p php-fpm_path]\n" "$0" >&2
+    exit 1
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        -l) [ $# -ge 2 ] || help; LIGHTTPD_BIN=$2; shift ;;
+        -p) [ $# -ge 2 ] || help; PHP_FPM_BIN=$2; shift ;;
+        *)  help ;;
+    esac
+    shift
+done
 
 while [ "$RUNNING" -eq 1 ]; do
-    if [ -z "${FPM_PID:-}" ] || ! kill -0 "$FPM_PID" 2>/dev/null; then
-        command "$PHP_FPM_BIN" -y "$SCRIPT_DIR/var/dat/php-fpm.conf" -c "$SCRIPT_DIR/var/dat/php.ini" --nodaemonize &
+    [ -n "${FPM_PID:-}" ] && kill -0 "$FPM_PID" 2>/dev/null || {
+        "${PHP_FPM_BIN:-php-fpm}" -y "$ROOT/var/dat/php-fpm.conf" -c "$ROOT/var/dat/php.ini" --nodaemonize &
         FPM_PID=$!
-    fi
+    }
 
-    if [ -z "${LIGHTTPD_PID:-}" ] || ! kill -0 "$LIGHTTPD_PID" 2>/dev/null; then
-        command "$LIGHTTPD_BIN" -D -f "$SCRIPT_DIR/var/dat/lighttpd.conf" &
+    [ -n "${LIGHTTPD_PID:-}" ] && kill -0 "$LIGHTTPD_PID" 2>/dev/null || {
+        "${LIGHTTPD_BIN:-lighttpd}" -D -f "$ROOT/var/dat/lighttpd.conf" &
         LIGHTTPD_PID=$!
-    fi
+    }
 
     sleep 1
 done
 
 for pid in ${FPM_PID:-} ${LIGHTTPD_PID:-}; do
-    [ -n "$pid" ] && kill "$pid" 2>/dev/null
+    kill "$pid" 2>/dev/null
 done
 
-i=0
-while [ "$i" -lt 30 ]; do
-    alive=0
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do
+    alive=
     for pid in ${FPM_PID:-} ${LIGHTTPD_PID:-}; do
-        [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && alive=1 && break
+        kill -0 "$pid" 2>/dev/null && alive=1 && break
     done
-    [ "$alive" -eq 0 ] && break
-    i=$((i + 1))
+    [ -z "$alive" ] && break
     sleep 1
 done
 
 for pid in ${FPM_PID:-} ${LIGHTTPD_PID:-}; do
-    [ -n "$pid" ] || continue
     kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
     wait "$pid" 2>/dev/null
 done
