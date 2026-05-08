@@ -38,8 +38,8 @@ done
 
 RUNNING=1
 ROOT=$(cd "$(dirname "$0")" && pwd) || exit 1
-UID=$(id -u)
-GID=$(id -g)
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
 
 trap 'RUNNING=0' HUP INT TERM
 
@@ -50,8 +50,8 @@ escape_sed() {
 substitute() {
     sed \
         -e "s|{ROOT}|$(escape_sed "$ROOT")|g" \
-        -e "s|{UID}|$(escape_sed "$UID")|g" \
-        -e "s|{GID}|$(escape_sed "$GID")|g" \
+        -e "s|{USER}|$(escape_sed "$USER_ID")|g" \
+        -e "s|{GROUP}|$(escape_sed "$GROUP_ID")|g" \
         "$1" > "$2"
 }
 
