@@ -1,0 +1,168 @@
+.
+├── Dockerfile
+├── LICENSE
+├── README.md
+├── TickProfiler.php
+├── TickProfiler.php-usage.php
+├── bin
+│   ├── compile.php
+│   └── index.php
+├── config.php
+├── config.php.default
+├── docker-compose.yml
+├── index.php
+├── src
+│   ├── Adminer
+│   │   ├── Pipe
+│   │   │   └── Adminer_Pipe_Index.php
+│   │   ├── _data.php
+│   │   ├── _set_route.php
+│   │   ├── _set_unit.php
+│   │   └── res
+│   │       ├── adminer.php
+│   │       ├── index.php
+│   │       └── plugins
+│   │           ├── login-ip.php
+│   │           └── login-password-less.php
+│   ├── App
+│   │   ├── Pipe
+│   │   │   ├── App_Pipe_Index.php
+│   │   │   ├── App_Pipe_Init.php
+│   │   │   └── App_Pipe_PhpInfo.php
+│   │   ├── _data.php
+│   │   ├── _set_route.php
+│   │   ├── _set_unit.php
+│   │   └── res
+│   │       ├── error
+│   │       │   ├── application.json.php
+│   │       │   ├── text.html.php
+│   │       │   └── text.plain.php
+│   │       ├── index.html.php
+│   │       ├── partial
+│   │       │   └── script.html.php
+│   │       └── php-info.html.php
+│   ├── Cli
+│   │   ├── Pipe
+│   │   │   ├── Cli_Pipe_Help.php
+│   │   │   ├── Db
+│   │   │   │   ├── Cli_Pipe_Db_Exec.php
+│   │   │   │   ├── Cli_Pipe_Db_Help.php
+│   │   │   │   └── Cli_Pipe_Db_Print.php
+│   │   │   ├── File
+│   │   │   │   ├── Cli_Pipe_File_Find.php
+│   │   │   │   ├── Cli_Pipe_File_FindReplace.php
+│   │   │   │   └── Cli_Pipe_File_Help.php
+│   │   │   ├── Route
+│   │   │   │   ├── Cli_Pipe_Route_Help.php
+│   │   │   │   ├── Cli_Pipe_Route_Print.php
+│   │   │   │   ├── Cli_Pipe_Route_Resolve.php
+│   │   │   │   └── Cli_Pipe_Route_Run.php
+│   │   │   └── Unit
+│   │   │       ├── Cli_Pipe_Unit_Create.php
+│   │   │       └── Cli_Pipe_Unit_Help.php
+│   │   ├── _data.php
+│   │   ├── _set_route.php
+│   │   └── _set_unit.php
+│   ├── Example
+│   │   ├── Pipe
+│   │   │   └── Example_Pipe_User.php
+│   │   ├── _data.php
+│   │   ├── _set_route.php
+│   │   ├── _set_unit.php
+│   │   └── res
+│   │       └── user.html.php
+│   ├── Shared
+│   │   ├── Lib
+│   │   │   ├── Cast
+│   │   │   │   ├── Shared_Lib_Cast_Db.php
+│   │   │   │   └── Shared_Lib_Cast_Standard.php
+│   │   │   ├── Shared_Lib_Curl.php
+│   │   │   ├── Shared_Lib_Curl.php-usage.txt
+│   │   │   ├── Shared_Lib_Database.php
+│   │   │   ├── Shared_Lib_Database.php-usage.txt
+│   │   │   ├── Shared_Lib_DatabaseHelper.php
+│   │   │   ├── Shared_Lib_DatabaseHelper.php-usage.txt
+│   │   │   ├── Shared_Lib_Datastore.php
+│   │   │   ├── Shared_Lib_Datastore.php-usage.txt
+│   │   │   ├── Shared_Lib_GoogleApiGmail.php
+│   │   │   ├── Shared_Lib_Html.php
+│   │   │   ├── Shared_Lib_Session.php
+│   │   │   ├── Shared_Lib_Standard.php
+│   │   │   ├── Shared_Lib_Translator.php
+│   │   │   └── Shared_Lib_Translator.php-usage.txt
+│   │   ├── Pipe
+│   │   │   ├── Shared_Pipe_DbBegin.php
+│   │   │   ├── Shared_Pipe_DbEnd.php
+│   │   │   ├── Shared_Pipe_ErrorHandler.php
+│   │   │   ├── Shared_Pipe_ExtractFlash.php
+│   │   │   ├── Shared_Pipe_OtpExist.php
+│   │   │   ├── Shared_Pipe_OtpGenerate.php
+│   │   │   ├── Shared_Pipe_OtpValidate.php
+│   │   │   ├── Shared_Pipe_OutputCompression.php
+│   │   │   ├── Shared_Pipe_SessionTokenGenerate.php
+│   │   │   └── Shared_Pipe_SessionTokenValidate.php
+│   │   ├── _data.php
+│   │   └── _set_unit.php
+│   ├── User
+│   │   ├── Pipe
+│   │   │   ├── Cli
+│   │   │   │   ├── User_Pipe_Cli_Create.php
+│   │   │   │   └── User_Pipe_Cli_Help.php
+│   │   │   ├── User_Pipe_Delete.php
+│   │   │   ├── User_Pipe_Init.php
+│   │   │   ├── User_Pipe_IsAuth.php
+│   │   │   ├── User_Pipe_IsNotAuth.php
+│   │   │   ├── User_Pipe_SessionUnset.php
+│   │   │   ├── User_Pipe_SessionVerify.php
+│   │   │   ├── User_Pipe_Store.php
+│   │   │   └── User_Pipe_Update.php
+│   │   ├── User_Repo.php
+│   │   ├── _00.db
+│   │   ├── _data.php
+│   │   ├── _set_route.php
+│   │   ├── _set_unit.php
+│   │   └── res
+│   │       └── partial
+│   │           ├── create.html.php
+│   │           ├── delete.html.php
+│   │           ├── edit_account.html.php
+│   │           ├── edit_password.html.php
+│   │           └── session.html.php
+│   └── _auto_add_unit.php
+├── templating-guide.php
+├── tree.txt
+├── uc.php
+├── uc.sh
+├── uc.sh.lighttpd.conf
+├── uc.sh.php-fpm.conf
+├── uc.sh.php.ini
+├── var
+│   ├── dat
+│   │   ├── app.state.dat
+│   │   ├── error_last-log-cleanup-timestamp.txt
+│   │   ├── lighttpd.conf
+│   │   ├── php-fpm.conf
+│   │   ├── php.ini
+│   │   └── sess_363725f6335ee2ef8e043b99b466e4b9
+│   ├── log
+│   │   ├── error.log
+│   │   ├── lighttpd.log
+│   │   └── php-fpm.log
+│   └── run
+└── web
+    ├── asset
+    │   ├── css
+    │   │   ├── style.css
+    │   │   ├── uc.css
+    │   │   └── uc.css-usage.html
+    │   └── js
+    │       ├── uc.js
+    │       ├── uc.js-usage-ElX.html
+    │       ├── us.js-usage-Util_Url_Http_El.js
+    │       └── use
+    │           ├── modal.css
+    │           └── modal.js
+    ├── favicon.ico
+    └── index.php
+
+39 directories, 127 files

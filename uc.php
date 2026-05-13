@@ -1,5 +1,5 @@
 <?php /*
-Version: 4.0.0
+Version: 5.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -473,7 +473,7 @@ class App {
 
     function autoAddUnit($path, $option) {
         if (!isset($option['depth'])) {
-            $option['depth'] = 0;
+            $option['depth'] = 1;
         }
 
         if (!isset($option['max'])) {
@@ -492,6 +492,8 @@ class App {
             $option['dir_as_namespace'] = false;
         }
 
+        $relative = implode('/', array_slice(explode('/', $path), -$option['depth']));
+
         if ($handle = opendir($this->env['DIR_ROOT'] . $path)) {
             while (($item = readdir($handle)) !== false) {
                 if ($item === '.' || $item === '..') {
@@ -499,14 +501,14 @@ class App {
                 }
 
                 foreach ($option['ignore'] as $pattern) {
-                    if ($pattern === $item || ($pattern[0] === '?' && strpos($item, substr($pattern, 1)) !== false)) {
+                    if ($pattern === ($relative . $item) || ($pattern[0] === '@' && strpos(($relative . $item), substr($pattern, 1)) !== false)) {
                         continue 2;
                     }
                 }
 
                 $isDir = is_dir($this->env['DIR_ROOT'] . $path . $item);
 
-                if ($isDir && ($option['max'] === -1 || $option['max'] > $option['depth'])) {
+                if ($isDir && ($option['max'] === -1 || $option['max'] >= $option['depth'])) {
                     $subOption = $option;
                     $subOption['depth']++;
                     $subOption['namespace'] .= $item . '\\';
