@@ -95,6 +95,6 @@ $app->groupRoute($group, '', 'cli/db/print/:*', array(
     'Cli_Pipe_Db_Print'
 ));
 
-$app->groupRoute($group, '', 'cli/db/exec/:db/:*', array(
+$app->groupRoute($group, '', 'cli/db/exec/:*', array(
     'Cli_Pipe_Db_Exec'
 ));

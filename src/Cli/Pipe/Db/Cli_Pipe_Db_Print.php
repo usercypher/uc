@@ -11,7 +11,7 @@ class Cli_Pipe_Db_Print {
         $success = true;
         $message = '';
 
-        $directory = $this->app->getEnv('DIR_ROOT');
+        $directory = $this->app->getEnv('DIR_ROOT') . 'src/';
 
         $files = $this->getFilesRecursive($directory);
 

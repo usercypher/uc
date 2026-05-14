@@ -1,5 +1,5 @@
 <?php /*
-Version: 5.0.0
+Version: 5.0.1
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -91,7 +91,7 @@ function input_cli($in) {
 
     $queryStr = implode('&', $query);
 
-    $in->uri = 'cli://' . $argv[0] . $route . '?' . $queryStr;
+    $in->uri = 'cli://' . $argv[0] . $route . ($queryStr ? '?' . $queryStr : '');
     $in->route = $route;
 
     parse_str($queryStr, $in->query);
@@ -100,7 +100,8 @@ function input_cli($in) {
 }
 
 function output_http($out) {
-    $out->stream = array(fopen('php://output', 'wb'));
+    $s = fopen('php://output', 'wb');
+    $out->stream = array($s, $s);
     $out->code = 200;
     return $out;
 }

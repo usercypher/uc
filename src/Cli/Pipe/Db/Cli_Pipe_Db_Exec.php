@@ -2,6 +2,7 @@
 
 class Cli_Pipe_Db_Exec {
     var $app;
+    var $db;
 
     function args($args) {
         list($this->app, $this->db) = $args;
@@ -16,20 +17,14 @@ class Cli_Pipe_Db_Exec {
         $success = true;
         $message = '';
 
-        $db = $input->io(0, "NULL");
+        $output->io('If input is piped, the script will read it and exit automatically. Paste Db script and type EXIT on its own line to finish:' . "\n");
+        $db = $input->io(0, 'EXIT');
 
-        if (empty($db) && empty($input->param['db'])) {
-            $message .= 'Error: Missing required parameters.' . "\n";
-            $message .= 'Usage: php [file] db exec [db]' . "\n";
-            $output->content = $message;
-            $output->code = 1;
-            $success = false;
-            return array($input, $output, $success);
-        }
+        $output->io('Executing...' . "\n");
 
-        if ($this->db->execute(empty($db) ? $input->param['db'] : $db)) {
-            $message .= 'Db executed successfully.' . "\n";
-        }
+        $this->db->execute($db);
+
+        $message .= 'Done.' . "\n";
 
         $output->content = $message;
 
