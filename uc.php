@@ -1,5 +1,5 @@
 <?php /*
-Version: 5.0.1
+Version: 5.0.2
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -130,6 +130,10 @@ class Input {
     var $param = array();
 
     function io($id = 0, $mark = '') {
+        if (!isset($this->stream[$id])) {
+            return false;
+        }
+
         if ($mark === '') {
             return ($line = fgets($this->stream[$id])) !== false ? rtrim($line) : '';
         }
@@ -143,8 +147,8 @@ class Input {
     }
 
     function term() {
-        foreach ($this->stream as $stream) {
-            fclose($stream);
+        while ($s = array_shift($this->stream)) {
+            fclose($s);
         }
     }
 }
@@ -160,6 +164,10 @@ class Output {
     var $headersSent = false;
 
     function io($content, $id = 0) {
+        if (!isset($this->stream[$id])) {
+            return false;
+        }
+
         if (!$this->headersSent && !headers_sent()) {
             if (isset($this->header['location']) && (300 > $this->code || $this->code > 399)) {
                 $this->code = 302;
@@ -185,8 +193,8 @@ class Output {
     }
 
     function term() {
-        foreach ($this->stream as $stream) {
-            fclose($stream);
+        while ($s = array_shift($this->stream)) {
+            fclose($s);
         }
     }
 }
@@ -296,9 +304,9 @@ class App {
             }
         }
 
-        $stream = fopen($this->env['SAPI'] === 'cli' ? 'php://stderr' : 'php://output', 'wb');
-        fwrite($stream, $e['content']);
-        fclose($stream);
+        $s = fopen($this->env['SAPI'] === 'cli' ? 'php://stderr' : 'php://output', 'wb');
+        fwrite($s, $e['content']);
+        fclose($s);
 
         exit($e['code'] > 255 ? 1 : $e['code']);
     }
