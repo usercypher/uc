@@ -78,7 +78,7 @@ function compile() {
         require $file;
     }
 
-    $appStateFile = 'var/dat/app.state.dat';
+    $appStateFile = 'var/lib/app.state.dat';
 
     $app->save($appStateFile);
 

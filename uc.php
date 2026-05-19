@@ -1,5 +1,5 @@
 <?php /*
-Version: 5.0.2
+Version: 5.0.3
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -148,7 +148,9 @@ class Input {
 
     function term() {
         while ($s = array_shift($this->stream)) {
-            fclose($s);
+            if (is_resource($s)) {
+                fclose($s);
+            }
         }
     }
 }
@@ -194,7 +196,9 @@ class Output {
 
     function term() {
         while ($s = array_shift($this->stream)) {
-            fclose($s);
+            if (is_resource($s)) {
+                fclose($s);
+            }
         }
     }
 }

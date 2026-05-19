@@ -55,18 +55,22 @@ substitute() {
         "$1" > "$2"
 }
 
-substitute "$ROOT/uc.sh.lighttpd.conf" "$ROOT/var/dat/lighttpd.conf"
-substitute "$ROOT/uc.sh.php-fpm.conf" "$ROOT/var/dat/php-fpm.conf"
-substitute "$ROOT/uc.sh.php.ini" "$ROOT/var/dat/php.ini"
+mkdir -p "$ROOT/var/lib"
+mkdir -p "$ROOT/var/log"
+mkdir -p "$ROOT/var/run"
+
+substitute "$ROOT/uc.sh.lighttpd.conf" "$ROOT/var/lib/lighttpd.conf"
+substitute "$ROOT/uc.sh.php-fpm.conf" "$ROOT/var/lib/php-fpm.conf"
+substitute "$ROOT/uc.sh.php.ini" "$ROOT/var/lib/php.ini"
 
 while [ "$RUNNING" -eq 1 ]; do
     { [ -n "${FPM_PID:-}" ] && kill -0 "$FPM_PID" 2>/dev/null; } || {
-        "${PHP_FPM_BIN:-php-fpm}" -y "$ROOT/var/dat/php-fpm.conf" -c "$ROOT/var/dat/php.ini" --nodaemonize &
+        "${PHP_FPM_BIN:-php-fpm}" -y "$ROOT/var/lib/php-fpm.conf" -c "$ROOT/var/lib/php.ini" --nodaemonize &
         FPM_PID=$!
     }
 
     { [ -n "${LIGHTTPD_PID:-}" ] && kill -0 "$LIGHTTPD_PID" 2>/dev/null; } || {
-        "${LIGHTTPD_BIN:-lighttpd}" -D -f "$ROOT/var/dat/lighttpd.conf" &
+        "${LIGHTTPD_BIN:-lighttpd}" -D -f "$ROOT/var/lib/lighttpd.conf" &
         LIGHTTPD_PID=$!
     }
 

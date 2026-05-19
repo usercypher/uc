@@ -1,6 +1,6 @@
 <?php
 
-// Uncomment to generate 'var/data/app.state.dat' or run 'php bin/compile.php' on terminal.
+// Uncomment to generate 'var/liba/app.state.dat' or run 'php bin/compile.php' on terminal.
 //require 'bin/compile.php';  // Generates config and exits script
 
 require 'uc.php';
@@ -23,7 +23,7 @@ function index() {
         $app->setEnv($key, $value);
     }
 
-    $app->load('var/dat/app.state.dat');
+    $app->load('var/lib/app.state.dat');
 
     $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
     if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
