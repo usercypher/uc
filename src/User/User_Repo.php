@@ -14,14 +14,18 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
             $this->castDb
         ) = $args;
 
+        $db = $this->app->getEnv('DB', array());
+        $name = 'DEFAULT';
+
         parent::setTable('user');
         parent::setDb(
             $this->database,
             $this->database->connect(array(
-                'dsn' => $this->app->getEnv('DB_DSN'),
-                'user' => $this->app->getEnv('DB_USER'),
-                'pass' => $this->app->getEnv('DB_PASS'),
-            ))
+                'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
+                'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
+                'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
+                'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+            ), $name)
         );
     }
 

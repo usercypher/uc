@@ -25,8 +25,9 @@ $app = $data['app'];
     <p>Welcome to UC Framework. Explore the code, see how it works.</p>
     <p>
         <a href="https://github.com/usercypher/uc">View on GitHub</a> | 
-        <a href="<?php echo $app->url('ROUTE', 'php-info'); ?>">PHP Info</a> | 
-        <a href="<?php echo $app->url('ROUTE', 'example/user'); ?>">Example - User</a>
+        <a href="<?php echo $app->url('ROUTE', 'phpinfo'); ?>">PHP Info</a> | 
+        <a href="<?php echo $app->url('ROUTE', 'example/user'); ?>">Example - User</a> |
+        <a href="<?php echo $app->url('ROUTE', 'example/game'); ?>">Example - Game</a>
     </p>
 </body>
 </html>

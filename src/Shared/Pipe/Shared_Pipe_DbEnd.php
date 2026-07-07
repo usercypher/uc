@@ -9,22 +9,25 @@ class Shared_Pipe_DbEnd {
             $this->app,
             $this->database
         ) = $args;
-
-        $this->database->connect(array(
-            'dsn' => $this->app->getEnv('DB_DSN'),
-            'user' => $this->app->getEnv('DB_USER'),
-            'pass' => $this->app->getEnv('DB_PASS'),
-        ));
     }
 
     function process($input, $output) {
         $success = true;
         // code
+        $db = $app->getEnv('DB', array());
+        $name = isset($input->data['db_end:name']) ? $input->data['db_end:name'] : 'DEFAULT';
+
+        $this->database->connect(array(
+            'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
+            'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
+            'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
+            'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+        ), $name);
 
         if ($input->data['db_end:commit']) {
-            $this->database->commit();
+            $this->database->commit($name);
         } elseif ($input->data['db_end:rollback']) {
-            $this->database->rollback();
+            $this->database->rollback($name);
         }
 
         return array($input, $output, $success);

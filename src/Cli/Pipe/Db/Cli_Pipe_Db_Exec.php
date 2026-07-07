@@ -6,16 +6,22 @@ class Cli_Pipe_Db_Exec {
 
     function args($args) {
         list($this->app, $this->db) = $args;
-        $this->db->connect(array(
-            'dsn' => $this->app->getEnv('DB_DSN'),
-            'user' => $this->app->getEnv('DB_USER'),
-            'pass' => $this->app->getEnv('DB_PASS'),
-        ));
     }
 
     function process($input, $output) {
         $success = true;
         $message = '';
+        
+        $name = isset($input->query['name']) ? $input->query['name'] : 'DEFAULT';
+
+        $db = $this->app->getEnv('DB', array());
+
+        $this->db->connect(array(
+            'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
+            'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
+            'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
+            'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+        ));
 
         $output->io('If input is piped, the script will read it and exit automatically. Paste Db script and type EXIT on its own line to finish:' . "\n");
         $db = $input->io(0, 'EXIT');

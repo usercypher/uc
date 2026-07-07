@@ -12,8 +12,8 @@ class Cli_Pipe_Db_Help {
 
         $message .= 'Usage: php [file] db [option]' . PHP_EOL;
         $message .= 'Options:' . PHP_EOL;
-        $message .= '  print          aggregate db files' . PHP_EOL;
-        $message .= '  exec [code]    execute db code' . PHP_EOL;
+        $message .= '  print          list db files content. Use --name=[value] to filter by environment (default: DEFAULT). Expected filename format: "*[name].db".' . PHP_EOL;
+        $message .= '  exec [code]    execute db code. Use --name=[value] to select the environment (default: DEFAULT).' . PHP_EOL;
         $output->content = $message;
         $output->code = 1;
 

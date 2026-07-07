@@ -4,6 +4,7 @@ class Shared_Lib_Session {
     function init($config) {
         if (session_id() == '') {
             session_name(isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT');
+            session_id(isset($config['id']) ? $config['id'] : null);
         }
     }
 

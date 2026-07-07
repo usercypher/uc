@@ -1,12 +1,70 @@
 <?php
 
 class Shared_Lib_Curl {
-    var $result = null;
     var $headerRaw = array();
 
     function send($url, $options = array()) {
-        $this->result = new stdClass();
-        $this->headerRaw = array();
+        $ch = $this->createHandle($url, $options);
+
+        $result = new stdClass();
+        $result->header = array();
+        $result->content = curl_exec($ch);
+        $result->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $result->error = curl_error($ch);
+        $result->info = curl_getinfo($ch);
+
+        unset($this->headerRaw[(int)$ch]);
+
+        return $result;
+    }
+
+    function sendBatch($requests) {
+        $mh = curl_multi_init();
+        $handles = array();
+        $results = array();
+
+        foreach ($requests as $key => $req) {
+            $url = isset($req['url']) ? $req['url'] : '';
+            $options = isset($req['options']) ? $req['options'] : array();
+
+            $ch = $this->createHandle($url, $options);
+            curl_multi_add_handle($mh, $ch);
+
+            $handles[(int)$ch] = array(
+                'key' => $key,
+                'ch'  => $ch
+            );
+
+            $results[$key] = new stdClass();
+            $results[$key]->header = array();
+        }
+
+        $active = null;
+        do {
+            $status = curl_multi_exec($mh, $active);
+            if ($active) {
+                curl_multi_select($mh);
+            }
+        } while ($active && $status == CURLM_OK);
+
+        foreach ($handles as $id => $info) {
+            $ch = $info['ch'];
+            $key = $info['key'];
+
+            $results[$key]->content = curl_multi_getcontent($ch);
+            $results[$key]->code    = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $results[$key]->error   = curl_multi_info_read($mh) ? '' : curl_error($ch); // simple mapping
+            $results[$key]->info    = curl_getinfo($ch);
+
+            unset($this->headerRaw[$id]);
+            curl_multi_remove_handle($mh, $ch);
+        }
+
+        curl_multi_close($mh);
+        return $results;
+    }
+
+    function createHandle($url, $options = array()) {
         $ch = curl_init();
 
         $method = isset($options['method']) ? strtoupper($options['method']) : 'GET';
@@ -18,7 +76,6 @@ class Shared_Lib_Curl {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 
         if ($content !== '') {
@@ -41,29 +98,25 @@ class Shared_Lib_Curl {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $parsedHeaders);
         }
 
-        $that = &$this;
+        $this->headerRaw[(int)$ch] = array('raw' => array(), 'result' => new stdClass());
 
+        $that = &$this;
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($that, 'header'));
 
-        $this->result->header = array();
-        $this->result->content = curl_exec($ch);
-        $this->result->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $this->result->error = curl_error($ch);
-        $this->result->info = curl_getinfo($ch);
-
-        curl_close($ch);
-
-        return $this->result;
+        return $ch;
     }
 
     function header($ch, $headerLine) {
+        $id = (int)$ch;
         $trimmed = trim($headerLine);
 
         if ($trimmed === '') {
-            $this->result->header = $this->parseHeader($this->headerRaw);
-            $this->headerRaw = array();
+            if (isset($this->headerRaw[$id])) {
+                $this->headerRaw[$id]['result']->header = $this->parseHeader($this->headerRaw[$id]['raw']);
+                $this->headerRaw[$id]['raw'] = array();
+            }
         } else {
-            $this->headerRaw[] = $headerLine;
+            $this->headerRaw[$id]['raw'][] = $headerLine;
         }
 
         return strlen($headerLine);

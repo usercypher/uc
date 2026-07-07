@@ -337,9 +337,9 @@ Drawer
             }
         }, 300));
 
-        var volume = ElX.x("volume");
+        var volume = new ElX("volume");
     
-        this.volumeContext = ElX.x("volume-context", "");
+        this.volumeContext = new ElX("volume-context", "");
         this.volumeContext.tap(function (current) {
             console.log("volume-context: " + current);
         });

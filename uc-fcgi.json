@@ -1,0 +1,12 @@
+{
+  "server": "0.0.0.0:8080",
+  "document_root": "./web",
+  "fcgi_enabled": true,
+  "fcgi_bin": "php-cgi -b 0.0.0.0:{PORT} -c ./php.ini",
+  "fcgi_router_file": "./index.php",
+  "fcgi_worker_count": 5,
+  "fcgi_worker_concurrency": 1,
+  "fcgi_env": {
+    "PHP_FCGI_MAX_REQUESTS": "100000"
+  }
+}

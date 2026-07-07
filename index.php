@@ -1,6 +1,6 @@
 <?php
 
-// Uncomment to generate 'var/liba/app.state.dat' or run 'php bin/compile.php' on terminal.
+// Uncomment to generate 'var/lib/app.state.dat' or run ./compile.sh or compile.bat on terminal.
 //require 'bin/compile.php';  // Generates config and exits script
 
 require 'uc.php';

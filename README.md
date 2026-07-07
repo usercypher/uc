@@ -2,112 +2,140 @@
 
 ## 1. Install Dependencies
 
-Install the required packages using your package manager:
+**Linux/macOS**
+
+Install PHP CGI and SQLite:
 
 ```bash
-apt install lighttpd php-fpm php-sqlite3
+apt install php-cgi php-sqlite3
 ```
 
-*(Adjust package names for `yum`, `pacman`, etc.)*
+(Use your distribution's package manager if not using `apt`.)
+
+**Windows**
+
+No dependencies are required. Replace `bin/php-windows` with the PHP version required by your project.
 
 ---
 
-## 2. Clone the UC Framework Repository
+## 2. Get the Repository
+
+**Linux/macOS**
 
 ```bash
 git clone https://github.com/usercypher/uc.git
 cd uc
 ```
 
+> Alternatively, download the ZIP if Git is not installed.
+
+**Windows**
+
+Download:
+
+https://github.com/usercypher/uc/archive/refs/heads/main.zip
+
+Extract the ZIP, then open **Command Prompt** in the extracted project folder.
+
 ---
 
-## 3. Configure and Compile the Framework
+## 3. Configure the Project
 
-Copy the default configuration:
+Copy the default configuration.
+
+**Linux/macOS**
 
 ```bash
 cp config.php.default config.php
 ```
 
-Compile routes and units:
+**Windows**
 
-```bash
-php bin/compile.php
+```bat
+copy config.php.default config.php
 ```
 
-Generate the database:
+Compile routes and units.
+
+**Linux/macOS**
 
 ```bash
-php bin/index.php db print | php bin/index.php db exec
+./compile.sh
 ```
 
-**Important:** Rerun the compile command whenever you modify routes or units. For additional CLI commands, run `php bin/index.php` to see available options. CLI commands use regular routes with an empty HTTP method and are prefixed with `cli/` in the route URL path.
+**Windows**
+
+```bat
+compile.bat
+```
+
+Create the database.
+
+**Linux/macOS**
+
+```bash
+./cli.sh db print | ./cli.sh db exec
+```
+
+**Windows**
+
+```bat
+cli.bat db print | cli.bat db exec
+```
+
+> Re-run the compile command whenever routes or units change. Run `cli.sh` or `cli.bat` without arguments to view available CLI commands.
 
 ---
 
-## 4. Start the Application
+## 4. Start the Server
 
-Make the uc shell script executable and run it:
+**Linux/macOS**
 
 ```bash
-chmod +x uc.sh
-./uc.sh
+chmod +x uc-fcgi.sh
+./uc-fcgi.sh
 ```
 
-**To use a specific PHP-FPM or Lighttpd binary:**
+**Windows**
 
-```bash
-./uc.sh [-l lighttpd_path] [-p php-fpm_path]
-```
-
-The uc shell script accepts optional arguments to override the default binaries. Use `-l` for lighttpd and `-p` for php-fpm.
-
-Examples:
-
-```bash
-./uc.sh -p php-fpm8.3 -l lighttpd
-./uc.sh -p /usr/local/bin/php-fpm8.3
-./uc.sh -l /opt/lighttpd/bin/lighttpd
+```bat
+uc-fcgi.bat
 ```
 
 ---
 
-## 5. Access Your Application
+## 5. Open the Application
 
-Open your browser and navigate to [http://127.0.0.1:8080](http://127.0.0.1:8080)
+Visit:
 
-The application runs in the foreground. Stop it with **Ctrl+C** or close the terminal.
+**http://127.0.0.1:8080**
+
+Press **Ctrl+C** to stop the server.
 
 ---
 
-## 6. Using Adminer for Database Management
+## 6. Database Management (Adminer)
 
-Adminer is a reusable user-land unit included in this project for convenient database management across projects.
+Adminer is included for SQLite database management.
 
-### Access Adminer
+Open:
 
-Navigate to [http://127.0.0.1:8080/adminer](http://127.0.0.1:8080/adminer)
+**http://127.0.0.1:8080/adminer**
 
-### Authentication
+### Login
 
-**For localhost (127.0.0.1):**
-- **Password:** Leave empty (no password required)
+- **127.0.0.1:** Leave the password empty.
+- **Other IPs:** Default password is `root`.
 
-**For other IP addresses:**
-- **Password:** `root` (default, using Adminer's passwordless plugin)
+To change the password or allowed IPs, edit:
 
-You can customize allowed IPs and the default password by editing:
-
-```
+```text
 src/Adminer/res/index.php
 ```
 
-### Database Connection
+### Database
 
-When connecting to the database in Adminer:
-
-**System:** `sqlite`
-
-**Database:** `../var/dat/.sqlite`
-
-This path points to your application's SQLite database file. Use this to browse tables, run queries, and manage your data through the web interface.
+| Field | Value |
+|-------|-------|
+| System | `sqlite` |
+| Database | `var/dat/.sqlite` |

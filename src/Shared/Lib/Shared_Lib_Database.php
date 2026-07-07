@@ -15,6 +15,10 @@ class Shared_Lib_Database {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
                 PDO::ATTR_TIMEOUT => $timeout,
             ));
+
+            if (isset($config['query'])) {
+                $this->execute($config['query'], $id);
+            }
         }
         return $id;
     }

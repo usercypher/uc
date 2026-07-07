@@ -10,6 +10,6 @@ $app->groupRoute($group, 'GET', '', array(
     'App_Pipe_Index'
 ));
 
-$app->groupRoute($group, 'GET', 'php-info', array(
-    'App_Pipe_PhpInfo'
+$app->groupRoute($group, 'GET', 'phpinfo', array(
+    'App_Pipe_Phpinfo'
 ));

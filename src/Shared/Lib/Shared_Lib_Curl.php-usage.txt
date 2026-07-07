@@ -21,7 +21,7 @@ if ($response->code === 200) {
 
 /*
 
-return:
+function send() : return
 
 $response->header
 $response->content
@@ -31,3 +31,21 @@ $response->error
 $response->info
 
 */
+
+$batch = array(
+    'google' => array(
+        'url' => 'https://www.google.com',
+        'options' => array('timeout' => 5)
+    ),
+    'github' => array(
+        'url' => 'https://api.github.com/users/octocat',
+        'options' => array(
+            'header' => array('User-Agent' => 'PHP-App')
+        )
+    )
+);
+
+$responses = $curl->sendBatch($batch);
+
+echo "Google Status: " . $responses['google']->code . "\n";
+echo "GitHub Bio: " . $responses['github']->content . "\n";

@@ -54,6 +54,11 @@ function config($app) {
                 'DB_DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
+                'DB_QUERY' => "
+                    PRAGMA journal_mode = WAL;
+                    PRAGMA synchronous = NORMAL;
+                    PRAGMA cache_size = -64000;
+                "
             ) + $env,
             'prod' => array(
                 'ROUTE_REWRITE' => 1,
@@ -63,6 +68,11 @@ function config($app) {
                 'DB_DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
                 'DB_USER' => 'root',
                 'DB_PASS' => '',
+                'DB_QUERY' => "
+                    PRAGMA journal_mode = WAL;
+                    PRAGMA synchronous = NORMAL;
+                    PRAGMA cache_size = -64000;
+                "
             ) + $env,
         ),
         'ini' => array(

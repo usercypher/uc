@@ -9,11 +9,15 @@ class Shared_Lib_Cast_Db {
             $database
         ) = $args;
 
+        $db = $app->getEnv('DB', array());
+        $name = 'DEFAULT';
+
         $this->db = $database->conn[$database->connect([
-            'dsn' => $app->getEnv('DB_DSN'),
-            'user' => $app->getEnv('DB_USER'),
-            'pass' => $app->getEnv('DB_PASS'),
-        ])];
+            'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
+            'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
+            'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
+            'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+        ], $name)];
     }
 
     function unique($table, $column, $current = null) {

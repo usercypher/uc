@@ -19,9 +19,12 @@ class Cli_Pipe_Db_Print {
 
         $seen = array();
 
+        $name = isset($input->query['name']) ? $input->query['name'] : 'DEFAULT';
+        $name = $name . '.db';
+
         for ($i = 0; $i < count($files); $i++) {
             $file = $files[$i];
-            if (substr($file, -3) === '.db') {
+            if (substr($file, strlen($name) * -1) === $name) {
                 $message .= "\n" . file_get_contents($file) . "\n";
             }
         }
