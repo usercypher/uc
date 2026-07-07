@@ -1,7 +1,7 @@
 config.php
-var/**
-!var/lib/.dir
-!var/lib/sessions/.dir
-!var/log/.dir
-!var/run/.dir
+var/**/**/*
+!var/lib/
+!var/lib/sessions
+!var/log/
+!var/run/
 !.dir
