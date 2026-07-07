@@ -1,4 +1,7 @@
-!.dir
 config.php
 var/**
-!var/**/.dir
+!var/lib/.dir
+!var/lib/sessions/.dir
+!var/log/.dir
+!var/run/.dir
+!.dir
