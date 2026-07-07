@@ -2,7 +2,7 @@
 
 function config($app) {
     $env = array(
-        'APP_ID' => 'uc_app',
+        'APP_ID' => 'uc',
         // Environment Settings
         'DIR_WEB' => $app->dir('ROOT', 'web/'),
         'URL_WEB' => '/', // URL path for web access
@@ -51,28 +51,60 @@ function config($app) {
             'dev' => array(
                 'ROUTE_REWRITE' => 1,
 
-                'DB_DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
-                'DB_USER' => 'root',
-                'DB_PASS' => '',
-                'DB_QUERY' => "
-                    PRAGMA journal_mode = WAL;
-                    PRAGMA synchronous = NORMAL;
-                    PRAGMA cache_size = -64000;
-                "
+                'DB' => array(
+                    'DEFAULT' => array(
+                        'DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
+                        'USER' => 'root',
+                        'PASS' => '',
+                        'QUERY' => "
+                            PRAGMA journal_mode = WAL;
+                            PRAGMA synchronous = NORMAL;
+                            PRAGMA cache_size = -64000;
+                        "
+                    ),
+                    'GAME' => array(
+                        'DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.game.sqlite'),
+                        'USER' => 'root',
+                        'PASS' => '',
+                        'QUERY' => "
+                            PRAGMA journal_mode=MEMORY;
+                            PRAGMA synchronous=OFF;
+                            PRAGMA temp_store=MEMORY;
+                            PRAGMA cache_size=-131072;
+                            PRAGMA mmap_size=268435456;
+                        "
+                    )
+                )
             ) + $env,
             'prod' => array(
                 'ROUTE_REWRITE' => 1,
 
                 'SHOW_ERRORS' => 0,
 
-                'DB_DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
-                'DB_USER' => 'root',
-                'DB_PASS' => '',
-                'DB_QUERY' => "
-                    PRAGMA journal_mode = WAL;
-                    PRAGMA synchronous = NORMAL;
-                    PRAGMA cache_size = -64000;
-                "
+                'DB' => array(
+                    'DEFAULT' => array(
+                        'DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
+                        'USER' => 'root',
+                        'PASS' => '',
+                        'QUERY' => "
+                            PRAGMA journal_mode = WAL;
+                            PRAGMA synchronous = NORMAL;
+                            PRAGMA cache_size = -64000;
+                        "
+                    ),
+                    'GAME' => array(
+                        'DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.game.sqlite'),
+                        'USER' => 'root',
+                        'PASS' => '',
+                        'QUERY' => "
+                            PRAGMA journal_mode=MEMORY;
+                            PRAGMA synchronous=OFF;
+                            PRAGMA temp_store=MEMORY;
+                            PRAGMA cache_size=-131072;
+                            PRAGMA mmap_size=268435456;
+                        "
+                    )
+                )
             ) + $env,
         ),
         'ini' => array(
