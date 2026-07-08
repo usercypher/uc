@@ -138,4 +138,4 @@ src/Adminer/res/index.php
 | Field | Value |
 |-------|-------|
 | System | `sqlite` |
-| Database | `var/dat/.sqlite` |
+| Database | `var/lib/.sqlite` |
