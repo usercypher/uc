@@ -1,0 +1,15 @@
+{
+  "ws_server": "0.0.0.0:5555",
+  "ws_server_advertise": "192.168.254.201:5555",
+  "ws_server_client_limit": 10000,
+  "ws_server_client_timeout": 0,
+  "ws_server_client_worker_count": 64,
+  "ws_server_client_worker_queue": 4096,
+  "http_server": "0.0.0.0:8001",
+  "http_server_advertise": "192.168.254.201:8001",
+  "http_endpoint": "http://127.0.0.1:8080/game/ws",
+  "http_endpoint_timeout": 90,
+  "http_endpoint_worker_count": 64,
+  "http_endpoint_worker_queue": 4096,
+  "max_message_size": 1048576
+}

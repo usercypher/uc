@@ -1,0 +1,76 @@
+<?php
+
+class Example_Pipe_User {
+    private $app, $session;
+
+    public function args($args) {
+        list(
+            $this->app, 
+            $this->session, 
+        ) = $args;
+    } 
+
+    public function process($input, $output) {
+        $success = true;
+
+        $flash = $this->session->remove('flash');
+        $sessionToken = $this->session->get('session_token');
+        $userSession = $this->session->get('user');
+        $userRoles = $input->data['user_roles'];
+        $isAuth = isset($userSession);
+
+        $data = array(
+            'app' => $this->app,
+            'is_auth' => $isAuth,
+            'route' => $input->route,
+            'partial_app_script' => $this->app->template($this->app->dir('ROOT', 'src/App/res/partial/script.html.php'), array(
+                'app' => $this->app,
+                'flash' => $flash
+            )),
+        );
+        if ($isAuth) {
+            $data['partial_user_edit_account'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/edit_account.html.php'), array(
+                'app' => $this->app,
+                'redirect' => $input->route,
+                'redirect_alt' => $input->route,
+                'session_token' => $sessionToken,
+                'user_roles' => $userRoles,
+                'user' => $userSession
+            ));
+            
+            $data['partial_user_edit_password'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/edit_password.html.php'), array(
+                'app' => $this->app,
+                'redirect' => $input->route,
+                'redirect_alt' => $input->route,
+                'session_token' => $sessionToken,
+                'user' => $userSession
+            ));
+            
+            $data['partial_user_delete'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/delete.html.php'), array(
+                'app' => $this->app,
+                'redirect' => $input->route,
+                'redirect_alt' => 'user/session-unset',
+                'session_token' => $sessionToken,
+                'user' => $userSession
+            ));
+        } else {
+            $data['partial_user_session'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/session.html.php'), array(
+                'app' => $this->app,
+                'redirect' => $input->route,
+                'redirect_alt' => $input->route,
+                'session_token' => $sessionToken,
+            ));
+            $data['partial_user_create'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/create.html.php'), array(
+                'app' => $this->app,
+                'redirect' => $input->route,
+                'redirect_alt' => $input->route,
+                'session_token' => $sessionToken,
+                'user_roles' => $userRoles
+            ));
+        }
+
+        $output->content = $this->app->template($this->app->dir('ROOT', 'src/Example/res/user.html.php'), $data);
+
+        return array($input, $output, $success);
+    }
+}

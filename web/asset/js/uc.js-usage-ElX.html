@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width  initial-scale=1.0" />
+  <title>ElX – Example Usage</title>
+  <link rel="stylesheet" href="../css/uc.css">
+  <script src="use/modal.js"></script>
+  <script src="uc.js"></script>
+  
+<style>
+.button.neutral {
+  background-color: grey;
+  color: white;
+}
+
+.block {
+  padding: 1em;
+  border: 1px solid #ccc;
+  margin-top: 1em;
+}
+
+.hide {
+  display: none;
+}
+
+  </style>
+</head>
+<body id="body" style="padding: 1em;">
+
+<h1>Control Structure Attribute</h1>
+
+<h2>Trigger</h2>
+<pre>
+x-evt-[event]               // all
+x-evt-[event]="name name2"  // only specified names
+x-evt-[event]="!name name2" // all except specified names
+</pre>
+
+<h2>Trigger Modifier</h2>
+<pre>
+// key up/down
+.ctrl
+.alt
+.shift
+
+// mouse up/down
+.left
+.wheel
+.right
+
+// behaviour (only works on x-evt-[name])
+.stop       // stop propagation (only for x system)
+.prevent    // prevent default
+.window     // attach to window
+</pre>
+
+<h2>Actions</h2>
+<pre>
+// Reserved [name]
+- window    // targets element window (used in x-dom, x-run)
+- this      // targets element itself (used in x-val, x-css, x-set, x-dom, x-run)
+
+// Reserved [value]
+- $         // use in accessing $vals, $this, $window
+- null      // in x-set removes attribute
+
+x-txt-[name]="value"
+x-val-[name]="value"
+x-css-[name].[class]=""                  // values "toggle", "remove", ""
+x-tab="name name"
+x-focus="name"
+x-set-[name].[attribute]="value"
+x-alt-[name].[attribute]="value"         // use with x-set to be used for toggle state
+x-sig-[name]="trigger1 trigger2"
+</pre>
+
+<h2>Target</h2>
+<pre>
+x-ref-[name]
+</pre>
+
+<h2>Initialize hook</h2>
+<pre>
+x-use-[name]
+</pre>
+
+<hr>
+
+<h2>Tab</h2>
+
+<button 
+
+class="button neutral"
+
+x-evt-click
+
+x-css-tab1.hide="toggle"
+x-css-tab2.hide
+x-css-tab3.hide
+
+x-css-button1.neutral="toggle"
+x-css-button2.neutral="remove"
+x-css-button3.neutral="remove"
+
+x-ref-button1
+
+>tab1</button>
+
+<button 
+
+class="button"
+
+x-evt-click
+
+x-css-tab1.hide
+x-css-tab2.hide="toggle"
+x-css-tab3.hide
+
+x-css-button1.neutral="remove"
+x-css-button2.neutral="toggle"
+x-css-button3.neutral="remove"
+
+x-ref-button2
+
+>tab2</button>
+
+<button 
+
+class="button"
+
+x-evt-click
+
+x-css-tab1.hide
+x-css-tab2.hide
+x-css-tab3.hide="toggle"
+
+x-css-button1.neutral="remove"
+x-css-button2.neutral="remove"
+x-css-button3.neutral="toggle"
+
+x-ref-button3
+
+>tab3</button>
+
+<div class="block" x-ref-tab1>tab1</div>
+<div class="block hide" x-ref-tab2>tab2</div>
+<div class="block hide" x-ref-tab3>tab3</div>
+
+<hr>
+
+<span
+
+x-evt-keydown.escape.window
+
+x-dom-dialog-content.inner-h-t-m-l
+></span>
+
+<h2>Reusable Dialog Box</h2>
+
+<button
+x-evt-click
+x-evt-keydown.1.ctrl.window
+
+x-dom-dialog-content.inner-h-t-m-l="dialog1"
+>dialog1 (ctrl + 1)</button>
+
+<button
+x-evt-click
+x-evt-keydown.2.ctrl.window
+x-evt-keydown.j
+
+x-dom-dialog-content.inner-h-t-m-l="dialog2"
+>dialog2 (ctrl + 2)</button>
+
+<button
+x-evt-click
+x-evt-keydown.3.ctrl.window
+
+x-dom-dialog-content.inner-h-t-m-l="dialog3"
+>dialog3 (ctrl + 3)</button>
+
+<div class="block">
+
+<p x-ref-dialog-content></p>
+
+</div>
+
+<hr>
+<h2>Input binding</h2>
+<input x-evt-input x-dom-name.inner-h-t-m-l="$this.value" x-dom-name.value="$this.value" value="Alice"/>
+<p></p>
+<div x-ref-name>Alice</div>
+<input x-ref-name/>
+
+<p></p>
+
+<label>Volume: <span x-ref-volume-label>50</span>%</label>
+<input
+  x-ref-volume
+  x-evt-input
+  x-set-volume.aria-valuenow="$this.value"  
+  x-dom-volume-label.inner-h-t-m-l="$this.value"
+  x-val-volume="$this.value"
+  type="range"
+  min="0"
+  max="100"
+  value="50"
+  step="1"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="50"
+/>
+
+<hr>
+<h2>Attribute</h2>
+<p></p>
+
+<button
+x-evt-click
+x-css-box.hide="remove"
+x-set-this.x-css-box.hide="remove"
+x-alt-this.x-css-box.hide=""
+>toggle</button>
+
+
+<div class="block hide"
+x-ref-box
+>content</div>
+
+<hr>
+
+<h2>Rules</h2>
+<p>Trigger rules</p>
+
+<p 
+class="tooltip hide" 
+x-ref-tooltip
+x-evt-mouseenter
+x-evt-mouseleave
+x-css-tooltip.hide="toggle"
+>
+I'm a tooltip!
+</p>
+<button
+
+x-evt-mouseenter="tooltip"
+x-evt-mouseleave="tooltip"
+x-css-tooltip.hide="toggle"
+
+x-evt-click="!tooltip"
+x-css-list1.hide="toggle"
+x-css-list2.hide="toggle"
+x-css-list3.hide="toggle"
+>
+Drawer
+</button>
+
+
+<div class="block hide" x-ref-list1>list1</div>
+<div class="block hide" x-ref-list2>list2</div>
+<div class="block hide" x-ref-list3>list3</div>
+
+<hr>
+
+<h2>Var</h2>
+
+
+<input type="number" x-evt-input x-val-price="$this.value" placeholder="price" value="100"/>
+<select x-evt-input x-val-qty="$this.value">
+    <option value="1">1x</option>
+    <option value="2">2x</option>
+    <option value="3">3x</option>
+</select>
+<p></p>
+
+<p x-ref-total></p>
+
+<hr>
+
+<h2>Modifier</h2>
+
+<div class="block" x-evt-click x-css-m.hide x-dom-mshow.inner-h-t-m-l="show" x-set-mshow.x-dom-mshow.inner-h-t-m-l="show">
+    <div class="hide block" x-ref-m x-evt-click.stop>
+        <p>clicking outside of this will hide it (only inside outerbox)</p>
+    </div>
+    <br>
+
+    <button x-ref-mshow x-evt-click.stop x-css-m.hide="toggle" x-set-this.x-dom-mshow.inner-h-t-m-l="show" x-alt-this.x-dom-mshow.inner-h-t-m-l="hide" x-dom-mshow.inner-h-t-m-l="show">show</button>
+</div>
+
+<br>
+<p>
+    <a x-evt-click.prevent href="https://google.com">google.com (prevent default)</a>
+</p>
+
+<hr>
+
+<h2>Tap as event</h2>
+
+<textarea
+    x-evt-input
+    x-val-textarea="$this.value"
+></textarea>
+<button
+    class="button"
+    x-evt-click
+    x-set-output.x-evt-tap.textarea
+    x-alt-output.x-evt-tap.textarea="_"
+    x-css-this.neutral="toggle"
+    x-val-textarea="$vals.textarea"
+>Sync</button>
+<div
+    x-ref-output
+    x-evt-tap.textarea
+    x-dom-this.inner-h-t-m-l="$vals.textarea"
+    class="block"
+></div>
+  <!-- Load Script -->
+  <script>
+    // run when uc.js loads
+    (window.init = window.init || []).push(function () {
+        ElX.init(window.document.documentElement);
+
+        ElX.tap("*", Util.debounce(function (current, old, event, key) {
+            if (key == "qty" || key == "price") {
+                if (key == "price" && current < 0 && event.element) {
+                    // event.type - base on the x-on-* events
+                    // event.element - element that trigger the event usually from x-val- 
+                    event.element.value = 0;
+                    ElX.vals.price = 0;
+                    return;
+                }
+                ElX.ref("total").forEach(function (el) {
+                    el.innerHTML = (ElX.vals.qty) * (ElX.vals.price);
+                });
+            }
+        }, 300));
+
+        var volume = new ElX("volume");
+    
+        this.volumeContext = new ElX("volume-context", "");
+        this.volumeContext.tap(function (current) {
+            console.log("volume-context: " + current);
+        });
+        volume.tap(Util.debounce(function (current, old, event) {
+            volume.ref().forEach(function (el) {
+                console.log(el.getAttribute("aria-valuenow"));
+            });
+            this.volumeContext.val(current, event); // access context
+        }, 300), this); // can pass context
+
+    });    
+  </script>
+</body>
+</html>

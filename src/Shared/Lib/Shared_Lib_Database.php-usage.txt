@@ -1,0 +1,19 @@
+<?php
+
+$db = new Shared_Lib_Database();
+
+$conn = $db->connect([
+    'host' => '',
+    'port' => '',
+    'name' => '',
+    'user' => '',
+    'pass' => '',
+    'time' => '',
+], 'key');
+
+// reuse connection
+$conn = $db->connect([], 'key');
+
+$db->disconnect('key');
+
+$db->hasConnection('key');
