@@ -48,7 +48,7 @@ type Config struct {
 	HTTPEndpointTimeout       int    `json:"http_endpoint_timeout"`
 	HTTPEndpointWorkerCount   int    `json:"http_endpoint_worker_count"`
 	HTTPEndpointWorkerQueue   int    `json:"http_endpoint_worker_queue"`
-	MaxMessageSize            int64  `json:"max_message_size"`
+	MaxMessageSize            int    `json:"max_message_size"`
 }
 
 type Client struct {
@@ -78,7 +78,6 @@ type Server struct {
 	epDropped        atomic.Int32
 	epFailed         atomic.Int32
 	startTime        time.Time
-	upgrader         websocket.Upgrader
 }
 
 type byteReader struct {
@@ -87,7 +86,7 @@ type byteReader struct {
 }
 
 const (
-	OpenMessage = -1
+	opOpen = -1
 )
 
 func (br *byteReader) Read(p []byte) (int, error) {
@@ -172,11 +171,6 @@ GET /stats
 		clientQueues:     make([]chan Queue, cfg.WsServerClientWorkerCount),
 		endpointQueues:   make([]chan Queue, cfg.HTTPEndpointWorkerCount),
 		startTime:        time.Now(),
-		upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		},
 		hc: &http.Client{
 			Timeout: time.Duration(cfg.HTTPEndpointTimeout) * time.Second,
 			Transport: &http.Transport{
@@ -206,11 +200,11 @@ GET /stats
 					client := value.(*Client)
 
 					if currentElapsed-client.lastPong.Load() > 90 {
-						srv.sendToClient(client.id, websocket.CloseMessage, nil)
+						srv.sendToClient(client.id, websocket.OpClose, nil)
 						return true
 					}
 
-					srv.sendToClient(client.id, websocket.PingMessage, nil)
+					srv.sendToClient(client.id, websocket.OpPing, nil)
 					return true
 				})
 			}
@@ -236,7 +230,8 @@ GET /stats
 	}()
 
 	fmt.Printf("[%s] WS server listening on %s\n", time.Now().Format(time.RFC3339), cfg.WSServer)
-	if err := http.ListenAndServe(cfg.WSServer, http.HandlerFunc(srv.wsHandler)); err != nil {
+	websocket.MaxMessageSize = cfg.MaxMessageSize
+	if err := websocket.ListenAndServe(cfg.WSServer, srv.wsHandler); err != nil {
 		fmt.Fprintf(os.Stderr, "WS server error: %v\n", err)
 		os.Exit(1)
 	}
@@ -262,7 +257,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 
 		var reader io.ReadCloser = r.Body
 		if s.cfg.MaxMessageSize > 0 {
-			reader = io.NopCloser(io.LimitReader(r.Body, s.cfg.MaxMessageSize))
+			reader = io.NopCloser(io.LimitReader(r.Body, int64(s.cfg.MaxMessageSize)))
 		}
 
 		body, err := io.ReadAll(reader)
@@ -278,13 +273,13 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			f.Flush()
 		}
 
-		msgType := websocket.TextMessage
+		msgType := websocket.Optext
 		switch r.Header.Get("X-Uc-Hub-Type") {
 		case "close":
-			msgType = websocket.CloseMessage
+			msgType = websocket.OpClose
 		default:
 			if r.Header.Get("Content-Type") == "application/octet-stream" {
-				msgType = websocket.BinaryMessage
+				msgType = websocket.Opbinary
 			}
 		}
 
@@ -293,7 +288,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			if _, ok := s.clients[shard(trimmedCid, s.clientShardCount)].Load(trimmedCid); ok {
 				s.sendToClient(trimmedCid, msgType, body)
 			} else {
-				s.sendToEndpoint(trimmedCid, websocket.CloseMessage, nil)
+				s.sendToEndpoint(trimmedCid, websocket.OpClose, nil)
 			}
 		}
 	} else if r.URL.Path == "/stats" {
@@ -307,32 +302,23 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) wsHandler(conn *websocket.Conn) {
 	if s.clientCount.Load() >= s.cfg.WsServerClientLimit {
-		http.Error(w, "Too many connections", http.StatusServiceUnavailable)
-		return
-	}
-
-	conn, err := s.upgrader.Upgrade(w, r, nil)
-	if err != nil {
 		return
 	}
 
 	cid := fmt.Sprintf("%016x%08x", time.Now().UnixNano(), s.clientId.Add(1))
-	conn.SetPingHandler(func(appData string) error {
-		s.sendToClient(cid, websocket.PongMessage, nil)
-		return nil
+	conn.OnPing(func(payload []byte) {
+		s.sendToClient(cid, websocket.OpPong, nil)
 	})
-	conn.SetPongHandler(func(appData string) error {
+	conn.OnPong(func(payload []byte) {
 		if v, ok := s.clients[shard(cid, s.clientShardCount)].Load(cid); ok {
 			v.(*Client).lastPong.Store(uint32(time.Since(s.startTime) / time.Second))
 		}
-		return nil
 	})
-
-	if s.cfg.MaxMessageSize > 0 {
-		conn.SetReadLimit(s.cfg.MaxMessageSize)
-	}
+	conn.OnClose(func(payload []byte) {
+		s.sendToClient(cid, websocket.OpClose, nil)
+	})
 
 	client := &Client{
 		id:   cid,
@@ -343,12 +329,8 @@ func (s *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	s.clients[shard(cid, s.clientShardCount)].Store(cid, client)
 	s.clientCount.Add(1)
 
-	s.sendToEndpoint(cid, OpenMessage, nil)
+	s.sendToEndpoint(cid, opOpen, nil)
 
-	go s.clientRead(cid, conn)
-}
-
-func (s *Server) clientRead(cid string, conn *websocket.Conn) {
 	timeout := time.Duration(s.cfg.WsServerClientTimeout) * time.Second
 
 	for {
@@ -364,7 +346,7 @@ func (s *Server) clientRead(cid string, conn *websocket.Conn) {
 		s.sendToEndpoint(cid, typ, msg)
 	}
 
-	s.sendToClient(cid, websocket.CloseMessage, nil)
+	s.sendToClient(cid, websocket.OpClose, nil)
 }
 
 func (s *Server) sendToClient(cid string, typ int, payload []byte) {
@@ -396,7 +378,7 @@ func (s *Server) clientWorker(i int) {
 					client.conn.Close()
 				}
 
-				s.sendToEndpoint(queue.cid, websocket.CloseMessage, nil)
+				s.sendToEndpoint(queue.cid, websocket.OpClose, nil)
 			}
 		}
 	}
@@ -416,7 +398,7 @@ func (s *Server) endpointWorker(i int) {
 	for queue := range q {
 		req, err := http.NewRequest("POST", s.cfg.HTTPEndpoint, &byteReader{data: queue.payload})
 		if err != nil {
-			s.sendToClient(queue.cid, websocket.TextMessage, []byte("Request failed"))
+			s.sendToClient(queue.cid, websocket.Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
 			continue
 		}
@@ -425,9 +407,9 @@ func (s *Server) endpointWorker(i int) {
 
 		typ := "message"
 		switch queue.typ {
-		case OpenMessage:
+		case opOpen:
 			typ = "open"
-		case websocket.CloseMessage:
+		case websocket.OpClose:
 			typ = "close"
 		}
 
@@ -437,7 +419,7 @@ func (s *Server) endpointWorker(i int) {
 		h["X-Uc-Hub-Ws-Server"] = []string{s.cfg.WSServerAdvertise}
 		h["X-Uc-Hub-Http-Server"] = []string{s.cfg.HTTPServerAdvertise}
 
-		if queue.typ == websocket.BinaryMessage {
+		if queue.typ == websocket.Opbinary {
 			h["Content-Type"] = []string{"application/octet-stream"}
 		} else {
 			h["Content-Type"] = []string{"text/plain"}
@@ -445,12 +427,12 @@ func (s *Server) endpointWorker(i int) {
 
 		resp, err := s.hc.Do(req)
 		if err != nil {
-			s.sendToClient(queue.cid, websocket.TextMessage, []byte("Request failed"))
+			s.sendToClient(queue.cid, websocket.Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
 			continue
 		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			s.sendToClient(queue.cid, websocket.TextMessage, []byte("Request failed"))
+			s.sendToClient(queue.cid, websocket.Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
 		}
 		io.Copy(io.Discard, resp.Body)
