@@ -42,6 +42,8 @@ type Config struct {
 	Server                string            `json:"server"`
 	DocumentRoot          string            `json:"document_root"`
 	FcgiEnabled           bool              `json:"fcgi_enabled"`
+	FcgiNetwork           string            `json:"fcgi_network"`
+	FcgiAddress           string            `json:"fcgi_address"`
 	Fcgibin               string            `json:"fcgi_bin"`
 	FcgiRouterFile        string            `json:"fcgi_router_file"`
 	FcgiWorkerCount       int               `json:"fcgi_worker_count"`
@@ -72,6 +74,8 @@ func main() {
   "server": "0.0.0.0:8080",
   "document_root": "/var/www/html",
   "fcgi_enabled": true,
+  "fcgi_network": "tcp",
+  "fcgi_address": "0.0.0.0:{PORT}",
   "fcgi_bin": "php-cgi -b 0.0.0.0:{PORT}",
   "fcgi_router_file": "/var/www/html/index.php",
   "fcgi_worker_count": 4,
@@ -143,7 +147,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		fcgiWorker.semaphore <- struct{}{}
 		defer func() { <-fcgiWorker.semaphore }()
 
-		client, err := fcgiclient.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", fcgiWorker.port.Load()), 2*time.Second)
+		client, err := fcgiclient.DialTimeout(s.cfg.FcgiNetwork, strings.ReplaceAll(s.cfg.FcgiAddress, "{PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load())), 2*time.Second)
 		if err != nil {
 			http.Error(w, "Bad Gateway", http.StatusBadGateway)
 			return

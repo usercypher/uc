@@ -2,11 +2,13 @@
   "server": "0.0.0.0:8080",
   "document_root": "./web",
   "fcgi_enabled": true,
+  "fcgi_network": "tcp",
+  "fcgi_address": "0.0.0.0:{PORT}",
   "fcgi_bin": "./bin/php-windows/php-cgi.exe -b 0.0.0.0:{PORT} -c ./php-windows.ini",
   "fcgi_router_file": "./index.php",
   "fcgi_worker_count": 5,
   "fcgi_worker_concurrency": 1,
   "fcgi_env": {
-    "PHP_FCGI_MAX_REQUESTS": "100000"
+    "PHP_FCGI_MAX_REQUESTS": "0"
   }
 }
