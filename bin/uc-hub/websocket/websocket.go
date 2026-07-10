@@ -2,14 +2,14 @@ package websocket
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 	"net"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -24,23 +24,13 @@ const (
 )
 
 const (
-	maxFrameSize  = 32768
-	maxLineLength = 4096
+	maxFrameSize = 32768
 )
 
 var (
 	guid      = []byte("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
 	respPart1 = []byte("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ")
 	respPart2 = []byte("\r\n\r\n")
-
-	hdrUpgrade   = []byte("Upgrade")
-	hdrConn      = []byte("Connection")
-	hdrWSKey     = []byte("Sec-WebSocket-Key")
-	hdrWSVersion = []byte("Sec-WebSocket-Version")
-
-	valWebSocket = []byte("websocket")
-	valUpgrade   = []byte("Upgrade")
-	val13        = []byte("13")
 
 	MaxMessageSize = 4 * 1024 * 1024
 )
@@ -65,11 +55,11 @@ type Conn struct {
 
 type HandlerFunc func(*Conn)
 
-func NewConn(conn net.Conn) *Conn {
+func NewConn(conn net.Conn, br *bufio.Reader) *Conn {
 	return &Conn{
 		conn:   conn,
-		br:     bufio.NewReader(conn),
-		msgBuf: make([]byte, 0, maxFrameSize),
+		br:     br,
+		msgBuf: make([]byte, 0, MaxMessageSize),
 	}
 }
 
@@ -81,148 +71,67 @@ func (w *Conn) OnPing(h func([]byte))  { w.onPingHandler = h }
 func (w *Conn) OnPong(h func([]byte))  { w.onPongHandler = h }
 func (w *Conn) OnClose(h func([]byte)) { w.onCloseHandler = h }
 
-func ListenAndServe(addr string, handler HandlerFunc) error {
-	ln, err := net.Listen("tcp", addr)
+func Upgrade(w http.ResponseWriter, r *http.Request) (*Conn, error) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "WebSocket handshake must use GET", http.StatusMethodNotAllowed)
+		return nil, errors.New("websocket: handshake must use GET")
+	}
+
+	if !strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
+		http.Error(w, "Missing or invalid Upgrade header", http.StatusBadRequest)
+		return nil, errors.New("websocket: missing or invalid Upgrade header")
+	}
+
+	if !strings.Contains(strings.ToLower(r.Header.Get("Connection")), "upgrade") {
+		http.Error(w, "Missing or invalid Connection header", http.StatusBadRequest)
+		return nil, errors.New("websocket: missing or invalid Connection header")
+	}
+
+	if r.Header.Get("Sec-WebSocket-Version") != "13" {
+		w.Header().Set("Sec-WebSocket-Version", "13")
+		http.Error(w, "Unsupported WebSocket version", http.StatusUpgradeRequired)
+		return nil, errors.New("websocket: unsupported WebSocket version")
+	}
+
+	challengeKey := r.Header.Get("Sec-WebSocket-Key")
+	if challengeKey == "" {
+		http.Error(w, "Missing Sec-WebSocket-Key", http.StatusBadRequest)
+		return nil, errors.New("websocket: missing challenge key")
+	}
+
+	hijacker, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "Webserver doesn't support hijacking", http.StatusInternalServerError)
+		return nil, errors.New("websocket: hijacker not supported")
+	}
+
+	netConn, brw, err := hijacker.Hijack()
 	if err != nil {
-		return err
-	}
-	defer ln.Close()
-
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			continue
-		}
-
-		go func(conn net.Conn) {
-			ws := NewConn(conn)
-			defer ws.Close()
-
-			if err := ws.Upgrade(); err != nil {
-				return
-			}
-
-			if handler != nil {
-				handler(ws)
-			}
-		}(conn)
-	}
-}
-
-func hasToken(v []byte, token []byte) bool {
-	for {
-		i := bytes.IndexByte(v, ',')
-		if i < 0 {
-			return bytes.EqualFold(bytes.TrimSpace(v), token)
-		}
-
-		if bytes.EqualFold(bytes.TrimSpace(v[:i]), token) {
-			return true
-		}
-
-		v = v[i+1:]
-	}
-}
-
-func (w *Conn) Upgrade() error {
-	line, err := w.br.ReadSlice('\n')
-	if err != nil {
-		return err
+		return nil, err
 	}
 
-	line = bytes.TrimRight(line, "\r\n")
-	if !bytes.HasPrefix(line, []byte("GET ")) {
-		return errors.New("protocol error: invalid or non-GET upgrade request")
-	}
+	ws := NewConn(netConn, brw.Reader)
 
-	var (
-		keyLen         int
-		haveUpgrade    bool
-		haveConnection bool
-		haveVersion    bool
-		haveKey        bool
-	)
-
-	const maxHeaders = 50
-	var i int
-	for i = 0; i < maxHeaders; i++ {
-		line, err = w.br.ReadSlice('\n')
-		if err != nil {
-			return err
-		}
-
-		line = bytes.TrimRight(line, "\r\n")
-
-		if len(line) == 0 {
-			break
-		}
-
-		if len(line) > maxLineLength {
-			return errors.New("protocol error: header line too long")
-		}
-
-		idx := bytes.IndexByte(line, ':')
-		if idx < 0 {
-			continue
-		}
-
-		name := bytes.TrimSpace(line[:idx])
-		value := bytes.TrimSpace(line[idx+1:])
-
-		switch {
-		case bytes.EqualFold(name, hdrUpgrade):
-			if bytes.EqualFold(value, valWebSocket) {
-				haveUpgrade = true
-			}
-
-		case bytes.EqualFold(name, hdrConn):
-			if hasToken(value, valUpgrade) {
-				haveConnection = true
-			}
-
-		case bytes.EqualFold(name, hdrWSVersion):
-			if bytes.Equal(value, val13) {
-				haveVersion = true
-			}
-
-		case bytes.EqualFold(name, hdrWSKey):
-			if len(value)+len(guid) > len(w.keyBuf) {
-				return errors.New("protocol error: Sec-WebSocket-Key too long")
-			}
-
-			keyLen = copy(w.keyBuf[:], value)
-			keyLen += copy(w.keyBuf[keyLen:], guid)
-			haveKey = true
-		}
-	}
-
-	if i >= maxHeaders {
-		return errors.New("too many headers")
-	}
-
-	if !haveUpgrade {
-		return errors.New("missing or invalid Upgrade header")
-	}
-	if !haveConnection {
-		return errors.New("missing or invalid Connection header")
-	}
-	if !haveVersion {
-		return errors.New("unsupported Sec-WebSocket-Version")
-	}
-	if !haveKey {
-		return errors.New("missing Sec-WebSocket-Key header")
-	}
-
-	hash := sha1.Sum(w.keyBuf[:keyLen])
+	keyLen := copy(ws.keyBuf[:], challengeKey)
+	keyLen += copy(ws.keyBuf[keyLen:], guid)
+	hash := sha1.Sum(ws.keyBuf[:keyLen])
 
 	var accept [28]byte
 	base64.StdEncoding.Encode(accept[:], hash[:])
 
 	var bufs net.Buffers
-	bufs = append(bufs, respPart1, accept[:], respPart2)
+	bufs = append(bufs,
+		respPart1,
+		accept[:],
+		respPart2,
+	)
 
-	_, err = bufs.WriteTo(w.conn)
-	return err
+	if _, err := bufs.WriteTo(ws.conn); err != nil {
+		netConn.Close()
+		return nil, err
+	}
+
+	return ws, nil
 }
 
 func (w *Conn) ReadMessage() (int, []byte, error) {
@@ -275,7 +184,7 @@ func (w *Conn) ReadMessage() (int, []byte, error) {
 			}
 		} else {
 			if uint64(len(w.msgBuf))+payloadLen64 > uint64(MaxMessageSize) {
-				return 0, nil, fmt.Errorf("message size exceeds max limit of %d bytes", MaxMessageSize)
+				return 0, nil, errors.New("protocol error: message size exceeds max limit")
 			}
 		}
 

@@ -20,19 +20,24 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/textproto"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"uc-fcgi/fcgiclient"
@@ -40,6 +45,9 @@ import (
 
 type Config struct {
 	Server                string            `json:"server"`
+	TLSServer             string            `json:"tls_server"`
+	TLSCert               string            `json:"tls_cert"`
+	TLSKey                string            `json:"tls_key"`
 	DocumentRoot          string            `json:"document_root"`
 	FcgiEnabled           bool              `json:"fcgi_enabled"`
 	FcgiNetwork           string            `json:"fcgi_network"`
@@ -49,6 +57,12 @@ type Config struct {
 	FcgiWorkerCount       int               `json:"fcgi_worker_count"`
 	FcgiWorkerConcurrency int               `json:"fcgi_worker_concurrency"`
 	FcgiEnv               map[string]string `json:"fcgi_env"`
+	ReadHeaderTimeout     int               `json:"read_header_timeout"`
+	ReadTimeout           int               `json:"read_timeout"`
+	WriteTimeout          int               `json:"write_timeout"`
+	IdleTimeout           int               `json:"idle_timeout"`
+	MaxHeaderBytes        int               `json:"max_header_bytes"`
+	MaxBodyBytes          int64             `json:"max_body_bytes"`
 }
 
 type FcgiWorker struct {
@@ -59,9 +73,11 @@ type FcgiWorker struct {
 
 type Server struct {
 	cfg             *Config
+	rootDir         string
 	fcgiWorkerIndex atomic.Int32
 	fcgiWorkers     []*FcgiWorker
 	fcgiPortCounter atomic.Int32
+	shuttingDown    atomic.Bool
 }
 
 func main() {
@@ -72,54 +88,125 @@ func main() {
 		fmt.Fprintf(os.Stderr, `Example config file (config.json):
 {
   "server": "0.0.0.0:8080",
-  "document_root": "/var/www/html",
+  "tls_server": "0.0.0.0:8443",
+  "tls_cert": "${ROOT}/server.crt",
+  "tls_key": "${ROOT}/server.key",
+  "document_root": "${ROOT}/html",
   "fcgi_enabled": true,
   "fcgi_network": "tcp",
-  "fcgi_address": "0.0.0.0:{PORT}",
-  "fcgi_bin": "php-cgi -b 0.0.0.0:{PORT}",
-  "fcgi_router_file": "/var/www/html/index.php",
+  "fcgi_address": "0.0.0.0:${PORT}",
+  "fcgi_bin": "php-cgi -b 0.0.0.0:${PORT}",
+  "fcgi_router_file": "${ROOT}/html/index.php",
   "fcgi_worker_count": 4,
   "fcgi_worker_concurrency": 1,
   "fcgi_env": {
-    "PHP_FCGI_MAX_REQUESTS": "0"
-  }
+    "PHP_FCGI_MAX_REQUESTS": "0",
+    "LISTEN": "0.0.0.0:${PORT}",
+    "ROOT": "${ROOT}"
+  },
+  "read_header_timeout": 5,
+  "read_timeout": 30,
+  "write_timeout": 30,
+  "idle_timeout": 60,
+  "max_header_bytes": 1048576,
+  "max_body_bytes": 16777216
 }
 `)
 		os.Exit(1)
 	}
 
-	cfg, err := parseConfig(os.Args[1])
+	currentDir, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to parse config: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Failed to get current working directory: %v", err)
 	}
 
-	cfg.DocumentRoot, _ = filepath.Abs(cfg.DocumentRoot)
-	cfg.FcgiRouterFile, _ = filepath.Abs(cfg.FcgiRouterFile)
-	cfg.DocumentRoot = filepath.Clean(cfg.DocumentRoot)
-	cfg.FcgiRouterFile = filepath.Clean(cfg.FcgiRouterFile)
+	cfg, err := parseConfig(os.Args[1])
+	if err != nil {
+		log.Fatalf("Failed to parse config: %v", err)
+	}
+
+	if cfg.Server == "" && cfg.TLSServer == "" {
+		log.Fatal("error: no server configured")
+	}
 
 	srv := &Server{
 		cfg:         cfg,
+		rootDir:     currentDir,
 		fcgiWorkers: make([]*FcgiWorker, cfg.FcgiWorkerCount),
 	}
 	srv.fcgiPortCounter.Store(49152)
 
 	if cfg.FcgiEnabled {
 		for i := 0; i < cfg.FcgiWorkerCount; i++ {
-			var fcgiWorker FcgiWorker
+			var worker FcgiWorker
+
 			port := srv.fcgiPortCounter.Add(1)
-			fcgiWorker.port.Store(port)
-			fcgiWorker.semaphore = make(chan struct{}, cfg.FcgiWorkerConcurrency)
-			srv.fcgiWorkers[i] = &fcgiWorker
+			worker.port.Store(port)
+			worker.semaphore = make(chan struct{}, cfg.FcgiWorkerConcurrency)
+
+			srv.fcgiWorkers[i] = &worker
 			go srv.superviseFcgiWorker(i)
 		}
 	}
 
-	fmt.Printf("[%s] HTTP server listening on %s\n", time.Now().Format(time.RFC3339), cfg.Server)
-	if err := http.ListenAndServe(cfg.Server, http.HandlerFunc(srv.httpHandler)); err != nil {
-		fmt.Fprintf(os.Stderr, "HTTP Server error: %v\n", err)
-		os.Exit(1)
+	server := func(addr string) *http.Server {
+		return &http.Server{
+			Addr:              addr,
+			Handler:           http.HandlerFunc(srv.httpHandler),
+			ReadHeaderTimeout: time.Duration(cfg.ReadHeaderTimeout) * time.Second,
+			ReadTimeout:       time.Duration(cfg.ReadTimeout) * time.Second,
+			WriteTimeout:      time.Duration(cfg.WriteTimeout) * time.Second,
+			IdleTimeout:       time.Duration(cfg.IdleTimeout) * time.Second,
+			MaxHeaderBytes:    cfg.MaxHeaderBytes,
+		}
+	}
+
+	httpServer := server(cfg.Server)
+	httpsServer := server(cfg.TLSServer)
+
+	if cfg.Server != "" {
+		go func() {
+			log.Printf("HTTP listening on %s", cfg.Server)
+			if err := httpServer.ListenAndServe(); err != nil &&
+				err != http.ErrServerClosed {
+				log.Printf("HTTP server: %v", err)
+			}
+		}()
+	}
+
+	if cfg.TLSServer != "" {
+		go func() {
+			log.Printf("HTTPS listening on %s", cfg.TLSServer)
+			if err := httpsServer.ListenAndServeTLS(cfg.TLSCert, cfg.TLSKey); err != nil &&
+				err != http.ErrServerClosed {
+				log.Printf("HTTPS server: %v", err)
+			}
+		}()
+	}
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+
+	sig := <-sigCh
+	log.Printf("Received %v, shutting down...", sig)
+
+	srv.shuttingDown.Store(true)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if cfg.Server != "" {
+		httpServer.Shutdown(ctx)
+	}
+
+	if cfg.TLSServer != "" {
+		httpsServer.Shutdown(ctx)
+	}
+
+	for _, w := range srv.fcgiWorkers {
+		if w != nil && w.cmd != nil && w.cmd.Process != nil {
+			_ = w.cmd.Process.Kill()
+		}
 	}
 }
 
@@ -147,7 +234,10 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		fcgiWorker.semaphore <- struct{}{}
 		defer func() { <-fcgiWorker.semaphore }()
 
-		client, err := fcgiclient.DialTimeout(s.cfg.FcgiNetwork, strings.ReplaceAll(s.cfg.FcgiAddress, "{PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load())), 2*time.Second)
+		fcgiAddr := strings.ReplaceAll(s.cfg.FcgiAddress, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+		fcgiAddr = strings.ReplaceAll(fcgiAddr, "${ROOT}", s.rootDir)
+
+		client, err := fcgiclient.DialTimeout(s.cfg.FcgiNetwork, fcgiAddr, 2*time.Second)
 		if err != nil {
 			http.Error(w, "Bad Gateway", http.StatusBadGateway)
 			return
@@ -157,7 +247,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		env := map[string]string{
 			"GATEWAY_INTERFACE": "CGI/1.1",
 
-			"SERVER_SOFTWARE": "uc-fcgi",
+			"SERVER_SOFTWARE": "uc-fcgi/0.0.0",
 			"SERVER_PROTOCOL": r.Proto,
 
 			"REQUEST_SCHEME": "http",
@@ -201,6 +291,11 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			env["CONTENT_LENGTH"] = cl
 		}
 
+		if r.TLS != nil {
+			env["HTTPS"] = "on"
+			env["REQUEST_SCHEME"] = "https"
+		}
+
 		for key, values := range r.Header {
 			if len(values) > 0 {
 				cgiBuf := "HTTP_" + strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
@@ -208,9 +303,18 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		if s.cfg.MaxBodyBytes > 0 {
+			r.Body = http.MaxBytesReader(w, r.Body, int64(s.cfg.MaxBodyBytes))
+		}
+
 		ioread, err := client.Do(env, r.Body)
 		if err != nil {
-			http.Error(w, "Bad Gateway", http.StatusBadGateway)
+			var mbe *http.MaxBytesError
+			if errors.As(err, &mbe) {
+				http.Error(w, "Request entity too large", http.StatusRequestEntityTooLarge)
+			} else {
+				http.Error(w, "Bad Gateway", http.StatusBadGateway)
+			}
 			return
 		}
 
@@ -260,13 +364,20 @@ func (s *Server) superviseFcgiWorker(idx int) {
 	var err error
 	fcgiWorker := s.fcgiWorkers[idx]
 
-	env := os.Environ()
-	for key, value := range s.cfg.FcgiEnv {
-		env = append(env, fmt.Sprintf("%s=%s", key, value))
-	}
-
 	for {
-		cmdStr := strings.ReplaceAll(s.cfg.Fcgibin, "{PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+		if s.shuttingDown.Load() {
+			return
+		}
+
+		env := os.Environ()
+		for key, value := range s.cfg.FcgiEnv {
+			val := strings.ReplaceAll(value, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+			val = strings.ReplaceAll(val, "${ROOT}", s.rootDir)
+			env = append(env, fmt.Sprintf("%s=%s", key, val))
+		}
+
+		cmdStr := strings.ReplaceAll(s.cfg.Fcgibin, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+		cmdStr = strings.ReplaceAll(cmdStr, "${ROOT}", s.rootDir)
 		parts := strings.Fields(cmdStr)
 
 		fcgiWorker.cmd = exec.Command(parts[0], parts[1:]...)
@@ -291,7 +402,7 @@ func (s *Server) superviseFcgiWorker(idx int) {
 		}
 
 		if err != nil {
-			fmt.Printf("[%s] Fcgi worker %d uptime=%s port=%d err=%v\n", time.Now().Format(time.RFC3339), idx, time.Since(started).Round(time.Second), fcgiWorker.port.Load(), err)
+			log.Printf("Fcgi worker %d uptime=%s port=%d err=%v\n", idx, time.Since(started).Round(time.Second), fcgiWorker.port.Load(), err)
 		}
 
 		time.Sleep(100 * time.Millisecond)
@@ -299,6 +410,11 @@ func (s *Server) superviseFcgiWorker(idx int) {
 }
 
 func parseConfig(path string) (*Config, error) {
+	root, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -308,11 +424,28 @@ func parseConfig(path string) (*Config, error) {
 		FcgiEnabled:           false,
 		FcgiWorkerConcurrency: 1,
 		FcgiEnv:               make(map[string]string),
+		ReadHeaderTimeout:     5,
+		ReadTimeout:           30,
+		WriteTimeout:          30,
+		IdleTimeout:           60,
+		MaxHeaderBytes:        1 << 20,
+		MaxBodyBytes:          16 << 20,
 	}
 
 	if err := json.Unmarshal(b, cfg); err != nil {
 		return nil, err
 	}
+
+	cfg.DocumentRoot = strings.ReplaceAll(cfg.DocumentRoot, "${ROOT}", root)
+	cfg.FcgiRouterFile = strings.ReplaceAll(cfg.FcgiRouterFile, "${ROOT}", root)
+
+	cfg.DocumentRoot, _ = filepath.Abs(cfg.DocumentRoot)
+	cfg.FcgiRouterFile, _ = filepath.Abs(cfg.FcgiRouterFile)
+	cfg.DocumentRoot = filepath.Clean(cfg.DocumentRoot)
+	cfg.FcgiRouterFile = filepath.Clean(cfg.FcgiRouterFile)
+
+	cfg.TLSCert = strings.ReplaceAll(cfg.TLSCert, "${ROOT}", root)
+	cfg.TLSKey = strings.ReplaceAll(cfg.TLSKey, "${ROOT}", root)
 
 	return cfg, nil
 }

@@ -146,7 +146,7 @@ let lastseen="";
 
 function connect(){
 
-    ws=new WebSocket('ws://'+window.location.hostname+':5555');
+    ws=new WebSocket('ws://'+window.location.hostname+':2080');
 
     ws.onopen=()=>{
         serverAlert.style.display='none';

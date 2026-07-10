@@ -3,6 +3,7 @@
 class Game_Pipe_Ws {
 
     private $app,$curl,$playerRepo,$tickRepo;
+    private $server,$token;
 
     function args($args){
         list(
@@ -16,6 +17,8 @@ class Game_Pipe_Ws {
     function process($in,$out){
         $type=$in->header['x-uc-hub-type']??'';
         $id=$in->header['x-uc-hub-client']??'';
+        $this->server=$in->header['x-uc-hub-server']??'';
+        $this->token=$in->header['x-uc-hub-token']??'';
         $body=$in->io(0,"\n");
 
         if(!$type||!$id){
@@ -266,10 +269,11 @@ class Game_Pipe_Ws {
         if (!is_array($clients))
             $clients = [$clients];
 
-        $this->curl->send('http://127.0.0.1:8001/', array(
+        $this->curl->send($this->server, array(
             'method' => 'POST',
             'header' => array(
-                'X-Uc-Hub-Client' => implode(',', $clients)
+                'X-Uc-Hub-Client' => implode(',', $clients),
+                'X-Uc-Hub-Token' => $this->token
             ),
             'content' => json_encode($data)
         ));

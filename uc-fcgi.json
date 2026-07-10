@@ -1,11 +1,11 @@
 {
   "server": "0.0.0.0:8080",
-  "document_root": "./web",
+  "document_root": "${ROOT}/web",
   "fcgi_enabled": true,
   "fcgi_network": "unix",
-  "fcgi_address": "./var/run/php-cgi-{PORT}.sock",
-  "fcgi_bin": "php-cgi -b ./var/run/php-cgi-{PORT}.sock -c ./php.ini",
-  "fcgi_router_file": "./index.php",
+  "fcgi_address": "${ROOT}/var/run/php-cgi-${PORT}.sock",
+  "fcgi_bin": "php-cgi -b ${ROOT}/var/run/php-cgi-${PORT}.sock -c ${ROOT}/php.ini",
+  "fcgi_router_file": "${ROOT}/index.php",
   "fcgi_worker_count": 5,
   "fcgi_worker_concurrency": 1,
   "fcgi_env": {
