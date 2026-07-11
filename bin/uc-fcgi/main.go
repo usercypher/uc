@@ -36,6 +36,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -75,6 +76,7 @@ type Server struct {
 	cfg             *Config
 	rootDir         string
 	fcgiWorkerIndex atomic.Int32
+	fcgiWorkerWG    sync.WaitGroup
 	fcgiWorkers     []*FcgiWorker
 	fcgiPortCounter atomic.Int32
 	shuttingDown    atomic.Bool
@@ -137,6 +139,7 @@ func main() {
 	srv.fcgiPortCounter.Store(49152)
 
 	if cfg.FcgiEnabled {
+		srv.fcgiWorkerWG.Add(cfg.FcgiWorkerCount)
 		for i := 0; i < cfg.FcgiWorkerCount; i++ {
 			var worker FcgiWorker
 
@@ -145,7 +148,11 @@ func main() {
 			worker.semaphore = make(chan struct{}, cfg.FcgiWorkerConcurrency)
 
 			srv.fcgiWorkers[i] = &worker
-			go srv.superviseFcgiWorker(i)
+
+			go func(i int) {
+				defer srv.fcgiWorkerWG.Done()
+				srv.superviseFcgiWorker(i)
+			}(i)
 		}
 	}
 
@@ -187,8 +194,7 @@ func main() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
-	sig := <-sigCh
-	log.Printf("Received %v, shutting down...", sig)
+	<-sigCh
 
 	srv.shuttingDown.Store(true)
 
@@ -205,8 +211,25 @@ func main() {
 
 	for _, w := range srv.fcgiWorkers {
 		if w != nil && w.cmd != nil && w.cmd.Process != nil {
-			_ = w.cmd.Process.Kill()
+			_ = w.cmd.Process.Signal(syscall.SIGTERM)
 		}
+	}
+
+	done := make(chan struct{})
+	go func() {
+		srv.fcgiWorkerWG.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		for _, w := range srv.fcgiWorkers {
+			if w != nil && w.cmd != nil && w.cmd.Process != nil {
+				_ = w.cmd.Process.Kill()
+			}
+		}
+		<-done
 	}
 }
 
@@ -388,6 +411,7 @@ func (s *Server) superviseFcgiWorker(idx int) {
 
 		if err = fcgiWorker.cmd.Start(); err == nil {
 			err = fcgiWorker.cmd.Wait()
+
 			if err != nil {
 				port := s.fcgiPortCounter.Add(1)
 				if port > 65535 {
@@ -401,11 +425,17 @@ func (s *Server) superviseFcgiWorker(idx int) {
 			}
 		}
 
-		if err != nil {
-			log.Printf("Fcgi worker %d uptime=%s port=%d err=%v\n", idx, time.Since(started).Round(time.Second), fcgiWorker.port.Load(), err)
+		if err != nil && !s.shuttingDown.Load() {
+			var exitErr *exec.ExitError
+			delay := true
+			if errors.As(err, &exitErr) && exitErr.ExitCode() == 0 {
+				delay = false
+			}
+			if delay {
+				log.Printf("Fcgi worker %d uptime=%s port=%d err=%v", idx, time.Since(started).Round(time.Second), fcgiWorker.port.Load(), err)
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
-
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 
