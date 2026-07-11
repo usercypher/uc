@@ -54,7 +54,7 @@ type Config struct {
 	FcgiNetwork           string            `json:"fcgi_network"`
 	FcgiAddress           string            `json:"fcgi_address"`
 	Fcgibin               string            `json:"fcgi_bin"`
-	FcgiRouterFile        string            `json:"fcgi_router_file"`
+	FcgiScript            string            `json:"fcgi_script"`
 	FcgiWorkerCount       int               `json:"fcgi_worker_count"`
 	FcgiWorkerConcurrency int               `json:"fcgi_worker_concurrency"`
 	FcgiEnv               map[string]string `json:"fcgi_env"`
@@ -98,7 +98,7 @@ func main() {
   "fcgi_network": "tcp",
   "fcgi_address": "0.0.0.0:${PORT}",
   "fcgi_bin": "php-cgi -b 0.0.0.0:${PORT}",
-  "fcgi_router_file": "${ROOT}/html/index.php",
+  "fcgi_script": "${ROOT}/html/index.php",
   "fcgi_worker_count": 4,
   "fcgi_worker_concurrency": 1,
   "fcgi_env": {
@@ -246,7 +246,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s.cfg.FcgiEnabled {
-		if _, err := os.Stat(s.cfg.FcgiRouterFile); err != nil {
+		if _, err := os.Stat(s.cfg.FcgiScript); err != nil {
 			http.NotFound(w, r)
 			return
 		}
@@ -279,8 +279,8 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			"QUERY_STRING":   r.URL.RawQuery,
 
 			"DOCUMENT_ROOT":   s.cfg.DocumentRoot,
-			"SCRIPT_FILENAME": s.cfg.FcgiRouterFile,
-			"SCRIPT_NAME":     "/" + filepath.Base(s.cfg.FcgiRouterFile),
+			"SCRIPT_FILENAME": s.cfg.FcgiScript,
+			"SCRIPT_NAME":     "/" + filepath.Base(s.cfg.FcgiScript),
 			"PATH_INFO":       reqPath,
 
 			"SERVER_NAME": "localhost",
@@ -467,12 +467,12 @@ func parseConfig(path string) (*Config, error) {
 	}
 
 	cfg.DocumentRoot = strings.ReplaceAll(cfg.DocumentRoot, "${ROOT}", root)
-	cfg.FcgiRouterFile = strings.ReplaceAll(cfg.FcgiRouterFile, "${ROOT}", root)
+	cfg.FcgiScript = strings.ReplaceAll(cfg.FcgiScript, "${ROOT}", root)
 
 	cfg.DocumentRoot, _ = filepath.Abs(cfg.DocumentRoot)
-	cfg.FcgiRouterFile, _ = filepath.Abs(cfg.FcgiRouterFile)
+	cfg.FcgiScript, _ = filepath.Abs(cfg.FcgiScript)
 	cfg.DocumentRoot = filepath.Clean(cfg.DocumentRoot)
-	cfg.FcgiRouterFile = filepath.Clean(cfg.FcgiRouterFile)
+	cfg.FcgiScript = filepath.Clean(cfg.FcgiScript)
 
 	cfg.TLSCert = strings.ReplaceAll(cfg.TLSCert, "${ROOT}", root)
 	cfg.TLSKey = strings.ReplaceAll(cfg.TLSKey, "${ROOT}", root)
