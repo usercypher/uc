@@ -12,3 +12,6 @@
     "PHP_FCGI_MAX_REQUESTS": "0"
   }
 }
+ "LISTEN": "${ROOT}/var/run/php-fpm.sock"
+  }
+}
