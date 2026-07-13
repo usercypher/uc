@@ -22,7 +22,6 @@ type FCGIClient struct {
 	readBuf   []byte
 	hdr       [headerSize]byte
 	buf       [maxBuffer]byte
-	Keepalive uint8
 }
 
 func Dial(network, address string) (*FCGIClient, error) {
@@ -46,7 +45,7 @@ func (c *FCGIClient) Close() error {
 }
 
 func (c *FCGIClient) Do(p map[string]string, req io.Reader) (io.Reader, error) {
-	beginRecord := [16]byte{1, 1, 0, 1, 0, 8, 0, 0, 0, 1, c.Keepalive, 0, 0, 0, 0, 0}
+	beginRecord := [16]byte{1, 1, 0, 1, 0, 8, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
 	if _, err := c.conn.Write(beginRecord[:]); err != nil {
 		return nil, err
 	}
