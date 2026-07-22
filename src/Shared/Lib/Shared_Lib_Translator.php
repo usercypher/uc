@@ -2,7 +2,21 @@
 
 class Shared_Lib_Translator {
     var $translations = array();
+    var $key = '';
     var $plural = null;
+
+    function load($file) {
+        if (isset($this->translations[$file])) {
+            $this->key = $file;
+            return;
+        }
+        if (!is_array($output = require $file)) {
+            user_error('Translation file must return an array', E_USER_WARNING);
+            return;
+        }
+        $this->key = $file;
+        $this->translations[$file] = $output;
+    }
 
     function setDefaultPlural() {
         $this->plural = &$this;
@@ -21,8 +35,8 @@ class Shared_Lib_Translator {
     }
 
     function translate($key, $count = null, $placeholders = array()) {
-        if (isset($this->translations[$key])) {
-            $value = $this->translations[$key];
+        if (isset($this->translations[$this->key][$key])) {
+            $value = $this->translations[$this->key][$key];
         } else {
             $value = $key;
         }

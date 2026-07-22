@@ -4,7 +4,6 @@
 //require 'bin/compile.php';  // Generates config and exits script
 
 require 'uc.php';
-require 'config.php';
 
 function index() {
     $app = new App();
@@ -12,7 +11,10 @@ function index() {
 
     $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/');
 
-    $config = config($app);
+    $config = $app->data($app->dir('ROOT', 'config.data.php'), array(
+        'app' => $app
+    ));
+
     $mode = $config['mode'][basename(__FILE__)];
 
     foreach ($config['ini'][$mode] as $key => $value) {
@@ -26,6 +28,7 @@ function index() {
     $app->load('var/lib/app.state.dat');
 
     $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
+    $app->setEnv('ACCEPT_LANGUAGE', isset($input->header['accept-language']) ? $input->header['accept-language'] : 'en');
     if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
         $app->setEnv('URL_ROUTE', $app->getEnv('URL_ROOT', '/') . $input->route . '?route=/');
         $input->route = isset($input->query['route']) ? $input->query['route'] : '/';

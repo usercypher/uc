@@ -1,27 +1,40 @@
 <?php
 
-$app = $data['app'];
-$isAuth = $data['is_auth'];
-$route = $data['route'];
+foreach (array(
+    'app',
+    't',
+    'translation_dir',
+    'languages',
+    'lang',
+    'is_auth',
+    'route',
+    'partial_app_script',
+    'partial_user_session',
+    'partial_user_create',
+    'partial_user_edit_account',
+    'partial_user_edit_password',
+    'partial_user_delete'
+) as $v) {
+    $$v = $data[$v];
+}
 
-$partialAppScript = $data['partial_app_script'] ?? '';
-$partialUserSession = $data['partial_user_session'] ?? '';
-$partialUserCreate = $data['partial_user_create'] ?? '';
-$partialUserEditAccount = $data['partial_user_edit_account'] ?? '';
-$partialUserEditPassword = $data['partial_user_edit_password'] ?? '';
-$partialUserDelete = $data['partial_user_delete'] ?? '';
+$t->load($translation_dir);
+
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $lang ?>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Example - User</title>
+  <title><?= $t->t('title') ?></title>
   <script src="<?= $app->url('WEB', 'asset/js/uc.js') ?>"></script>
   <link rel="stylesheet" href="<?= $app->url('WEB', 'asset/css/uc.css') ?>">
   <link rel="stylesheet" href="<?= $app->url('WEB', 'asset/css/style.css') ?>">
+  <?php foreach ($languages as $l): ?>
+    <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>" />
+  <?php endforeach; ?>
   <style>
       .section { padding: 1em; }
   </style>
@@ -29,12 +42,19 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 <body>
     <div class="section">
 
-        <h1>Example - User</h1>
+        <h1><?= $t->t('title') ?></h1>
 
-<?php if (!$isAuth): ?>
+<?php if (!$is_auth): ?>
         
         <ul>
-            <li><a href="<?= $app->url('ROUTE', '') ?>">Home</a></li>
+            <li><a href="<?= $app->url('ROUTE', 'home/:lang', array(':lang' => $lang)) ?>"><?= $t->t('home') ?></a></li>
+            <li>
+
+            <?php foreach ($languages as $l): ?>
+                <a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
+            <?php endforeach; ?>
+
+            </li>
         </ul>
     
     </div>
@@ -43,30 +63,33 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
         
     <div class="section">
 
-        <h2>Login</h2>
+        <h2><?= $t->t('login') ?></h2>
         <fieldset>
-            <legend>Account</legend>
+            <legend><?= $t->t('account') ?></legend>
     
-            <?= $partialUserSession ?>
+            <?= $partial_user_session ?>
     
         </fieldset>
         
-        <h2>Register</h2>
+        <h2><?= $t->t('register') ?></h2>
         <fieldset>
-            <legend>Account</legend>
+            <legend><?= $t->t('account') ?></legend>
     
-            <?= $partialUserCreate ?>
+            <?= $partial_user_create ?>
     
         </fieldset>
 
 <?php endif; ?>
 
 
-<?php if ($isAuth): ?>
+<?php if ($is_auth): ?>
 
         <ul>
-            <li><a href="<?= $app->url('ROUTE', '') ?>">Home</a></li>
-            <li><a href="<?= $app->url('ROUTE', 'user/session-unset?redirect=:redirect', array(':redirect' => trim($route, '/'))) ?>">Logout</a></li>
+            <li><a href="<?= $app->url('ROUTE', 'home/:lang', array(':lang' => $lang)) ?>"><?= $t->t('home') ?></a></li>
+            <li><a href="<?= $app->url('ROUTE', 'user/session-unset?redirect=:redirect', array(':redirect' => trim($route, '/'))) ?>"><?= $t->t('logout') ?></a></li>
+            <?php foreach ($languages as $l): ?>
+                <a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
+            <?php endforeach; ?>
         </ul>
     </div>
 
@@ -74,25 +97,25 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 
     <div class="section">
 
-        <h2>Edit</h2>
+        <h2><?= $t->t('edit') ?></h2>
         <fieldset>
-            <legend>Account</legend>
+            <legend><?= $t->t('account') ?></legend>
             
-            <?= $partialUserEditAccount ?>
+            <?= $partial_user_edit_account ?>
     
         </fieldset>
         
         <fieldset>
-            <legend>Password</legend>
+            <legend><?= $t->t('password') ?></legend>
     
-            <?= $partialUserEditPassword ?>
+            <?= $partial_user_edit_password ?>
     
         </fieldset>
         
-        <h2>Delete</h2>
+        <h2><?= $t->t('delete') ?></h2>
         <fieldset>
     
-            <?= $partialUserDelete ?>
+            <?= $partial_user_delete ?>
     
         </fieldset>
 
@@ -100,7 +123,7 @@ $partialUserDelete = $data['partial_user_delete'] ?? '';
 
     </div>
 
-<?= $partialAppScript ?>
+<?= $partial_app_script ?>
 
 </body>
 </html>

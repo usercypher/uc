@@ -1,5 +1,5 @@
 <?php /*
-Version: 5.0.3
+Version: 5.1.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -514,7 +514,7 @@ class App {
                 }
 
                 foreach ($option['ignore'] as $pattern) {
-                    if ($pattern === ($relative . $item) || ($pattern[0] === '@' && strpos(($relative . $item), substr($pattern, 1)) !== false)) {
+                    if ($this->strMatch($pattern, $relative . $item)) {
                         continue 2;
                     }
                 }
@@ -836,9 +836,16 @@ class App {
     function template($file, $data = array()) {
         ob_start();
         require $file;
-        $content = ob_get_contents();
+        $output = ob_get_contents();
         ob_end_clean();
-        return $content;
+        return $output;
+    }
+
+    function data($file, $data = array()) {
+        if (!is_array($output = require $file)) {
+            user_error('Data file must return an array', E_USER_WARNING);
+        }
+        return $output;
     }
 
     function strSlug($s) {
@@ -853,6 +860,18 @@ class App {
             }
         }
         return trim($slug, '-');
+    }
+
+    function strMatch($pattern, $s) {
+        switch ($pattern === '' ? $pattern : $pattern[0]) {
+            case '^' : return strpos($s, substr($pattern, 1)) === 0;
+            case '$' :
+                $suffix = substr($pattern, 1);
+                return strrpos($s, $suffix) === strlen($s) - strlen($suffix);
+            case '*' : return strpos($s, substr($pattern, 1)) !== false;
+            case '=' : return $s === substr($pattern, 1);
+            default  : return $s === $pattern;
+        }
     }
 
     function htmlEncode($s) {

@@ -1,18 +1,27 @@
 <?php
 
-$app = $data['app'];
-$code = $data['code'];
-$error = $data['error'];
+foreach (array(
+    'app',
+    'code',
+    'error'
+) as $v) {
+    $$v = $data[$v];
+}
+
+$t = $app->makeUnit('Shared_Lib_Translator');
+$langMap = $app->getEnv('ERROR_TEMPLATES_LANG', array());
+$lang = $app->mimeNegotiate($app->getEnv('ACCEPT_LANGUAGE', ''), array_keys($langMap));
+$t->load($app->dir('ROOT', $langMap[$lang]));
 
 $httpMap = array(
-    400 => array('Bad Request', 'The request could not be processed. Please verify the URL or parameters.'),
-    401 => array('Unauthorized', 'Authentication is required to access this resource.'),
-    403 => array('Forbidden', 'You do not have permission to access this resource.'),
-    404 => array('Not Found', 'The requested page could not be found.'),
-    405 => array('Method Not Allowed', 'The HTTP method used is not allowed for this resource.'),
-    414 => array('Request-URI Too Long', 'The URI provided in the request is too long. Please shorten the URL and try again.'),
-    422 => array('Unprocessable Entity', 'The request was well-formed but could not be followed due to semantic errors.'),
-    500 => array('Internal Server Error', 'An unexpected error occurred. Please try again later.'),
+    400 => array($t->t('error_400_title'), $t->t('error_400_description')),
+    401 => array($t->t('error_401_title'), $t->t('error_401_description')),
+    403 => array($t->t('error_403_title'), $t->t('error_403_description')),
+    404 => array($t->t('error_404_title'), $t->t('error_404_description')),
+    405 => array($t->t('error_405_title'), $t->t('error_405_description')),
+    414 => array($t->t('error_414_title'), $t->t('error_414_description')),
+    422 => array($t->t('error_422_title'), $t->t('error_422_description')),
+    500 => array($t->t('error_500_title'), $t->t('error_500_description')),
 );
 
 list($title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap[500];

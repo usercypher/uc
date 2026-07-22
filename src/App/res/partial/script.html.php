@@ -1,6 +1,15 @@
 <?php 
 
-$app = $data['app'];
+foreach (array(
+    'app',
+    't',
+    'translation_dir',
+    'flash'
+) as $v) {
+    $$v = $data[$v];
+}
+
+$t->load($translation_dir);
 
 $flash = empty($data['flash']) ? null : $data['flash'];
 
@@ -8,14 +17,13 @@ $flash = empty($data['flash']) ? null : $data['flash'];
 
     <span style="display: none;" data-ref="flash" x-use-modal-open></span>
 
-    <!-- Flash Messages Modal -->
     <div class="uc-modal" data-ref="flash" x-use-modal>
         <div class="uc-modal-content" data-ref="flash" x-use-modal-content>
             <div style="padding: 1em;">
-                <h3 data-ref="flash" x-use-modal-label>Notification</h3>
+                <h3 data-ref="flash" x-use-modal-label><?php echo $t->t('notification'); ?></h3>
 
                 <ul style="overflow: auto;" data-ref="flash" x-use-modal-description></ul>
-                <input type="button" style="float: right; margin-bottom: 1em;" value="Close" data-ref="flash" x-use-modal-close x-use-modal-tab-start x-use-modal-tab-end />
+                <input type="button" style="float: right; margin-bottom: 1em;" value="<?php echo $t->t('close'); ?>" data-ref="flash" x-use-modal-close x-use-modal-tab-start x-use-modal-tab-end />
             </div>
         </div>
     </div>

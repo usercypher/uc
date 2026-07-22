@@ -1,7 +1,6 @@
 <?php
 
 require str_replace('\\', '/', dirname(__FILE__)) . '/../uc.php';
-require str_replace('\\', '/', dirname(__FILE__)) . '/../config.php';
 
 function compile() {
     $app = new App();
@@ -9,7 +8,10 @@ function compile() {
 
     $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/../');
 
-    $config = config($app);
+    $config = $app->data($app->dir('ROOT', 'config.data.php'), array(
+        'app' => $app
+    ));
+
     $mode = $config['mode'][basename(__FILE__)];
 
     foreach ($config['ini'][$mode] as $key => $value) {

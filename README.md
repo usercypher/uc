@@ -46,13 +46,13 @@ Copy the default configuration.
 **Linux/macOS**
 
 ```bash
-cp config.php.default config.php
+cp config.data.php.example config.data.php
 ```
 
 **Windows**
 
 ```bat
-copy config.php.default config.php
+copy config.data.php.example config.data.php
 ```
 
 Compile routes and units.
@@ -92,14 +92,14 @@ cli.bat db print | cli.bat db exec
 **Linux/macOS**
 
 ```bash
-chmod +x uc-fcgi.sh
-./uc-fcgi.sh
+chmod +x uc-web.sh
+./uc-web.sh
 ```
 
 **Windows**
 
 ```bat
-uc-fcgi.bat
+uc-web.bat
 ```
 
 ---

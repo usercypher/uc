@@ -1,12 +1,13 @@
 <?php
 
 class Example_Pipe_User {
-    private $app, $session;
+    private $app, $session, $translator;
 
     public function args($args) {
         list(
             $this->app, 
             $this->session, 
+            $this->translator, 
         ) = $args;
     } 
 
@@ -19,14 +20,29 @@ class Example_Pipe_User {
         $userRoles = $input->data['user_roles'];
         $isAuth = isset($userSession);
 
+        $appLang = $input->data['app:lang'];
+        $exampleLanguages = $input->data['example:languages'];
+        $exampleLang = $input->data['example:lang'];
+
         $data = array(
             'app' => $this->app,
             'is_auth' => $isAuth,
             'route' => $input->route,
+            't' => $this->translator,
+            'languages' => $exampleLanguages,
+            'lang' => $exampleLang,
+            'translation_dir' => $this->app->dir('ROOT', 'src/Example/lang/' . $exampleLang . '.data.php'),
             'partial_app_script' => $this->app->template($this->app->dir('ROOT', 'src/App/res/partial/script.html.php'), array(
                 'app' => $this->app,
-                'flash' => $flash
+                'flash' => $flash,
+                't' => $this->translator,
+                'translation_dir' => $this->app->dir('ROOT', 'src/App/lang/' . $appLang . '.data.php'),
             )),
+            'partial_user_session' => null,
+            'partial_user_create' => null,
+            'partial_user_edit_account' => null,
+            'partial_user_edit_password' => null,
+            'partial_user_delete' => null,
         );
         if ($isAuth) {
             $data['partial_user_edit_account'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/edit_account.html.php'), array(
@@ -35,7 +51,7 @@ class Example_Pipe_User {
                 'redirect_alt' => $input->route,
                 'session_token' => $sessionToken,
                 'user_roles' => $userRoles,
-                'user' => $userSession
+                'user' => $userSession,
             ));
             
             $data['partial_user_edit_password'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/edit_password.html.php'), array(
