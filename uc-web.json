@@ -3,15 +3,13 @@
   "document_root": "${ROOT}/web",
   "fcgi_enabled": true,
   "fcgi_network": "unix",
-  "fcgi_address": "${ROOT}/var/run/php-fpm.sock",
-  "fcgi_bin": "php-fpm -y ${ROOT}/php-fpm.conf -c ${ROOT}/php.ini -F",
+  "fcgi_address": "${ROOT}/var/run/php-cgi-${PORT}.sock",
+  "fcgi_bin": "php-cgi -b ${ROOT}/var/run/php-cgi-${PORT}.sock -c ${ROOT}/php.ini",
   "fcgi_script": "${ROOT}/index.php",
-  "fcgi_worker_count": 1,
-  "fcgi_worker_concurrency": 5,
+  "fcgi_worker_count": 5,
+  "fcgi_worker_concurrency": 1,
   "fcgi_env": {
-    "PHP_FCGI_MAX_REQUESTS": "0",
-    "ROOT": "${ROOT}",
-    "LISTEN": "${ROOT}/var/run/php-fpm.sock"
+    "PHP_FCGI_MAX_REQUESTS": "0"
   },
   "mime": {
     ".wasm": "application/wasm",
