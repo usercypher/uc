@@ -554,7 +554,7 @@ limitations under the License.
             var currentChild = el.firstChild;
             for (var i = 2, ilen = arguments.length; i < ilen; i++) {
                 if (typeof arguments[i] === 'function') {
-                    arguments[i] = arguments[i]();
+                    arguments[i] = arguments[i](el);
                 }
                 var normalized = (Object.prototype.toString.call(arguments[i]) === '[object Array]') ? arguments[i] : [arguments[i]];
                 for (var j = 0, jlen = normalized.length; j < jlen; j++) {
