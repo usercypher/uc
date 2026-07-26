@@ -531,7 +531,11 @@ limitations under the License.
         }
         var el = null;
         if (tag && tag instanceof El) {
-            return El.apply(null, tag.arguments);
+            el = El.apply(null, tag.arguments);
+            if (tag.arguments[0] !== el) {
+                tag.arguments[0] = el;
+            }
+            return el;
         } else if (tag && tag.nodeType) {
             el = tag;
         } else if (typeof tag === 'string') {
@@ -545,7 +549,7 @@ limitations under the License.
                     if (el[attrs[i][0]] !== attrs[i][1]) {
                         el[attrs[i][0]] = attrs[i][1];
                     }
-                } else if (el.getAttribute(attrs[i][0]) !== attrs[i][1]) {
+                } else if (el.getAttribute && el.getAttribute(attrs[i][0]) !== attrs[i][1]) {
                     el.setAttribute(attrs[i][0], attrs[i][1] || "");
                 }
             }
@@ -564,10 +568,10 @@ limitations under the License.
                         if (nodeType === "string" || nodeType === "number") {
                             newNode = document.createTextNode(newNode);
                         } else if (newNode instanceof El) {
-                            if (!newNode.replace && currentChild) {
+                            if (!newNode.replace && currentChild) { 
                                 newNode.arguments[0] = currentChild;
                             }
-                            newNode = El.apply(null, newNode.arguments);
+                            newNode = El(newNode);
                         }
                         if (currentChild) {
                             if (newNode.nodeType !== currentChild.nodeType || currentChild !== newNode) {
