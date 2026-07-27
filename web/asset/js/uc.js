@@ -544,13 +544,16 @@ limitations under the License.
             el = document.createDocumentFragment();
         }
         if (attrs) {
-            for (var i = 0, ilen = attrs.length; i < ilen; i++) {
-                if (attrs[i][0] in el || attrs[i][0].charAt(0) === "_") {
-                    if (el[attrs[i][0]] !== attrs[i][1]) {
-                        el[attrs[i][0]] = attrs[i][1];
+            for (var key in attrs) {
+                if (attrs.hasOwnProperty(key)) {
+                    var value = attrs[key];
+                    if (key in el || key.charAt(0) === "_") {
+                        if (el[key] !== value) {
+                            el[key] = value;
+                        }
+                    } else if (el.getAttribute && el.getAttribute(key) !== value) {
+                        el.setAttribute(key, value || "");
                     }
-                } else if (el.getAttribute && el.getAttribute(attrs[i][0]) !== attrs[i][1]) {
-                    el.setAttribute(attrs[i][0], attrs[i][1] || "");
                 }
             }
         }

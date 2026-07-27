@@ -134,8 +134,8 @@ function responseProcessor(response) {
 
 /*
 El(
-    tag,         // "#id", "div", {El: arguments}, undefined or null creates fragmenr
-    attr,        // [["name", "value"]]
+    tag,         // "#id", "div", {El: arguments}, undefined or null creates fragment
+    attr,        // {name: value}
     ...children, // [...children], El(), {El: arguments, replace: bool}, "string"
 ) : return Element
 */
