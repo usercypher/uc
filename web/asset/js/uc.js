@@ -544,6 +544,9 @@ limitations under the License.
             el = document.createDocumentFragment();
         }
         if (attrs) {
+            if (typeof attrs === 'function') {
+                attrs = attrs(el);
+            }
             for (var key in attrs) {
                 if (attrs.hasOwnProperty(key)) {
                     var value = attrs[key];
