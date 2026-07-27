@@ -569,24 +569,22 @@ limitations under the License.
                 var normalized = (Object.prototype.toString.call(arguments[i]) === '[object Array]') ? arguments[i] : [arguments[i]];
                 for (var j = 0, jlen = normalized.length; j < jlen; j++) {
                     var newNode = normalized[j];
-                    if (newNode) {
-                        var nodeType = typeof newNode;
-                        if (nodeType === "string" || nodeType === "number") {
-                            newNode = document.createTextNode(newNode);
-                        } else if (newNode instanceof El) {
-                            if (!newNode.replace && currentChild) { 
-                                newNode.arguments[0] = currentChild;
-                            }
-                            newNode = El(newNode);
+                    var nodeType = typeof newNode;
+                    if (nodeType === "string" || nodeType === "number") {
+                        newNode = document.createTextNode(newNode);
+                    } else if (newNode instanceof El) {
+                        if (!newNode.replace && currentChild) { 
+                            newNode.arguments[0] = currentChild;
                         }
-                        if (currentChild) {
-                            if (newNode.nodeType !== currentChild.nodeType || currentChild !== newNode) {
-                                el.replaceChild(newNode, currentChild);
-                            }
-                            currentChild = newNode.nextSibling;
-                        } else {
-                            el.appendChild(newNode);
+                        newNode = El(newNode);
+                    }
+                    if (currentChild) {
+                        if (newNode.nodeType !== currentChild.nodeType || currentChild !== newNode) {
+                            el.replaceChild(newNode, currentChild);
                         }
+                        currentChild = newNode.nextSibling;
+                    } else {
+                        el.appendChild(newNode);
                     }
                 }
             }
