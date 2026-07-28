@@ -134,15 +134,20 @@ function responseProcessor(response) {
 
 /*
 El(
-    tag,         // "#id", "div", {El: arguments}, undefined or null creates fragment
-    attr,        // {name: value}
-    ...children, // [...children], El(), {El: arguments, replace: bool}, "string"
-) : return Element
+    tag,        // "#id", "div", DOM element, or undefined/null for DocumentFragment
+    ...args     // Children, attributes, or render functions:
+                //   function () { return ... }        → dynamic content
+                //   new El(...) / [ ... ]             → El component(s)
+                //   Element                           → existing DOM element
+                //   { attribute: value }              → attributes/properties
+                //   { El: args, replace: bool }       → component definition
+                //   "string" / number                 → text content
+) : Element
 */
 var pElement = El("p", null, "Hello, world!");
 
 /*
-El(...same with El()) : return {El: arguments}
+new El(...same with El()) : return { El: args }
 */
 // note: using as child in El would reuse the child node if .replace = true, since it's not define by default it will reuse children 
 var pElObject = new El("p", null, "Hello, world!");

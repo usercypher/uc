@@ -524,16 +524,16 @@ limitations under the License.
         return result;
     };
 
-    function El(tag, attrs) {
+    function El(tag) {
         if (this instanceof El) {
-            this.arguments = arguments;
+            this.args = arguments;
             return;
         }
         var el = null;
         if (tag && tag instanceof El) {
-            el = El.apply(null, tag.arguments);
-            if (tag.arguments[0] !== el) {
-                tag.arguments[0] = el;
+            el = El.apply(null, tag.args);
+            if (tag.args[0] !== el) {
+                tag.args[0] = el;
             }
             return el;
         } else if (tag && tag.nodeType) {
@@ -543,30 +543,31 @@ limitations under the License.
         } else {
             el = document.createDocumentFragment();
         }
-        if (attrs) {
-            if (typeof attrs === 'function') {
-                attrs = attrs(el);
-            }
-            for (var key in attrs) {
-                if (attrs.hasOwnProperty(key)) {
-                    var value = attrs[key];
-                    if (key in el || key.charAt(0) === "_") {
-                        if (el[key] !== value) {
-                            el[key] = value;
-                        }
-                    } else if (el.getAttribute && el.getAttribute(key) !== value) {
-                        el.setAttribute(key, value || "");
-                    }
-                }
-            }
-        }
-        if (arguments.length > 2) {
+        var args = arguments;
+        if (args.length > 1) {
             var currentChild = el.firstChild;
-            for (var i = 2, ilen = arguments.length; i < ilen; i++) {
-                if (typeof arguments[i] === 'function') {
-                    arguments[i] = arguments[i](el);
+            for (var i = 1, ilen = args.length; i < ilen; i++) {
+                if (typeof args[i] === 'function') {
+                    args[i] = args[i](el);
                 }
-                var normalized = (Object.prototype.toString.call(arguments[i]) === '[object Array]') ? arguments[i] : [arguments[i]];
+                var argType = Object.prototype.toString.call(args[i]);
+                if (argType === "[object Object]" && (!args[i].constructor || args[i].constructor === Object)) {
+                    var attrs = args[i];
+                    for (var key in attrs) {
+                        if (attrs.hasOwnProperty(key)) {
+                            var value = attrs[key];
+                            if (key in el || key.charAt(0) === "_") {
+                                if (el[key] !== value) {
+                                    el[key] = value;
+                                }
+                            } else if (el.getAttribute && el.getAttribute(key) !== value) {
+                                el.setAttribute(key, value || "");
+                            }
+                        }
+                    }
+                    continue;
+                }
+                var normalized = (argType === '[object Array]') ? args[i] : [args[i]];
                 for (var j = 0, jlen = normalized.length; j < jlen; j++) {
                     var newNode = normalized[j];
                     var nodeType = typeof newNode;
@@ -574,7 +575,7 @@ limitations under the License.
                         newNode = document.createTextNode(newNode);
                     } else if (newNode instanceof El) {
                         if (!newNode.replace && currentChild) { 
-                            newNode.arguments[0] = currentChild;
+                            newNode.args[0] = currentChild;
                         }
                         newNode = El(newNode);
                     }
