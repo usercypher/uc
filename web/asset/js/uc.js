@@ -400,10 +400,10 @@ limitations under the License.
     };
     Url.prototype.sync = function(replace) {
         var url = this.toString();
-        if (history && history.pushState) {
-            history[replace || false ? "replaceState" : "pushState"]({}, "", url);
+        if (window.history && window.history.pushState) {
+            window.history[replace || false ? "replaceState" : "pushState"]({}, "", url);
         } else {
-            location.href = url;
+            window.location.href = url;
         }
     };
 
@@ -538,10 +538,20 @@ limitations under the License.
             return el;
         } else if (tag && tag.nodeType) {
             el = tag;
-        } else if (typeof tag === 'string') {
-            el = tag.charAt(0) === '#' ? document.getElementById(tag.substring(1)) : document.createElement(tag);
         } else {
-            el = document.createDocumentFragment();
+            var tagType = typeof tag;
+            if (tagType === 'string') {
+                el = tag.charAt(0) === '#' ? document.getElementById(tag.substring(1)) : document.createElement(tag);
+            } else if (tagType === 'object' && tag.constructor === Object) {
+                for (var ns in tag) {
+                    if (tag.hasOwnProperty(ns)) {
+                        el = document.createElementNS(El.ns[ns] || "http://www.w3.org/1999/xhtml", tag[ns]);
+                        break;
+                    }
+                }
+            } else {
+                el = document.createDocumentFragment();
+            }
         }
         var args = arguments;
         if (args.length > 1) {
@@ -550,24 +560,7 @@ limitations under the License.
                 if (typeof args[i] === 'function') {
                     args[i] = args[i](el);
                 }
-                var argType = Object.prototype.toString.call(args[i]);
-                if (argType === "[object Object]" && (!args[i].constructor || args[i].constructor === Object)) {
-                    var attrs = args[i];
-                    for (var key in attrs) {
-                        if (attrs.hasOwnProperty(key)) {
-                            var value = attrs[key];
-                            if (key in el || key.charAt(0) === "_") {
-                                if (el[key] !== value) {
-                                    el[key] = value;
-                                }
-                            } else if (el.getAttribute && el.getAttribute(key) !== value) {
-                                el.setAttribute(key, value || "");
-                            }
-                        }
-                    }
-                    continue;
-                }
-                var normalized = (argType === '[object Array]') ? args[i] : [args[i]];
+                var normalized = (Object.prototype.toString.call(args[i]) === '[object Array]') ? args[i] : [args[i]];
                 for (var j = 0, jlen = normalized.length; j < jlen; j++) {
                     var newNode = normalized[j];
                     var nodeType = typeof newNode;
@@ -578,6 +571,23 @@ limitations under the License.
                             newNode.args[0] = currentChild;
                         }
                         newNode = El(newNode);
+                    } else if (nodeType === "object" && newNode.constructor === Object) {
+                        var attrs = newNode;
+                        for (var key in attrs) {
+                            if (attrs.hasOwnProperty(key)) {
+                                var value = attrs[key];
+                                if (key in el || key.charAt(0) === "_") {
+                                    if (el[key] !== value) {
+                                        el[key] = value;
+                                    }
+                                }
+                                var valueType = typeof value;
+                                if ((valueType === "string" || valueType === "number") && el.getAttribute && el.getAttribute(key) !== value) {
+                                    el.setAttribute(key, value || "");
+                                }
+                            }
+                        }
+                        continue;
                     }
                     if (currentChild) {
                         if (newNode.nodeType !== currentChild.nodeType || currentChild !== newNode) {
@@ -596,6 +606,10 @@ limitations under the License.
             }
         }
         return el;
+    }
+    El.ns = {
+        svg: "http://www.w3.org/2000/svg",
+        mathml: "http://www.w3.org/1998/Math/MathML"
     }
     El.insert = function(method, el, content) {
         if (method === "inner") {

@@ -59,6 +59,17 @@ function loadFeature() {
     });
 };
 
+var upathObj = {keyA: {keyB: "value"}};
+
+// getter
+// Note: omitted third argument means getter
+var upathGet = Util.path(upathObj, ["keyA", "keyB"]);
+
+// setter
+var upathSet = Util.path(upathObj, ["keyA", "keyB"], "new_value");
+
+var uid = Util.id(); // genrates id base on current session time and increments
+
 /**************************************************************
  * 🔗 Url – Usage Examples
  **************************************************************/
@@ -132,9 +143,12 @@ function responseProcessor(response) {
  * 🧩 El – Usage Examples
  **************************************************************/
 
+// register namespace
+El.ns.svg = "http://www.w3.org/2000/svg";
+
 /*
 El(
-    tag,        // "#id", "div", DOM element, or undefined/null for DocumentFragment
+    tag,        // "#id", "div", DOM element, { ns: "tag" }, or undefined/null for DocumentFragment
     ...args     // Children, attributes, or render functions:
                 //   function () { return ... }        → dynamic content
                 //   new El(...) / [ ... ]             → El component(s)

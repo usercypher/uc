@@ -49,7 +49,7 @@ x-evt-[event]="!name name2" // all except specified names
 .wheel
 .right
 
-// behaviour (only works on x-evt-[name])
+// behaviour (only works on x-evt-[event])
 .stop       // stop propagation (only for x system)
 .prevent    // prevent default
 .window     // attach to window
@@ -65,11 +65,10 @@ x-evt-[event]="!name name2" // all except specified names
 - $         // use in accessing $vals, $this, $window
 - null      // in x-set removes attribute
 
-x-txt-[name]="value"
 x-val-[name]="value"
 x-css-[name].[class]=""                  // values "toggle", "remove", ""
 x-tab="name name"
-x-focus="name"
+x-lit="name"                             // focus on elemnt
 x-set-[name].[attribute]="value"
 x-alt-[name].[attribute]="value"         // use with x-set to be used for toggle state
 x-sig-[name]="trigger1 trigger2"
@@ -95,14 +94,13 @@ class="button neutral"
 
 x-evt-click
 
+x-css-tab.hide
 x-css-tab1.hide="toggle"
-x-css-tab2.hide
-x-css-tab3.hide
 
+x-css-button.neutral="remove"
 x-css-button1.neutral="toggle"
-x-css-button2.neutral="remove"
-x-css-button3.neutral="remove"
 
+x-ref-button
 x-ref-button1
 
 >tab1</button>
@@ -113,14 +111,13 @@ class="button"
 
 x-evt-click
 
-x-css-tab1.hide
+x-css-tab.hide
 x-css-tab2.hide="toggle"
-x-css-tab3.hide
 
-x-css-button1.neutral="remove"
+x-css-button.neutral="remove"
 x-css-button2.neutral="toggle"
-x-css-button3.neutral="remove"
 
+x-ref-button
 x-ref-button2
 
 >tab2</button>
@@ -131,21 +128,20 @@ class="button"
 
 x-evt-click
 
-x-css-tab1.hide
-x-css-tab2.hide
+x-css-tab.hide
 x-css-tab3.hide="toggle"
 
-x-css-button1.neutral="remove"
-x-css-button2.neutral="remove"
+x-css-button.neutral="remove"
 x-css-button3.neutral="toggle"
 
+x-ref-button
 x-ref-button3
 
 >tab3</button>
 
-<div class="block" x-ref-tab1>tab1</div>
-<div class="block hide" x-ref-tab2>tab2</div>
-<div class="block hide" x-ref-tab3>tab3</div>
+<div class="block" x-ref-tab x-ref-tab1>tab1</div>
+<div class="block hide" x-ref-tab x-ref-tab2>tab2</div>
+<div class="block hide" x-ref-tab x-ref-tab3>tab3</div>
 
 <hr>
 
