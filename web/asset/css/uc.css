@@ -1,5 +1,5 @@
 /*
-Version: 0.0.1
+Version: 0.0.2
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -293,20 +293,20 @@ img {
     vertical-align: middle;
 }
 
-.row:after {
+.float:after {
     content: "";
     display: table;
     clear: both;
 }
 
-.row .item {
+.float .col {
     float: left;
 }
 
-.row.right .item {
+.float .col.end {
     float: right;
 }
 
-.row.col .item {
+.float .row {
     float: none;
 }
