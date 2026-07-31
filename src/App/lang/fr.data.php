@@ -5,6 +5,7 @@ return array(
     'welcome_message' => 'Bienvenue sur UC Framework. Explorez le code et découvrez comment il fonctionne.',
     'view_on_github' => 'Voir sur GitHub',
     'php_info' => 'Info PHP',
+    'php_info_opcache' => 'Informations PHP OPcache',
     'example_user' => 'Exemple - Utilisateur',
     'example_game' => 'Exemple - Jeu',
     'notification' => 'Notification',

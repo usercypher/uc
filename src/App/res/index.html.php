@@ -37,12 +37,13 @@ $t->load($translation_dir);
 <body>
     <h1><?php echo $t->t('framework_title'); ?></h1>
     <p><?php echo $t->t('welcome_message'); ?></p>
-    <p>
-        <a href="https://github.com/usercypher/uc"><?php echo $t->t('view_on_github'); ?></a> | 
-        <a href="<?php echo $app->url('ROUTE', 'phpinfo'); ?>"><?php echo $t->t('php_info'); ?></a> | 
-        <a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_user'); ?></a> |
-        <a href="<?php echo $app->url('ROUTE', 'example/game/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_game'); ?></a>
-    </p>
+    <ul>
+        <li><a href="https://github.com/usercypher/uc"><?php echo $t->t('view_on_github'); ?></a></li>
+        <li><a href="<?php echo $app->url('ROUTE', 'phpinfo'); ?>"><?php echo $t->t('php_info'); ?></a></li>
+        <li><a href="<?php echo $app->url('ROUTE', 'phpinfo/opcache'); ?>"><?php echo $t->t('php_info_opcache'); ?></a></li>
+        <li><a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_user'); ?></a></li>
+        <li><a href="<?php echo $app->url('ROUTE', 'example/game/', array(':lang' => $lang)); ?>"><?php echo $t->t('example_game'); ?></a></li>
+    </ul>    
     <p>
         <?php foreach ($languages as $l): ?>
             <a href="<?php echo $app->url('ROUTE', 'home/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
