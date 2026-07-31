@@ -188,10 +188,7 @@ q {
     font-style: italic;
 }
 
-q:before {
-    content: '"';
-}
-
+q:before,
 q:after {
     content: '"';
 }
