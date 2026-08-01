@@ -35,12 +35,9 @@ $t->load($translation_dir);
   <?php foreach ($languages as $l): ?>
     <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>" />
   <?php endforeach; ?>
-  <style>
-      .section { padding: 1em; }
-  </style>
 </head>
 <body>
-    <div class="section">
+    <div>
 
         <h1><?= $t->t('title') ?></h1>
 
@@ -61,7 +58,7 @@ $t->load($translation_dir);
 
     <hr>
         
-    <div class="section">
+    <div>
 
         <h2><?= $t->t('login') ?></h2>
         <fieldset>
@@ -95,7 +92,7 @@ $t->load($translation_dir);
 
     <hr>
 
-    <div class="section">
+    <div>
 
         <h2><?= $t->t('edit') ?></h2>
         <fieldset>

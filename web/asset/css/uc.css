@@ -34,6 +34,14 @@ body {
     margin: auto;
     max-width: 960px;
     padding: 1em;
+
+    word-wrap: break-word;
+}
+
+body.reset {
+    margin: 0;
+    max-width: 100%;
+    padding: 0;
 }
 
 h1,
@@ -109,9 +117,15 @@ code,
 kbd,
 samp,
 var {
-    font-family: monospace;
     font-size: 1em;
     line-height: 1.4;
+}
+
+pre,
+code,
+kbd,
+samp {
+    font-family: monospace;
 }
 
 pre {
@@ -124,8 +138,8 @@ samp {
 }
 
 var {
-    font-style: italic;
     font-family: serif;
+    font-style: italic;
 }
 
 span {
@@ -312,13 +326,6 @@ img {
 
 .center {
     display: block;
-    text-align: center;
     margin: auto;
-}
-
-.full {
-    margin: 0;
-    max-width: 100%;
-    padding: 0;
-    width: 100%;
+    text-align: center;
 }
