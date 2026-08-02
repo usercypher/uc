@@ -114,28 +114,30 @@ blockquote {
 
 pre,
 code,
-kbd,
 samp,
 var {
     font-size: 1em;
-    line-height: 1.4;
 }
 
 pre,
 code,
-kbd,
-samp {
+samp,
+kbd {
     font-family: monospace;
 }
 
 pre {
+    line-height: 1.4;
     overflow: auto;
+    padding: 1em;
 }
 
-kbd,
-samp {
+kbd {
     border: 1px solid #d4d4d4;
-}
+    font-size: 0.9em;
+    line-height: 1;
+    padding: 0.1em 0.4em;
+} 
 
 var {
     font-family: serif;
@@ -155,8 +157,8 @@ hr {
 a,
 .a {
     background: transparent;
-    text-decoration: none;
     color: #3399ff;
+    text-decoration: none;
 }
 
 a:hover,
@@ -268,8 +270,8 @@ button,
 
 button,
 .button {
-    border: 1px solid transparent;
     background-color: #3399ff;
+    border: 1px solid transparent;
     color: #fff;
     cursor: pointer;
     padding: 0.5em 1em;
@@ -307,9 +309,9 @@ img {
 }
 
 .float:after {
+    clear: both;
     content: "";
     display: table;
-    clear: both;
 }
 
 .float .col {
