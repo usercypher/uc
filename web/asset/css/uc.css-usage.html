@@ -2,201 +2,224 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Valley Orchard — Fresh Fruit from Our Farm</title>
+    <title>HTML Tag Showcase</title>
     <link rel="stylesheet" href="uc.css">
 </head>
 <body>
 
-<header>
-    <h1>Green Valley Orchard</h1>
-    <p><em>Fresh fruit, harvested daily and delivered with care.</em></p>
-
-    <p>
-        <a href="#today">Today's Harvest</a> ·
-        <a href="#about">Our Farm</a> ·
-        <a href="#contact">Contact</a>
-    </p>
+    <!-- Headings -->
+    <section>
+        <h2>Headings</h2>
+        <h1>Heading 1</h1>
+        <h2>Heading 2</h2>
+        <h3>Heading 3</h3>
+        <h4>Heading 4</h4>
+        <h5>Heading 5</h5>
+        <h6>Heading 6</h6>
+    </section>
 
     <hr>
-</header>
 
-<main>
+    <!-- Paragraph with inline formatting -->
+    <section>
+        <h2>Paragraph and Inline Elements</h2>
+        <p>
+            This is a paragraph with
+            <strong>bold</strong>,
+            <em>italic</em>,
+            <u>underline</u>,
+            <q>quote</q>,
+            <a href="#">a link</a>, and
+            <abbr title="HyperText Markup Language">HTML</abbr>.
+        </p>
+    </section>
 
-<article>
+    <hr>
 
-<h2>Fruit That Speaks for Itself</h2>
+    <!-- Blockquote -->
+    <section>
+        <h2>Blockquote</h2>
+        <blockquote>
+            This is a blockquote with some citation.
+        </blockquote>
+    </section>
 
-<p>
-Every morning begins before sunrise. Our team carefully picks only the fruit
-that is ready, ensuring it reaches your table at peak freshness. We believe
-great fruit doesn't need complicated marketing—it simply needs to be grown
-well.
-</p>
+    <hr>
 
-<img
-    src="https://picsum.photos/seed/orchard/960/500"
-    alt="Fresh fruit baskets in an orchard">
+    <!-- Code & Keyboard Input -->
+    <section>
+        <h2>Inline Code and Keyboard Input</h2>
+        <p>Here is some <code>inline code</code>, <kbd>keyboard input</kbd>, <samp>sample</samp>, and a <var>variable</var>.</p>
+    </section>
 
-<p class="center">
-<small><em>Harvested every morning from our family-owned orchard.</em></small>
-</p>
+    <hr>
 
-<h2 id="today">Today's Harvest</h2>
+    <!-- Preformatted Code -->
+    <section>
+        <h2>Preformatted Block</h2>
+        <pre>
+function hello() {
+    <span>console.log("Hello, world!");</span>
+}
+        </pre>
+    </section>
 
-<p>
-Availability changes with the season. Below are today's freshly harvested
-fruits.
-</p>
+    <hr>
 
-<table>
-    <thead>
-        <tr>
-            <th>Fruit</th>
-            <th>Price</th>
-            <th>Availability</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Mango</td>
-            <td>$2.50 / kg</td>
-            <td>Available</td>
-        </tr>
-        <tr>
-            <td>Banana</td>
-            <td>$1.20 / kg</td>
-            <td>Available</td>
-        </tr>
-        <tr>
-            <td>Papaya</td>
-            <td>$1.80 each</td>
-            <td>Limited</td>
-        </tr>
-        <tr>
-            <td>Pineapple</td>
-            <td>$3.00 each</td>
-            <td>Available</td>
-        </tr>
-    </tbody>
-</table>
+    <!-- Lists -->
+    <section>
+        <h2>Lists</h2>
+        <h3>Unordered List</h3>
+        <ul>
+            <li>Unordered list item 1</li>
+            <li>Unordered list item 2</li>
+        </ul>
 
-<p>
-<a class="button" href="#">Order Today's Harvest</a>
-</p>
+        <h3>Ordered List</h3>
+        <ol>
+            <li>Ordered list item 1</li>
+            <li>Ordered list item 2</li>
+        </ol>
 
-<hr>
+        <h3>Description List</h3>
+        <dl>
+            <dt>Definition Term</dt>
+            <dd>This is the definition.</dd>
+        </dl>
+    </section>
 
-<h2>Grown Naturally</h2>
+    <hr>
 
-<p>
-Healthy fruit begins with healthy soil. We use sustainable growing practices
-and harvest only when each fruit has naturally ripened on the tree.
-</p>
+    <!-- Table -->
+    <section>
+        <h2>Table</h2>
+        <table>
+            <caption>Sample Table</caption>
+            <thead>
+                <tr><th>Name</th><th>Age</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Alice</td><td>30</td></tr>
+                <tr><td>Bob</td><td>25</td></tr>
+            </tbody>
+        </table>
+    </section>
 
-<img
-    src="https://picsum.photos/seed/farmer/960/480"
-    alt="Farmer inspecting ripe mangoes">
+    <hr>
 
-<p class="center">
-<small><em>Every fruit is inspected before packing.</em></small>
-</p>
+    <!-- Form Elements -->
+    <section>
+        <h2>Form</h2>
+        <form>
+            <fieldset>
+                <legend>Form Fields</legend>
 
-<h2>Why Customers Choose Us</h2>
+                <label for="name">Name:</label>
+                <input type="text" id="name" placeholder="Your name"><br><br>
 
-<ul>
-    <li>Harvested fresh every morning.</li>
-    <li>No artificial ripening process.</li>
-    <li>Carefully sorted by hand.</li>
-    <li>Delivered directly from the farm.</li>
-    <li>Seasonal varieties throughout the year.</li>
-</ul>
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="example@example.com"><br><br>
 
-<hr>
+                <label for="date">Date:</label>
+                <input type="date" id="date"><br><br>
 
-<h2 id="about">A Family Farm Since 1998</h2>
+                <label>
+                    <input type="checkbox"> Subscribe
+                </label><br><br>
 
-<p>
-Green Valley Orchard began as a small family farm with a simple goal:
-grow fruit we would proudly serve at our own table.
-Over the years we've expanded our orchards while keeping the same philosophy—
-quality first, quantity second.
-</p>
+                <label>
+                    <input type="radio" name="gender"> Male
+                </label>
+                <label>
+                    <input type="radio" name="gender"> Female
+                </label><br><br>
 
-<img
-    src="https://picsum.photos/seed/farm/960/420"
-    alt="Fruit orchard during sunrise">
+                <label for="message">Message:</label><br>
+                <textarea id="message" placeholder="Your message"></textarea><br><br>
 
-<p class="center">
-<small><em>Our orchard at sunrise during harvest season.</em></small>
-</p>
+                <button type="submit">Submit</button>
+                <input type="reset" value="Reset">
+            </fieldset>
+        </form>
+    </section>
 
-<hr>
+    <hr>
 
-<h2>Visit Our Farm</h2>
+    <!-- Superscript and Subscript -->
+    <section>
+        <h2>Superscript & Subscript</h2>
+        <p>
+            Superscript: E = mc<sup>2</sup><br>
+            Subscript: H<sub>2</sub>O
+        </p>
+    </section>
 
-<p>
-Visitors are welcome during harvest season. Walk through the orchard,
-meet our growers, and experience where your fruit comes from.
-</p>
+    <hr>
 
-<blockquote>
-Freshness isn't something we package—it's something we grow.
-</blockquote>
+    <!-- Input -->
+    <section>
+        <h2>Input</h2>
+        <p class="input">Input (Class)</p>
+        <input placeholder="Input (Tag)" />
+    </section>
 
-<hr>
+    <hr>
 
-<h2 id="contact">Contact Us</h2>
+    <!-- Buttons -->
+    <section>
+        <h2>Buttons</h2>
+        <p class="button">Button (Class)</p>
+        <button>Button (Tag)</button>
+        <input type="button" value="Button (Input)">
+    </section>
+    
+    <hr>
 
-<form>
+    <!-- Link -->
+    <section>
+        <h2>Link</h2>
+        <p class="a">Link (Class)</p>
+        <a>Link (Tag)</a>
+    </section>
+    
+    <hr>
 
-<label for="name">Name</label><br>
-<input
-    id="name"
-    type="text"
-    placeholder="Jane Doe">
+    <!-- Embedded Content -->
+    <section>
+        <h2>Embedded Content</h2>
+        <iframe class="center" src="https://example.com" title="Example iframe"></iframe>
+    </section>
 
-<br><br>
+    <hr>
 
-<label for="email">Email</label><br>
-<input
-    id="email"
-    type="email"
-    placeholder="jane@example.com">
+    <!-- Image -->
+    <section>
+        <h2>Image</h2>
 
-<br><br>
+        <img src="https://freepngimg.com/thumb/the_legend_of_zelda/21552-3-zelda-link.png" alt="Image (Tag)">
+        <p>source: <a>https://freepngimg.com/thumb/the_legend_of_zelda/21552-3-zelda-link.png</a></p>
+    </section>
 
-<label for="message">Message</label><br>
-<textarea
-    id="message"
-    placeholder="I'd like to place an order..."></textarea>
+    <!-- Float -->
+    <section>
+        <h2>Utility Classes</h2>
 
-<br><br>
+        <div class="float">
+            <div class="row float">
+                <div class="col">header 1</div>
+                <div class="col end">header 2</div>
+            </div>
+            <div class="row float">
+                <div class="col">cell 1</div>
+                <div class="col end">cell 2</div>
+            </div>
+        </div>
 
-<button type="submit">
-Send Inquiry
-</button>
+        <div class="center">center (class)</div>
+        <div class="center">
+            <div>center nested (class)</div>
+        </div>
 
-</form>
-
-</article>
-
-</main>
-
-<footer>
-
-<hr>
-
-<p class="center">
-<strong>Green Valley Orchard</strong><br>
-Open Daily • 6:00 AM – 5:00 PM
-</p>
-
-<p class="center">
-Fresh fruit grown with care.
-</p>
-
-</footer>
-
+    </section>
 </body>
 </html>
