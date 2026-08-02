@@ -330,3 +330,8 @@ img {
     margin-right: auto;
     text-align: center;
 }
+
+.overflow {
+    display: block;
+    overflow: auto;
+}
