@@ -235,31 +235,28 @@ caption {
 
 input,
 .input,
-textarea,
-select,
 button,
-.button {
-    border: 1px solid #d4d4d4;
+.button,
+textarea,
+select {
+    cursor: pointer;
     font-family: inherit;
     font-size: 1em;
-    line-height: 1.5;
+    line-height: 1.2;
+    padding: 0.5em 0.75em;
 }
 
 input,
 .input,
 textarea,
 select {
-    padding: 0.5em 0.75em;
+    border: 1px solid #d4d4d4;
 }
 
 input[type="checkbox"],
 input[type="radio"] {
     margin: 0 0.5em 0 0;
     vertical-align: middle;
-}
-
-textarea {
-    min-height: 100px;
 }
 
 input[type="button"],
@@ -273,13 +270,16 @@ button,
     background-color: #3399ff;
     border: 1px solid transparent;
     color: #fff;
-    cursor: pointer;
-    padding: 0.5em 1em;
+    white-space: nowrap;
 }
 
 button:hover,
 .button:hover {
     background-color: #1a7acc;
+}
+
+textarea {
+    min-height: 100px;
 }
 
 label {
