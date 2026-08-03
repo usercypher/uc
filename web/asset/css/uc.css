@@ -167,7 +167,7 @@ a:hover,
     text-decoration: underline;
 }
 
-a.button:hover {
+a.button:hover, a.input:hover {
     text-decoration: none;
 }
 
@@ -246,6 +246,10 @@ option {
     line-height: 1.2;
     padding: 0.5em 0.75em;
     vertical-align: middle;
+}
+
+.input {
+    color: inherit;
 }
 
 input.inline,
