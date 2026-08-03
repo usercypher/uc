@@ -149,25 +149,22 @@ span {
 }
 
 hr {
-    background: #d4d4d4;
-    height: 1px;
+    border-bottom: 1px solid #d4d4d4;
     margin: 2em 0;
 }
 
 a,
 .a {
     background: transparent;
-    color: #3399ff;
     text-decoration: none;
 }
 
 a:hover,
 .a:hover {
-    background: transparent;
     text-decoration: underline;
 }
 
-a.button:hover, a.input:hover {
+a.input {
     text-decoration: none;
 }
 
@@ -236,7 +233,6 @@ caption {
 input,
 .input,
 button,
-.button,
 textarea,
 select,
 option {
@@ -248,14 +244,9 @@ option {
     vertical-align: middle;
 }
 
-.input {
-    color: inherit;
-}
-
 input.inline,
 .input.inline,
 button.inline,
-.button.inline,
 textarea.inline,
 select.inline {
 	font-size: 0.9em;
@@ -264,9 +255,15 @@ select.inline {
 
 input,
 .input,
+button,
 textarea,
 select {
     border: 1px solid #d4d4d4;
+}
+
+.input {
+    color: inherit;
+    background-color: inherit;
 }
 
 input[type="color"] {
@@ -276,25 +273,6 @@ input[type="color"] {
 input[type="checkbox"],
 input[type="radio"] {
     margin: 0 0.5em 0 0;
-}
-
-input[type="button"],
-button,
-.button {
-    font-weight: 500;
-}
-
-button,
-.button {
-    background-color: #3399ff;
-    border: 1px solid transparent;
-    color: #fff;
-    white-space: nowrap;
-}
-
-button:hover,
-.button:hover {
-    background-color: #1a7acc;
 }
 
 option {
