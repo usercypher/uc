@@ -2,224 +2,393 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HTML Tag Showcase</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>uc.css Kitchen Sink</title>
+
+    <!-- Only link the stylesheet -->
     <link rel="stylesheet" href="uc.css">
 </head>
 <body>
 
-    <!-- Headings -->
-    <section>
-        <h2>Headings</h2>
-        <h1>Heading 1</h1>
-        <h2>Heading 2</h2>
-        <h3>Heading 3</h3>
-        <h4>Heading 4</h4>
-        <h5>Heading 5</h5>
-        <h6>Heading 6</h6>
-    </section>
+<header>
+    <h1>uc.css Kitchen Sink</h1>
+    <p>
+        A complete demonstration of every HTML element and helper class styled by
+        <strong>uc.css</strong>.
+    </p>
 
-    <hr>
+    <nav>
+        <a href="#typography">Typography</a> ·
+        <a href="#lists">Lists</a> ·
+        <a href="#tables">Tables</a> ·
+        <a href="#forms">Forms</a> ·
+        <a href="#layout">Layout</a>
+    </nav>
+</header>
 
-    <!-- Paragraph with inline formatting -->
-    <section>
-        <h2>Paragraph and Inline Elements</h2>
-        <p>
-            This is a paragraph with
-            <strong>bold</strong>,
-            <em>italic</em>,
-            <u>underline</u>,
-            <q>quote</q>,
-            <a href="#">a link</a>, and
-            <abbr title="HyperText Markup Language">HTML</abbr>.
-        </p>
-    </section>
+<hr>
 
-    <hr>
+<section id="typography">
+    <h2>Typography</h2>
 
-    <!-- Blockquote -->
-    <section>
-        <h2>Blockquote</h2>
-        <blockquote>
-            This is a blockquote with some citation.
-        </blockquote>
-    </section>
+    <h1>Heading 1</h1>
+    <h2>Heading 2</h2>
+    <h3>Heading 3</h3>
+    <h4>Heading 4</h4>
+    <h5>Heading 5</h5>
+    <h6>Heading 6</h6>
 
-    <hr>
+    <p>
+        This is a paragraph containing
+        <strong>strong</strong>,
+        <b>bold</b>,
+        <em>emphasis</em>,
+        <i>italic</i>,
+        <u>underline</u>,
+        <mark>highlight</mark>,
+        <small>small text</small>,
+        H<sub>2</sub>O,
+        x<sup>2</sup>,
+        <abbr title="HyperText Markup Language">HTML</abbr>,
+        <code>inline code</code>,
+        <kbd>Ctrl</kbd> + <kbd>C</kbd>,
+        <var>x</var>,
+        <samp>sample output</samp>,
+        <q>quoted text</q>,
+        and
+        <a href="#">a hyperlink</a>.
+    </p>
 
-    <!-- Code & Keyboard Input -->
-    <section>
-        <h2>Inline Code and Keyboard Input</h2>
-        <p>Here is some <code>inline code</code>, <kbd>keyboard input</kbd>, <samp>sample</samp>, and a <var>variable</var>.</p>
-    </section>
+    <blockquote>
+        Simplicity is the ultimate sophistication.
+    </blockquote>
 
-    <hr>
+<pre><code>package main
 
-    <!-- Preformatted Code -->
-    <section>
-        <h2>Preformatted Block</h2>
-        <pre>
-function hello() {
-    <span>console.log("Hello, world!");</span>
-}
-        </pre>
-    </section>
+import "fmt"
 
-    <hr>
+func main() {
+    fmt.Println("Hello, uc.css!")
+}</code></pre>
 
-    <!-- Lists -->
-    <section>
-        <h2>Lists</h2>
-        <h3>Unordered List</h3>
-        <ul>
-            <li>Unordered list item 1</li>
-            <li>Unordered list item 2</li>
-        </ul>
+    <address>
+        Written by Lloyd Miles M. Bersabe
+    </address>
+</section>
 
-        <h3>Ordered List</h3>
-        <ol>
-            <li>Ordered list item 1</li>
-            <li>Ordered list item 2</li>
-        </ol>
+<hr>
 
-        <h3>Description List</h3>
-        <dl>
-            <dt>Definition Term</dt>
-            <dd>This is the definition.</dd>
-        </dl>
-    </section>
+<section id="lists">
+    <h2>Lists</h2>
 
-    <hr>
+    <h3>Unordered List</h3>
+    <ul>
+        <li>Apple</li>
+        <li>Banana</li>
+        <li>Orange</li>
+    </ul>
 
-    <!-- Table -->
-    <section>
-        <h2>Table</h2>
-        <table>
-            <caption>Sample Table</caption>
-            <thead>
-                <tr><th>Name</th><th>Age</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>Alice</td><td>30</td></tr>
-                <tr><td>Bob</td><td>25</td></tr>
-            </tbody>
-        </table>
-    </section>
+    <h3>Ordered List</h3>
+    <ol>
+        <li>Install</li>
+        <li>Build</li>
+        <li>Deploy</li>
+    </ol>
 
-    <hr>
+    <h3>Description List</h3>
 
-    <!-- Form Elements -->
-    <section>
-        <h2>Form</h2>
-        <form>
-            <fieldset>
-                <legend>Form Fields</legend>
+    <dl>
+        <dt>HTML</dt>
+        <dd>Document structure.</dd>
 
-                <label for="name">Name:</label>
-                <input type="text" id="name" placeholder="Your name"><br><br>
+        <dt>CSS</dt>
+        <dd>Presentation and layout.</dd>
 
-                <label for="email">Email:</label>
-                <input type="email" id="email" placeholder="example@example.com"><br><br>
+        <dt>JavaScript</dt>
+        <dd>Behavior and interaction.</dd>
+    </dl>
+</section>
 
-                <label for="date">Date:</label>
-                <input type="date" id="date"><br><br>
+<hr>
 
+<section id="tables">
+    <h2>Tables</h2>
+
+    <table>
+        <caption>Example Table</caption>
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Language</th>
+                <th>Released</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Go</td>
+                <td>Compiled</td>
+                <td>2009</td>
+            </tr>
+
+            <tr>
+                <td>PHP</td>
+                <td>Interpreted</td>
+                <td>1995</td>
+            </tr>
+
+            <tr>
+                <td>Rust</td>
+                <td>Compiled</td>
+                <td>2015</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<hr>
+
+<section>
+    <h2>Images</h2>
+
+    <p>Responsive image:</p>
+
+    <img
+        src="https://picsum.photos/960/360"
+        alt="Random">
+
+    <p class="center">
+        Center helper class
+    </p>
+</section>
+
+<hr>
+
+<section>
+    <h2>Buttons & Links</h2>
+
+    <p>
+        <a href="#">Normal Link</a>
+    </p>
+
+    <p>
+        <a class="button" href="#">Anchor Button</a>
+
+        <button>Button</button>
+
+        <input type="button" value="Input Button">
+    </p>
+
+    <p>
+        <button class="inline">Inline Button</button>
+        <input class="inline" value="Inline Input">
+    </p>
+</section>
+
+<hr>
+
+<section id="forms">
+    <h2>Forms</h2>
+
+    <form class="overflow">
+
+        <fieldset>
+
+            <legend>Input Controls</legend>
+
+            <p>
+                <label>Name</label><br>
+                <input type="text" placeholder="John Doe">
+            </p>
+
+            <p>
+                <label>Email</label><br>
+                <input type="email" placeholder="john@example.com">
+            </p>
+
+            <p>
+                <label>Password</label><br>
+                <input type="password">
+            </p>
+
+            <p>
+                <label>Search</label><br>
+                <input type="search">
+            </p>
+
+            <p>
+                <label>Number</label><br>
+                <input type="number">
+            </p>
+
+            <p>
+                <label>Range</label><br>
+                <input type="range">
+            </p>
+
+            <p>
+                <label>Date</label><br>
+                <input type="date">
+            </p>
+
+            <p>
+                <label>Time</label><br>
+                <input type="time">
+            </p>
+
+            <p>
+                <label>Color</label><br>
+                <input type="color">
+            </p>
+
+            <p>
+                <label>File</label><br>
+                <input type="file">
+            </p>
+
+            <p>
                 <label>
-                    <input type="checkbox"> Subscribe
-                </label><br><br>
-
-                <label>
-                    <input type="radio" name="gender"> Male
+                    <input type="checkbox">
+                    Checkbox
                 </label>
+            </p>
+
+            <p>
                 <label>
-                    <input type="radio" name="gender"> Female
-                </label><br><br>
+                    <input type="radio" name="demo">
+                    Radio 1
+                </label>
 
-                <label for="message">Message:</label><br>
-                <textarea id="message" placeholder="Your message"></textarea><br><br>
+                <label>
+                    <input type="radio" name="demo">
+                    Radio 2
+                </label>
+            </p>
 
-                <button type="submit">Submit</button>
-                <input type="reset" value="Reset">
-            </fieldset>
-        </form>
-    </section>
+            <p>
+                <label>Select</label><br>
 
-    <hr>
+                <select>
+                    <option>Option One</option>
+                    <option>Option Two</option>
+                    <option>Option Three</option>
+                </select>
+            </p>
 
-    <!-- Superscript and Subscript -->
-    <section>
-        <h2>Superscript & Subscript</h2>
-        <p>
-            Superscript: E = mc<sup>2</sup><br>
-            Subscript: H<sub>2</sub>O
-        </p>
-    </section>
+            <p>
+                <label>Select (optgroup)</label><br>
 
-    <hr>
+                <select>
+                    <optgroup label="Group 1">
+                        <option>Option One</option>
+                    </optgroup>
+                    <optgroup label="Group 2">
+                        <option>Option Two</option>
+                        <option>Option Three</option>
+                    </optgroup>
+                </select>
+            </p>
 
-    <!-- Input -->
-    <section>
-        <h2>Input</h2>
-        <p class="input">Input (Class)</p>
-        <input placeholder="Input (Tag)" />
-    </section>
+            <p>
+                <label>Select (multiple)</label><br>
 
-    <hr>
+                <select multiple>
+                    <option>Option One</option>
+                    <option>Option Two</option>
+                    <option>Option Three</option>
+                </select>
+            </p>
+            <p>
+                <label>Select (multiple) (optgroup)</label><br>
 
-    <!-- Buttons -->
-    <section>
-        <h2>Buttons</h2>
-        <p class="button">Button (Class)</p>
-        <button>Button (Tag)</button>
-        <input type="button" value="Button (Input)">
-    </section>
-    
-    <hr>
+                <select multiple>
+                    <optgroup label="Group 1">
+                        <option>Option One</option>
+                    </optgroup>
+                    <optgroup label="Group 2">
+                        <option>Option Two</option>
+                        <option>Option Three</option>
+                    </optgroup>
+                </select>
+            </p>
 
-    <!-- Link -->
-    <section>
-        <h2>Link</h2>
-        <p class="a">Link (Class)</p>
-        <a>Link (Tag)</a>
-    </section>
-    
-    <hr>
+            <p>
+                <label>Textarea</label><br>
 
-    <!-- Embedded Content -->
-    <section>
-        <h2>Embedded Content</h2>
-        <iframe class="center" src="https://example.com" title="Example iframe"></iframe>
-    </section>
+                <textarea placeholder="Write something..."></textarea>
+            </p>
 
-    <hr>
+            <p>
+                <button>Submit</button>
+                <button type="reset">Reset</button>
+            </p>
 
-    <!-- Image -->
-    <section>
-        <h2>Image</h2>
+        </fieldset>
 
-        <img src="https://freepngimg.com/thumb/the_legend_of_zelda/21552-3-zelda-link.png" alt="Image (Tag)">
-        <p>source: <a>https://freepngimg.com/thumb/the_legend_of_zelda/21552-3-zelda-link.png</a></p>
-    </section>
+    </form>
+</section>
 
-    <!-- Float -->
-    <section>
-        <h2>Utility Classes</h2>
+<hr>
 
-        <div class="float">
-            <div class="row float">
-                <div class="col">header 1</div>
-                <div class="col end">header 2</div>
-            </div>
-            <div class="row float">
-                <div class="col">cell 1</div>
-                <div class="col end">cell 2</div>
-            </div>
+<section id="layout">
+    <h2>Layout Helpers</h2>
+
+    <h3>.float</h3>
+
+    <div class="float">
+
+        <div class="col">
+            <strong>Left Column</strong>
+            <p>Lorem ipsum dolor sit amet.</p>
         </div>
 
-        <div class="center">center (class)</div>
-        <div class="center">
-            <div>center nested (class)</div>
+        <div class="col end">
+            <strong>Right Column</strong>
+            <p>Floating right.</p>
         </div>
 
-    </section>
+    </div>
+
+    <hr>
+
+    <h3>.center</h3>
+
+    <div class="center">
+        Everything inside is centered.
+    </div>
+
+    <hr>
+
+    <h3>.overflow</h3>
+
+    <div class="overflow">
+<pre>abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz</pre>
+    </div>
+
+</section>
+
+<hr>
+
+<section>
+    <h2>Embedded Content</h2>
+
+    <iframe
+        width="560"
+        height="315"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        title="Video"
+        allowfullscreen>
+    </iframe>
+</section>
+
+<footer>
+    <hr>
+
+    <p>
+        uc.css Kitchen Sink • Version 1.0.0
+    </p>
+</footer>
+
 </body>
 </html>

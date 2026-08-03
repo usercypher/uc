@@ -177,8 +177,17 @@ b {
 }
 
 em,
-i {
+i,
+q,
+cite,
+dfn,
+address {
     font-style: italic;
+}
+
+q:before,
+q:after {
+    content: '"';
 }
 
 sub,
@@ -200,15 +209,6 @@ sub {
 abbr[title] {
     border-bottom: 1px dotted #444;
     text-decoration: none;
-}
-
-q {
-    font-style: italic;
-}
-
-q:before,
-q:after {
-    content: '"';
 }
 
 table {
@@ -238,12 +238,24 @@ input,
 button,
 .button,
 textarea,
-select {
+select,
+option {
     cursor: pointer;
     font-family: inherit;
     font-size: 1em;
     line-height: 1.2;
     padding: 0.5em 0.75em;
+    vertical-align: middle;
+}
+
+input.inline,
+.input.inline,
+button.inline,
+.button.inline,
+textarea.inline,
+select.inline {
+	font-size: 0.9em;
+    padding: 0.1em 0.4em;
 }
 
 input,
@@ -253,10 +265,13 @@ select {
     border: 1px solid #d4d4d4;
 }
 
+input[type="color"] {
+    padding: 0 0.1em;
+}
+
 input[type="checkbox"],
 input[type="radio"] {
     margin: 0 0.5em 0 0;
-    vertical-align: middle;
 }
 
 input[type="button"],
@@ -276,6 +291,10 @@ button,
 button:hover,
 .button:hover {
     background-color: #1a7acc;
+}
+
+option {
+    margin: 0.5em 0;
 }
 
 textarea {
@@ -298,7 +317,8 @@ legend {
     padding: 0 0.5em;
 }
 
-iframe {
+iframe,
+obj {
     max-width: 100%;
 }
 
