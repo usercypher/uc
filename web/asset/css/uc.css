@@ -29,7 +29,9 @@ html {
     line-height: 1.6;
 }
 
-body {
+body, .window {
+    color: WindowText;
+    background-color: Window;
     font-family: sans-serif;
     margin: auto;
     max-width: 960px;
@@ -38,7 +40,7 @@ body {
     word-wrap: break-word;
 }
 
-body.reset {
+body.reset, .window.reset {
     margin: 0;
     max-width: 100%;
     padding: 0;
@@ -107,7 +109,7 @@ dd {
 }
 
 blockquote {
-    border-left: 4px solid #d4d4d4;
+    border-left: 4px solid ButtonFace;
     font-style: italic;
     padding: 1em 1.5em;
 }
@@ -133,7 +135,7 @@ pre {
 }
 
 kbd {
-    border: 1px solid #d4d4d4;
+    border: 1px solid ButtonFace;
     font-size: 0.9em;
     line-height: 1;
     padding: 0.1em 0.4em;
@@ -149,7 +151,7 @@ span {
 }
 
 hr {
-    border-bottom: 1px solid #d4d4d4;
+    border-bottom: 1px solid ButtonFace;
     margin: 2em 0;
 }
 
@@ -164,7 +166,7 @@ a:hover,
     text-decoration: underline;
 }
 
-a.input {
+a.input, a.button {
     text-decoration: none;
 }
 
@@ -204,7 +206,7 @@ sub {
 }
 
 abbr[title] {
-    border-bottom: 1px dotted #444;
+    border-bottom: 1px dotted WindowText;
     text-decoration: none;
 }
 
@@ -220,7 +222,7 @@ td {
 }
 
 th {
-    border-bottom: 1px solid #d4d4d4;
+    border-bottom: 1px solid ButtonFace;
     font-weight: 600;
 }
 
@@ -233,6 +235,7 @@ caption {
 input,
 .input,
 button,
+.button,
 textarea,
 select,
 option {
@@ -247,6 +250,7 @@ option {
 input.inline,
 .input.inline,
 button.inline,
+.button.inline,
 textarea.inline,
 select.inline {
 	font-size: 0.9em;
@@ -256,14 +260,20 @@ select.inline {
 input,
 .input,
 button,
+.button,
 textarea,
 select {
-    border: 1px solid #d4d4d4;
+    border: 1px solid ButtonFace;
 }
 
 .input {
     color: inherit;
     background-color: inherit;
+}
+
+.button {
+    color: ButtonText;
+    background-color: ButtonFace;
 }
 
 input[type="color"] {
@@ -289,7 +299,7 @@ label {
 }
 
 fieldset {
-    border: 1px solid #d4d4d4;
+    border: 1px solid ButtonFace;
     margin-bottom: 1em;
     padding: 1em;
 }

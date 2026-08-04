@@ -16,11 +16,13 @@ uc-modal
     width: 100%;
     z-index: 1000;
 }
+
 .uc-modal.active {
     visibility: visible;
 }
+
 .uc-modal-content {
-    background: #fff;
+    background: Window;
     border: 1px solid #d4d4d4;
     bottom: 0;
     left: 0;
