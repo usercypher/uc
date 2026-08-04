@@ -135,10 +135,7 @@ pre {
 }
 
 kbd {
-    border: 1px solid ButtonFace;
-    font-size: 0.9em;
     line-height: 1;
-    padding: 0.1em 0.4em;
 } 
 
 var {
@@ -247,6 +244,7 @@ option {
     vertical-align: middle;
 }
 
+kbd,
 input.inline,
 .input.inline,
 button.inline,
@@ -257,6 +255,7 @@ select.inline {
     padding: 0.1em 0.4em;
 }
 
+kbd,
 input,
 .input,
 button,
@@ -271,6 +270,7 @@ select {
     background-color: inherit;
 }
 
+kbd,
 .button {
     color: ButtonText;
     background-color: ButtonFace;
