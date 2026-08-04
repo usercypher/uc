@@ -1,396 +1,459 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>uc.css Kitchen Sink</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>uc.css — Production Kitchen Sink</title>
 
-    <!-- Only link the stylesheet -->
-    <link rel="stylesheet" href="uc.css">
+<link rel="stylesheet" href="uc.css">
 </head>
+
 <body>
 
 <header>
-    <h1>uc.css Kitchen Sink</h1>
-    <p>
-        A complete demonstration of every HTML element and helper class styled by
-        <strong>uc.css</strong>.
-    </p>
 
-    <nav>
-        <a href="#typography">Typography</a> ·
-        <a href="#lists">Lists</a> ·
-        <a href="#tables">Tables</a> ·
-        <a href="#forms">Forms</a> ·
-        <a href="#layout">Layout</a>
-    </nav>
+<h1>uc.css</h1>
+
+<p>
+A lightweight semantic CSS framework focused on readable content,
+minimal styling, and production-ready HTML.
+</p>
+
+<nav>
+
+<a href="#">Home</a> |
+<a href="#">Documentation</a> |
+<a href="#">Examples</a> |
+<a href="#">Download</a> |
+<a href="#">GitHub</a>
+
+</nav>
+
 </header>
 
 <hr>
 
-<section id="typography">
-    <h2>Typography</h2>
+<main>
 
-    <h1>Heading 1</h1>
-    <h2>Heading 2</h2>
-    <h3>Heading 3</h3>
-    <h4>Heading 4</h4>
-    <h5>Heading 5</h5>
-    <h6>Heading 6</h6>
+<section>
 
-    <p>
-        This is a paragraph containing
-        <strong>strong</strong>,
-        <b>bold</b>,
-        <em>emphasis</em>,
-        <i>italic</i>,
-        <u>underline</u>,
-        <mark>highlight</mark>,
-        <small>small text</small>,
-        H<sub>2</sub>O,
-        x<sup>2</sup>,
-        <abbr title="HyperText Markup Language">HTML</abbr>,
-        <code>inline code</code>,
-        <kbd>Ctrl</kbd> + <kbd>C</kbd>,
-        <var>x</var>,
-        <samp>sample output</samp>,
-        <q>quoted text</q>,
-        and
-        <a href="#">a hyperlink</a>.
-    </p>
+<h2>Content First</h2>
 
-    <blockquote>
-        Simplicity is the ultimate sophistication.
-    </blockquote>
+<p>
+
+Modern HTML already contains most of the structure needed to build
+beautiful websites. uc.css styles the HTML you already write instead
+of requiring dozens of utility classes.
+
+</p>
+
+<p>
+
+You can mix <strong>strong</strong>,
+<em>emphasis</em>,
+<abbr title="HyperText Markup Language">HTML</abbr>,
+<code>inline code</code>,
+<kbd>Ctrl</kbd> +
+<kbd>S</kbd>,
+<var>x</var>,
+<sup>2</sup>,
+H<sub>2</sub>O,
+<cite>citations</cite>,
+and <q>quoted text</q> naturally.
+
+</p>
+
+<blockquote>
+
+Semantic HTML should be enough for most websites.
+Classes should enhance markup, not replace it.
+
+</blockquote>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Feature Highlights</h2>
+
+<div class="float">
+
+<div class="col">
+
+<h3>Small</h3>
+
+<ul>
+<li>No build step</li>
+<li>No JavaScript</li>
+<li>No dependencies</li>
+<li>Single stylesheet</li>
+</ul>
+
+</div>
+
+<div class="col end">
+
+<h3>Practical</h3>
+
+<ol>
+<li>Readable defaults</li>
+<li>Accessible HTML</li>
+<li>Responsive images</li>
+<li>Production ready</li>
+</ol>
+
+</div>
+
+</div>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Example Image</h2>
+
+<p class="center">
+
+<img
+src="https://picsum.photos/900/400"
+alt="Sample landscape">
+
+</p>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Code Example</h2>
 
 <pre><code>package main
 
 import "fmt"
 
 func main() {
-    fmt.Println("Hello, uc.css!")
-}</code></pre>
+    fmt.Println("Hello, uc.css")
+}
+</code></pre>
 
-    <address>
-        Written by Lloyd Miles M. Bersabe
-    </address>
-</section>
+<p>
 
-<hr>
+Output:
 
-<section id="lists">
-    <h2>Lists</h2>
+</p>
 
-    <h3>Unordered List</h3>
-    <ul>
-        <li>Apple</li>
-        <li>Banana</li>
-        <li>Orange</li>
-    </ul>
-
-    <h3>Ordered List</h3>
-    <ol>
-        <li>Install</li>
-        <li>Build</li>
-        <li>Deploy</li>
-    </ol>
-
-    <h3>Description List</h3>
-
-    <dl>
-        <dt>HTML</dt>
-        <dd>Document structure.</dd>
-
-        <dt>CSS</dt>
-        <dd>Presentation and layout.</dd>
-
-        <dt>JavaScript</dt>
-        <dd>Behavior and interaction.</dd>
-    </dl>
-</section>
-
-<hr>
-
-<section id="tables">
-    <h2>Tables</h2>
-
-    <table>
-        <caption>Example Table</caption>
-
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Language</th>
-                <th>Released</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr>
-                <td>Go</td>
-                <td>Compiled</td>
-                <td>2009</td>
-            </tr>
-
-            <tr>
-                <td>PHP</td>
-                <td>Interpreted</td>
-                <td>1995</td>
-            </tr>
-
-            <tr>
-                <td>Rust</td>
-                <td>Compiled</td>
-                <td>2015</td>
-            </tr>
-        </tbody>
-    </table>
-</section>
-
-<hr>
-
-<section>
-    <h2>Images</h2>
-
-    <p>Responsive image:</p>
-
-    <img
-        src="https://picsum.photos/960/360"
-        alt="Random">
-
-    <p class="center">
-        Center helper class
-    </p>
-</section>
-
-<hr>
-
-<section>
-    <h2>Buttons & Links</h2>
-
-    <p>
-        <a href="#">Normal Link</a>
-    </p>
-
-    <p>
-
-        <a class="input" href="#">Anchor Input</a>
-
-        <button>Button</button>
-
-        <button class="input">Button Input</button>
-
-        <input type="button" value="Input Button">
-    </p>
-
-    <p>
-        <button class="inline">Inline Button</button>
-        <input class="inline" value="Inline Input">
-    </p>
-</section>
-
-<hr>
-
-<section id="forms">
-    <h2>Forms</h2>
-
-    <form class="overflow">
-
-        <fieldset>
-
-            <legend>Input Controls</legend>
-
-            <p>
-                <label>Name</label><br>
-                <input type="text" placeholder="John Doe">
-            </p>
-
-            <p>
-                <label>Email</label><br>
-                <input type="email" placeholder="john@example.com">
-            </p>
-
-            <p>
-                <label>Password</label><br>
-                <input type="password">
-            </p>
-
-            <p>
-                <label>Search</label><br>
-                <input type="search">
-            </p>
-
-            <p>
-                <label>Number</label><br>
-                <input type="number">
-            </p>
-
-            <p>
-                <label>Range</label><br>
-                <input type="range">
-            </p>
-
-            <p>
-                <label>Date</label><br>
-                <input type="date">
-            </p>
-
-            <p>
-                <label>Time</label><br>
-                <input type="time">
-            </p>
-
-            <p>
-                <label>Color</label><br>
-                <input type="color">
-            </p>
-
-            <p>
-                <label>File</label><br>
-                <input type="file">
-            </p>
-
-            <p>
-                <label>
-                    <input type="checkbox">
-                    Checkbox
-                </label>
-            </p>
-
-            <p>
-                <label>
-                    <input type="radio" name="demo">
-                    Radio 1
-                </label>
-
-                <label>
-                    <input type="radio" name="demo">
-                    Radio 2
-                </label>
-            </p>
-
-            <p>
-                <label>Select</label><br>
-
-                <select>
-                    <option>Option One</option>
-                    <option>Option Two</option>
-                    <option>Option Three</option>
-                </select>
-            </p>
-
-            <p>
-                <label>Select (optgroup)</label><br>
-
-                <select>
-                    <optgroup label="Group 1">
-                        <option>Option One</option>
-                    </optgroup>
-                    <optgroup label="Group 2">
-                        <option>Option Two</option>
-                        <option>Option Three</option>
-                    </optgroup>
-                </select>
-            </p>
-
-            <p>
-                <label>Select (multiple)</label><br>
-
-                <select multiple>
-                    <option>Option One</option>
-                    <option>Option Two</option>
-                    <option>Option Three</option>
-                </select>
-            </p>
-            <p>
-                <label>Select (multiple) (optgroup)</label><br>
-
-                <select multiple>
-                    <optgroup label="Group 1">
-                        <option>Option One</option>
-                    </optgroup>
-                    <optgroup label="Group 2">
-                        <option>Option Two</option>
-                        <option>Option Three</option>
-                    </optgroup>
-                </select>
-            </p>
-
-            <p>
-                <label>Textarea</label><br>
-
-                <textarea placeholder="Write something..."></textarea>
-            </p>
-
-            <p>
-                <button>Submit</button>
-                <button disabled type="reset">Reset</button>
-            </p>
-
-        </fieldset>
-
-    </form>
-</section>
-
-<hr>
-
-<section id="layout">
-    <h2>Layout Helpers</h2>
-
-    <h3>.float</h3>
-
-    <div class="float">
-
-        <div class="col">
-            <strong>Left Column</strong>
-            <p>Lorem ipsum dolor sit amet.</p>
-        </div>
-
-        <div class="col end">
-            <strong>Right Column</strong>
-            <p>Floating right.</p>
-        </div>
-
-    </div>
-
-    <hr>
-
-    <h3>.center</h3>
-
-    <div class="center">
-        Everything inside is centered.
-    </div>
-
-    <hr>
-
-    <h3>.overflow</h3>
-
-    <div class="overflow">
-<pre>abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz</pre>
-    </div>
+<pre><samp>Hello, uc.css</samp></pre>
 
 </section>
 
 <hr>
 
 <section>
-    <h2>Embedded Content</h2>
 
-    <iframe
-        width="560"
-        height="315"
-        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-        title="Video"
-        allowfullscreen>
-    </iframe>
+<h2>Definition List</h2>
+
+<dl>
+
+<dt>Semantic HTML</dt>
+<dd>Markup that describes meaning instead of appearance.</dd>
+
+<dt>Classless Design</dt>
+<dd>Using HTML elements as the primary styling hooks.</dd>
+
+<dt>Utility Class</dt>
+<dd>A small reusable helper for special layouts.</dd>
+
+</dl>
+
 </section>
 
-<footer>
-    <hr>
+<hr>
 
-    <p>
-        uc.css Kitchen Sink • Version 1.0.0
-    </p>
+<section>
+
+<h2>Comparison Table</h2>
+
+<div class="overflow">
+
+<table>
+
+<caption>Framework Comparison</caption>
+
+<thead>
+
+<tr>
+
+<th>Framework</th>
+<th>Size</th>
+<th>Classes</th>
+<th>Focus</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>uc.css</td>
+<td>Small</td>
+<td>Minimal</td>
+<td>Content</td>
+</tr>
+
+<tr>
+<td>Framework A</td>
+<td>Large</td>
+<td>Hundreds</td>
+<td>Components</td>
+</tr>
+
+<tr>
+<td>Framework B</td>
+<td>Medium</td>
+<td>Utility Heavy</td>
+<td>Layouts</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Forms</h2>
+
+<form>
+
+<fieldset>
+
+<legend>Contact</legend>
+
+<p>
+
+<label for="name">Name</label><br>
+
+<input
+id="name"
+type="text"
+placeholder="Jane Doe">
+
+</p>
+
+<p>
+
+<label for="email">Email</label><br>
+
+<input
+id="email"
+type="email"
+placeholder="jane@example.com">
+
+</p>
+
+<p>
+
+<label for="topic">Topic</label><br>
+
+<select id="topic">
+
+<option>General</option>
+<option>Support</option>
+<option>Sales</option>
+
+</select>
+
+</p>
+
+<p>
+
+<label for="message">Message</label><br>
+
+<textarea
+id="message"
+placeholder="Write something..."></textarea>
+
+</p>
+
+<p>
+
+<label>
+
+<input type="checkbox">
+
+Subscribe to newsletter
+
+</label>
+
+</p>
+
+<p>
+
+<label>
+
+<input
+type="radio"
+name="priority"
+checked>
+
+Normal
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="priority">
+
+Urgent
+
+</label>
+
+</p>
+
+<p>
+
+<input
+type="submit"
+value="Send">
+
+<button type="reset">
+
+Reset
+
+</button>
+
+<a href="#" class="button">
+
+Documentation
+
+</a>
+
+</p>
+
+</fieldset>
+
+</form>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Inline Controls</h2>
+
+<p>
+
+<button class="inline">
+Save
+</button>
+
+<input
+class="inline"
+type="text"
+value="Filename">
+
+<select class="inline">
+<option>HTML</option>
+<option>CSS</option>
+<option>Markdown</option>
+</select>
+
+</p>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Embedded Content</h2>
+
+<iframe
+
+width="560"
+height="315"
+
+src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+
+title="Video"
+
+loading="lazy"
+
+allowfullscreen>
+
+</iframe>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Article Example</h2>
+
+<article>
+
+<h3>Why semantic CSS?</h3>
+
+<p>
+
+Most websites are documents with navigation, images,
+tables, forms, and articles. Styling those elements well
+provides a surprisingly complete design system while
+keeping HTML clean and maintainable.
+
+</p>
+
+</article>
+
+<aside>
+
+<h4>Did you know?</h4>
+
+<p>
+
+The browser already understands many HTML elements.
+Good CSS simply enhances those defaults.
+
+</p>
+
+</aside>
+
+</section>
+
+</main>
+
+<hr>
+
+<footer class="center">
+
+<p>
+
+© 2025 Lloyd Miles M. Bersabe
+
+</p>
+
+<p>
+
+Built entirely with semantic HTML and
+<strong>uc.css</strong>.
+
+</p>
+
 </footer>
 
 </body>
