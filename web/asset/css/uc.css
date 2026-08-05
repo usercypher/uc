@@ -305,15 +305,16 @@ legend {
     padding: 0 0.5em;
 }
 
-iframe,
-object {
-    max-width: 100%;
+img {
+    vertical-align: middle;
 }
 
-img {
-    height: auto;
+iframe,
+object,
+img,
+.row,
+.row .col {
     max-width: 100%;
-    vertical-align: middle;
 }
 
 .row:after {
@@ -324,6 +325,7 @@ img {
 
 .row .col {
     float: left;
+    position: relative;
 }
 
 .row .col.end {
