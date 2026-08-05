@@ -16,12 +16,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-*,
-*:before,
-*:after {
+* {
     border: 0;
+	font: inherit;
+    font-size: 100%;
     margin: 0;
+    max-width: 100%;
     padding: 0;
+	vertical-align: baseline;
 }
 
 html {
@@ -307,14 +309,6 @@ legend {
 
 img {
     vertical-align: middle;
-}
-
-iframe,
-object,
-img,
-.row,
-.row .col {
-    max-width: 100%;
 }
 
 .row:after {
