@@ -309,6 +309,7 @@ legend {
 
 img {
     vertical-align: middle;
+    height: auto;
 }
 
 .row:after {
