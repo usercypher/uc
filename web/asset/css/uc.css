@@ -18,12 +18,11 @@ limitations under the License.
 
 * {
     border: 0;
-	font: inherit;
+    font: inherit;
     font-size: 100%;
     margin: 0;
-    max-width: 100%;
     padding: 0;
-	vertical-align: baseline;
+    vertical-align: baseline;
 }
 
 html {
@@ -78,10 +77,6 @@ h5 {
     font-size: 1.125em;
 }
 
-h6 {
-    font-size: 1em;
-}
-
 p,
 ul,
 ol,
@@ -109,30 +104,6 @@ dd {
     margin-left: 1em;
 }
 
-blockquote {
-    border-left: 4px solid ButtonFace;
-    font-style: italic;
-    padding: 1em 1.5em;
-}
-
-blockquote,
-q {
-	quotes: none;
-}
-
-blockquote:before,
-blockquote:after {
-	content: '';
-	content: none;
-}
-
-pre,
-code,
-samp,
-var {
-    font-size: 1em;
-}
-
 pre,
 code,
 samp,
@@ -152,11 +123,6 @@ kbd {
 
 var {
     font-family: serif;
-    font-style: italic;
-}
-
-span {
-    font-family: inherit;
 }
 
 hr {
@@ -184,13 +150,30 @@ b {
     font-weight: 600;
 }
 
+var,
 em,
 i,
+blockquote,
 q,
 cite,
 dfn,
 address {
     font-style: italic;
+}
+
+blockquote,
+q {
+    quotes: none;
+}
+
+blockquote {
+    border-left: 4px solid ButtonFace;
+    padding: 1em 1.5em;
+}
+
+blockquote:before,
+blockquote:after {
+    content: '';
 }
 
 q:before,
@@ -250,8 +233,6 @@ textarea,
 select,
 option {
     cursor: pointer;
-    font-family: inherit;
-    font-size: 1em;
     line-height: 1.2;
     padding: 0.5em 0.75em;
     vertical-align: middle;
@@ -264,7 +245,7 @@ button.inline,
 .button.inline,
 textarea.inline,
 select.inline {
-	font-size: 0.9em;
+    font-size: 0.9em;
     padding: 0.1em 0.4em;
 }
 
@@ -342,10 +323,42 @@ img {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    text-align: center;
 }
 
 .overflow {
     display: block;
     overflow: auto;
 }
+
+img,
+iframe,
+object,
+.w-0,
+.w-1,
+.w-2,
+.w-3,
+.w-4,
+.w-5,
+.w-6,
+.w-7,
+.w-8,
+.w-9,
+.w-10,
+.w-11,
+.w-12 {
+    max-width: 100%;
+}
+
+.w-0 { width: 100%; }
+.w-1 { width: 5em; }
+.w-2 { width: 10em; }
+.w-3 { width: 15em; }
+.w-4 { width: 20em; }
+.w-5 { width: 25em; }
+.w-6 { width: 30em; }
+.w-7 { width: 35em; }
+.w-8 { width: 40em; }
+.w-9 { width: 45em; }
+.w-10 { width: 50em; }
+.w-11 { width: 55em; }
+.w-12 { width: 60em; }
