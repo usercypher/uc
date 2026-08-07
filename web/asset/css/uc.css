@@ -323,6 +323,7 @@ svg {
 
 .row .col {
     float: left;
+    min-height: 1px;
     position: relative;
 }
 
