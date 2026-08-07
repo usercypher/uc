@@ -1,397 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>uc.css Kitchen Sink</title>
-
-    <!-- Only link the stylesheet -->
-    <link rel="stylesheet" href="uc.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>uc.css Kitchen Sink & Documentation</title>
+<link rel="stylesheet" href="uc.css">
 </head>
 <body>
 
-<header>
-    <h1>uc.css Kitchen Sink</h1>
-    <p>
-        A complete demonstration of every HTML element and helper class styled by
-        <strong>uc.css</strong>.
-    </p>
+<div class="window">
 
-    <nav>
-        <a href="#typography">Typography</a> ·
-        <a href="#lists">Lists</a> ·
-        <a href="#tables">Tables</a> ·
-        <a href="#forms">Forms</a> ·
-        <a href="#layout">Layout</a>
-    </nav>
-</header>
+  <!-- Production-grade Header & Navigation structure utilizing native framework classes -->
+  <header>
+    <h1>uc.css</h1>
+    <p>A minimalist, semantic CSS framework. Below is the production kitchen sink and component reference.</p>
+      <a href="#typography">Typography</a> •
+      <a href="#forms">Forms</a> •
+      <a href="#layout">Layout & Sizes</a> •
+      <a href="#reference">Reference</a>
+    </div>
+  </header>
 
-<hr>
+  <hr>
 
-<section id="typography">
-    <h2>Typography</h2>
+  <main>
+    <section id="typography">
+      <h2>Typography & Elements</h2>
+      
+      <h1>&lt;h1&gt;</h1>
+      <h2>&lt;h2&gt;</h2>
+      <h3>&lt;h3&gt;</h3>
+      <h4>&lt;h4&gt;</h4>
+      <h5>&lt;h5&gt;</h5>
+      <h6>&lt;h6&gt;</h6>
 
-    <h1>Heading 1</h1>
-    <h2>Heading 2</h2>
-    <h3>Heading 3</h3>
-    <h4>Heading 4</h4>
-    <h5>Heading 5</h5>
-    <h6>Heading 6</h6>
+      <p class="drop-cap">
+        .drop-cap
+        <strong>&lt;strong&gt;</strong>,
+        <em>&lt;em&gt;</em>,
+        <code>&lt;code&gt;</code>,
+        <kbd>&lt;kbd&gt;</kbd>,
+        <samp>&lt;samp&gt;</samp>,
+        <var>&lt;var&gt;</var>,
+        <abbr title="Abbreviation">&lt;abbr&gt;</abbr>,
+        <q>&lt;q&gt;</q>,
+        <cite>&lt;cite&gt;</cite>,
+        <dfn>&lt;dfn&gt;</dfn>,
+        <sub>&lt;sub&gt;</sub>,
+        <sup>&lt;sup&gt;</sup>.
+      </p>
 
-    <p>
-        This is a paragraph containing
-        <strong>strong</strong>,
-        <b>bold</b>,
-        <em>emphasis</em>,
-        <i>italic</i>,
-        <u>underline</u>,
-        <mark>highlight</mark>,
-        <small>small text</small>,
-        H<sub>2</sub>O,
-        x<sup>2</sup>,
-        <abbr title="HyperText Markup Language">HTML</abbr>,
-        <code>inline code</code>,
-        <kbd>Ctrl</kbd> + <kbd>C</kbd>,
-        <var>x</var>,
-        <samp>sample output</samp>,
-        <q>quoted text</q>,
-        and
-        <a href="#">a hyperlink</a>.
-    </p>
+      <address>&lt;address&gt;</address>
 
-    <blockquote>
-        Simplicity is the ultimate sophistication.
-    </blockquote>
+      <blockquote>
+        &lt;blockquote&gt;
+        <cite>&lt;cite&gt;</cite>
+      </blockquote>
 
-<pre><code>package main
+      <pre><code>&lt;pre&gt; &lt;code&gt;</code></pre>
 
-import "fmt"
+      <p>
+        <a href="#">&lt;a&gt;</a>
+        <span class="a">.a</span>
+        <span class="button">.button</span>
+        <span class="input">.input</span>
+      </p>
+    </section>
 
-func main() {
-    fmt.Println("Hello, uc.css!")
-}</code></pre>
+    <section id="lists">
+      <h2>Lists</h2>
+      <ul>
+        <li>&lt;ul&gt;</li>
+        <li>Item
+          <ul><li>Nested</li></ul>
+        </li>
+      </ul>
 
-    <address>
-        Written by Lloyd Miles M. Bersabe
-    </address>
-</section>
+      <ol>
+        <li>&lt;ol&gt;</li>
+        <li>Item</li>
+      </ol>
 
-<hr>
+      <dl>
+        <dt>&lt;dt&gt;</dt>
+        <dd>&lt;dd&gt;</dd>
+      </dl>
+    </section>
 
-<section id="lists">
-    <h2>Lists</h2>
-
-    <h3>Unordered List</h3>
-    <ul>
-        <li>Apple</li>
-        <li>Banana</li>
-        <li>Orange</li>
-    </ul>
-
-    <h3>Ordered List</h3>
-    <ol>
-        <li>Install</li>
-        <li>Build</li>
-        <li>Deploy</li>
-    </ol>
-
-    <h3>Description List</h3>
-
-    <dl>
-        <dt>HTML</dt>
-        <dd>Document structure.</dd>
-
-        <dt>CSS</dt>
-        <dd>Presentation and layout.</dd>
-
-        <dt>JavaScript</dt>
-        <dd>Behavior and interaction.</dd>
-    </dl>
-</section>
-
-<hr>
-
-<section id="tables">
-    <h2>Tables</h2>
-
-    <table>
-        <caption>Example Table</caption>
-
+    <section id="tables">
+      <h2>Table</h2>
+      <table>
+        <caption>&lt;caption&gt;</caption>
         <thead>
-            <tr>
-                <th>Name</th>
-                <th>Language</th>
-                <th>Released</th>
-            </tr>
+          <tr><th>&lt;th&gt;</th><th>&lt;th&gt;</th></tr>
         </thead>
-
         <tbody>
-            <tr>
-                <td>Go</td>
-                <td>Compiled</td>
-                <td>2009</td>
-            </tr>
-
-            <tr>
-                <td>PHP</td>
-                <td>Interpreted</td>
-                <td>1995</td>
-            </tr>
-
-            <tr>
-                <td>Rust</td>
-                <td>Compiled</td>
-                <td>2015</td>
-            </tr>
+          <tr><td>&lt;td&gt;</td><td>&lt;td&gt;</td></tr>
         </tbody>
-    </table>
-</section>
+      </table>
+    </section>
 
-<hr>
+    <section id="forms">
+      <h2>Forms</h2>
 
-<section>
-    <h2>Images</h2>
+      <fieldset>
+        <legend>&lt;legend&gt;</legend>
 
-    <p>Responsive image:</p>
+        <label>
+          &lt;input&gt;<br>
+          <input type="text" placeholder="input">
+        </label>
 
-    <img
-        src="https://picsum.photos/960/360"
-        alt="Random">
+        <br><br>
 
-    <p class="center">
-        Center helper class
-    </p>
-</section>
+        <label>
+          &lt;textarea&gt;<br>
+          <textarea rows="2">textarea</textarea>
+        </label>
 
-<hr>
+        <br><br>
 
-<section>
-    <h2>Buttons & Links</h2>
+        <label>
+          &lt;select&gt;<br>
+          <select>
+            <option>&lt;option&gt;</option>
+            <option>&lt;option&gt;</option>
+          </select>
+        </label>
 
-    <p>
-        <a href="#">Normal Link</a>
-    </p>
+        <br><br>
 
-    <p>
+        <label>
+          &lt;select&gt; (optgroup) <br>
+          <select>
+            <optgroup label="&lt;optgroup&gt;">
+              <option>&lt;option&gt;</option>
+              <option>&lt;option&gt;</option>
+            </optgroup>
+          </select>
+        </label>
 
-        <a class="input" href="#">Anchor Input</a>
+        <br><br>
 
-        <button>Button</button>
+        <label>
+          &lt;select&gt; (multiple) <br>
+          <select multiple>
+            <option>&lt;option&gt;</option>
+            <option>&lt;option&gt;</option>
+          </select>
+        </label>
 
-        <button class="input">Button Input</button>
+        <br><br>
 
-        <input type="button" value="Input Button">
-    </p>
+        <label>
+          &lt;select&gt; (multiple) (optgroup) <br>
+          <select multiple>
+            <optgroup label="&lt;optgroup&gt;">
+              <option>&lt;option&gt;</option>
+              <option>&lt;option&gt;</option>
+            </optgroup>
+          </select>
+        </label>
 
-    <p>
-        <button class="inline">Inline Button</button>
-        <input class="inline" value="Inline Input">
-    </p>
-</section>
+        <br><br>
 
-<hr>
+        <button>&lt;button&gt;</button>
+        <input class="inline" value=".inline">
+        <button class="inline">.inline</button>
 
-<section id="forms">
-    <h2>Forms</h2>
+      </fieldset>
+    </section>
 
-    <form class="overflow">
+    <section id="media">
+      <h2>Media</h2>
 
-        <fieldset>
+      <p>
+        <img class="s-2" alt="img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='silver'/%3E%3C/svg%3E">
+        &lt;img&gt;
+      </p>
 
-            <legend>Input Controls</legend>
+      <p>
+        <svg class="s-2" viewBox="0 0 120 60">
+          <rect width="120" height="60"/>
+        </svg>
+        &lt;svg&gt;
+      </p>
 
-            <p>
-                <label>Name</label><br>
-                <input type="text" placeholder="John Doe">
-            </p>
+      <iframe class="s-2" srcdoc="<!DOCTYPE html><p>&amp;lt;iframe&amp;gt;</p>"></iframe>
 
-            <p>
-                <label>Email</label><br>
-                <input type="email" placeholder="john@example.com">
-            </p>
+      <object class="s-2">
+        <p>&lt;object&gt;</p>
+      </object>
+    </section>
 
-            <p>
-                <label>Password</label><br>
-                <input type="password">
-            </p>
+    <section id="layout">
+      <h2>Utilities & Layout</h2>
 
-            <p>
-                <label>Search</label><br>
-                <input type="search">
-            </p>
+      <p><strong>.window</strong></p>
+      <div class="window" style="margin-bottom: 1em;">
+        <p>Nested .window container content</p>
+      </div>
 
-            <p>
-                <label>Number</label><br>
-                <input type="number">
-            </p>
+      <p><strong>.window.reset / html.reset / body.reset</strong></p>
+      <div class="window reset" style="margin-bottom: 1em;">
+        <p>Reset window, html, and body content</p>
+      </div>
 
-            <p>
-                <label>Range</label><br>
-                <input type="range">
-            </p>
+      <p><strong>.row / .col / .end</strong></p>
+      <div class="row" style="margin-bottom: 1em;">
+        <div class="col s-3">.col</div>
+        <div class="col end s-3">.col.end</div>
+      </div>
 
-            <p>
-                <label>Date</label><br>
-                <input type="date">
-            </p>
+      <p><strong>.center</strong></p>
+      <p class="center s-3">.center content block</p>
 
-            <p>
-                <label>Time</label><br>
-                <input type="time">
-            </p>
+      <p><strong>.overflow</strong></p>
+      <div class="overflow s-3" style="margin-bottom: 1em;">
+        ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ
+      </div>
 
-            <p>
-                <label>Color</label><br>
-                <input class="inline" type="color">
-            </p>
+      <p><strong>Accessibility</strong></p>
+      <p class="hidden">.hidden</p>
+      <p><span class="hidden-sr">.hidden-sr</span>Screen reader only text above.</p>
+    </section>
 
-            <p>
-                <label>File</label><br>
-                <input type="file">
-            </p>
+    <section id="sizes">
+      <h2>Sizes</h2>
 
-            <p>
-                <label>
-                    <input type="checkbox">
-                    Checkbox
-                </label>
-            </p>
+      <p>
+        <div class="button s-1">.s-1</div>
+        <div class="button s-2">.s-2</div>
+        <div class="button s-3">.s-3</div>
+        <div class="button s-4">.s-4</div>
+        <div class="button s-5">.s-5</div>
+        <div class="button s-6">.s-6</div>
+      </p>
 
-            <p>
-                <label>
-                    <input type="radio" name="demo">
-                    Radio 1
-                </label>
-
-                <label>
-                    <input type="radio" name="demo">
-                    Radio 2
-                </label>
-            </p>
-
-            <p>
-                <label>Select</label><br>
-
-                <select>
-                    <option>Option One</option>
-                    <option>Option Two</option>
-                    <option>Option Three</option>
-                </select>
-            </p>
-
-            <p>
-                <label>Select (optgroup)</label><br>
-
-                <select>
-                    <optgroup label="Group 1">
-                        <option>Option One</option>
-                    </optgroup>
-                    <optgroup label="Group 2">
-                        <option>Option Two</option>
-                        <option>Option Three</option>
-                    </optgroup>
-                </select>
-            </p>
-
-            <p>
-                <label>Select (multiple)</label><br>
-
-                <select multiple>
-                    <option>Option One</option>
-                    <option>Option Two</option>
-                    <option>Option Three</option>
-                </select>
-            </p>
-            <p>
-                <label>Select (multiple) (optgroup)</label><br>
-
-                <select multiple>
-                    <optgroup label="Group 1">
-                        <option>Option One</option>
-                    </optgroup>
-                    <optgroup label="Group 2">
-                        <option>Option Two</option>
-                        <option>Option Three</option>
-                    </optgroup>
-                </select>
-            </p>
-
-            <p>
-                <label>Textarea</label><br>
-
-                <textarea placeholder="Write something..."></textarea>
-            </p>
-
-            <p>
-                <button>Submit</button>
-                <button disabled type="reset">Reset</button>
-            </p>
-
-        </fieldset>
-
-    </form>
-</section>
-
-<hr>
-
-<section id="layout">
-    <h2>Layout Helpers</h2>
-
-    <h3>.row</h3>
-
-    <div class="row">
-
-        <div class="col">
-            <strong>Left Column</strong>
-            <p>Lorem ipsum dolor sit amet.</p>
-        </div>
-
-        <div class="col end">
-            <strong>Right Column</strong>
-            <p>Floating right.</p>
-        </div>
-
-    </div>
+      <p>
+        <div class="button s-7">.s-7</div>
+        <div class="button s-8">.s-8</div>
+        <div class="button s-9">.s-9</div>
+        <div class="button s-10">.s-10</div>
+        <div class="button s-11">.s-11</div>
+        <div class="button s-12">.s-12</div>
+      </p>
+    </section>
 
     <hr>
 
-    <h3>.center</h3>
+    <section id="reference">
+      <h2>Class Documentation Reference</h2>
+      <div class="overflow">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Example</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>.a</td>
+              <td><pre><code>&lt;span class="a"&gt;.a&lt;/span&gt;</code></pre></td>
+              <td><span class="a">.a</span></td>
+            </tr>
+            <tr>
+              <td>.button</td>
+              <td><pre><code>&lt;span class="button"&gt;.button&lt;/span&gt;</code></pre></td>
+              <td><span class="button">.button</span></td>
+            </tr>
+            <tr>
+              <td>.input</td>
+              <td><pre><code>&lt;span class="input"&gt;.input&lt;/span&gt;</code></pre></td>
+              <td><span class="input">.input</span></td>
+            </tr>
+            <tr>
+              <td>.drop-cap</td>
+              <td><pre><code>&lt;p class="drop-cap"&gt;Text&lt;/p&gt;</code></pre></td>
+              <td><p class="drop-cap">Text</p></td>
+            </tr>
+            <tr>
+              <td>.hidden</td>
+              <td><pre><code>&lt;span class="hidden"&gt;.hidden&lt;/span&gt;</code></pre></td>
+              <td><span class="hidden">.hidden</span><em>(hidden)</em></td>
+            </tr>
+            <tr>
+              <td>.hidden-sr</td>
+              <td><pre><code>&lt;span class="hidden-sr"&gt;.hidden-sr&lt;/span&gt;</code></pre></td>
+              <td style="position: relative;">
+                <span class="hidden-sr">.hidden-sr</span>
+                <em>(screen reader only)</em>
+              </td>
+            </tr>
+            <tr>
+              <td>.center</td>
+              <td><pre><code>&lt;p class="center"&gt;.center&lt;/p&gt;</code></pre></td>
+              <td><p class="center">.center</p></td>
+            </tr>
+            <tr>
+              <td>.overflow</td>
+              <td><pre><code>&lt;div class="overflow"&gt;...&lt;/div&gt;</code></pre></td>
+              <td><div class="overflow s-2">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div></td>
+            </tr>
+            <tr>
+              <td>.row .col/.col .end</td>
+              <td><pre><code>&lt;div class="row"&gt;...&lt;/div&gt;</code></pre></td>
+              <td>
+                <div class="row">
+                  <div class="col s-1">.col</div>
+                  <div class="col end s-1">.col .end</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-    <div class="center">
-        Everything inside is centered.
-    </div>
-
+  <footer>
     <hr>
+    <p>&copy; 2025 Lloyd Miles M. Bersabe. Licensed under Apache License 2.0.</p>
+  </footer>
 
-    <h3>.overflow</h3>
-
-    <div class="overflow">
-<pre>abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz</pre>
-    </div>
-
-</section>
-
-<hr>
-
-<section>
-    <h2>Embedded Content</h2>
-
-    <iframe
-        width="560"
-        height="315"
-        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-        title="Video"
-        allowfullscreen>
-    </iframe>
-</section>
-
-<footer>
-    <hr>
-
-    <p>
-        uc.css Kitchen Sink • Version 1.0.0
-    </p>
-</footer>
+</div>
 
 </body>
 </html>

@@ -1,5 +1,5 @@
 /*
-Version: 1.0.0
+Version: 0.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -173,16 +173,6 @@ blockquote {
     padding: 1em 1.5em;
 }
 
-blockquote:before,
-blockquote:after {
-    content: '';
-}
-
-q:before,
-q:after {
-    content: '"';
-}
-
 sub,
 sup {
     font-size: 0.75em;
@@ -291,10 +281,6 @@ option {
 
 optgroup {
     font-weight: 500;
-}
-
-optgroup,
-optgroup option:first-child {
     margin-top: 0.5em;
     text-indent: 0.75em;
 }
@@ -315,7 +301,8 @@ legend {
     padding: 0 0.5em;
 }
 
-img {
+img,
+svg {
     height: auto;
     vertical-align: middle;
 }
@@ -346,7 +333,32 @@ img {
     overflow: auto;
 }
 
+.hidden {
+    display: none;
+}
+
+.hidden-sr {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.drop-cap:first-letter {
+    float: left;
+    font-size: 3em;
+    font-weight: 600;
+    line-height: 1;
+    margin-right: 0.15em;
+}
+
 img,
+svg,
 iframe,
 object,
 .s-0,
