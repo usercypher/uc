@@ -19,10 +19,15 @@ limitations under the License.
 * {
     border: 0;
     font: inherit;
-    font-size: 100%;
     margin: 0;
     padding: 0;
     vertical-align: baseline;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
 }
 
 html {
@@ -41,7 +46,7 @@ body, .window {
 }
 
 html.reset, html.reset body, body.reset, .window.reset {
-    max-width: auto;
+    max-width: none;
     padding: 0;
 }
 
@@ -114,10 +119,6 @@ pre {
     line-height: 1.4;
     overflow: auto;
     padding: 1em;
-}
-
-kbd {
-    line-height: 1;
 } 
 
 var {
@@ -140,9 +141,11 @@ a:hover,
     text-decoration: underline;
 }
 
-a.input, a.button {
+a.input:hover,
+a.button:hover {
     text-decoration: none;
 }
+
 
 strong,
 b {
@@ -183,7 +186,6 @@ q:after {
 sub,
 sup {
     font-size: 0.75em;
-    line-height: 0;
     position: relative;
 }
 
@@ -230,7 +232,6 @@ button,
 textarea,
 select,
 option {
-    cursor: pointer;
     line-height: 1.2;
     max-width: 100%;
     padding: 0.5em 0.75em;
@@ -259,8 +260,14 @@ select {
 }
 
 .input {
+    cursor: text;
     color: inherit;
     background-color: inherit;
+}
+
+.a,
+.button {
+    cursor: pointer;
 }
 
 kbd,
@@ -276,6 +283,14 @@ input[type="radio"] {
 
 select[multiple] {
     padding: 0;
+}
+
+option {
+    font-weight: 400;
+}
+
+optgroup {
+    font-weight: 500;
 }
 
 optgroup,
@@ -334,32 +349,32 @@ img {
 img,
 iframe,
 object,
-.w-0,
-.w-1,
-.w-2,
-.w-3,
-.w-4,
-.w-5,
-.w-6,
-.w-7,
-.w-8,
-.w-9,
-.w-10,
-.w-11,
-.w-12 {
+.s-0,
+.s-1,
+.s-2,
+.s-3,
+.s-4,
+.s-5,
+.s-6,
+.s-7,
+.s-8,
+.s-9,
+.s-10,
+.s-11,
+.s-12 {
     max-width: 100%;
 }
 
-.w-0 { width: 100%; }
-.w-1 { width: 5em; }
-.w-2 { width: 10em; }
-.w-3 { width: 15em; }
-.w-4 { width: 20em; }
-.w-5 { width: 25em; }
-.w-6 { width: 30em; }
-.w-7 { width: 35em; }
-.w-8 { width: 40em; }
-.w-9 { width: 45em; }
-.w-10 { width: 50em; }
-.w-11 { width: 55em; }
-.w-12 { width: 60em; }
+.s-0 { width: 100%; }
+.s-1 { width: 5em; }
+.s-2 { width: 10em; }
+.s-3 { width: 15em; }
+.s-4 { width: 20em; }
+.s-5 { width: 25em; }
+.s-6 { width: 30em; }
+.s-7 { width: 35em; }
+.s-8 { width: 40em; }
+.s-9 { width: 45em; }
+.s-10 { width: 50em; }
+.s-11 { width: 55em; }
+.s-12 { width: 60em; }
