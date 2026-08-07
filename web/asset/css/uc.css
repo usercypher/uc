@@ -192,6 +192,10 @@ abbr[title] {
     text-decoration: none;
 }
 
+small {
+    font-size: 0.8em;
+}
+
 table {
     border-collapse: collapse;
     border-spacing: 0;
@@ -205,8 +209,11 @@ td {
 }
 
 th {
-    border-bottom: 1px solid ButtonFace;
     font-weight: 600;
+}
+
+td {
+    border-bottom: 1px solid ButtonFace;
 }
 
 caption {
@@ -260,6 +267,7 @@ select {
     cursor: pointer;
 }
 
+th,
 kbd,
 .button {
     color: ButtonText;
@@ -361,32 +369,32 @@ img,
 svg,
 iframe,
 object,
-.s-0,
-.s-1,
-.s-2,
-.s-3,
-.s-4,
-.s-5,
-.s-6,
-.s-7,
-.s-8,
-.s-9,
-.s-10,
-.s-11,
-.s-12 {
+.s0,
+.s1,
+.s2,
+.s3,
+.s4,
+.s5,
+.s6,
+.s7,
+.s8,
+.s9,
+.s10,
+.s11,
+.s12 {
     max-width: 100%;
 }
 
-.s-0 { width: 100%; }
-.s-1 { width: 5em; }
-.s-2 { width: 10em; }
-.s-3 { width: 15em; }
-.s-4 { width: 20em; }
-.s-5 { width: 25em; }
-.s-6 { width: 30em; }
-.s-7 { width: 35em; }
-.s-8 { width: 40em; }
-.s-9 { width: 45em; }
-.s-10 { width: 50em; }
-.s-11 { width: 55em; }
-.s-12 { width: 60em; }
+.s0 { width: 100%; }
+.s1 { width: 5em; }
+.s2 { width: 10em; }
+.s3 { width: 15em; }
+.s4 { width: 20em; }
+.s5 { width: 25em; }
+.s6 { width: 30em; }
+.s7 { width: 35em; }
+.s8 { width: 40em; }
+.s9 { width: 45em; }
+.s10 { width: 50em; }
+.s11 { width: 55em; }
+.s12 { width: 60em; }
