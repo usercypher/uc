@@ -16,18 +16,86 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-* {
+html,
+body,
+
+a,
+abbr,
+b,
+bdo,
+cite,
+code,
+del,
+dfn,
+em,
+i,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+span,
+strong,
+sub,
+sup,
+u,
+var,
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+
+address,
+blockquote,
+div,
+p,
+pre,
+
+dd,
+dl,
+dt,
+li,
+ol,
+ul,
+
+br,
+hr,
+
+caption,
+col,
+colgroup,
+table,
+tbody,
+td,
+tfoot,
+th,
+thead,
+tr,
+
+button,
+fieldset,
+form,
+input,
+label,
+legend,
+optgroup,
+option,
+select,
+textarea,
+
+iframe,
+img,
+object,
+svg {
     border: 0;
     font: inherit;
     margin: 0;
     padding: 0;
     vertical-align: baseline;
-}
-
-*,
-*:before,
-*:after {
-    box-sizing: border-box;
 }
 
 html {
@@ -36,7 +104,8 @@ html {
     padding: 0.5em;
 }
 
-body, .window {
+body,
+.window {
     background-color: Window;
     color: WindowText;
     margin: auto;
@@ -45,9 +114,79 @@ body, .window {
     word-wrap: break-word;
 }
 
-html.reset, body.reset, .window.reset {
+html.reset,
+body.reset,
+.window.reset {
     max-width: none;
     padding: 0;
+}
+
+a,
+.a {
+    background: transparent;
+    text-decoration: none;
+}
+
+a:hover,
+.a:hover {
+    text-decoration: underline;
+}
+
+a.input:hover,
+a.button:hover {
+    text-decoration: none;
+}
+
+abbr {
+    border-bottom: 1px dotted WindowText;
+    text-decoration: none;
+}
+
+b,
+strong {
+    font-weight: 600;
+}
+
+cite,
+dfn,
+em,
+i,
+var,
+address {
+    font-style: italic;
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: monospace;
+}
+
+q {
+    quotes: "“" "”" "‘" "’";
+}
+
+small {
+    font-size: 0.8em;
+}
+
+sub,
+sup {
+    font-size: 0.75em;
+    position: relative;
+}
+
+sup {
+    top: -0.5em;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+var {
+    font-family: serif;
 }
 
 h1,
@@ -81,26 +220,24 @@ h5 {
     font-size: 1.125em;
 }
 
-p,
-ul,
-ol,
-dl,
+blockquote {
+    border-left: 4px solid ButtonFace;
+    padding: 1em 1.5em;
+}
+
 blockquote,
-pre {
+p,
+pre,
+dl,
+ol,
+ul {
     margin-bottom: 1em;
 }
 
-ul,
-ol {
-    padding-left: 2em;
-}
-
-li {
-    margin-bottom: 0.25em;
-}
-
-dt {
-    font-weight: 600;
+pre {
+    line-height: 1.4;
+    overflow: auto;
+    padding: 1em;
 }
 
 dd {
@@ -108,113 +245,22 @@ dd {
     margin-left: 1em;
 }
 
-pre,
-code,
-samp,
-kbd {
-    font-family: monospace;
+dt {
+    font-weight: 600;
 }
 
-pre {
-    line-height: 1.4;
-    overflow: auto;
-    padding: 1em;
-} 
+li {
+    margin-bottom: 0.25em;
+}
 
-var {
-    font-family: serif;
+ol,
+ul {
+    padding-left: 2em;
 }
 
 hr {
     border-bottom: 1px solid ButtonFace;
     margin: 2em 0;
-}
-
-a,
-.a {
-    background: transparent;
-    text-decoration: none;
-}
-
-a:hover,
-.a:hover {
-    text-decoration: underline;
-}
-
-a.input:hover,
-a.button:hover {
-    text-decoration: none;
-}
-
-
-strong,
-b {
-    font-weight: 600;
-}
-
-var,
-em,
-i,
-blockquote,
-q,
-cite,
-dfn,
-address {
-    font-style: italic;
-}
-
-blockquote,
-q {
-    quotes: none;
-}
-
-blockquote {
-    border-left: 4px solid ButtonFace;
-    padding: 1em 1.5em;
-}
-
-sub,
-sup {
-    font-size: 0.75em;
-    position: relative;
-}
-
-sup {
-    top: -0.5em;
-}
-
-sub {
-    bottom: -0.25em;
-}
-
-abbr[title] {
-    border-bottom: 1px dotted WindowText;
-    text-decoration: none;
-}
-
-small {
-    font-size: 0.8em;
-}
-
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    margin-bottom: 1em;    
-}
-
-th,
-td {
-    padding: 0.5em 0.75em;
-    text-align: left;
-}
-
-th {
-    font-weight: 600;
-}
-
-th,
-td {
-    border-bottom: 1px solid ButtonFace;
 }
 
 caption {
@@ -223,13 +269,30 @@ caption {
     text-align: left;
 }
 
-input,
-.input,
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-bottom: 1em;
+}
+
+td,
+th {
+    border-bottom: 1px solid ButtonFace;
+    padding: 0.5em 0.75em;
+    text-align: left;
+}
+
+th {
+    font-weight: 600;
+}
+
 button,
 .button,
-textarea,
+input,
+.input,
+option,
 select,
-option {
+textarea {
     line-height: 1.2;
     max-width: 100%;
     padding: 0.5em 0.75em;
@@ -237,24 +300,29 @@ option {
 }
 
 kbd,
-input.inline,
-.input.inline,
 button.inline,
 .button.inline,
-textarea.inline,
-select.inline {
+input.inline,
+.input.inline,
+select.inline,
+textarea.inline {
     font-size: 0.9em;
     padding: 0.1em 0.4em;
 }
 
 kbd,
-input,
-.input,
 button,
 .button,
-textarea,
-select {
+input,
+.input,
+select,
+textarea {
     border: 1px solid ButtonFace;
+}
+
+.a,
+.button {
+    cursor: pointer;
 }
 
 .input {
@@ -263,40 +331,11 @@ select {
     cursor: text;
 }
 
-.a,
-.button {
-    cursor: pointer;
-}
-
-th,
 kbd,
+th,
 .button {
     background-color: ButtonFace;
     color: ButtonText;
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-    margin: 0 0.5em 0 0;
-}
-
-select[multiple] {
-    padding: 0;
-}
-
-option {
-    font-weight: 400;
-}
-
-optgroup {
-    font-weight: 500;
-    margin-top: 0.5em;
-    text-indent: 0.75em;
-}
-
-label {
-    font-weight: 500;
-    line-height: 2;
 }
 
 fieldset {
@@ -305,9 +344,23 @@ fieldset {
     padding: 1em;
 }
 
+label {
+    font-weight: 500;
+    line-height: 2;
+}
+
 legend {
     font-weight: 600;
     padding: 0 0.5em;
+}
+
+optgroup {
+    font-weight: 500;
+}
+
+option {
+    font-weight: 400;
+    margin: 0.5em 0;
 }
 
 img,
@@ -316,31 +369,18 @@ svg {
     vertical-align: middle;
 }
 
-.row:after {
-    clear: both;
-    content: "";
-    display: table;
-}
-
-.row .col {
-    float: left;
-    min-height: 1px;
-    position: relative;
-}
-
-.row .col.end {
-    float: right;
-}
-
 .center {
     display: block;
     margin-left: auto;
     margin-right: auto;
 }
 
-.overflow {
-    display: block;
-    overflow: auto;
+.drop-cap:first-letter {
+    float: left;
+    font-size: 3em;
+    font-weight: 600;
+    line-height: 1;
+    margin-right: 0.15em;
 }
 
 .hidden {
@@ -359,18 +399,29 @@ svg {
     width: 1px;
 }
 
-.drop-cap:first-letter {
-    float: left;
-    font-size: 3em;
-    font-weight: 600;
-    line-height: 1;
-    margin-right: 0.15em;
+.overflow {
+    display: block;
+    overflow: auto;
 }
 
-img,
-svg,
+.row {
+    overflow: hidden;
+}
+
+.row .col {
+    float: left;
+    min-height: 1px;
+    position: relative;
+}
+
+.row .col.end {
+    float: right;
+}
+
 iframe,
+img,
 object,
+svg,
 .s0,
 .s1,
 .s2,
@@ -401,3 +452,9 @@ object,
 .s10 { width: 50em; }
 .s11 { width: 55em; }
 .s12 { width: 60em; }
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
