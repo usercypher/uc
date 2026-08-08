@@ -114,9 +114,8 @@ body,
     word-wrap: break-word;
 }
 
-html.reset,
-body.reset,
-.window.reset {
+.reset {
+    margin: 0;
     max-width: none;
     padding: 0;
 }
@@ -130,11 +129,6 @@ a,
 a:hover,
 .a:hover {
     text-decoration: underline;
-}
-
-a.input:hover,
-a.button:hover {
-    text-decoration: none;
 }
 
 abbr {
@@ -300,12 +294,7 @@ textarea {
 }
 
 kbd,
-button.inline,
-.button.inline,
-input.inline,
-.input.inline,
-select.inline,
-textarea.inline {
+.inline {
     font-size: 0.9em;
     padding: 0.1em 0.4em;
 }
@@ -329,6 +318,11 @@ textarea {
     background-color: inherit;
     color: inherit;
     cursor: text;
+}
+
+.button:hover,
+.input:hover {
+    text-decoration: none;
 }
 
 kbd,
