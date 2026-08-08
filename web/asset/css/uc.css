@@ -258,9 +258,9 @@ select {
 }
 
 .input {
-    cursor: text;
-    color: inherit;
     background-color: inherit;
+    color: inherit;
+    cursor: text;
 }
 
 .a,
@@ -271,8 +271,8 @@ select {
 th,
 kbd,
 .button {
-    color: ButtonText;
     background-color: ButtonFace;
+    color: ButtonText;
 }
 
 input[type="checkbox"],
