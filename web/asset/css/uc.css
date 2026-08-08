@@ -271,12 +271,16 @@ table {
 
 td,
 th {
-    border-bottom: 1px solid ButtonFace;
     padding: 0.5em 0.75em;
     text-align: left;
 }
 
+td {
+    border-bottom: 1px solid ButtonFace;
+}
+
 th {
+    border-bottom: 1px solid transparent;
     font-weight: 600;
 }
 
