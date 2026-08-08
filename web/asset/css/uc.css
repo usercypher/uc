@@ -385,6 +385,7 @@ object,
 .s11,
 .s12 {
     max-width: 100%;
+    min-width: 5em;
 }
 
 .s0 { width: 100%; }
