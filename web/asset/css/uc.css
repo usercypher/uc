@@ -100,8 +100,10 @@ svg {
 
 html {
     font-family: sans-serif;
-    line-height: 1.6;
+    line-height: 1.5;
     padding: 0.5em;
+
+    word-wrap: break-word;
 }
 
 body,
@@ -110,8 +112,6 @@ body,
     color: WindowText;
     margin: auto;
     max-width: 60em;
-
-    word-wrap: break-word;
 }
 
 .reset {
