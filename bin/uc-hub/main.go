@@ -19,25 +19,32 @@ limitations under the License.
 package main
 
 import (
+	// uc-hub
 	"context"
 	"crypto/rand"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
-	"time"
 
-	"uc-hub/websocket"
+	// websocket
+	"bufio"
+	"crypto/sha1"
+	"encoding/base64"
+	"encoding/binary"
+
+	// uc-hub / websocket
+	"errors"
+	"io"
+	"net"
+	"net/http"
+	"strings"
+	"time"
 )
 
 type Config struct {
@@ -65,7 +72,7 @@ type Config struct {
 
 type Client struct {
 	id       string
-	conn     *websocket.Conn
+	conn     *Websocket_Conn
 	lastPong atomic.Uint32
 }
 
@@ -235,11 +242,11 @@ Body:
 					client := value.(*Client)
 
 					if currentElapsed-client.lastPong.Load() > 90 {
-						srv.sendToClient(client.id, websocket.OpClose, nil)
+						srv.sendToClient(client.id, Websocket_OpClose, nil)
 						return true
 					}
 
-					srv.sendToClient(client.id, websocket.OpPing, nil)
+					srv.sendToClient(client.id, Websocket_OpPing, nil)
 					return true
 				})
 			}
@@ -339,14 +346,14 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		conn, err := websocket.Upgrade(w, r)
+		conn, err := Websocket_Upgrade(w, r)
 		if err != nil {
 			return
 		}
 
 		cid := fmt.Sprintf("%016x%08x", time.Now().UnixNano(), s.clientId.Add(1))
 		conn.OnPing(func(payload []byte) {
-			s.sendToClient(cid, websocket.OpPong, payload)
+			s.sendToClient(cid, Websocket_OpPong, payload)
 		})
 		conn.OnPong(func(payload []byte) {
 			if v, ok := s.clients[shard(cid, s.clientShardCount)].Load(cid); ok {
@@ -354,7 +361,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		})
 		conn.OnClose(func(payload []byte) {
-			s.sendToClient(cid, websocket.OpClose, nil)
+			s.sendToClient(cid, Websocket_OpClose, nil)
 		})
 
 		client := &Client{
@@ -402,13 +409,13 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			f.Flush()
 		}
 
-		msgType := websocket.Optext
+		msgType := Websocket_Optext
 		switch r.Header.Get("X-Uc-Hub-Type") {
 		case "close":
-			msgType = websocket.OpClose
+			msgType = Websocket_OpClose
 		default:
 			if r.Header.Get("Content-Type") == "application/octet-stream" {
-				msgType = websocket.Opbinary
+				msgType = Websocket_Opbinary
 			}
 		}
 
@@ -417,7 +424,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			if _, ok := s.clients[shard(trimmedCid, s.clientShardCount)].Load(trimmedCid); ok {
 				s.sendToClient(trimmedCid, msgType, body)
 			} else {
-				s.sendToEndpoint(trimmedCid, websocket.OpClose, nil)
+				s.sendToEndpoint(trimmedCid, Websocket_OpClose, nil)
 			}
 		}
 	} else if r.URL.Path == "/stats" && r.Method == http.MethodGet {
@@ -431,7 +438,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) wsloop(conn *websocket.Conn, cid string) {
+func (s *Server) wsloop(conn *Websocket_Conn, cid string) {
 	timeout := time.Duration(s.cfg.ClientTimeout) * time.Second
 
 	for {
@@ -447,7 +454,7 @@ func (s *Server) wsloop(conn *websocket.Conn, cid string) {
 		s.sendToEndpoint(cid, typ, msg)
 	}
 
-	s.sendToClient(cid, websocket.OpClose, nil)
+	s.sendToClient(cid, Websocket_OpClose, nil)
 }
 
 func (s *Server) sendToClient(cid string, typ int, payload []byte) {
@@ -483,7 +490,7 @@ func (s *Server) clientWorker(i int) {
 					client.conn.Close()
 				}
 
-				s.sendToEndpoint(queue.cid, websocket.OpClose, nil)
+				s.sendToEndpoint(queue.cid, Websocket_OpClose, nil)
 			}
 		}
 	}
@@ -507,7 +514,7 @@ func (s *Server) endpointWorker(i int) {
 	for queue := range q {
 		req, err := http.NewRequest("POST", s.cfg.Endpoint, &byteReader{data: queue.payload})
 		if err != nil {
-			s.sendToClient(queue.cid, websocket.Optext, []byte("Request failed"))
+			s.sendToClient(queue.cid, Websocket_Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
 			continue
 		}
@@ -518,7 +525,7 @@ func (s *Server) endpointWorker(i int) {
 		switch queue.typ {
 		case opOpen:
 			typ = "open"
-		case websocket.OpClose:
+		case Websocket_OpClose:
 			typ = "close"
 		}
 
@@ -529,7 +536,7 @@ func (s *Server) endpointWorker(i int) {
 		h["X-Uc-Hub-Tls-Server"] = []string{s.cfg.TLSServerAdvertise}
 		h["X-Uc-Hub-Token"] = []string{s.token}
 
-		if queue.typ == websocket.Opbinary {
+		if queue.typ == Websocket_Opbinary {
 			h["Content-Type"] = []string{"application/octet-stream"}
 		} else {
 			h["Content-Type"] = []string{"text/plain"}
@@ -537,12 +544,12 @@ func (s *Server) endpointWorker(i int) {
 
 		resp, err := s.hc.Do(req)
 		if err != nil {
-			s.sendToClient(queue.cid, websocket.Optext, []byte("Request failed"))
+			s.sendToClient(queue.cid, Websocket_Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
 			continue
 		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			s.sendToClient(queue.cid, websocket.Optext, []byte("Request failed"))
+			s.sendToClient(queue.cid, Websocket_Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
 		}
 		io.Copy(io.Discard, resp.Body)
@@ -596,4 +603,328 @@ func parseConfig(path string) (*Config, error) {
 	cfg.TLSKey = strings.ReplaceAll(cfg.TLSKey, "${ROOT}", root)
 
 	return cfg, nil
+}
+
+/* **********
+ * websocket
+ */
+
+const (
+	Websocket_opContinuation = 0x0
+
+	Websocket_Optext   = 0x1
+	Websocket_Opbinary = 0x2
+	Websocket_OpClose  = 0x8
+	Websocket_OpPing   = 0x9
+	Websocket_OpPong   = 0xA
+)
+
+const (
+	Websocket_maxFrameSize = 32768
+)
+
+var (
+	Websocket_guid      = []byte("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+	Websocket_respPart1 = []byte("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ")
+	Websocket_respPart2 = []byte("\r\n\r\n")
+
+	Websocket_MaxMessageSize = 4 * 1024 * 1024
+)
+
+type Websocket_Conn struct {
+	conn net.Conn
+	br   *bufio.Reader
+
+	onPingHandler  func(payload []byte)
+	onPongHandler  func(payload []byte)
+	onCloseHandler func(payload []byte)
+
+	readHdrBuf  [14]byte
+	writeHdrBuf [10]byte
+	keyBuf      [128]byte
+	ctrlBuf     [125]byte
+
+	msgBuf          []byte
+	fragmentedOp    int
+	inFragmentation bool
+}
+
+type Websocket_HandlerFunc func(*Websocket_Conn)
+
+func Websocket_NewConn(conn net.Conn, br *bufio.Reader) *Websocket_Conn {
+	return &Websocket_Conn{
+		conn:   conn,
+		br:     br,
+		msgBuf: make([]byte, 0, Websocket_MaxMessageSize),
+	}
+}
+
+func (w *Websocket_Conn) SetReadDeadline(t time.Time) error  { return w.conn.SetReadDeadline(t) }
+func (w *Websocket_Conn) SetWriteDeadline(t time.Time) error { return w.conn.SetWriteDeadline(t) }
+func (w *Websocket_Conn) SetDeadline(t time.Time) error      { return w.conn.SetDeadline(t) }
+
+func (w *Websocket_Conn) OnPing(h func([]byte))  { w.onPingHandler = h }
+func (w *Websocket_Conn) OnPong(h func([]byte))  { w.onPongHandler = h }
+func (w *Websocket_Conn) OnClose(h func([]byte)) { w.onCloseHandler = h }
+
+func Websocket_Upgrade(w http.ResponseWriter, r *http.Request) (*Websocket_Conn, error) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "WebSocket handshake must use GET", http.StatusMethodNotAllowed)
+		return nil, errors.New("websocket: handshake must use GET")
+	}
+
+	if !strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
+		http.Error(w, "Missing or invalid Upgrade header", http.StatusBadRequest)
+		return nil, errors.New("websocket: missing or invalid Upgrade header")
+	}
+
+	if !strings.Contains(strings.ToLower(r.Header.Get("Connection")), "upgrade") {
+		http.Error(w, "Missing or invalid Connection header", http.StatusBadRequest)
+		return nil, errors.New("websocket: missing or invalid Connection header")
+	}
+
+	if r.Header.Get("Sec-WebSocket-Version") != "13" {
+		w.Header().Set("Sec-WebSocket-Version", "13")
+		http.Error(w, "Unsupported WebSocket version", http.StatusUpgradeRequired)
+		return nil, errors.New("websocket: unsupported WebSocket version")
+	}
+
+	challengeKey := r.Header.Get("Sec-WebSocket-Key")
+	if challengeKey == "" {
+		http.Error(w, "Missing Sec-WebSocket-Key", http.StatusBadRequest)
+		return nil, errors.New("websocket: missing challenge key")
+	}
+
+	hijacker, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "Webserver doesn't support hijacking", http.StatusInternalServerError)
+		return nil, errors.New("websocket: hijacker not supported")
+	}
+
+	netConn, brw, err := hijacker.Hijack()
+	if err != nil {
+		return nil, err
+	}
+
+	ws := Websocket_NewConn(netConn, brw.Reader)
+
+	keyLen := copy(ws.keyBuf[:], challengeKey)
+	keyLen += copy(ws.keyBuf[keyLen:], Websocket_guid)
+	hash := sha1.Sum(ws.keyBuf[:keyLen])
+
+	var accept [28]byte
+	base64.StdEncoding.Encode(accept[:], hash[:])
+
+	var bufs net.Buffers
+	bufs = append(bufs,
+		Websocket_respPart1,
+		accept[:],
+		Websocket_respPart2,
+	)
+
+	if _, err := bufs.WriteTo(ws.conn); err != nil {
+		netConn.Close()
+		return nil, err
+	}
+
+	return ws, nil
+}
+
+func (w *Websocket_Conn) ReadMessage() (int, []byte, error) {
+	w.msgBuf = w.msgBuf[:0]
+
+	for {
+		if _, err := io.ReadFull(w.br, w.readHdrBuf[:2]); err != nil {
+			return 0, nil, err
+		}
+
+		fin := (w.readHdrBuf[0] & 0x80) != 0
+		if (w.readHdrBuf[0] & 0x70) != 0 {
+			return 0, nil, errors.New("protocol error: reserved bits set")
+		}
+
+		frameOpcode := int(w.readHdrBuf[0] & 0x0F)
+		switch frameOpcode {
+		case Websocket_opContinuation, Websocket_Optext, Websocket_Opbinary, Websocket_OpClose, Websocket_OpPing, Websocket_OpPong:
+		default:
+			return 0, nil, errors.New("protocol error: invalid opcode")
+		}
+		masked := (w.readHdrBuf[1] & 0x80) != 0
+		payloadLen64 := uint64(w.readHdrBuf[1] & 0x7F)
+
+		if !masked {
+			return 0, nil, errors.New("protocol error: unmasked client frame received")
+		}
+
+		if payloadLen64 == 126 {
+			if _, err := io.ReadFull(w.br, w.readHdrBuf[2:4]); err != nil {
+				return 0, nil, err
+			}
+			payloadLen64 = uint64(binary.BigEndian.Uint16(w.readHdrBuf[2:4]))
+		} else if payloadLen64 == 127 {
+			if _, err := io.ReadFull(w.br, w.readHdrBuf[2:10]); err != nil {
+				return 0, nil, err
+			}
+			payloadLen64 = binary.BigEndian.Uint64(w.readHdrBuf[2:10])
+		}
+
+		payloadLen := int(payloadLen64)
+		isControl := frameOpcode == Websocket_OpClose || frameOpcode == Websocket_OpPing || frameOpcode == Websocket_OpPong
+
+		if isControl {
+			if payloadLen > 125 {
+				return 0, nil, errors.New("protocol error: control frame payload exceeded 125 bytes")
+			}
+			if !fin {
+				return 0, nil, errors.New("protocol error: control frames cannot be fragmented")
+			}
+		} else {
+			if uint64(len(w.msgBuf))+payloadLen64 > uint64(Websocket_MaxMessageSize) {
+				return 0, nil, errors.New("protocol error: message size exceeds max limit")
+			}
+		}
+
+		var maskKey [4]byte
+		if _, err := io.ReadFull(w.br, maskKey[:]); err != nil {
+			return 0, nil, err
+		}
+
+		if isControl {
+			controlPayload := w.ctrlBuf[:payloadLen]
+			if _, err := io.ReadFull(w.br, controlPayload); err != nil {
+				return 0, nil, err
+			}
+
+			for i := 0; i < len(controlPayload); i++ {
+				controlPayload[i] ^= maskKey[i%4]
+			}
+
+			switch frameOpcode {
+			case Websocket_OpClose:
+				if w.onCloseHandler != nil {
+					w.onCloseHandler(controlPayload)
+				}
+				return 0, nil, io.EOF
+			case Websocket_OpPing:
+				if w.onPingHandler != nil {
+					w.onPingHandler(controlPayload)
+				}
+			case Websocket_OpPong:
+				if w.onPongHandler != nil {
+					w.onPongHandler(controlPayload)
+				}
+			}
+			continue
+		}
+
+		if w.inFragmentation {
+			if frameOpcode != Websocket_opContinuation {
+				return 0, nil, errors.New("protocol error: expected continuation frame")
+			}
+		} else {
+			if frameOpcode == Websocket_opContinuation {
+				return 0, nil, errors.New("protocol error: unexpected continuation frame")
+			}
+			w.fragmentedOp = frameOpcode
+			if !fin {
+				w.inFragmentation = true
+			}
+		}
+
+		startIdx := len(w.msgBuf)
+		neededCap := startIdx + payloadLen
+
+		if neededCap > cap(w.msgBuf) {
+			newCap := cap(w.msgBuf) * 2
+			if newCap < neededCap {
+				newCap = neededCap
+			}
+			newBuf := make([]byte, startIdx, newCap)
+			copy(newBuf, w.msgBuf[:startIdx])
+			w.msgBuf = newBuf
+		}
+		w.msgBuf = w.msgBuf[:neededCap]
+
+		if _, err := io.ReadFull(w.br, w.msgBuf[startIdx:neededCap]); err != nil {
+			return 0, nil, err
+		}
+
+		payload := w.msgBuf[startIdx:neededCap]
+
+		blen := (len(payload) / 4) * 4
+		for i := 0; i < blen; i += 4 {
+			payload[i] ^= maskKey[0]
+			payload[i+1] ^= maskKey[1]
+			payload[i+2] ^= maskKey[2]
+			payload[i+3] ^= maskKey[3]
+		}
+		for i := blen; i < len(payload); i++ {
+			payload[i] ^= maskKey[i%4]
+		}
+
+		if fin {
+			w.inFragmentation = false
+			return w.fragmentedOp, w.msgBuf, nil
+		}
+	}
+}
+
+func (w *Websocket_Conn) WriteFrame(fin bool, opcode int, payload []byte) error {
+	var firstByte byte = byte(opcode)
+	if fin {
+		firstByte |= 0x80
+	}
+	w.writeHdrBuf[0] = firstByte
+
+	length := len(payload)
+	var headerLen int
+
+	switch {
+	case length < 126:
+		w.writeHdrBuf[1] = byte(length)
+		headerLen = 2
+
+	case length <= 65535:
+		w.writeHdrBuf[1] = 126
+		binary.BigEndian.PutUint16(w.writeHdrBuf[2:4], uint16(length))
+		headerLen = 4
+
+	default:
+		w.writeHdrBuf[1] = 127
+		binary.BigEndian.PutUint64(w.writeHdrBuf[2:10], uint64(length))
+		headerLen = 10
+	}
+
+	var bufs net.Buffers
+	bufs = append(bufs,
+		w.writeHdrBuf[:headerLen],
+		payload,
+	)
+
+	_, err := bufs.WriteTo(w.conn)
+	return err
+}
+
+func (w *Websocket_Conn) WriteMessage(opcode int, data []byte) error {
+	if len(data) <= Websocket_maxFrameSize {
+		return w.WriteFrame(true, opcode, data)
+	}
+
+	if err := w.WriteFrame(false, opcode, data[:Websocket_maxFrameSize]); err != nil {
+		return err
+	}
+	data = data[Websocket_maxFrameSize:]
+
+	for len(data) > Websocket_maxFrameSize {
+		if err := w.WriteFrame(false, Websocket_opContinuation, data[:Websocket_maxFrameSize]); err != nil {
+			return err
+		}
+		data = data[Websocket_maxFrameSize:]
+	}
+
+	return w.WriteFrame(true, Websocket_opContinuation, data)
+}
+
+func (w *Websocket_Conn) Close() error {
+	return w.conn.Close()
 }

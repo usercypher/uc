@@ -19,16 +19,15 @@ limitations under the License.
 package main
 
 import (
+	// uc-web
 	"bufio"
 	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"mime"
-	"net"
 	"net/http"
 	"net/textproto"
 	"os"
@@ -43,9 +42,11 @@ import (
 	"sync"
 	"sync/atomic"
 	"syscall"
-	"time"
 
-	"uc-web/fcgiclient"
+	// uc-web / fcgi
+	"io"
+	"net"
+	"time"
 )
 
 type Config struct {
@@ -674,7 +675,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	fcgiAddr := strings.ReplaceAll(s.cfg.FcgiAddress, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
 	fcgiAddr = strings.ReplaceAll(fcgiAddr, "${ROOT}", s.rootDir)
 
-	client, err := fcgiclient.DialTimeout(s.cfg.FcgiNetwork, fcgiAddr, 2*time.Second)
+	client, err := Fcgi_DialTimeout(s.cfg.FcgiNetwork, fcgiAddr, 2*time.Second)
 	if err != nil {
 		s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 		return
@@ -1058,4 +1059,180 @@ func parseConfig(path string) (*Config, error) {
 	cfg.EncodingDir = strings.ReplaceAll(cfg.EncodingDir, "${ROOT}", root)
 
 	return cfg, nil
+}
+
+/* **********
+ * fcgi
+ */
+
+const (
+	Fcgi_FCGI_PARAMS      uint8 = 4
+	Fcgi_FCGI_STDIN       uint8 = 5
+	Fcgi_FCGI_STDOUT      uint8 = 6
+	Fcgi_FCGI_END_REQUEST uint8 = 3
+
+	Fcgi_headerSize = 8
+	Fcgi_maxContent = 65535
+	Fcgi_maxBuffer  = Fcgi_headerSize + Fcgi_maxContent + 255
+)
+
+type Fcgi_Client struct {
+	conn      net.Conn
+	readBuf   []byte
+	hdr       [Fcgi_headerSize]byte
+	buf       [Fcgi_maxBuffer]byte
+	KeepAlive uint8
+}
+
+func Fcgi_Dial(network, address string) (*Fcgi_Client, error) {
+	conn, err := net.Dial(network, address)
+	if err != nil {
+		return nil, err
+	}
+	return &Fcgi_Client{conn: conn}, nil
+}
+
+func Fcgi_DialTimeout(network, address string, timeout time.Duration) (*Fcgi_Client, error) {
+	conn, err := net.DialTimeout(network, address, timeout)
+	if err != nil {
+		return nil, err
+	}
+	return &Fcgi_Client{conn: conn}, nil
+}
+
+func (c *Fcgi_Client) Close() error {
+	return c.conn.Close()
+}
+
+func (c *Fcgi_Client) Do(p map[string]string, req io.Reader) (*Fcgi_Client, error) {
+	beginRecord := [16]byte{1, 1, 0, 1, 0, 8, 0, 0, 0, 1, c.KeepAlive, 0, 0, 0, 0, 0}
+	if _, err := c.conn.Write(beginRecord[:]); err != nil {
+		return nil, err
+	}
+
+	pos := Fcgi_headerSize
+	for k, v := range p {
+		kl, vl := len(k), len(v)
+		if pos+8+kl+vl > Fcgi_headerSize+Fcgi_maxContent {
+			contentLength := pos - Fcgi_headerSize
+			paddingLength := int(-contentLength & 7)
+			c.buf[0], c.buf[1], c.buf[2], c.buf[3] = 1, Fcgi_FCGI_PARAMS, 0, 1
+			c.buf[4] = byte(contentLength >> 8)
+			c.buf[5] = byte(contentLength)
+			c.buf[6] = byte(paddingLength)
+			c.buf[7] = 0
+
+			if _, err := c.conn.Write(c.buf[:pos+paddingLength]); err != nil {
+				return nil, err
+			}
+			pos = Fcgi_headerSize
+		}
+
+		if kl > 127 {
+			c.buf[pos] = byte(kl>>24) | 0x80
+			c.buf[pos+1] = byte(kl >> 16)
+			c.buf[pos+2] = byte(kl >> 8)
+			c.buf[pos+3] = byte(kl)
+			pos += 4
+		} else {
+			c.buf[pos] = byte(kl)
+			pos++
+		}
+
+		if vl > 127 {
+			c.buf[pos] = byte(vl>>24) | 0x80
+			c.buf[pos+1] = byte(vl >> 16)
+			c.buf[pos+2] = byte(vl >> 8)
+			c.buf[pos+3] = byte(vl)
+			pos += 4
+		} else {
+			c.buf[pos] = byte(vl)
+			pos++
+		}
+		pos += copy(c.buf[pos:], k)
+		pos += copy(c.buf[pos:], v)
+	}
+
+	if pos > Fcgi_headerSize {
+		contentLength := pos - Fcgi_headerSize
+		paddingLength := int(-contentLength & 7)
+		c.buf[0], c.buf[1], c.buf[2], c.buf[3] = 1, Fcgi_FCGI_PARAMS, 0, 1
+		c.buf[4] = byte(contentLength >> 8)
+		c.buf[5] = byte(contentLength)
+		c.buf[6] = byte(paddingLength)
+		c.buf[7] = 0
+		if _, err := c.conn.Write(c.buf[:pos+paddingLength]); err != nil {
+			return nil, err
+		}
+	}
+	c.buf[0], c.buf[1], c.buf[2], c.buf[3], c.buf[4], c.buf[5], c.buf[6], c.buf[7] = 1, Fcgi_FCGI_PARAMS, 0, 1, 0, 0, 0, 0
+	if _, err := c.conn.Write(c.buf[:Fcgi_headerSize]); err != nil {
+		return nil, err
+	}
+
+	if req != nil {
+		for {
+			n, err := req.Read(c.buf[Fcgi_headerSize : Fcgi_headerSize+Fcgi_maxContent])
+			if n > 0 {
+				paddingLength := int(-n & 7)
+				c.buf[0], c.buf[1], c.buf[2], c.buf[3] = 1, Fcgi_FCGI_STDIN, 0, 1
+				c.buf[4] = byte(n >> 8)
+				c.buf[5] = byte(n)
+				c.buf[6] = byte(paddingLength)
+				c.buf[7] = 0
+				if _, err := c.conn.Write(c.buf[:Fcgi_headerSize+n+paddingLength]); err != nil {
+					return nil, err
+				}
+			}
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	c.buf[0], c.buf[1], c.buf[2], c.buf[3], c.buf[4], c.buf[5], c.buf[6], c.buf[7] = 1, Fcgi_FCGI_STDIN, 0, 1, 0, 0, 0, 0
+	if _, err := c.conn.Write(c.buf[:Fcgi_headerSize]); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func (c *Fcgi_Client) Read(p []byte) (int, error) {
+	for len(c.readBuf) == 0 {
+		if _, err := io.ReadFull(c.conn, c.hdr[:]); err != nil {
+			return 0, err
+		}
+		recType := c.hdr[1]
+		contentLength := (int(c.hdr[4]) << 8) | int(c.hdr[5])
+		paddingLength := int(c.hdr[6])
+
+		if recType == Fcgi_FCGI_END_REQUEST {
+			total := contentLength + paddingLength
+			if total > 0 {
+				if _, err := io.ReadFull(c.conn, c.buf[:total]); err != nil {
+					return 0, err
+				}
+			}
+			return 0, io.EOF
+		}
+
+		total := contentLength + paddingLength
+		if total > 0 {
+			if _, err := io.ReadFull(c.conn, c.buf[:total]); err != nil {
+				return 0, err
+			}
+		}
+
+		if recType == Fcgi_FCGI_STDOUT {
+			c.readBuf = c.buf[:contentLength]
+			break
+		}
+	}
+
+	n := copy(p, c.readBuf)
+	c.readBuf = c.readBuf[n:]
+	return n, nil
 }
