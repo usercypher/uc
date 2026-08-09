@@ -450,6 +450,18 @@ svg,
 .s11 { width: 55em; }
 .s12 { width: 60em; }
 
+@media print {
+    .print-hidden {
+        display: none;
+    }
+}
+
+@media screen {
+    .print-only {
+        display: none;
+    }
+}
+
 *,
 *:before,
 *:after {
