@@ -215,8 +215,7 @@ h5 {
 }
 
 blockquote {
-    border-left: 4px solid ButtonFace;
-    padding: 1em 1.5em;
+    padding: 0 2em;
 }
 
 blockquote,
@@ -231,7 +230,7 @@ ul {
 pre {
     line-height: 1.4;
     overflow: auto;
-    padding: 1em;
+    padding: 0 1em;
 }
 
 dd {
