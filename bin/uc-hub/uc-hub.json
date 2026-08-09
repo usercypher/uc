@@ -1,0 +1,17 @@
+{
+  "server": "0.0.0.0:2080",
+  "server_advertise": "http://localhost:2080",
+  "tls_server": "0.0.0.0:2443",
+  "tls_server_advertise": "http://localhost:2443",
+  "tls_cert": "${ROOT}/server.crt",
+  "tls_key": "${ROOT}/server.key",
+  "client_limit": 10000,
+  "client_timeout": 0,
+  "client_worker_count": 64,
+  "client_worker_queue": 4096,
+  "endpoint": "http://127.0.0.1:8080/game/ws",
+  "endpoint_timeout": 90,
+  "endpoint_worker_count": 64,
+  "endpoint_worker_queue": 4096,
+  "max_message_size": 1048576
+}

@@ -451,7 +451,7 @@ func (s *Server) wsloop(conn *Websocket_Conn, cid string) {
 			break
 		}
 
-		s.sendToEndpoint(cid, typ, msg)
+		s.sendToEndpoint(cid, typ, append([]byte(nil), msg...))
 	}
 
 	s.sendToClient(cid, Websocket_OpClose, nil)
