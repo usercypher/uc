@@ -22,7 +22,6 @@ $t->load($translation_dir);
 
 ?>
 
-<!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
   <meta charset="UTF-8">
