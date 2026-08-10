@@ -22,6 +22,10 @@ function compile() {
         $app->setEnv($key, $value);
     }
 
+    $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
+    $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
+    $exclude = isset($input->query['exclude']) ? explode(',', $input->query['exclude']) : array();
+
     $files = array(
         'data' => array(),
         'add_unit' => array(),
@@ -35,9 +39,14 @@ function compile() {
 
     $datas = array();
     foreach ($files['data'] as $file) {
-        $datas[basename(dirname($file))] = require $file;
+        $dirbasename = basename(dirname($file));
+        if (in_array($dirbasename, $exclude)) {
+            continue;
+        }
+        $datas[$dirbasename] = require $file;
     }
 
+    $errors = array();
     foreach ($datas as $dirbasename => $data) {
         if (isset($data['php'])) {
             $required_php = $data['php'];
@@ -49,15 +58,13 @@ function compile() {
             $r0 = intval($r_parts[0]); $r1 = intval($r_parts[1]); $r2 = intval($r_parts[2]);
             $c0 = intval($c_parts[0]); $c1 = intval($c_parts[1]); $c2 = intval($c_parts[2]);
             if ($c0 < $r0 || ($c0 === $r0 && $c1 < $r1)) {
-                echo "PHP version error: folder '{$dirbasename}' requires PHP {$required_php}, but {$current_php} is installed.\n";
-                exit(1);
+                $errors[] = "PHP version error: folder '{$dirbasename}' requires PHP {$required_php}, but {$current_php} is installed.\n";
             }
         }        
         if (isset($data['ext']) && is_array($data['ext'])) {
             foreach ($data['ext'] as $ext) {
                 if (!extension_loaded($ext)) {
-                    echo "Extension error: folder '{$dirbasename}' requires extension '{$ext}', but it is not loaded.\n";
-                    exit(1);
+                    $errors[] = "Extension error: folder '{$dirbasename}' requires extension '{$ext}', but it is not loaded.\n";
                 }
             }
         }
@@ -66,8 +73,8 @@ function compile() {
         }
         foreach ($data['use'] as $matadirbasename => $dataversion) {
             if (!isset($datas[$matadirbasename]['version'])) {
-                echo "Use error: folder '{$dirbasename}' requires '{$matadirbasename}' (version {$dataversion}), but '{$matadirbasename}' is missing.\n";
-                exit(1);
+                $errors[] = "Use error: folder '{$dirbasename}' requires '{$matadirbasename}' (version {$dataversion}), but '{$matadirbasename}' is " . (in_array($matadirbasename, $exclude) ? "excluded" : "missing") . ".\n";
+                continue;
             }
             $available = $datas[$matadirbasename]['version'];
             $r_parts = explode('.', $dataversion);
@@ -77,41 +84,49 @@ function compile() {
             $r0 = intval($r_parts[0]); $r1 = intval($r_parts[1]); $r2 = intval($r_parts[2]);
             $a0 = intval($a_parts[0]); $a1 = intval($a_parts[1]); $a2 = intval($a_parts[2]);
             if ($a0 < $r0) {
-                echo "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
-                exit(1);
+                $errors[] = "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
             } else if ($a0 === $r0) {
-                if ($a0 > $r0) {
-                    continue;
-                }
                 if ($a1 < $r1) {
-                    echo "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
-                    exit(1);
+                    $errors[] = "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
                 }
             } else {
-                echo "Warning: folder '{$dirbasename}' uses '{$matadirbasename}' version {$available}, which is newer than required version {$dataversion}.\n";
+                $output->content .= "Warning: folder '{$dirbasename}' uses '{$matadirbasename}' version {$available}, which is newer than required version {$dataversion}.\n";
             }
         }
     }
+    if ($errors) {
+        foreach ($errors as $error) {
+            $output->content .= $error;
+        }
+    } else {
+        foreach ($files['add_unit'] as $file) {
+            require $file;
+        }
 
-    foreach ($files['add_unit'] as $file) {
-        require $file;
+        foreach ($files['set_unit'] as $file) {
+            require $file;
+        }
+
+        foreach ($files['set_route'] as $file) {
+            require $file;
+        }
+
+        $appStateFile = 'var/lib/app.state.dat';
+
+        $app->save($appStateFile);
+
+        $output->content .= 'File created: ' . $appStateFile . "\n";
     }
 
-    foreach ($files['set_unit'] as $file) {
-        require $file;
-    }
+    $output->content .= "\nTip: use --exclude=module1,module2 to exclude modules from compilation.\n";
 
-    foreach ($files['set_route'] as $file) {
-        require $file;
-    }
-
-    $appStateFile = 'var/lib/app.state.dat';
-
-    $app->save($appStateFile);
+    $output->io($output->content);
 
     $app->term();
+    $input->term();
+    $output->term();
 
-    exit('File created: ' . $appStateFile . "\n");
+    exit($errors ? 1 : 0);
 }
 
 function scan_dir($dir, &$result) {
