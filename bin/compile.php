@@ -39,6 +39,28 @@ function compile() {
     }
 
     foreach ($datas as $dirbasename => $data) {
+        if (isset($data['php'])) {
+            $required_php = $data['php'];
+            $current_php = PHP_VERSION;
+            $r_parts = explode('.', $required_php);
+            $c_parts = explode('.', $current_php);
+            while (count($r_parts) < 3) { $r_parts[] = '0'; }
+            while (count($c_parts) < 3) { $c_parts[] = '0'; }
+            $r0 = intval($r_parts[0]); $r1 = intval($r_parts[1]); $r2 = intval($r_parts[2]);
+            $c0 = intval($c_parts[0]); $c1 = intval($c_parts[1]); $c2 = intval($c_parts[2]);
+            if ($c0 < $r0 || ($c0 === $r0 && $c1 < $r1)) {
+                echo "PHP version error: folder '{$dirbasename}' requires PHP {$required_php}, but {$current_php} is installed.\n";
+                exit(1);
+            }
+        }        
+        if (isset($data['ext']) && is_array($data['ext'])) {
+            foreach ($data['ext'] as $ext) {
+                if (!extension_loaded($ext)) {
+                    echo "Extension error: folder '{$dirbasename}' requires extension '{$ext}', but it is not loaded.\n";
+                    exit(1);
+                }
+            }
+        }
         if (!isset($data['use']) || !is_array($data['use'])) {
             continue;
         }
@@ -57,13 +79,16 @@ function compile() {
             if ($a0 < $r0) {
                 echo "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
                 exit(1);
-            }
-            if ($a0 > $r0) {
-                continue;
-            }
-            if ($a1 < $r1) {
-                echo "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
-                exit(1);
+            } else if ($a0 === $r0) {
+                if ($a0 > $r0) {
+                    continue;
+                }
+                if ($a1 < $r1) {
+                    echo "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
+                    exit(1);
+                }
+            } else {
+                echo "Warning: folder '{$dirbasename}' uses '{$matadirbasename}' version {$available}, which is newer than required version {$dataversion}.\n";
             }
         }
     }
