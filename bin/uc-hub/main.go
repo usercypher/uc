@@ -79,7 +79,7 @@ type Client struct {
 type Queue struct {
 	cid     string
 	typ     int
-	payload []byte
+	payload *[]byte
 }
 
 type Server struct {
@@ -97,6 +97,7 @@ type Server struct {
 	startTime        time.Time
 	token            string
 	shuttingDown     atomic.Bool
+	bufferPool       sync.Pool
 }
 
 type byteReader struct {
@@ -222,6 +223,12 @@ Body:
 				IdleConnTimeout:     90 * time.Second,
 				TLSHandshakeTimeout: 10 * time.Second,
 				DisableKeepAlives:   false,
+			},
+		},
+		bufferPool: sync.Pool{
+			New: func() any {
+				b := make([]byte, 32*1024)
+				return &b
 			},
 		},
 	}
@@ -451,7 +458,7 @@ func (s *Server) wsloop(conn *Websocket_Conn, cid string) {
 			break
 		}
 
-		s.sendToEndpoint(cid, typ, append([]byte(nil), msg...))
+		s.sendToEndpoint(cid, typ, msg)
 	}
 
 	s.sendToClient(cid, Websocket_OpClose, nil)
@@ -462,10 +469,22 @@ func (s *Server) sendToClient(cid string, typ int, payload []byte) {
 		return
 	}
 
+	bufPtr := s.bufferPool.Get().(*[]byte)
+	buf := *bufPtr
+
+	if cap(buf) < len(payload) {
+		buf = append(buf[:0:0], payload...)
+	} else {
+		buf = buf[:len(payload)]
+		copy(buf, payload)
+	}
+	*bufPtr = buf
+
 	select {
-	case s.clientQueues[shard(cid, s.cfg.ClientWorkerCount)] <- Queue{cid: cid, typ: typ, payload: payload}:
+	case s.clientQueues[shard(cid, s.cfg.ClientWorkerCount)] <- Queue{cid: cid, typ: typ, payload: bufPtr}:
 	default:
 		s.wsDropped.Add(1)
+		s.bufferPool.Put(bufPtr)
 	}
 }
 
@@ -474,12 +493,16 @@ func (s *Server) clientWorker(i int) {
 	timeout := 50 * time.Millisecond
 
 	for queue := range q {
+		bufPtr := queue.payload
+		buf := *bufPtr
+
 		if c, exists := s.clients[shard(queue.cid, s.clientShardCount)].Load(queue.cid); exists {
 			c.(*Client).conn.SetWriteDeadline(time.Now().Add(timeout))
 
-			if c.(*Client).conn.WriteMessage(queue.typ, queue.payload) != nil {
+			if c.(*Client).conn.WriteMessage(queue.typ, buf) != nil {
 				c, exists := s.clients[shard(queue.cid, s.clientShardCount)].LoadAndDelete(queue.cid)
 				if !exists {
+					s.bufferPool.Put(bufPtr)
 					continue
 				}
 
@@ -493,6 +516,8 @@ func (s *Server) clientWorker(i int) {
 				s.sendToEndpoint(queue.cid, Websocket_OpClose, nil)
 			}
 		}
+
+		s.bufferPool.Put(bufPtr)
 	}
 }
 
@@ -501,10 +526,22 @@ func (s *Server) sendToEndpoint(cid string, typ int, payload []byte) {
 		return
 	}
 
+	bufPtr := s.bufferPool.Get().(*[]byte)
+	buf := *bufPtr
+
+	if cap(buf) < len(payload) {
+		buf = append(buf[:0:0], payload...)
+	} else {
+		buf = buf[:len(payload)]
+		copy(buf, payload)
+	}
+	*bufPtr = buf
+
 	select {
-	case s.endpointQueues[shard(cid, s.cfg.EndpointWorkerCount)] <- Queue{cid: cid, typ: typ, payload: payload}:
+	case s.endpointQueues[shard(cid, s.cfg.EndpointWorkerCount)] <- Queue{cid: cid, typ: typ, payload: bufPtr}:
 	default:
 		s.epDropped.Add(1)
+		s.bufferPool.Put(bufPtr)
 	}
 }
 
@@ -512,14 +549,18 @@ func (s *Server) endpointWorker(i int) {
 	q := s.endpointQueues[i]
 
 	for queue := range q {
-		req, err := http.NewRequest("POST", s.cfg.Endpoint, &byteReader{data: queue.payload})
+		bufPtr := queue.payload
+		payload := *bufPtr
+
+		req, err := http.NewRequest("POST", s.cfg.Endpoint, &byteReader{data: payload})
 		if err != nil {
 			s.sendToClient(queue.cid, Websocket_Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
+			s.bufferPool.Put(bufPtr)
 			continue
 		}
 
-		req.ContentLength = int64(len(queue.payload))
+		req.ContentLength = int64(len(payload))
 
 		typ := "message"
 		switch queue.typ {
@@ -546,6 +587,7 @@ func (s *Server) endpointWorker(i int) {
 		if err != nil {
 			s.sendToClient(queue.cid, Websocket_Optext, []byte("Request failed"))
 			s.epFailed.Add(1)
+			s.bufferPool.Put(bufPtr)
 			continue
 		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -554,6 +596,8 @@ func (s *Server) endpointWorker(i int) {
 		}
 		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
+
+		s.bufferPool.Put(bufPtr)
 	}
 }
 
