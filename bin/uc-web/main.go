@@ -695,7 +695,6 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	env["SERVER_PROTOCOL"] = r.Proto
 	env["REQUEST_SCHEME"] = "http"
 	env["REQUEST_METHOD"] = r.Method
-	env["REQUEST_URI"] = r.URL.RequestURI()
 	env["QUERY_STRING"] = r.URL.RawQuery
 	env["DOCUMENT_ROOT"] = filepath.ToSlash(s.cfg.DocumentRoot)
 	env["SCRIPT_FILENAME"] = filepath.ToSlash(s.cfg.FcgiScript)
@@ -707,6 +706,12 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	env["REMOTE_HOST"] = ""
 	env["HTTPS"] = "off"
 	env["PATH_TRANSLATED"] = filepath.ToSlash(staticFile)
+
+	if r.URL.RawQuery != "" {
+		env["REQUEST_URI"] = reqPath + "?" + r.URL.RawQuery
+	} else {
+		env["REQUEST_URI"] = reqPath
+	}
 
 	if host, port, err := net.SplitHostPort(r.Host); err == nil {
 		env["SERVER_NAME"] = host
