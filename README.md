@@ -60,6 +60,7 @@ Compile routes and units.
 **Linux/macOS**
 
 ```bash
+chmod +x compile.sh
 ./compile.sh
 ```
 
@@ -74,6 +75,7 @@ Create the database.
 **Linux/macOS**
 
 ```bash
+chmod +x cli.sh
 ./cli.sh db print | ./cli.sh db exec
 ```
 
@@ -93,6 +95,7 @@ cli.bat db print | cli.bat db exec
 
 ```bash
 chmod +x uc-web.sh
+chmod +x bin/uc-web/dist/*
 ./uc-web.sh
 ```
 
