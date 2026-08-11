@@ -1,4 +1,4 @@
-config.php
+config.data.php
 var/**/**/*
 !var/lib/
 !var/lib/sessions
