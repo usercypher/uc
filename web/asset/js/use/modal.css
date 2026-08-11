@@ -6,7 +6,7 @@
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .uc-modal.active {
@@ -15,14 +15,14 @@
 
 .uc-modal-content {
     background: Window;
-    border: 1px solid #d4d4d4;
+    border: 1px solid ButtonFace;
     bottom: 0;
     left: 0;
-    margin: 2% auto;
-    max-height: 90%;
-    max-width: 500px;
+    margin: 2em auto;
+    max-height: 100%;
+    max-width: 35em;
     overflow: auto;
     position: absolute;
     right: 0;
-    width: 96%;
+    width: 100%;
 }
