@@ -1,15 +1,18 @@
 {
   "server": "0.0.0.0:8080",
   "document_root": "${ROOT}/web",
-  "fcgi_enabled": true,
-  "fcgi_network": "tcp",
-  "fcgi_address": "0.0.0.0:${PORT}",
-  "fcgi_bin": "${ROOT}/bin/php-windows/php-cgi.exe -b 0.0.0.0:${PORT} -c ${ROOT}/php-windows.ini",
-  "fcgi_script": "${ROOT}/index.php",
-  "fcgi_worker_count": 5,
-  "fcgi_worker_concurrency": 1,
-  "fcgi_env": {
-    "PHP_FCGI_MAX_REQUESTS": "0"
+  "fcgi": {
+    "php-cgi": {
+      "network": "tcp",
+      "address": "0.0.0.0:${PORT}",
+      "bin": "${ROOT}/bin/php-windows/php-cgi.exe -b 0.0.0.0:${PORT} -c ${ROOT}/php-windows.ini",
+      "script": "${ROOT}/index.php",
+      "worker_count": 5,
+      "worker_concurrency": 1,
+      "env": {
+        "PHP_FCGI_MAX_REQUESTS": "0"
+      }
+    }
   },
   "mime": {
     ".wasm": "application/wasm",
@@ -59,6 +62,7 @@
   "rules": [
     {
       "X-Uc-Web-Match-Any": "^/",
+      "X-Uc-Web-Fcgi": "php-cgi",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "Permissions-Policy": "geolocation=(), microphone=(), camera=()",

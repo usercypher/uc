@@ -1,15 +1,18 @@
 {
   "server": "0.0.0.0:8080",
   "document_root": "${ROOT}/web",
-  "fcgi_enabled": true,
-  "fcgi_network": "unix",
-  "fcgi_address": "${ROOT}/var/run/php-cgi-${PORT}.sock",
-  "fcgi_bin": "php-cgi -b ${ROOT}/var/run/php-cgi-${PORT}.sock -c ${ROOT}/php.ini",
-  "fcgi_script": "${ROOT}/index.php",
-  "fcgi_worker_count": 5,
-  "fcgi_worker_concurrency": 1,
-  "fcgi_env": {
-    "PHP_FCGI_MAX_REQUESTS": "0"
+  "fcgi": {
+    "php-cgi": {
+      "network": "unix",
+      "address": "${ROOT}/var/run/php-cgi-${PORT}.sock",
+      "bin": "php-cgi -b ${ROOT}/var/run/php-cgi-${PORT}.sock -c ${ROOT}/php.ini",
+      "script": "${ROOT}/index.php",
+      "worker_count": 5,
+      "worker_concurrency": 1,
+      "env": {
+        "PHP_FCGI_MAX_REQUESTS": "0"
+      }
+    }
   },
   "mime": {
     ".wasm": "application/wasm",
@@ -58,11 +61,8 @@
   ],
   "rules": [
     {
-      "X-Uc-Web-Match-Any": "/uc-fcgi.json",
-      "X-Uc-Web-Redirect": "${REQ_PATH} ${REQ_DIR} ${REQ_BASENAME} ${REQ_NAME} ${REQ_EXT}"
-    },
-    {
       "X-Uc-Web-Match-Any": "^/",
+      "X-Uc-Web-Fcgi": "php-cgi",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "Permissions-Policy": "geolocation=(), microphone=(), camera=()",

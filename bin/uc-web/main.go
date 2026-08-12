@@ -20,7 +20,7 @@ package main
 
 import (
 	// uc-web
-	"bufio"
+	"bytes"
 	"compress/gzip"
 	"context"
 	"encoding/json"
@@ -29,7 +29,6 @@ import (
 	"log"
 	"mime"
 	"net/http"
-	"net/textproto"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -50,35 +49,38 @@ import (
 )
 
 type Config struct {
-	Server                string              `json:"server"`
-	TLSServer             string              `json:"tls_server"`
-	TLSCert               string              `json:"tls_cert"`
-	TLSKey                string              `json:"tls_key"`
-	DocumentRoot          string              `json:"document_root"`
-	FcgiEnabled           bool                `json:"fcgi_enabled"`
-	FcgiNetwork           string              `json:"fcgi_network"`
-	FcgiAddress           string              `json:"fcgi_address"`
-	Fcgibin               string              `json:"fcgi_bin"`
-	FcgiScript            string              `json:"fcgi_script"`
-	FcgiWorkerCount       int                 `json:"fcgi_worker_count"`
-	FcgiWorkerConcurrency int                 `json:"fcgi_worker_concurrency"`
-	FcgiEnv               map[string]string   `json:"fcgi_env"`
-	Mime                  map[string]string   `json:"mime"`
-	ReadHeaderTimeout     int                 `json:"read_header_timeout"`
-	ReadTimeout           int                 `json:"read_timeout"`
-	WriteTimeout          int                 `json:"write_timeout"`
-	IdleTimeout           int                 `json:"idle_timeout"`
-	MaxHeaderBytes        int                 `json:"max_header_bytes"`
-	MaxBodyBytes          int64               `json:"max_body_bytes"`
-	Encoding              int                 `json:"encoding"`
-	EncodingDir           string              `json:"encoding_dir"`
-	EncodingInterval      int64               `json:"encoding_interval"`
-	EncodingRetention     int64               `json:"encoding_retention"`
-	EncodingMinBytes      int64               `json:"encoding_min_bytes"`
-	EncodingMaxBytes      int64               `json:"encoding_max_bytes"`
-	EncodingMime          []string            `json:"encoding_mime"`
-	Rules                 []map[string]string `json:"rules"`
-	compiledRules         []Rule
+	Server            string              `json:"server"`
+	TLSServer         string              `json:"tls_server"`
+	TLSCert           string              `json:"tls_cert"`
+	TLSKey            string              `json:"tls_key"`
+	DocumentRoot      string              `json:"document_root"`
+	Fcgi              map[string]Fcgi     `json:"fcgi"`
+	Mime              map[string]string   `json:"mime"`
+	ReadHeaderTimeout int                 `json:"read_header_timeout"`
+	ReadTimeout       int                 `json:"read_timeout"`
+	WriteTimeout      int                 `json:"write_timeout"`
+	IdleTimeout       int                 `json:"idle_timeout"`
+	MaxHeaderBytes    int                 `json:"max_header_bytes"`
+	MaxBodyBytes      int64               `json:"max_body_bytes"`
+	Encoding          int                 `json:"encoding"`
+	EncodingDir       string              `json:"encoding_dir"`
+	EncodingInterval  int64               `json:"encoding_interval"`
+	EncodingRetention int64               `json:"encoding_retention"`
+	EncodingMinBytes  int64               `json:"encoding_min_bytes"`
+	EncodingMaxBytes  int64               `json:"encoding_max_bytes"`
+	EncodingMime      []string            `json:"encoding_mime"`
+	Rules             []map[string]string `json:"rules"`
+	compiledRules     []Rule
+}
+
+type Fcgi struct {
+	Network           string            `json:"network"`
+	Address           string            `json:"address"`
+	Bin               string            `json:"bin"`
+	Script            string            `json:"script"`
+	WorkerCount       int               `json:"worker_count"`
+	WorkerConcurrency int               `json:"worker_concurrency"`
+	Env               map[string]string `json:"env"`
 }
 
 type CompiledRuleString struct {
@@ -99,6 +101,8 @@ type Rule struct {
 
 	Encoding []string
 
+	Fcgi string
+
 	Break bool
 }
 
@@ -111,9 +115,9 @@ type FcgiWorker struct {
 type Server struct {
 	cfg              *Config
 	rootDir          string
-	fcgiWorkerIndex  atomic.Uint32
+	fcgiWorkerIndex  map[string]atomic.Uint32
 	fcgiWorkerWG     sync.WaitGroup
-	fcgiWorkers      []*FcgiWorker
+	fcgiWorkers      map[string][]*FcgiWorker
 	fcgiPortCounter  atomic.Uint32
 	shuttingDown     atomic.Bool
 	encodingLocks    sync.Map
@@ -136,17 +140,20 @@ func main() {
   "tls_cert": "${ROOT}/server.crt",
   "tls_key": "${ROOT}/server.key",
   "document_root": "${ROOT}/html",
-  "fcgi_enabled": true,
-  "fcgi_network": "tcp",
-  "fcgi_address": "0.0.0.0:${PORT}",
-  "fcgi_bin": "php-cgi -b 0.0.0.0:${PORT}",
-  "fcgi_script": "${ROOT}/html/index.php",
-  "fcgi_worker_count": 4,
-  "fcgi_worker_concurrency": 1,
-  "fcgi_env": {
-    "PHP_FCGI_MAX_REQUESTS": "0",
-    "LISTEN": "0.0.0.0:${PORT}",
-    "ROOT": "${ROOT}"
+  "fcgi": {
+    "php": {
+      "network": "tcp",
+      "address": "0.0.0.0:${PORT}",
+      "bin": "php-cgi -b 0.0.0.0:${PORT}",
+      "script": "${ROOT}/html/index.php",
+      "worker_count": 4,
+      "worker_concurrency": 1,
+      "env": {
+        "PHP_FCGI_MAX_REQUESTS": "0",
+        "LISTEN": "0.0.0.0:${PORT}",
+        "ROOT": "${ROOT}"
+      },
+    }
   },
   "mime": {
     ".md": "text/markdown; charset=utf-8"
@@ -175,6 +182,7 @@ func main() {
       "X-Uc-Web-Redirect": "(var) ...",
       "X-Uc-Web-Redirect-Code": "",
       "X-Uc-Web-Encoding": "gzip, br, deflate",
+      "X-Uc-Web-Fcgi": "php",
       "X-Uc-Web-Break": "stop in this rule, value here wont matter, it's presence base"
     }
   ]
@@ -209,15 +217,14 @@ func main() {
 	}
 
 	srv := &Server{
-		cfg:         cfg,
-		rootDir:     currentDir,
-		fcgiWorkers: make([]*FcgiWorker, cfg.FcgiWorkerCount),
+		cfg:     cfg,
+		rootDir: currentDir,
 		lockPool: sync.Pool{
 			New: func() any { return &sync.Mutex{} },
 		},
 		bufferPool: sync.Pool{
 			New: func() any {
-				b := make([]byte, 32*1024)
+				b := make([]byte, 64*1024)
 				return &b
 			},
 		},
@@ -239,21 +246,25 @@ func main() {
 	}
 	srv.fcgiPortCounter.Store(49152)
 
-	if cfg.FcgiEnabled {
-		srv.fcgiWorkerWG.Add(cfg.FcgiWorkerCount)
-		for i := 0; i < cfg.FcgiWorkerCount; i++ {
-			var worker FcgiWorker
+	if cfg.Fcgi != nil {
+		srv.fcgiWorkerIndex = make(map[string]atomic.Uint32, len(cfg.Fcgi))
+		srv.fcgiWorkers = make(map[string][]*FcgiWorker, len(cfg.Fcgi))
+		for fKey, fVal := range cfg.Fcgi {
+			srv.fcgiWorkers[fKey] = make([]*FcgiWorker, fVal.WorkerCount)
+			srv.fcgiWorkerWG.Add(fVal.WorkerCount)
+			for i := 0; i < fVal.WorkerCount; i++ {
+				var worker FcgiWorker
+				port := 49152 + (srv.fcgiPortCounter.Add(1) % 16384)
+				worker.port.Store(port)
+				worker.semaphore = make(chan struct{}, fVal.WorkerConcurrency)
 
-			port := 49152 + (srv.fcgiPortCounter.Add(1) % 16384)
-			worker.port.Store(port)
-			worker.semaphore = make(chan struct{}, cfg.FcgiWorkerConcurrency)
+				srv.fcgiWorkers[fKey][i] = &worker
 
-			srv.fcgiWorkers[i] = &worker
-
-			go func(i int) {
-				defer srv.fcgiWorkerWG.Done()
-				srv.superviseFcgiWorker(i)
-			}(i)
+				go func(key string, i int) {
+					defer srv.fcgiWorkerWG.Done()
+					srv.superviseFcgiWorker(key, i)
+				}(fKey, i)
+			}
 		}
 	}
 
@@ -323,12 +334,14 @@ func main() {
 		httpsServer.Shutdown(ctx)
 	}
 
-	if cfg.FcgiEnabled {
-		for _, w := range srv.fcgiWorkers {
-			pid := w.pid.Load()
-			if pid > 0 {
-				if proc, err := os.FindProcess(int(pid)); err == nil {
-					_ = proc.Signal(syscall.SIGTERM)
+	if cfg.Fcgi != nil {
+		for fKey, _ := range cfg.Fcgi {
+			for _, w := range srv.fcgiWorkers[fKey] {
+				pid := w.pid.Load()
+				if pid > 0 {
+					if proc, err := os.FindProcess(int(pid)); err == nil {
+						_ = proc.Signal(syscall.SIGTERM)
+					}
 				}
 			}
 		}
@@ -343,12 +356,14 @@ func main() {
 	select {
 	case <-done:
 	case <-time.After(5 * time.Second):
-		if cfg.FcgiEnabled {
-			for _, w := range srv.fcgiWorkers {
-				pid := w.pid.Load()
-				if pid > 0 {
-					if proc, err := os.FindProcess(int(pid)); err == nil {
-						_ = proc.Kill()
+		if cfg.Fcgi != nil {
+			for fKey, _ := range cfg.Fcgi {
+				for _, w := range srv.fcgiWorkers[fKey] {
+					pid := w.pid.Load()
+					if pid > 0 {
+						if proc, err := os.FindProcess(int(pid)); err == nil {
+							_ = proc.Kill()
+						}
 					}
 				}
 			}
@@ -401,6 +416,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	reqPath := r.URL.Path
 
 	var encoding []string
+	var fcgi string
 	if len(s.cfg.compiledRules) > 0 {
 		var reqVars RequestVars
 		var code int
@@ -486,6 +502,10 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 				reqVars.IsInit = false
 			}
 
+			if rule.Fcgi != "" {
+				fcgi = rule.Fcgi
+			}
+
 			encoding = rule.Encoding
 
 			if rule.Break {
@@ -493,6 +513,8 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+	_, fcgiok := s.cfg.Fcgi[fcgi]
 
 	cleanedReq := filepath.Clean(reqPath)
 	staticFile := filepath.Join(s.cfg.DocumentRoot, cleanedReq)
@@ -510,7 +532,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err != nil && !s.cfg.FcgiEnabled {
+	if err != nil && !fcgiok {
 		cleanedReq = filepath.Join(cleanedReq, "index.html")
 		staticFile = filepath.Join(s.cfg.DocumentRoot, cleanedReq)
 		f, err = os.Open(staticFile)
@@ -657,7 +679,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.cfg.FcgiEnabled {
+	if !fcgiok {
 		s.httpErrorFile(w, r, "Not Found", http.StatusNotFound)
 		return
 	}
@@ -666,16 +688,33 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 	}
 
-	idx := int(s.fcgiWorkerIndex.Add(1)) % s.cfg.FcgiWorkerCount
-	fcgiWorker := s.fcgiWorkers[idx]
+	var fcgiWorker *FcgiWorker
 
-	fcgiWorker.semaphore <- struct{}{}
+	for _, worker := range s.fcgiWorkers[fcgi] {
+		select {
+		case worker.semaphore <- struct{}{}:
+			fcgiWorker = worker
+		default:
+			continue
+		}
+
+		if fcgiWorker != nil {
+			break
+		}
+	}
+
+	if fcgiWorker == nil {
+		workerIdx := s.fcgiWorkerIndex[fcgi]
+		fcgiWorker = s.fcgiWorkers[fcgi][int(workerIdx.Add(1))%s.cfg.Fcgi[fcgi].WorkerCount]
+		fcgiWorker.semaphore <- struct{}{}
+	}
+
 	defer func() { <-fcgiWorker.semaphore }()
 
-	fcgiAddr := strings.ReplaceAll(s.cfg.FcgiAddress, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+	fcgiAddr := strings.ReplaceAll(s.cfg.Fcgi[fcgi].Address, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
 	fcgiAddr = strings.ReplaceAll(fcgiAddr, "${ROOT}", s.rootDir)
 
-	client, err := Fcgi_DialTimeout(s.cfg.FcgiNetwork, fcgiAddr, 2*time.Second)
+	client, err := Fcgi_DialTimeout(s.cfg.Fcgi[fcgi].Network, fcgiAddr, 2*time.Second)
 	if err != nil {
 		s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 		return
@@ -697,8 +736,8 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	env["REQUEST_METHOD"] = r.Method
 	env["QUERY_STRING"] = r.URL.RawQuery
 	env["DOCUMENT_ROOT"] = filepath.ToSlash(s.cfg.DocumentRoot)
-	env["SCRIPT_FILENAME"] = filepath.ToSlash(s.cfg.FcgiScript)
-	env["SCRIPT_NAME"] = "/" + filepath.Base(s.cfg.FcgiScript)
+	env["SCRIPT_FILENAME"] = filepath.ToSlash(s.cfg.Fcgi[fcgi].Script)
+	env["SCRIPT_NAME"] = "/" + filepath.Base(s.cfg.Fcgi[fcgi].Script)
 	env["PATH_INFO"] = filepath.ToSlash(reqPath)
 	env["SERVER_NAME"] = "localhost"
 	env["SERVER_PORT"] = "80"
@@ -758,36 +797,57 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf := bufio.NewReader(ioread)
-	reader := textproto.NewReader(buf)
-	headers, err := reader.ReadMIMEHeader()
-	if err != nil {
-		s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
-		return
-	}
-
 	statusCode := http.StatusOK
-	if statusStr, ok := headers["Status"]; ok {
-		parts := strings.Fields(statusStr[0])
-		if len(parts) > 0 {
-			if code, err := strconv.Atoi(parts[0]); err == nil && code > 0 && code < 600 {
-				statusCode = code
-			}
-		}
-		delete(headers, "Status")
-	}
 
-	for key, values := range headers {
-		for _, v := range values {
-			w.Header().Add(key, v)
+	for {
+		line, err := ioread.ReadLine()
+		if err != nil {
+			s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
+			return
 		}
+
+		line = strings.TrimSuffix(line, "\n")
+		line = strings.TrimSuffix(line, "\r")
+
+		if line == "" {
+			break
+		}
+
+		i := strings.IndexByte(line, ':')
+		if i <= 0 {
+			s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
+			return
+		}
+
+		key := line[:i]
+		value := strings.TrimSpace(line[i+1:])
+
+		if strings.EqualFold(key, "Status") {
+			parts := strings.Fields(value)
+			if len(parts) == 0 {
+				s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
+				return
+			}
+
+			code, err := strconv.Atoi(parts[0])
+			if err != nil || code < 100 || code >= 600 {
+				s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
+				return
+			}
+
+			statusCode = code
+			continue
+		}
+
+		w.Header().Add(key, value)
 	}
 
 	w.WriteHeader(statusCode)
 
 	bufPtr := s.bufferPool.Get().(*[]byte)
 	defer s.bufferPool.Put(bufPtr)
-	_, _ = io.CopyBuffer(w, buf, *bufPtr)
+
+	_, _ = io.CopyBuffer(w, ioread, *bufPtr)
 }
 
 func (s *Server) openFileGzCopy(encodingFile string, f *os.File) (*os.File, error) {
@@ -909,6 +969,9 @@ func compileRules(cfg *Config) {
 					r.Encoding = append(r.Encoding, strings.TrimSpace(part))
 				}
 
+			case lowerKey == "x-uc-web-fcgi":
+				r.Fcgi = value
+
 			case lowerKey == "x-uc-web-break":
 				r.Break = true
 			}
@@ -968,19 +1031,19 @@ func matchString(pattern string, s string) bool {
 	}
 }
 
-func (s *Server) superviseFcgiWorker(idx int) {
+func (s *Server) superviseFcgiWorker(fcgi string, idx int) {
 	var err error
-	fcgiWorker := s.fcgiWorkers[idx]
+	fcgiWorker := s.fcgiWorkers[fcgi][idx]
 
 	for {
 		env := os.Environ()
-		for key, value := range s.cfg.FcgiEnv {
+		for key, value := range s.cfg.Fcgi[fcgi].Env {
 			val := strings.ReplaceAll(value, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
 			val = strings.ReplaceAll(val, "${ROOT}", s.rootDir)
 			env = append(env, fmt.Sprintf("%s=%s", key, val))
 		}
 
-		cmdStr := strings.ReplaceAll(s.cfg.Fcgibin, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+		cmdStr := strings.ReplaceAll(s.cfg.Fcgi[fcgi].Bin, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
 		cmdStr = strings.ReplaceAll(cmdStr, "${ROOT}", s.rootDir)
 		parts := strings.Fields(cmdStr)
 
@@ -1011,7 +1074,7 @@ func (s *Server) superviseFcgiWorker(idx int) {
 				delay = false
 			}
 			if delay {
-				log.Printf("Fcgi worker %d uptime=%s port=%d err=%v", idx, time.Since(started).Round(time.Second), fcgiWorker.port.Load(), err)
+				log.Printf("Fcgi %s worker %d uptime=%s port=%d err=%v", fcgi, idx, time.Since(started).Round(time.Second), fcgiWorker.port.Load(), err)
 				time.Sleep(100 * time.Millisecond)
 			}
 		}
@@ -1030,20 +1093,17 @@ func parseConfig(path string) (*Config, error) {
 	}
 
 	cfg := &Config{
-		FcgiEnabled:           false,
-		FcgiWorkerConcurrency: 1,
-		FcgiEnv:               make(map[string]string),
-		ReadHeaderTimeout:     5,
-		ReadTimeout:           30,
-		WriteTimeout:          30,
-		IdleTimeout:           60,
-		MaxHeaderBytes:        1 << 20,
-		MaxBodyBytes:          16 << 20,
-		EncodingDir:           "${ROOT}/compress/",
-		EncodingInterval:      3600,
-		EncodingRetention:     86400,
-		EncodingMinBytes:      256,
-		EncodingMaxBytes:      128 << 20,
+		ReadHeaderTimeout: 5,
+		ReadTimeout:       30,
+		WriteTimeout:      30,
+		IdleTimeout:       60,
+		MaxHeaderBytes:    1 << 20,
+		MaxBodyBytes:      16 << 20,
+		EncodingDir:       "${ROOT}/compress/",
+		EncodingInterval:  3600,
+		EncodingRetention: 86400,
+		EncodingMinBytes:  256,
+		EncodingMaxBytes:  128 << 20,
 	}
 
 	if err := json.Unmarshal(b, cfg); err != nil {
@@ -1051,12 +1111,25 @@ func parseConfig(path string) (*Config, error) {
 	}
 
 	cfg.DocumentRoot = strings.ReplaceAll(cfg.DocumentRoot, "${ROOT}", root)
-	cfg.FcgiScript = strings.ReplaceAll(cfg.FcgiScript, "${ROOT}", root)
 
 	cfg.DocumentRoot, _ = filepath.Abs(cfg.DocumentRoot)
-	cfg.FcgiScript, _ = filepath.Abs(cfg.FcgiScript)
 	cfg.DocumentRoot = filepath.Clean(cfg.DocumentRoot)
-	cfg.FcgiScript = filepath.Clean(cfg.FcgiScript)
+
+	for fKey, fVal := range cfg.Fcgi {
+		if fVal.WorkerCount < 0 {
+			fVal.WorkerCount = 5
+		}
+
+		if fVal.WorkerConcurrency < 0 {
+			fVal.WorkerConcurrency = 1
+		}
+
+		fVal.Script = strings.ReplaceAll(fVal.Script, "${ROOT}", root)
+		fVal.Script, _ = filepath.Abs(fVal.Script)
+		fVal.Script = filepath.Clean(fVal.Script)
+
+		cfg.Fcgi[fKey] = fVal
+	}
 
 	cfg.TLSCert = strings.ReplaceAll(cfg.TLSCert, "${ROOT}", root)
 	cfg.TLSKey = strings.ReplaceAll(cfg.TLSKey, "${ROOT}", root)
@@ -1240,4 +1313,49 @@ func (c *Fcgi_Client) Read(p []byte) (int, error) {
 	n := copy(p, c.readBuf)
 	c.readBuf = c.readBuf[n:]
 	return n, nil
+}
+
+func (fc *Fcgi_Client) ReadLine() (string, error) {
+	var line []byte
+
+	for {
+		if len(fc.readBuf) > 0 {
+			if i := bytes.IndexByte(fc.readBuf, '\n'); i >= 0 {
+				line = append(line, fc.readBuf[:i+1]...)
+				fc.readBuf = fc.readBuf[i+1:]
+				return string(line), nil
+			}
+
+			line = append(line, fc.readBuf...)
+			fc.readBuf = nil
+		}
+
+		var err error
+
+		for len(fc.readBuf) == 0 {
+			if _, err = io.ReadFull(fc.conn, fc.hdr[:]); err != nil {
+				return "", err
+			}
+
+			recType := fc.hdr[1]
+			contentLength := (int(fc.hdr[4]) << 8) | int(fc.hdr[5])
+			paddingLength := int(fc.hdr[6])
+
+			total := contentLength + paddingLength
+
+			if total > 0 {
+				if _, err = io.ReadFull(fc.conn, fc.buf[:total]); err != nil {
+					return "", err
+				}
+			}
+
+			if recType == Fcgi_FCGI_END_REQUEST {
+				return "", io.EOF
+			}
+
+			if recType == Fcgi_FCGI_STDOUT {
+				fc.readBuf = fc.buf[:contentLength]
+			}
+		}
+	}
 }
