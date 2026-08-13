@@ -120,12 +120,48 @@ type Server struct {
 	fcgiWorkers      map[string][]*FcgiWorker
 	fcgiPortCounter  atomic.Uint32
 	shuttingDown     atomic.Bool
-	encodingLocks    sync.Map
-	lockPool         sync.Pool
+	encodingLocks    *encodingLocks
 	bufferPool       sync.Pool
 	gzipPool         sync.Pool
 	fcgiEnvPool      sync.Pool
 	encodingReplacer *strings.Replacer
+}
+
+type encodingLock struct {
+	mu   sync.Mutex
+	refs int
+}
+
+type encodingLocks struct {
+	mu    sync.Mutex
+	items map[string]*encodingLock
+}
+
+func (s *encodingLocks) acquire(key string) func() {
+	s.mu.Lock()
+
+	l := s.items[key]
+	if l == nil {
+		l = &encodingLock{}
+		s.items[key] = l
+	}
+	l.refs++
+
+	s.mu.Unlock()
+
+	l.mu.Lock()
+
+	return func() {
+		l.mu.Unlock()
+
+		s.mu.Lock()
+		l.refs--
+
+		if l.refs == 0 {
+			delete(s.items, key)
+		}
+		s.mu.Unlock()
+	}
 }
 
 func main() {
@@ -219,8 +255,8 @@ func main() {
 	srv := &Server{
 		cfg:     cfg,
 		rootDir: currentDir,
-		lockPool: sync.Pool{
-			New: func() any { return &sync.Mutex{} },
+		encodingLocks: &encodingLocks{
+			items: make(map[string]*encodingLock),
 		},
 		bufferPool: sync.Pool{
 			New: func() any {
@@ -650,20 +686,11 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		allocatedLock := s.lockPool.Get().(*sync.Mutex)
-		actual, loaded := s.encodingLocks.LoadOrStore(encodingFile, allocatedLock)
-		fileMu := actual.(*sync.Mutex)
-
-		fileMu.Lock()
+		release := s.encodingLocks.acquire(encodingFile)
 
 		gzFile, err := s.openFileGzCopy(encodingFile, f)
 
-		fileMu.Unlock()
-
-		if !loaded {
-			s.encodingLocks.Delete(encodingFile)
-			s.lockPool.Put(allocatedLock)
-		}
+		release()
 
 		if err == nil {
 			defer gzFile.Close()
@@ -860,40 +887,55 @@ func (s *Server) openFileGzCopy(encodingFile string, f *os.File) (*os.File, erro
 	}
 
 	tempFile := encodingFile + ".tmp"
+
 	dstFile, err := os.OpenFile(tempFile, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
-	defer dstFile.Close()
 
 	gz := s.gzipPool.Get().(*gzip.Writer)
 	gz.Reset(dstFile)
-	defer s.gzipPool.Put(gz)
 
 	cBufPtr := s.bufferPool.Get().(*[]byte)
-	defer s.bufferPool.Put(cBufPtr)
+
+	cleanup := func() {
+		s.bufferPool.Put(cBufPtr)
+		_ = dstFile.Close()
+		_ = os.Remove(tempFile)
+	}
 
 	if _, err = f.Seek(0, io.SeekStart); err != nil {
+		_ = gz.Close()
+		cleanup()
 		return nil, err
 	}
 
 	if _, err = io.CopyBuffer(gz, f, *cBufPtr); err != nil {
-		os.Remove(tempFile)
+		_ = gz.Close()
+		cleanup()
 		return nil, err
 	}
 
 	if err = gz.Close(); err != nil {
-		os.Remove(tempFile)
+		cleanup()
 		return nil, err
 	}
 
+	s.gzipPool.Put(gz)
+
 	if err = dstFile.Sync(); err != nil {
-		os.Remove(tempFile)
+		_ = dstFile.Close()
+		_ = os.Remove(tempFile)
+		return nil, err
+	}
+
+	if err = dstFile.Close(); err != nil {
+		_ = os.Remove(tempFile)
 		return nil, err
 	}
 
 	if err = os.Rename(tempFile, encodingFile); err != nil {
-		os.Remove(tempFile)
+		_ = os.Remove(tempFile)
 		return nil, err
 	}
 
