@@ -27,7 +27,7 @@ class Cli_Pipe_Route_Print {
             }, $pipe);
 
             $message .= sprintf(
-                "  %-8s '%s' => %s\n",
+                "  %-9s '%s' => %s\n",
                 "'$method'",
                 $path,
                 implode(' > ', $handlerNames)

@@ -6,7 +6,7 @@ class App_Pipe_Index {
     public function args($args) {
         list(
             $this->app,
-            $this->translator,
+            $this->translator
         ) = $args;
     } 
 
@@ -15,11 +15,11 @@ class App_Pipe_Index {
 
         $appLanguages = $input->data['app:languages'];
         $appLang = $input->data['app:lang'];
+        $appTranslator = $this->translator->get('app');
 
         $output->content = $this->app->template($this->app->dir('ROOT', 'src/App/res/index.html.php'), array(
             'app' => $this->app,
-            't' => $this->translator,
-            'translation_dir' => $this->app->dir('ROOT', 'src/App/lang/' . $appLang . '.data.php'),
+            't' => $appTranslator,
             'languages' => $appLanguages,
             'lang' => $appLang
         ));

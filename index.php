@@ -27,7 +27,9 @@ function index() {
 
     $app->load('var/lib/app.state.dat');
 
-    $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
+    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputCgi;
+    $input->init();
+
     $app->setEnv('ACCEPT_LANGUAGE', isset($input->header['accept-language']) ? $input->header['accept-language'] : 'en');
     if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
         $app->setEnv('URL_ROUTE', $app->getEnv('URL_ROOT', '/') . $input->route . '?route=/');
@@ -39,10 +41,11 @@ function index() {
         'HEADER' => array()
     ));
 
-    $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
+    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputCgi;
+    $output->init();
     $output->version = $input->version;
 
-    list($input, $output) = $app->pipe($input, $output, $config['handler']);
+    list($input, $output) = $app->pipe($input, $output, $config['global']);
 
     $result = $app->resolveRoute($input->method, $input->route);
 
@@ -61,10 +64,10 @@ function index() {
         trigger_error($result['error'] . '|' . $description, E_USER_WARNING);
     } else {
         $input->param = $result['param'];
-        list($input, $output) = $app->pipe($input, $output, $result['handler']);
+        list($input, $output) = $app->pipe($input, $output, array_merge($config['prepend'], $result['handler'], $config['append']));
     }
 
-    $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
+    $output->io($output->content, (int) $output->code);
 
     $app->term();
     $input->term();

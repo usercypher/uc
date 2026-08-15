@@ -11,10 +11,8 @@ require 'Shared_Lib_Translator.php';
 
 $endl = "\n";
 
-$t = new Shared_Lib_Translator();
-$t->setDefaultPlural();
-
-$t->translations = array(
+$translator = new Shared_Lib_Translator();
+$translator->set('key', array(
     // Basic string
     'hello' => 'Hello World',
 
@@ -32,7 +30,9 @@ $t->translations = array(
         ':name has :count gift', // :count use internally
         ':name has :count gifts'
     )
-);
+));
+
+$t = $translator->get('key');
 
 // Test 1: Basic translation
 echo $t->t('hello') . $endl;

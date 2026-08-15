@@ -1,8 +1,20 @@
 <?php
 
 class Shared_Lib_Cast_Standard {
+    var $t;
+
+    function args($args) {
+        list(
+            $translator
+        ) = $args;
+
+        $this->t = $translator->get('shared');
+    }
+
     public function required() {
-        return new Shared_Lib_Cast_Standard_Required;
+        $o = new Shared_Lib_Cast_Standard_Required;
+        $o->t = $this->t;
+        return $o;
     }
 
     public function trim() {
@@ -10,17 +22,21 @@ class Shared_Lib_Cast_Standard {
     }
 
     public function email() {
-        return new Shared_Lib_Cast_Standard_Email;
+        $o = new Shared_Lib_Cast_Standard_Email;
+        $o->t = $this->t;
+        return $o;
     }
 
     public function lengthMin($min) {
         $o = new Shared_Lib_Cast_Standard_LengthMin;
+        $o->t = $this->t;
         $o->min = $min;
         return $o;
     }
 
     public function lengthMax($max) {
         $o = new Shared_Lib_Cast_Standard_LengthMax;
+        $o->t = $this->t;
         $o->max = $max;
         return $o;
     }
@@ -43,6 +59,7 @@ class Shared_Lib_Cast_Standard {
 
     public function regex($pattern, $error = null) {
         $o = new Shared_Lib_Cast_Standard_Regex;
+        $o->t = $this->t;
         $o->pattern = $pattern;
         $o->error = $error;
         return $o;
@@ -50,6 +67,7 @@ class Shared_Lib_Cast_Standard {
 
     public function enum($allowed) {
         $o = new Shared_Lib_Cast_Standard_Enum;
+        $o->t = $this->t;
         $o->allowed = $allowed;
         return $o;
     }
@@ -68,15 +86,20 @@ class Shared_Lib_Cast_Standard {
     }
 
     public function toDate() {
-        return new Shared_Lib_Cast_Standard_ToDate;
+        $o = new Shared_Lib_Cast_Standard_ToDate;
+        $o->t = $this->t;
+        return $o;
     }
 
     public function toDateTime() {
-        return new Shared_Lib_Cast_Standard_ToDateTime;
+        $o = new Shared_Lib_Cast_Standard_ToDateTime;
+        $o->t = $this->t;
+        return $o;
     }
 
     public function range($min, $max) {
         $o = new Shared_Lib_Cast_Standard_Range;
+        $o->t = $this->t;
         $o->min = $min;
         $o->max = $max;
         return $o;
@@ -93,6 +116,7 @@ class Shared_Lib_Cast_Standard {
     }
     public function equalTo($value, $message = null) {
         $o = new Shared_Lib_Cast_Standard_EqualTo;
+        $o->t = $this->t;
         $o->value = $value;
         $o->message = $message;
         return $o;
@@ -100,9 +124,10 @@ class Shared_Lib_Cast_Standard {
 }
 
 class Shared_Lib_Cast_Standard_Required {
+    var $t;
     function process($value) {
         if (empty($value)) {
-            return array($value, 'Field is required');
+            return array($value, $this->t->t('lib_cast_standard_required'));
         }
         return array($value, null);
     }
@@ -115,33 +140,40 @@ class Shared_Lib_Cast_Standard_Trim {
 }
 
 class Shared_Lib_Cast_Standard_Email {
+    var $t;
     function process($value) {
         if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            return array($value, 'Invalid email format');
+            return array($value, $this->t->t('lib_cast_standard_invalid_email'));
         }
         return array($value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_LengthMin {
+    var $t;
     var $min;
 
     function process($value) {
         $min = $this->min;
         if ($min > strlen($value)) {
-            return array($value, "Must be at least $min characters");
+            return array($value, $this->t->t('lib_cast_standard_length_min', array(
+                ':min' => $min,
+            )));
         }
         return array($value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_LengthMax {
+    var $t;
     var $max;
 
     function process($value) {
         $max = $this->max;
         if (strlen($value) > $max) {
-            return array($value, "Must be at most $max characters");
+            return array($value, $this->t->t('lib_cast_standard_length_max', array(
+                ':max' => $max,
+            )));
         }
         return array($value, null);
     }
@@ -172,23 +204,27 @@ class Shared_Lib_Cast_Standard_ToBool {
 }
 
 class Shared_Lib_Cast_Standard_Regex {
+    var $t;
     var $pattern, $error;
 
     function process($value) {
         if (!preg_match($this->pattern, $value)) {
-            return array($value, isset($this->error) ? $this->error : "Invalid format");
+            return array($value, isset($this->error) ? $this->error : $this->t->t('lib_cast_standard_invalid_format'));
         }
         return array($value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_Enum {
+    var $t;
     var $allowed;
 
     function process($value) {
         $allowed = $this->allowed;
         if (!in_array($value, $allowed)) {
-            return array($value, "Value must be one of: " . implode(', ', $allowed));
+            return array($value, $this->t->t('lib_cast_standard_enum', array(
+                ':allowed' => implode(', ', $allowed),
+            )));
         }
         return array($value, null);
     }
@@ -216,30 +252,33 @@ class Shared_Lib_Cast_Standard_DefaultValue {
 }
 
 class Shared_Lib_Cast_Standard_ToDate {
+    var $t;
     function process($value) {
         if (!$value) return array(null, null);
         
         $timestamp = strtotime($value);
         if (!$timestamp) {
-            return array($value, "Invalid date format");
+            return array($value, $this->t->t('lib_cast_standard_invalid_date'));
         }
         return array(date('Y-m-d', $timestamp), null);
     }
 }
 
 class Shared_Lib_Cast_Standard_ToDateTime {
+    var $t;
     function process($value) {
         if (!$value) return array(null, null);
 
         $timestamp = strtotime($value);
         if (!$timestamp) {
-            return array($value, "Invalid date-time format");
+            return array($value, $this->t->t('lib_cast_standard_invalid_datetime'));
         }
         return array(date('Y-m-d H:i:s', $timestamp), null);
     }
 }
 
 class Shared_Lib_Cast_Standard_Range {
+    var $t;
     var $min, $max;
 
     function process($value) {
@@ -247,7 +286,10 @@ class Shared_Lib_Cast_Standard_Range {
         $max = $this->max;
 
         if ($min > $value || $value > $max) {
-            return array($value, "Value must be between $min and $max");
+            return array($value, $this->t->t('lib_cast_standard_range', array(
+                ':min' => $min,
+                ':max' => $max
+            )));
         }
         return array($value, null);
     }
@@ -273,12 +315,13 @@ class Shared_Lib_Cast_Standard_PasswordHash {
 }
 
 class Shared_Lib_Cast_Standard_EqualTo {
+    var $t;
     var $value;
     var $message;
 
     function process($value) {
         if ($value !== $this->value) {
-            return array($value, isset($this->message) ? $this->message : "Is not equal.");
+            return array($value, isset($this->message) ? $this->message : $this->t->t('lib_cast_standard_not_equal'));
         } 
         return array($value, null);
     }

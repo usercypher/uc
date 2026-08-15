@@ -14,7 +14,7 @@ $app->groupRoute($group, 'GET', 'user/session-unset', array(
 // POST
 // ==========
 $group = array(
-    'prepend' => array('Shared_Pipe_SessionTokenValidate')
+    'prepend' => array('Shared_Pipe_SessionTokenValidate', 'User_Pipe_Lang')
 );
 
 $app->groupRoute($group, 'POST', 'user/store', array(

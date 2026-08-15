@@ -6,7 +6,7 @@ class App_Pipe_Init {
     public function args($args) {
         list(
             $this->app, 
-            $this->session,
+            $this->session
         ) = $args;
     } 
 

@@ -25,8 +25,7 @@ $phpinfo_css = $matches[1] ?? '';
 </td></tr>
 </table>
 <?php
-if (extension_loaded('Zend OPcache')) {
-    $status = opcache_get_status(true);
+if (extension_loaded('Zend OPcache') && $status = opcache_get_status(true)) {
     $config = opcache_get_configuration();
 ?>
 

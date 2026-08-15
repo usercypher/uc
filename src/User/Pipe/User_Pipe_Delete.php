@@ -1,7 +1,7 @@
 <?php
 
 class User_Pipe_Delete {
-    private $app, $session;
+    private $app, $session, $translator;
     private $userRepo;
 
     public function args($args) {
@@ -9,6 +9,7 @@ class User_Pipe_Delete {
             $this->app, 
             $this->session, 
             $this->userRepo,
+            $this->translator,
         ) = $args;
     } 
 
@@ -18,6 +19,7 @@ class User_Pipe_Delete {
         $route = $input->query['redirect'];
         $user = $input->frame['user'];
         $userSession = $this->session->get('user');
+        $t = $this->translator->get('user');
 
         if ($userSession['role'] !== 'root') {
             $user['id'] = $userSession['id'];
@@ -42,7 +44,7 @@ class User_Pipe_Delete {
             }
         } elseif ($this->userRepo->delete($user['id'])) {
             $route = $input->query['redirect_alt'];
-            $this->userRepo->addMessage('success', 'user deleted successfully.');
+            $this->userRepo->addMessage('success', $t->t('user_deleted_successfully'));
         }
 
         $this->session->set('flash', $this->userRepo->getMessages());

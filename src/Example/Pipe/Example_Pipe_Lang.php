@@ -12,11 +12,12 @@ class Example_Pipe_Lang {
     public function process($input, $output) {
         $success = true;
 
-        $this->pipeLang->key = 'example:';
+        $this->pipeLang->key = 'example';
         $this->pipeLang->default = 'en';
         $this->pipeLang->languages = array(
             'en', 'es', 'fr', 'de', 'pt'
         );
+        $this->pipeLang->directory = 'src/Example/res/lang/';
 
         return $this->pipeLang->process($input, $output);
     }

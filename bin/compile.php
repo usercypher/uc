@@ -6,6 +6,8 @@ function compile() {
     $app = new App();
     $app->init();
 
+    set_error_handler(array($app, 'handleErrorDefault'));
+
     $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/../');
 
     $config = $app->data($app->dir('ROOT', 'config.data.php'), array(
@@ -22,8 +24,12 @@ function compile() {
         $app->setEnv($key, $value);
     }
 
-    $input = $app->getEnv('SAPI') === 'cli' ? input_cli(new Input()) : input_http(new Input());
-    $output = $app->getEnv('SAPI') === 'cli' ? output_cli(new Output()) : output_http(new Output());
+    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputCgi;
+    $input->init();
+
+    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputCgi;
+    $output->init();
+
     $exclude = isset($input->query['exclude']) ? explode(',', $input->query['exclude']) : array();
 
     $files = array(

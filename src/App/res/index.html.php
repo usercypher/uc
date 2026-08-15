@@ -3,14 +3,11 @@
 foreach (array(
     'app',
     't',
-    'translation_dir',
     'languages',
     'lang'
 ) as $v) {
     $$v = $data[$v];
 }
-
-$t->load($translation_dir);
 
 ?>
 

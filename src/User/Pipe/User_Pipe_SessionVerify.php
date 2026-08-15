@@ -1,7 +1,7 @@
 <?php
 
 class User_Pipe_SessionVerify {
-    private $app, $session;
+    private $app, $session, $translator;
     private $userRepo;
 
     public function args($args) {
@@ -9,6 +9,7 @@ class User_Pipe_SessionVerify {
             $this->app, 
             $this->session, 
             $this->userRepo,
+            $this->translator,
         ) = $args;
     } 
 
@@ -17,13 +18,14 @@ class User_Pipe_SessionVerify {
 
         $route = $input->query['redirect_alt'];
         $user = $input->frame['user'];
+        $t = $this->translator->get('user');
 
         $error = [];
 
         if (empty($user['username']) || empty($user['password'])) {
             $error[] = [
                 'data' => [
-                    'content' => 'User not found.'
+                    'content' => $t->t('user_not_found')
                 ]
             ];
         }
@@ -31,7 +33,7 @@ class User_Pipe_SessionVerify {
         if (!$error && !($userFound = $this->userRepo->one('WHERE username = ? OR email = ?', array($user['username'], $user['username'])))) {
             $error[] = [
                 'data' => [
-                    'content' => 'User not found.'
+                    'content' => $t->t('user_not_found')
                 ]
             ];
         }
@@ -39,7 +41,7 @@ class User_Pipe_SessionVerify {
         if (!$error && $userFound && !password_verify($user['password'], $userFound['password'])) {
             $error[] = [
                 'data' => [
-                    'content' => 'Incorrect password.'
+                    'content' => $t->t('incorrect_password')
                 ]
             ];
         }

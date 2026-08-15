@@ -8,10 +8,13 @@ foreach (array(
     $$v = $data[$v];
 }
 
-$t = $app->makeUnit('Shared_Lib_Translator');
 $langMap = $app->getEnv('ERROR_TEMPLATES_LANG', array());
 $lang = $app->mimeNegotiate($app->getEnv('ACCEPT_LANGUAGE', ''), array_keys($langMap));
-$t->load($app->dir('ROOT', $langMap[$lang]));
+
+$translator = $app->makeUnit('Shared_Lib_Translator');
+$translator->set('error', require($app->dir('ROOT', $langMap[$lang])));
+
+$t = $translator->get('error');
 
 $httpMap = array(
     400 => array($t->t('error_400_title'), $t->t('error_400_description')),

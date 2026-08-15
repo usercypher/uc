@@ -3,13 +3,10 @@
 foreach (array(
     'app',
     't',
-    'translation_dir',
     'flash'
 ) as $v) {
     $$v = $data[$v];
 }
-
-$t->load($translation_dir);
 
 $flash = empty($data['flash']) ? null : $data['flash'];
 

@@ -16,7 +16,7 @@ class User_Pipe_SessionUnset {
         $this->session->remove('user');
         $route = isset($input->query['redirect']) ? $input->query['redirect'] : '';
 
-        $output->header['location'] = $this->app->url('ROUTE', $route);
+        $output->header['location'] = $this->app->url('ROUTE', trim($route, '/'));
 
         return array($input, $output, $success);
     }

@@ -24,7 +24,7 @@ class Cli_Pipe_Db_Exec {
         ));
 
         $output->io('If input is piped, the script will read it and exit automatically. Paste Db script and type EXIT on its own line to finish:' . "\n");
-        $db = $input->io(0, 'EXIT');
+        $db = $input->io('EXIT');
 
         $output->io('Executing...' . "\n");
 

@@ -57,7 +57,7 @@ class Shared_Pipe_ErrorHandler {
         $input = $this->input;
         $output = $this->output;
 
-        $output->io($output->content, (int) ($app->getEnv('SAPI') === 'cli' && $output->code > 0));
+        $output->io($output->content, (int) $output->code);
 
         $app->term();
         $input->term();

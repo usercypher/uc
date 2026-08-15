@@ -3,7 +3,6 @@
 foreach (array(
     'app',
     't',
-    'translation_dir',
     'languages',
     'lang',
     'is_auth',
@@ -17,8 +16,6 @@ foreach (array(
 ) as $v) {
     $$v = $data[$v];
 }
-
-$t->load($translation_dir);
 
 ?>
 

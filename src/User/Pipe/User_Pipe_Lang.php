@@ -1,6 +1,6 @@
 <?php
 
-class App_Pipe_Lang {
+class User_Pipe_Lang {
     private $pipeLang;
 
     public function args($args) {
@@ -12,12 +12,12 @@ class App_Pipe_Lang {
     public function process($input, $output) {
         $success = true;
 
-        $this->pipeLang->key = 'app';
+        $this->pipeLang->key = 'user';
         $this->pipeLang->default = 'en';
         $this->pipeLang->languages = array(
             'en', 'es', 'fr', 'de', 'pt'
         );
-        $this->pipeLang->directory = 'src/App/res/lang/';
+        $this->pipeLang->directory = 'src/User/res/lang/';
 
         return $this->pipeLang->process($input, $output);
     }

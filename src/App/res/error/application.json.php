@@ -8,10 +8,14 @@ foreach (array(
     $$v = $data[$v];
 }
 
-$t = $app->makeUnit('Shared_Lib_Translator');
+
 $langMap = $app->getEnv('ERROR_TEMPLATES_LANG', array());
 $lang = $app->mimeNegotiate($app->getEnv('ACCEPT_LANGUAGE', ''), array_keys($langMap));
-$t->load($app->dir('ROOT', $langMap[$lang]));
+
+$translator = $app->makeUnit('Shared_Lib_Translator');
+$translator->set('error', require($app->dir('ROOT', $langMap[$lang])));
+
+$t = $translator->get('error');
 
 $content = $code . '. ' . $t->t('error_500_description') . "\n\n" . $error;
 

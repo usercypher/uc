@@ -1,22 +1,23 @@
 <?php
 
 class Shared_Lib_Translator {
-    var $translations = array();
-    var $key = '';
-    var $plural = null;
+    var $translators;
 
-    function load($file) {
-        if (isset($this->translations[$file])) {
-            $this->key = $file;
-            return;
-        }
-        if (!is_array($output = require $file)) {
-            user_error('Translation file must return an array', E_USER_WARNING);
-            return;
-        }
-        $this->key = $file;
-        $this->translations[$file] = $output;
+    function set($key, $translations = array()) {
+        $translator = new Shared_Lib_Translator_Object;
+        $translator->translations = $translations;
+        $translator->setDefaultPlural();
+        $this->translators[$key] = $translator;
     }
+
+    function get($key) {
+        return $this->translators[$key];
+    }
+}
+
+class Shared_Lib_Translator_Object {
+    var $translations = array();
+    var $plural = null;
 
     function setDefaultPlural() {
         $this->plural = &$this;
@@ -35,8 +36,8 @@ class Shared_Lib_Translator {
     }
 
     function translate($key, $count = null, $placeholders = array()) {
-        if (isset($this->translations[$this->key][$key])) {
-            $value = $this->translations[$this->key][$key];
+        if (isset($this->translations[$key])) {
+            $value = $this->translations[$key];
         } else {
             $value = $key;
         }

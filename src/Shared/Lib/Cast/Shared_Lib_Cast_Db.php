@@ -1,13 +1,16 @@
 <?php
 
 class Shared_Lib_Cast_Db {
-    var $db;
+    var $db, $t;
 
     function args($args) {
         list(
             $app,
-            $database
+            $database,
+            $translator
         ) = $args;
+
+        $this->t = $translator->get('shared');
 
         $db = $app->getEnv('DB', array());
         $name = 'DEFAULT';
@@ -22,6 +25,7 @@ class Shared_Lib_Cast_Db {
 
     function unique($table, $column, $current = null) {
         $o = new Shared_Lib_Cast_Db_Unique;
+        $o->t = $this->t;
         $o->db = $this->db;
         $o->table = $table;
         $o->column = $column;
@@ -31,6 +35,7 @@ class Shared_Lib_Cast_Db {
 
     function exists($table, $column) {
         $o = new Shared_Lib_Cast_Db_Exists;
+        $o->t = $this->t;
         $o->db = $this->db;
         $o->table = $table;
         $o->column = $column;
@@ -39,6 +44,7 @@ class Shared_Lib_Cast_Db {
 
     function unchanged($table, $column, $id) {
         $o = new Shared_Lib_Cast_Db_Unchanged;
+        $o->t = $this->t;
         $o->db = $this->db;
         $o->table = $table;
         $o->column = $column;
@@ -49,7 +55,7 @@ class Shared_Lib_Cast_Db {
 }
 
 class Shared_Lib_Cast_Db_Unique {
-    var $db, $table, $column, $current;
+    var $t, $db, $table, $column, $current;
 
     function process($value) {
         $table = $this->table;
@@ -66,7 +72,10 @@ class Shared_Lib_Cast_Db_Unique {
         $result = $stmt->fetch();
 
         if ($result && $result['count'] > 0) {
-            return array($value, $value . ' already exists in ' . $table);
+            return array($value, $this->t->t('lib_cast_db_already_exists', array(
+                ':value' => $value,
+                ':table' => $table,
+            )));
         }
 
         return array($value, null);
@@ -74,7 +83,7 @@ class Shared_Lib_Cast_Db_Unique {
 }
 
 class Shared_Lib_Cast_Db_Exists {
-    var $db, $table, $column;
+    var $t, $db, $table, $column;
 
     function process($value) {
         $table = $this->table;
@@ -86,7 +95,10 @@ class Shared_Lib_Cast_Db_Exists {
         $result = $stmt->fetch();
 
         if (!$result || $result['count'] == 0) {
-            return array($value, $value . ' not found in ' . $table);
+            return array($value, $this->t->t('lib_cast_db_not_found', array(
+                ':value' => $value,
+                ':table' => $table,
+            )));
         }
 
         return array($value, null);
@@ -94,7 +106,7 @@ class Shared_Lib_Cast_Db_Exists {
 }
 
 class Shared_Lib_Cast_Db_Unchanged {
-    var $db, $table, $column, $id;
+    var $t, $db, $table, $column, $id;
 
     function process($value) {
         $table = $this->table;
@@ -107,7 +119,12 @@ class Shared_Lib_Cast_Db_Unchanged {
         $result = $stmt->fetch();
 
         if ($result && $result[$column] === $value) {
-            return array($value, 'cannot set to ' . $value . ': ' . $column . ' is already set to ' . $result[$column]);
+            return array($value, $this->t->t('lib_cast_db_unchanged', array(
+                ':value' => $value,
+                ':column' => $column,
+                ':current' => $result[$column],
+                
+            )));
         }
 
         return array($value, null);

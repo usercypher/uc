@@ -22,8 +22,8 @@ class TickProfiler {
     }
 
     function handler($comment = '') {
-        $this->tick(count(get_included_files()), memory_get_usage(), $this->microtime(true), $comment);
-        $this->includeStart = count(get_included_files());
+        $this->tick(count(get_required_files()), memory_get_usage(), $this->microtime(true), $comment);
+        $this->includeStart = count(get_required_files());
         $this->memoryStart = memory_get_usage();
         $this->timeStart = $this->microtime(true);
     } 
@@ -54,7 +54,7 @@ class TickProfiler {
 
     function shutdown() {
         $this->ticks[0] .= '[tick init] [php init state]';
-        $this->tick(count(get_included_files()), memory_get_usage(), $this->microtime(true), '[shutdown]');
+        $this->tick(count(get_required_files()), memory_get_usage(), $this->microtime(true), '[shutdown]');
 
         list($micro, $time) = $this->microtime();
 

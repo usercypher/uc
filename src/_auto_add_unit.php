@@ -11,5 +11,5 @@
  *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
  */
 $app->autoAddUnit('src/', array(
-    'ignore' => array(basename(__FILE__), '*/res/', '*/lang/', '$/_set_route.php', '$/_set_unit.php', '$/_data.php')
+    'ignore' => array(basename(__FILE__), '*/res/', '$/_set_route.php', '$/_set_unit.php', '$/_data.php')
 ));

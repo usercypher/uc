@@ -1,5 +1,5 @@
 <?php /*
-Version: 5.1.0
+Version: 6.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -28,94 +28,24 @@ while (ob_get_length() !== false) {
     ob_end_clean();
 }
 
-function d($var, $detailed = false, $limit = 8192) {
+function d($var, $limit = 8192) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) {
         header('content-type: text/plain');
     }
     ob_start();
-    $detailed ? var_dump($var) : print_r($var);
+    var_dump($var);
     $content = ob_get_contents();
     ob_end_clean();
-    echo $limit > -1 && strlen($content) > $limit ? substr($content, 0, $limit) . "\n... [truncated]" : $content;
+    echo($limit > -1 && strlen($content) > $limit ? substr($content, 0, $limit) . "\n... [truncated]" : $content);
 }
 
-function input_http($in) {
-    $in->stream = array(fopen('php://input', 'rb'));
-
-    $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
-    foreach ($_SERVER as $key => $value) {
-        if (substr($key, 0, 5) === 'HTTP_') {
-            $in->header[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
-        } elseif (isset($contentHeader[$key])) {
-            $in->header[str_replace('_', '-', strtolower($key))] = $value;
-        }
-    }
-
-    $in->version = isset($_SERVER['SERVER_PROTOCOL']) ? substr($_SERVER['SERVER_PROTOCOL'], 5) : '1.1';
-    $in->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
-    $in->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-    $in->cookie = $_COOKIE;
-    $in->query = $_GET;
-    $in->frame = $_FILES + $_POST;
-
-    $in->route = ($pos = strpos($in->uri, '?')) !== false ? substr($in->uri, 0, $pos) : $in->uri;
-
-    return $in;
-}
-
-function input_cli($in) {
-    $in->stream = array(fopen('php://stdin', 'rb'));
-
-    if (php_sapi_name() !== 'cli') {
-        return $in;
-    }
-
-    global $argc, $argv;
-
-    $route = '';
-    $query = array();
-
-    for ($i = 1; $argc > $i; $i++) {
-        $arg = $argv[$i];
-        if (substr($arg, 0, 2) === '--') {
-            $eq = strpos($arg, '=');
-            if ($eq !== false) {
-                $query[] = urlencode(substr($arg, 2, $eq - 2)) . '=' . urlencode(substr($arg, $eq + 1));
-            } else {
-                $query[] = urlencode(substr($arg, 2));
-            }
-        } elseif (substr($arg, 0, 1) !== '-') {
-            $route .= '/' . rawurlencode($arg);
-        }
-    }
-
-    $queryStr = implode('&', $query);
-
-    $in->uri = 'cli://' . $argv[0] . $route . ($queryStr ? '?' . $queryStr : '');
-    $in->route = $route;
-
-    parse_str($queryStr, $in->query);
-
-    return $in;
-}
-
-function output_http($out) {
-    $s = fopen('php://output', 'wb');
-    $out->stream = array($s, $s);
-    $out->code = 200;
-    return $out;
-}
-
-function output_cli($out) {
-    $out->stream = array(fopen('php://stdout', 'wb'), fopen('php://stderr', 'wb'));
-    $out->code = 0;
-    return $out;
+function dd($var = null, $limit = 8192) {
+    d($var, $limit);
+    die;
 }
 
 class Input {
     var $data = array();
-
-    var $stream = array();
 
     var $header = array();
     var $content = '';
@@ -129,52 +59,108 @@ class Input {
     var $frame = array();
     var $param = array();
 
-    function io($id = 0, $mark = '') {
-        if (!isset($this->stream[$id])) {
-            return false;
+    function init() {}
+    function term() {}
+    function io($content = '', $code = 0) {}
+}
+
+class InputCgi extends Input {
+    var $contentRead = false;
+
+    function init() {
+        $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
+        foreach ($_SERVER as $key => $value) {
+            if (substr($key, 0, 5) === 'HTTP_') {
+                $this->header[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
+            } elseif (isset($contentHeader[$key])) {
+                $this->header[str_replace('_', '-', strtolower($key))] = $value;
+            }
         }
 
-        if ($mark === '') {
-            return ($line = fgets($this->stream[$id])) !== false ? rtrim($line) : '';
+        $this->version = isset($_SERVER['SERVER_PROTOCOL']) ? substr($_SERVER['SERVER_PROTOCOL'], 5) : '1.1';
+        $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
+        $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $this->cookie = $_COOKIE;
+        $this->query = $_GET;
+        $this->frame = $_FILES + $_POST;
+
+        $this->route = ($pos = strpos($this->uri, '?')) !== false ? substr($this->uri, 0, $pos) : $this->uri;
+    }
+
+    function io($content = '', $code = 0) {
+        if (!$this->contentRead && ($handle = fopen('php://input', 'rb'))) {
+            $lines = '';
+            while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
+                $lines .= $chunk;
+            }
+            fclose($handle);
+            return $this->content = $lines;
+        }
+        $this->contentRead = true;
+    }
+}
+
+class InputCli extends Input {
+    function init() {
+        global $argc, $argv;
+
+        $route = '';
+        $query = array();
+
+        for ($i = 1; $argc > $i; $i++) {
+            $arg = $argv[$i];
+            if (substr($arg, 0, 2) === '--') {
+                $eq = strpos($arg, '=');
+                if ($eq !== false) {
+                    $query[] = urlencode(substr($arg, 2, $eq - 2)) . '=' . urlencode(substr($arg, $eq + 1));
+                } else {
+                    $query[] = urlencode(substr($arg, 2));
+                }
+            } elseif (substr($arg, 0, 1) !== '-') {
+                $route .= '/' . rawurlencode($arg);
+            }
+        }
+
+        $queryStr = implode('&', $query);
+
+        $this->uri = 'cli://' . $argv[0] . $route . ($queryStr ? '?' . $queryStr : '');
+        $this->route = $route;
+
+        parse_str($queryStr, $this->query);
+    }
+
+    function io($content = '', $code = 0) {
+        if ($content === '') {
+            return ($line = fgets(STDIN)) !== false ? rtrim($line) : '';
         }
 
         $lines = '';
-        while (($line = fgets($this->stream[$id])) !== false && rtrim($line) !== $mark) {
+        while (($line = fgets(STDIN)) !== false && rtrim($line) !== $content) {
             $lines .= $line;
         }
 
         return $lines;
     }
-
-    function term() {
-        while ($s = array_shift($this->stream)) {
-            if (is_resource($s)) {
-                fclose($s);
-            }
-        }
-    }
 }
 
 class Output {
-    var $stream = array();
-
     var $header = array();
     var $content = '';
-    var $code = 0;
+    var $code = 200;
     var $version = '1.1';
 
-    var $headersSent = false;
+    function init() {}
+    function term() {}
+    function io($content = '', $code = 0) {}
+}
 
-    function io($content, $id = 0) {
-        if (!isset($this->stream[$id])) {
-            return false;
-        }
-
-        if (!$this->headersSent && !headers_sent()) {
-            if (isset($this->header['location']) && (300 > $this->code || $this->code > 399)) {
-                $this->code = 302;
+class OutputCgi extends Output {
+    function io($content = '', $code = 0) {
+        if (!headers_sent()) {
+            if (isset($this->header['location']) && (300 > $code || $code > 399)) {
+                $code = 302;
             }
-            header('HTTP/' . $this->version . ' ' . $this->code);
+            header('HTTP/' . $this->version . ' ' . $code);
             if (!isset($this->header['content-type'])) {
                 $this->header['content-type'] = 'text/html';
             }
@@ -189,17 +175,17 @@ class Output {
             }
         }
 
-        $this->headersSent = true;
-        fwrite($this->stream[$id], $content);
+        echo($content);
         flush();
     }
+}
 
-    function term() {
-        while ($s = array_shift($this->stream)) {
-            if (is_resource($s)) {
-                fclose($s);
-            }
-        }
+class OutputCli extends Output {
+    var $code = 0;
+
+    function io($content = '', $code = 0) {
+        fwrite($code === 0 ? STDOUT : STDERR, $content);
+        flush();
     }
 }
 
@@ -240,14 +226,13 @@ class App {
         $this->env['SAPI'] = php_sapi_name();
         $this->env['DIR_ROOT'] = $this->dirToUnix(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
-        foreach (array('App', 'Input', 'Output') as $unit) {
+        foreach (array('App', 'Input', 'InputCgi', 'InputCli', 'Output', 'OutputCgi', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
                 $this->addUnit($unit);
             }
         }
         $this->setUnit('App', array('cache' => true));
         $this->unitInstCache['App'] = $this;
-        set_error_handler(array($this, 'handleErrorDefault'));
     }
 
     function term() {
@@ -308,11 +293,13 @@ class App {
             }
         }
 
-        $s = fopen($this->env['SAPI'] === 'cli' ? 'php://stderr' : 'php://output', 'wb');
-        fwrite($s, $e['content']);
-        fclose($s);
+        if ($this->env['SAPI'] === 'cli') {
+            fwrite(STDERR, $e['content']);
+        } else {
+            echo($e['content']);
+        }
 
-        exit($e['code'] > 255 ? 1 : $e['code']);
+        die($e['code'] > 255 ? 1 : $e['code']);
     }
 
     function error($errno, $errstr, $errfile, $errline, $errcontext) {
@@ -802,7 +789,7 @@ class App {
             foreach ($rules as $rule) {
                 list($valid[$field], $err) = $rule->process($valid[$field]);
                 if ($err) {
-                    $error[] = array('type' => 'message:error', 'data' => array('content' => $err, 'field' => $field) + $meta);
+                    $error[] = array('type' => 'system:message:error', 'data' => array('content' => $err, 'field' => $field) + $meta);
                     break;
                 }
             }
@@ -823,13 +810,9 @@ class App {
 
     function write($file, $content, $append = false) {
         if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
-            $content = (string) $content;
-            $length = strlen($content);
-            $offset = 0;
-            while ($length > $offset && fwrite($handle, substr($content, $offset, 8192)) !== false) {
-                $offset += 8192;
-            }
+            $result = fwrite($handle, (string) $content);
             fclose($handle);
+            return $result;
         }
     }
 
@@ -874,8 +857,8 @@ class App {
         }
     }
 
-    function htmlEncode($s) {
-        return isset($s) ? htmlspecialchars($s, ENT_QUOTES) : '';
+    function htmlEncode($s, $f = ENT_QUOTES) {
+        return isset($s) ? htmlspecialchars($s, $f) : '';
     }
 
     function mimeNegotiate($accept, $offers) {

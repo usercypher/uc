@@ -18,7 +18,7 @@ class User_Pipe_IsNotAuth {
 
         $user = $this->session->get('user');
         if ($user) {
-            $output->header['location'] = $app->url('ROUTE', $route);
+            $output->header['location'] = $app->url('ROUTE', trim($route, '/'));
             $success = false;
         }
         return array($input, $output, $success);

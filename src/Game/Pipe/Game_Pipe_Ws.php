@@ -19,7 +19,7 @@ class Game_Pipe_Ws {
         $id=$in->header['x-uc-hub-client']??'';
         $this->server=$in->header['x-uc-hub-server']??'';
         $this->token=$in->header['x-uc-hub-token']??'';
-        $body=$in->io(0,"\n");
+        $body=$in->io();
 
         if(!$type||!$id){
             $out->code=400;

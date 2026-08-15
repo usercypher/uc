@@ -16,8 +16,8 @@ $app->groupUnit($group, 'Shared_Lib_Html');
 $app->groupUnit($group, 'Shared_Lib_Session');
 $app->groupUnit($group, 'Shared_Lib_Standard');
 $app->groupUnit($group, 'Shared_Lib_Translator');
-$app->groupUnit($group, 'Shared_Lib_Cast_Standard');
-$app->groupUnit($group, 'Shared_Lib_Cast_Db', array('args' => array('App', 'Shared_Lib_Database')));
+$app->groupUnit($group, 'Shared_Lib_Cast_Standard', array('args' => array('Shared_Lib_Translator')));
+$app->groupUnit($group, 'Shared_Lib_Cast_Db', array('args' => array('App', 'Shared_Lib_Database', 'Shared_Lib_Translator')));
 
 /**
  * ------------------------------------------------------------------------
@@ -38,7 +38,7 @@ $app->groupUnit($group, 'Shared_Pipe_OtpGenerate');
 $app->groupUnit($group, 'Shared_Pipe_OtpValidate');
 $app->groupUnit($group, 'Shared_Pipe_OtpExist');
 
-$app->groupUnit($group, 'Shared_Pipe_Lang');
+$app->groupUnit($group, 'Shared_Pipe_Lang', array('args' => array('Shared_Lib_Translator')));
 
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Database')

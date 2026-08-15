@@ -1,7 +1,7 @@
 <?php
 
 class User_Pipe_Store {
-    private $app, $session;
+    private $app, $session, $translator;
     private $userRepo;
 
     public function args($args) {
@@ -9,6 +9,7 @@ class User_Pipe_Store {
             $this->app, 
             $this->session, 
             $this->userRepo,
+            $this->translator,
         ) = $args;
     } 
 
@@ -18,6 +19,8 @@ class User_Pipe_Store {
         $route = $input->query['redirect'];
         $user = $input->frame['user'];
         $userRoles = $input->data['user_roles'];
+
+        $t = $this->translator->get('user');
 
         $error = array();
 
@@ -32,7 +35,7 @@ class User_Pipe_Store {
             }
         } elseif ($this->userRepo->insert($user)) {
             $route = $input->query['redirect_alt'];
-            $this->userRepo->addMessage('success', 'user created successfully.');
+            $this->userRepo->addMessage('success', $t->t('user_created_successfully'));
         }
 
         $this->session->set('flash', $this->userRepo->getMessages());

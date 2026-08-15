@@ -1,7 +1,7 @@
 <?php
 
 class User_Pipe_Update {
-    private $app, $session;
+    private $app, $session, $translator;
     private $userRepo;
 
     public function args($args) {
@@ -9,6 +9,7 @@ class User_Pipe_Update {
             $this->app, 
             $this->session, 
             $this->userRepo,
+            $this->translator,
         ) = $args;
     } 
 
@@ -21,6 +22,7 @@ class User_Pipe_Update {
         $context = $input->frame['context'];
         $userSession = $this->session->get('user');
         $userRoles = $input->data['user_roles'];
+        $t = $this->translator->get('user');
 
         if ($userSession['role'] !== 'root') {
             $user['id'] = $userSession['id'];
@@ -53,7 +55,7 @@ class User_Pipe_Update {
                 $userSession[$field] = $value;
             }
             $this->session->set('user', $userSession);
-            $this->userRepo->addMessage('success', 'user updated successfully.');
+            $this->userRepo->addMessage('success', $t->t('user_updated_successfully'));
         }
 
         $this->session->set('flash', $this->userRepo->getMessages());

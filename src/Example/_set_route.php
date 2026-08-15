@@ -4,7 +4,7 @@
 // ==========
 $group = array(
     'prepend' => array(
-        'App_Pipe_Lang', 'Example_Pipe_Lang'
+        'App_Pipe_Lang', 'Example_Pipe_Lang', 'User_Pipe_Lang'
     )
 );
 
