@@ -11,7 +11,7 @@ class Shared_Pipe_DbBegin {
         ) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         // code
         $db = $app->getEnv('DB', array());

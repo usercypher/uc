@@ -1,7 +1,7 @@
 <?php
 
 class Shared_Pipe_Lang {
-    var $app, $session, $translator;
+    var $app, $translator;
     var $key = 'shared';
     var $default = 'en';
     var $languages = array('en', 'es', 'fr', 'de', 'pt');
@@ -10,15 +10,14 @@ class Shared_Pipe_Lang {
     function args($args) {
         list(
             $this->app,
-            $this->session,
             $this->translator
         ) = $args;
     } 
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
-        $lang = $this->lang($input, $this->languages);
+        list($input, $output, $lang) = $this->lang($input, $output, $this->languages);
 
         $this->translator->set($this->key, require($this->app->dir('ROOT', $this->directory . $lang . '.data.php')));
 
@@ -28,16 +27,18 @@ class Shared_Pipe_Lang {
         return array($input, $output, $success);
     }
 
-    function lang($input, $languages) {
-        $lang = isset($input->param['lang']) ? $input->param['lang'] : $this->session->get('lang');
+    function lang($input, $output, $languages) {
+        $lang = isset($input->param['lang']) ? $input->param['lang'] : (isset($input->cookie['lang']) ? $input->cookie['lang'] : null);
         if (!$lang || !in_array($lang, $languages)) {
             $aLang = isset($input->header['accept-language']) ? $input->header['accept-language'] : $this->default;
-            $lang = $this->app->mimeNegotiate($aLang, $languages);
+            $lang = $this->app->httpNegotiate($aLang, $languages);
             if (!$lang) {
                 $lang = $this->default;
             }
         }
-        $this->session->set('lang', $lang);
-        return $lang;
+        $output->header['set-cookie'][] = strtr('lang=:lang; Path=/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax', array(
+            ':lang' => $lang
+        ));
+        return array($input, $output, $lang);
     }
 }

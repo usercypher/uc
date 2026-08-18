@@ -7,7 +7,7 @@ class Cli_Pipe_Help {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         $target = $input->query['autocomplete'] ?? null;
         $unknownRoute = $input->param['on-unknown-route'] ?? '';

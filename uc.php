@@ -1,5 +1,5 @@
 <?php /*
-Version: 6.0.0
+Version: 7.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -50,9 +50,9 @@ class Input {
     var $header = array();
     var $content = '';
     var $version = '1.1';
+
     var $method = '';
     var $uri = '/';
-
     var $route = '/';
     var $cookie = array();
     var $query = array();
@@ -61,10 +61,10 @@ class Input {
 
     function init() {}
     function term() {}
-    function io($content = '', $code = 0) {}
+    function call($content = '', $code = 0) {}
 }
 
-class InputCgi extends Input {
+class InputHttp extends Input {
     var $contentRead = false;
 
     function init() {
@@ -80,23 +80,25 @@ class InputCgi extends Input {
         $this->version = isset($_SERVER['SERVER_PROTOCOL']) ? substr($_SERVER['SERVER_PROTOCOL'], 5) : '1.1';
         $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
         $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $this->route = ($pos = strpos($this->uri, '?')) !== false ? substr($this->uri, 0, $pos) : $this->uri;
         $this->cookie = $_COOKIE;
         $this->query = $_GET;
         $this->frame = $_FILES + $_POST;
-
-        $this->route = ($pos = strpos($this->uri, '?')) !== false ? substr($this->uri, 0, $pos) : $this->uri;
     }
 
-    function io($content = '', $code = 0) {
+    function call($content = '', $code = 0) {
         if (!$this->contentRead && ($handle = fopen('php://input', 'rb'))) {
             $lines = '';
             while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
                 $lines .= $chunk;
             }
             fclose($handle);
-            return $this->content = $lines;
+            $this->content = $lines;
         }
+
         $this->contentRead = true;
+
+        return $this->content;
     }
 }
 
@@ -129,7 +131,7 @@ class InputCli extends Input {
         parse_str($queryStr, $this->query);
     }
 
-    function io($content = '', $code = 0) {
+    function call($content = '', $code = 0) {
         if ($content === '') {
             return ($line = fgets(STDIN)) !== false ? rtrim($line) : '';
         }
@@ -146,21 +148,23 @@ class InputCli extends Input {
 class Output {
     var $header = array();
     var $content = '';
-    var $code = 200;
     var $version = '1.1';
+
+    var $code = 200;
+    var $text = '';
 
     function init() {}
     function term() {}
-    function io($content = '', $code = 0) {}
+    function call($content = '', $code = 0) {}
 }
 
-class OutputCgi extends Output {
-    function io($content = '', $code = 0) {
+class OutputHttp extends Output {
+    function call($content = '', $code = 0) {
         if (!headers_sent()) {
             if (isset($this->header['location']) && (300 > $code || $code > 399)) {
                 $code = 302;
             }
-            header('HTTP/' . $this->version . ' ' . $code);
+            header('HTTP/' . $this->version . ' ' . $code . ' ' . $this->text);
             if (!isset($this->header['content-type'])) {
                 $this->header['content-type'] = 'text/html';
             }
@@ -183,13 +187,14 @@ class OutputCgi extends Output {
 class OutputCli extends Output {
     var $code = 0;
 
-    function io($content = '', $code = 0) {
+    function call($content = '', $code = 0) {
         fwrite($code === 0 ? STDOUT : STDERR, $content);
         flush();
     }
 }
 
 class App {
+    var $version = '7.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -226,7 +231,7 @@ class App {
         $this->env['SAPI'] = php_sapi_name();
         $this->env['DIR_ROOT'] = $this->dirToUnix(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
-        foreach (array('App', 'Input', 'InputCgi', 'InputCli', 'Output', 'OutputCgi', 'OutputCli') as $unit) {
+        foreach (array('App', 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
                 $this->addUnit($unit);
             }
@@ -343,7 +348,7 @@ class App {
         }
 
         $content = '';
-        $type = $this->mimeNegotiate(isset($errcontext['ACCEPT']) ? $errcontext['ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
+        $type = $this->httpNegotiate(isset($errcontext['ACCEPT']) ? $errcontext['ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
         if ($type && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
@@ -772,7 +777,7 @@ class App {
     function pipe($input, $output, $pipe) {
         foreach ($pipe as $p) {
             $p = $this->makeUnit($p);
-            list($input, $output, $success) = $p->process($input, $output);
+            list($input, $output, $success) = $p->call($input, $output);
             if (!$success) {
                 break;
             }
@@ -787,7 +792,7 @@ class App {
         foreach ($schema as $field => $rules) {
             $valid[$field] = isset($data[$field]) ? $data[$field] : null;
             foreach ($rules as $rule) {
-                list($valid[$field], $err) = $rule->process($valid[$field]);
+                list($valid[$field], $err) = $rule->call($valid[$field]);
                 if ($err) {
                     $error[] = array('type' => 'system:message:error', 'data' => array('content' => $err, 'field' => $field) + $meta);
                     break;
@@ -861,7 +866,7 @@ class App {
         return isset($s) ? htmlspecialchars($s, $f) : '';
     }
 
-    function mimeNegotiate($accept, $offers) {
+    function httpNegotiate($accept, $offers) {
         $prefs = array();
         foreach (explode(',', $accept) as $type) {
             $parts = explode(';', trim($type));
@@ -883,10 +888,25 @@ class App {
         foreach (array_keys($prefs) as $p) {
             foreach ($offers as $o) {
                 $o = strtolower($o);
-                if ($p === $o || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) {
+                if ($p === $o || $p === '*' || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) {
                     return $o;
                 }
             }
         }
+    }
+
+    function versionCompare($required, $available) {
+        $r = explode('.', $required, 3);
+        $a = explode('.', $available, 3);
+
+        if ((int) $a[0] > (int) $r[0]) {
+            return 1;
+        }
+
+        if ((int) $r[0] > (int) $a[0] || (isset($r[1]) ? ((int) $r[1]) : 0) > (isset($a[1]) ? ((int) $a[1]) : 0)) {
+            return -1;
+        }
+
+        return 0;
     }
 }

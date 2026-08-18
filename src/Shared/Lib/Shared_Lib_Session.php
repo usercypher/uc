@@ -1,10 +1,12 @@
 <?php
 
 class Shared_Lib_Session {
+    var $name, $id;
+
     function init($config) {
         if (session_id() == '') {
-            session_name(isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT');
-            session_id(isset($config['id']) ? $config['id'] : null);
+            $this->name = session_name(isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT');
+            $this->id = session_id(isset($config['id']) ? $config['id'] : null);
         }
     }
 
@@ -18,6 +20,10 @@ class Shared_Lib_Session {
         if (session_id() != '') {
             session_write_close();
         }
+    }
+
+    function hasConnection() {
+        return session_id() != '';
     }
 
     function destroy() {

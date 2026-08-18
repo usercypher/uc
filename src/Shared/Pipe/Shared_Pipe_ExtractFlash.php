@@ -7,7 +7,7 @@ class Shared_Pipe_ExtractFlash {
         list($this->app, $this->session) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $output->content = json_encode($this->session->get('flash'), JSON_PRETTY_PRINT) . "\n";

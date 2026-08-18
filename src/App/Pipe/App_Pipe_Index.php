@@ -10,7 +10,7 @@ class App_Pipe_Index {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $appLanguages = $input->data['app:languages'];

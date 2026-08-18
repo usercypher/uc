@@ -7,7 +7,7 @@ class Shared_Pipe_SessionTokenGenerate {
         list($this->app, $this->session) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         if (!$this->session->get('session_token')) {

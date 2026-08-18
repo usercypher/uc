@@ -14,12 +14,12 @@ class Game_Pipe_Ws {
         )=$args;
     }
 
-    function process($in,$out){
+    function call($in,$out){
         $type=$in->header['x-uc-hub-type']??'';
         $id=$in->header['x-uc-hub-client']??'';
         $this->server=$in->header['x-uc-hub-server']??'';
         $this->token=$in->header['x-uc-hub-token']??'';
-        $body=$in->io();
+        $body=$in->call();
 
         if(!$type||!$id){
             $out->code=400;

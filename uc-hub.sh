@@ -10,13 +10,19 @@ if [ -f /system/build.prop ]; then
 fi
 
 case "$OS" in
-    Linux)
+    Linux|Android)
         case "$ARCH" in
             x86_64)
-                exec bin/uc-hub/dist/uc-hub-linux-amd64 uc-hub.json
+                exec bin/uc-hub/dist/uc-hub-linux-amd64 bin/uc-hub/uc-hub.json
                 ;;
-            aarch64)
-                exec bin/uc-hub/dist/uc-hub-linux-arm64 uc-hub.json
+            i386|i486|i586|i686)
+                exec bin/uc-hub/dist/uc-hub-linux-386 bin/uc-hub/uc-hub.json
+                ;;
+            armv8l|armv7l|arm)
+                exec bin/uc-hub/dist/uc-hub-linux-arm bin/uc-hub/uc-hub.json
+                ;;
+            arm64|aarch64)
+                exec bin/uc-hub/dist/uc-hub-linux-arm64 bin/uc-hub/uc-hub.json
                 ;;
             *)
                 echo "Unsupported architecture: $ARCH"
@@ -27,27 +33,13 @@ case "$OS" in
     Darwin)
         case "$ARCH" in
             x86_64)
-                exec bin/uc-hub/dist/uc-hub-darwin-amd64 uc-hub.json
+                exec bin/uc-hub/dist/uc-hub-darwin-amd64 bin/uc-hub/uc-hub.json
                 ;;
             arm64)
-                exec bin/uc-hub/dist/uc-hub-darwin-arm64 uc-hub.json
+                exec bin/uc-hub/dist/uc-hub-darwin-arm64 bin/uc-hub/uc-hub.json
                 ;;
             *)
                 echo "Unsupported architecture: $ARCH"
-                exit 1
-                ;;
-        esac
-        ;;
-    Android)
-        case "$ARCH" in
-            armv8l|armv7l|arm)
-                exec bin/uc-hub/dist/uc-hub-android-arm uc-hub.json
-                ;;
-            aarch64)
-                exec bin/uc-hub/dist/uc-hub-android-arm64 uc-hub.json
-                ;;
-            *)
-                echo "Unsupported Android architecture: $ARCH"
                 exit 1
                 ;;
         esac

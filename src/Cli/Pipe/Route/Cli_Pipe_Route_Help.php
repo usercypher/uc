@@ -1,7 +1,7 @@
 <?php
 
 class Cli_Pipe_Route_Help {
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $message = '';

@@ -35,6 +35,7 @@ foreach (array(
     <p><?php echo $t->t('welcome_message'); ?></p>
     <ul>
         <li><a href="https://github.com/usercypher/uc"><?php echo $t->t('view_on_github'); ?></a></li>
+        <li><a href="<?php echo $app->url('ROUTE', 'adminer'); ?>"><?php echo $t->t('adminer'); ?></a></li>
         <li><a href="<?php echo $app->url('ROUTE', 'phpinfo'); ?>"><?php echo $t->t('php_info'); ?></a></li>
         <li><a href="<?php echo $app->url('ROUTE', 'phpinfo/opcache'); ?>"><?php echo $t->t('php_info_opcache'); ?></a></li>
         <li><a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_user'); ?></a></li>

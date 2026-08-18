@@ -4,6 +4,7 @@ return array(
     'framework_title' => 'UC Framework',
     'welcome_message' => 'Welcome to UC Framework. Explore the code, see how it works.',
     'view_on_github' => 'View on GitHub',
+    'adminer' => 'Adminer',
     'php_info' => 'PHP Info',
     'php_info_opcache' => 'PHP Info OPcache',
     'example_user' => 'Example - User',

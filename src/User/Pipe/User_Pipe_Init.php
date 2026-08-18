@@ -1,7 +1,7 @@
 <?php
 
 class User_Pipe_Init {
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $input->data['user_is_auth_route'] = '';

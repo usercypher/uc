@@ -9,6 +9,8 @@ function index() {
     $app = new App();
     $app->init();
 
+    set_error_handler(array($app, 'handleErrorDefault'));
+
     $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/');
 
     $config = $app->data($app->dir('ROOT', 'config.data.php'), array(
@@ -25,9 +27,20 @@ function index() {
         $app->setEnv($key, $value);
     }
 
+    if ($app->versionCompare($app->getEnv('UC', $app->version), $app->version) === -1) {
+        $errorContent = 'Error: installed UC version (' . $app->version . ') is older than the required version (' . $app->getEnv('UC', $app->version) . '). Please update UC and try again.' . "\n";
+        if ($app->getEnv('SAPI') === 'cli') {
+            fwrite(STDERR, $errorContent);
+        } else {
+            echo $errorContent;
+        }
+
+        exit(1);
+    }
+
     $app->load('var/lib/app.state.dat');
 
-    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputCgi;
+    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputHttp;
     $input->init();
 
     $app->setEnv('ACCEPT_LANGUAGE', isset($input->header['accept-language']) ? $input->header['accept-language'] : 'en');
@@ -41,7 +54,7 @@ function index() {
         'HEADER' => array()
     ));
 
-    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputCgi;
+    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputHttp;
     $output->init();
     $output->version = $input->version;
 
@@ -61,13 +74,13 @@ function index() {
         } else {
             $description = 'Route not found: ' . $input->method . ' ' . $input->route;
         }
-        trigger_error($result['error'] . '|' . $description, E_USER_WARNING);
+        user_error($result['error'] . '|' . $description, E_USER_WARNING);
     } else {
         $input->param = $result['param'];
         list($input, $output) = $app->pipe($input, $output, array_merge($config['prepend'], $result['handler'], $config['append']));
     }
 
-    $output->io($output->content, (int) $output->code);
+    $output->call($output->content, (int) $output->code);
 
     $app->term();
     $input->term();

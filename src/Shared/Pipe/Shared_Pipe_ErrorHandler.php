@@ -8,7 +8,7 @@ class Shared_Pipe_ErrorHandler {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $this->input = $input;
         $this->output = $output;
 
@@ -57,7 +57,7 @@ class Shared_Pipe_ErrorHandler {
         $input = $this->input;
         $output = $this->output;
 
-        $output->io($output->content, (int) $output->code);
+        $output->call($output->content, (int) $output->code);
 
         $app->term();
         $input->term();

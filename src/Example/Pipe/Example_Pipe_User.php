@@ -11,7 +11,7 @@ class Example_Pipe_User {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $flash = $this->session->remove('flash');

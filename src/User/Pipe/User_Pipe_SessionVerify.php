@@ -13,7 +13,7 @@ class User_Pipe_SessionVerify {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $route = $input->query['redirect_alt'];

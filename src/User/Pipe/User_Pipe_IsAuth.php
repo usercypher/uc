@@ -10,7 +10,7 @@ class User_Pipe_IsAuth {
         ) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $app = $this->app;

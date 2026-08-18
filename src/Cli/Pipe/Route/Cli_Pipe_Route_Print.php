@@ -8,7 +8,7 @@ class Cli_Pipe_Route_Print {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         $unitList = $this->app->unitList ?? array();
         

@@ -57,7 +57,7 @@ class Shared_Lib_Cast_Db {
 class Shared_Lib_Cast_Db_Unique {
     var $t, $db, $table, $column, $current;
 
-    function process($value) {
+    function call($value) {
         $table = $this->table;
         $column = $this->column;
         $current = $this->current;
@@ -85,7 +85,7 @@ class Shared_Lib_Cast_Db_Unique {
 class Shared_Lib_Cast_Db_Exists {
     var $t, $db, $table, $column;
 
-    function process($value) {
+    function call($value) {
         $table = $this->table;
         $column = $this->column;
 
@@ -108,7 +108,7 @@ class Shared_Lib_Cast_Db_Exists {
 class Shared_Lib_Cast_Db_Unchanged {
     var $t, $db, $table, $column, $id;
 
-    function process($value) {
+    function call($value) {
         $table = $this->table;
         $column = $this->column;
         $id = $this->id;

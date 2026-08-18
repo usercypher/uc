@@ -1,8 +1,8 @@
 <?php
 
 return array(
-    'version' => '1.0.0',
+    'version' => '2.0.0',
     'use' => array(
-        'Shared' => '1.0.0'
+        'Shared' => '2.0.0'
     )
 );

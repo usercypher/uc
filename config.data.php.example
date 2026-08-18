@@ -3,6 +3,7 @@
 $app = $data['app'];
 
 $env = array(
+    'UC' => '7.0.0',
     'APP_ID' => 'uc',
     // Environment Settings
     'DIR_WEB' => $app->dir('ROOT', 'web/'),
@@ -14,19 +15,11 @@ $env = array(
         'application/json' => 'src/App/res/error/application.json.php',
     ),
     'ERROR_TEMPLATES_LANG' => array(
-<<<<<<< HEAD
-        'en' => 'src/App/lang/en.data.php',
-        'de' => 'src/App/lang/de.data.php',
-        'es' => 'src/App/lang/es.data.php',
-        'fr' => 'src/App/lang/fr.data.php',
-        'pt' => 'src/App/lang/pt.data.php',
-=======
         'en' => 'src/App/res/lang/en.data.php',
         'de' => 'src/App/res/lang/de.data.php',
         'es' => 'src/App/res/lang/es.data.php',
         'fr' => 'src/App/res/lang/fr.data.php',
         'pt' => 'src/App/res/lang/pt.data.php',
->>>>>>> c9ecd9f (.)
     ),
     'ERROR_NON_FATAL' => E_NOTICE | E_DEPRECATED | E_USER_NOTICE | E_USER_DEPRECATED, // set non fatal, it only logs (if log error is enabled)
     'ERROR_LOG_FILE' => 'error.log', // Error log file

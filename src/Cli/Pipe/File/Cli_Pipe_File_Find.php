@@ -7,7 +7,7 @@ class Cli_Pipe_File_Find {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         $message = '';
 

@@ -7,7 +7,7 @@ class Cli_Pipe_Unit_Create {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         $message = '';
 
@@ -64,7 +64,7 @@ class Cli_Pipe_Unit_Create {
             $functionArgs = "\n    function args(\$args) {\n        " . $classVarList . "\n    }\n";
         }
 
-        $functionProcess = $isPipe ? "\n    function process(\$input, \$output) {\n        \$success = true;\n        // code\n        return array(\$input, \$output, \$success);\n    }\n" : '';
+        $functionProcess = $isPipe ? "\n    function call(\$input, \$output) {\n        \$success = true;\n        // code\n        return array(\$input, \$output, \$success);\n    }\n" : '';
 
         return "<?php\n\nclass $className {" . $classVar . $functionArgs . $functionProcess . '}';
     }

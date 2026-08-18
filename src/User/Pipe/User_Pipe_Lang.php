@@ -9,7 +9,7 @@ class User_Pipe_Lang {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $this->pipeLang->key = 'user';
@@ -19,6 +19,6 @@ class User_Pipe_Lang {
         );
         $this->pipeLang->directory = 'src/User/res/lang/';
 
-        return $this->pipeLang->process($input, $output);
+        return $this->pipeLang->call($input, $output);
     }
 }

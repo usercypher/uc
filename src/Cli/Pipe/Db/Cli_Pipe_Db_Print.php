@@ -7,7 +7,7 @@ class Cli_Pipe_Db_Print {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         $message = '';
 

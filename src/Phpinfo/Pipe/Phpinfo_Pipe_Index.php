@@ -9,7 +9,7 @@ class Phpinfo_Pipe_Index {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $output->content = $this->app->template($this->app->dir('ROOT', 'src/Phpinfo/res/index.html.php'));

@@ -10,7 +10,7 @@ class User_Pipe_SessionUnset {
         ) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $this->session->remove('user');

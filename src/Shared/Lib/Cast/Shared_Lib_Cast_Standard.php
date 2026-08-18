@@ -125,7 +125,7 @@ class Shared_Lib_Cast_Standard {
 
 class Shared_Lib_Cast_Standard_Required {
     var $t;
-    function process($value) {
+    function call($value) {
         if (empty($value)) {
             return array($value, $this->t->t('lib_cast_standard_required'));
         }
@@ -134,14 +134,14 @@ class Shared_Lib_Cast_Standard_Required {
 }
 
 class Shared_Lib_Cast_Standard_Trim {
-    function process($value) {
+    function call($value) {
         return array(is_string($value) ? trim($value) : $value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_Email {
     var $t;
-    function process($value) {
+    function call($value) {
         if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
             return array($value, $this->t->t('lib_cast_standard_invalid_email'));
         }
@@ -153,7 +153,7 @@ class Shared_Lib_Cast_Standard_LengthMin {
     var $t;
     var $min;
 
-    function process($value) {
+    function call($value) {
         $min = $this->min;
         if ($min > strlen($value)) {
             return array($value, $this->t->t('lib_cast_standard_length_min', array(
@@ -168,7 +168,7 @@ class Shared_Lib_Cast_Standard_LengthMax {
     var $t;
     var $max;
 
-    function process($value) {
+    function call($value) {
         $max = $this->max;
         if (strlen($value) > $max) {
             return array($value, $this->t->t('lib_cast_standard_length_max', array(
@@ -180,25 +180,25 @@ class Shared_Lib_Cast_Standard_LengthMax {
 }
 
 class Shared_Lib_Cast_Standard_ToString {
-    function process($value) {
+    function call($value) {
         return array((string)$value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_ToInt {
-    function process($value) {
+    function call($value) {
         return array((int)$value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_ToFloat {
-    function process($value) {
+    function call($value) {
         return array((float)$value, null);
     }
 }
 
 class Shared_Lib_Cast_Standard_ToBool {
-    function process($value) {
+    function call($value) {
         return array(filter_var($value, FILTER_VALIDATE_BOOLEAN), null);
     }
 }
@@ -207,7 +207,7 @@ class Shared_Lib_Cast_Standard_Regex {
     var $t;
     var $pattern, $error;
 
-    function process($value) {
+    function call($value) {
         if (!preg_match($this->pattern, $value)) {
             return array($value, isset($this->error) ? $this->error : $this->t->t('lib_cast_standard_invalid_format'));
         }
@@ -219,7 +219,7 @@ class Shared_Lib_Cast_Standard_Enum {
     var $t;
     var $allowed;
 
-    function process($value) {
+    function call($value) {
         $allowed = $this->allowed;
         if (!in_array($value, $allowed)) {
             return array($value, $this->t->t('lib_cast_standard_enum', array(
@@ -234,7 +234,7 @@ class Shared_Lib_Cast_Standard_Value {
     var $value;
     var $override;
 
-    function process($value) {
+    function call($value) {
         return array($this->override ? $this->value : $value, null);
     }
 }
@@ -242,7 +242,7 @@ class Shared_Lib_Cast_Standard_Value {
 class Shared_Lib_Cast_Standard_DefaultValue {
     var $defaultValue;
 
-    function process($value) {
+    function call($value) {
         $default = $this->defaultValue;
         if ($value === null || $value === '') {
             return array($default, null);
@@ -253,7 +253,7 @@ class Shared_Lib_Cast_Standard_DefaultValue {
 
 class Shared_Lib_Cast_Standard_ToDate {
     var $t;
-    function process($value) {
+    function call($value) {
         if (!$value) return array(null, null);
         
         $timestamp = strtotime($value);
@@ -266,7 +266,7 @@ class Shared_Lib_Cast_Standard_ToDate {
 
 class Shared_Lib_Cast_Standard_ToDateTime {
     var $t;
-    function process($value) {
+    function call($value) {
         if (!$value) return array(null, null);
 
         $timestamp = strtotime($value);
@@ -281,7 +281,7 @@ class Shared_Lib_Cast_Standard_Range {
     var $t;
     var $min, $max;
 
-    function process($value) {
+    function call($value) {
         $min = $this->min;
         $max = $this->max;
 
@@ -296,7 +296,7 @@ class Shared_Lib_Cast_Standard_Range {
 }
 
 class Shared_Lib_Cast_Standard_EmptyToNull {
-    function process($value) {
+    function call($value) {
         if (is_string($value) && trim($value) === '') {
             return array(null, null);
         }
@@ -307,7 +307,7 @@ class Shared_Lib_Cast_Standard_EmptyToNull {
 class Shared_Lib_Cast_Standard_PasswordHash {
     var $algo;
 
-    function process($value) {
+    function call($value) {
         if (!$value) return array($value, null);
 
         return array(password_hash($value, $this->algo), null);
@@ -319,7 +319,7 @@ class Shared_Lib_Cast_Standard_EqualTo {
     var $value;
     var $message;
 
-    function process($value) {
+    function call($value) {
         if ($value !== $this->value) {
             return array($value, isset($this->message) ? $this->message : $this->t->t('lib_cast_standard_not_equal'));
         } 

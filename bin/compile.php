@@ -24,10 +24,31 @@ function compile() {
         $app->setEnv($key, $value);
     }
 
-    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputCgi;
+    $appVerResult = $app->versionCompare($app->getEnv('UC', $app->version), $app->version);
+
+    $errorContent = '';
+    if ($appVerResult === -1) {
+        $errorContent = 'Error: installed UC version (' . $app->version . ') is older than the required version (' . $app->getEnv('UC', $app->version) . '). Please update UC and try again.' . "\n";
+    } elseif ($appVerResult === 1) {
+        $errorContent = 'Warning: installed UC version (' . $app->version . ') is newer than the version this build was created for (' . $app->getEnv('UC', $app->version) . '). The build may still work, but compatibility issues are possible.' . "\n";
+    }
+
+    if ($appVerResult != 0) {
+        if ($app->getEnv('SAPI') === 'cli') {
+            fwrite(STDERR, $errorContent);
+        } else {
+            echo $errorContent;
+        }
+
+        if ($appVerResult === -1) {
+            exit(1);
+        }
+    }
+
+    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputHttp;
     $input->init();
 
-    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputCgi;
+    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputHttp;
     $output->init();
 
     $exclude = isset($input->query['exclude']) ? explode(',', $input->query['exclude']) : array();
@@ -57,16 +78,10 @@ function compile() {
         if (isset($data['php'])) {
             $required_php = $data['php'];
             $current_php = PHP_VERSION;
-            $r_parts = explode('.', $required_php);
-            $c_parts = explode('.', $current_php);
-            while (count($r_parts) < 3) { $r_parts[] = '0'; }
-            while (count($c_parts) < 3) { $c_parts[] = '0'; }
-            $r0 = intval($r_parts[0]); $r1 = intval($r_parts[1]); $r2 = intval($r_parts[2]);
-            $c0 = intval($c_parts[0]); $c1 = intval($c_parts[1]); $c2 = intval($c_parts[2]);
-            if ($c0 < $r0 || ($c0 === $r0 && $c1 < $r1)) {
+            if ($app->versionCompare($required_php, $current_php) === -1) {
                 $errors[] = "PHP version error: folder '{$dirbasename}' requires PHP {$required_php}, but {$current_php} is installed.\n";
             }
-        }        
+        }
         if (isset($data['ext']) && is_array($data['ext'])) {
             foreach ($data['ext'] as $ext) {
                 if (!extension_loaded($ext)) {
@@ -83,19 +98,11 @@ function compile() {
                 continue;
             }
             $available = $datas[$matadirbasename]['version'];
-            $r_parts = explode('.', $dataversion);
-            $a_parts = explode('.', $available);
-            while (count($r_parts) < 3) { $r_parts[] = '0'; }
-            while (count($a_parts) < 3) { $a_parts[] = '0'; }
-            $r0 = intval($r_parts[0]); $r1 = intval($r_parts[1]); $r2 = intval($r_parts[2]);
-            $a0 = intval($a_parts[0]); $a1 = intval($a_parts[1]); $a2 = intval($a_parts[2]);
-            if ($a0 < $r0) {
-                $errors[] = "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
-            } else if ($a0 === $r0) {
-                if ($a1 < $r1) {
-                    $errors[] = "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' major {$r0}, minor >= {$r1}, but found {$available}.\n";
-                }
-            } else {
+            $result = $app->versionCompare($dataversion, $available);
+
+            if ($result === -1) {
+                $errors[] = "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' {$dataversion}, but found {$available}.\n";
+            } else if ($result === 1) {
                 $output->content .= "Warning: folder '{$dirbasename}' uses '{$matadirbasename}' version {$available}, which is newer than required version {$dataversion}.\n";
             }
         }
@@ -126,7 +133,7 @@ function compile() {
 
     $output->content .= "\nTip: use --exclude=module1,module2 to exclude modules from compilation.\n";
 
-    $output->io($output->content);
+    $output->call($output->content, $errors ? 1 : 0);
 
     $app->term();
     $input->term();

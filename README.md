@@ -1,24 +1,6 @@
 # UC Framework
 
-## 1. Install Dependencies
-
-**Linux/macOS**
-
-Install PHP CGI and SQLite:
-
-```bash
-apt install php-cgi php-sqlite3
-```
-
-(Use your distribution's package manager if not using `apt`.)
-
-**Windows**
-
-No dependencies are required. Replace `bin/php-windows` with the PHP version required by your project.
-
----
-
-## 2. Get the Repository
+## 1. Get the Repository
 
 **Linux/macOS**
 
@@ -27,19 +9,43 @@ git clone https://github.com/usercypher/uc.git
 cd uc
 ```
 
-> Alternatively, download the ZIP if Git is not installed.
+Or download the ZIP if Git is not installed.
 
 **Windows**
 
-Download:
+Download and extract:
 
 https://github.com/usercypher/uc/archive/refs/heads/main.zip
 
-Extract the ZIP, then open **Command Prompt** in the extracted project folder.
+Then open Command Prompt in the extracted project folder.
 
----
+## 2. Install Dependencies
 
-## 3. Configure the Project
+**Linux/macOS**
+
+Install PHP-FPM and SQLite:
+
+```bash
+apt install php php-fpm php-sqlite3
+```
+
+Use your distribution's package manager if needed.
+
+**Windows**
+
+Download PHP from https://www.php.net/downloads.php and extract it to:
+
+```text
+bin/php/php-windows-amd64
+```
+
+or:
+
+```text
+bin/php/php-windows-386
+```
+
+## 3. Configure and Initialize
 
 Copy the default configuration.
 
@@ -87,11 +93,19 @@ cli.bat db print | cli.bat db exec
 
 > Re-run the compile command whenever routes or units change. Run `cli.sh` or `cli.bat` without arguments to view available CLI commands.
 
----
-
-## 4. Start the Server
+## 4. Configure and Start the Server
 
 **Linux/macOS**
+
+Edit:
+
+```text
+bin/uc-web/uc-web.json
+```
+
+Set the `bin` value to your PHP-FPM binary path.
+
+Then:
 
 ```bash
 chmod +x uc-web.sh
@@ -105,7 +119,7 @@ chmod +x bin/uc-web/dist/*
 uc-web.bat
 ```
 
----
+The Windows setup is automatic after placing the PHP binary in the appropriate `bin/php` folder.
 
 ## 5. Open the Application
 
@@ -114,8 +128,6 @@ Visit:
 **http://127.0.0.1:8080**
 
 Press **Ctrl+C** to stop the server.
-
----
 
 ## 6. Database Management (Adminer)
 
@@ -139,6 +151,6 @@ src/Adminer/res/index.php
 ### Database
 
 | Field | Value |
-|-------|-------|
+|---|---|
 | System | `sqlite` |
-| Database | `var/lib/.sqlite` |
+| Database | `../var/lib/.sqlite` |

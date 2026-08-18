@@ -7,7 +7,7 @@ class Shared_Pipe_SessionTokenValidate {
         list($this->app, $this->session) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         if (!isset($input->frame['session_token'])) {

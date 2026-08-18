@@ -7,7 +7,7 @@ class Cli_Pipe_Route_Resolve {
         list($this->app) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $message = '';

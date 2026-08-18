@@ -10,7 +10,7 @@ class App_Pipe_Init {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $this->session->init(array(

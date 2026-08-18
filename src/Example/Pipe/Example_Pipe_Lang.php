@@ -9,7 +9,7 @@ class Example_Pipe_Lang {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $this->pipeLang->key = 'example';
@@ -19,6 +19,6 @@ class Example_Pipe_Lang {
         );
         $this->pipeLang->directory = 'src/Example/res/lang/';
 
-        return $this->pipeLang->process($input, $output);
+        return $this->pipeLang->call($input, $output);
     }
 }

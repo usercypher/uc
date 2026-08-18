@@ -26,6 +26,7 @@ $app->groupUnit($group, 'Shared_Lib_Cast_Db', array('args' => array('App', 'Shar
  */
 
 $app->setUnit('Shared_Pipe_ErrorHandler', array('args' => array('App')));
+$app->setUnit('Shared_Pipe_Lang', array('args' => array('App', 'Shared_Lib_Translator')));
 
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Session')
@@ -37,8 +38,6 @@ $app->groupUnit($group, 'Shared_Pipe_ExtractFlash');
 $app->groupUnit($group, 'Shared_Pipe_OtpGenerate');
 $app->groupUnit($group, 'Shared_Pipe_OtpValidate');
 $app->groupUnit($group, 'Shared_Pipe_OtpExist');
-
-$app->groupUnit($group, 'Shared_Pipe_Lang', array('args' => array('Shared_Lib_Translator')));
 
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Database')

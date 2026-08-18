@@ -1,3 +1,3 @@
 #!/bin/sh
 
-php -c "$(dirname "$0")/php.ini" "$(dirname "$0")/bin/index.php" "$@"
+php -c "$(dirname "$0")/bin/php/php.ini" "$(dirname "$0")/bin/index.php" "$@"

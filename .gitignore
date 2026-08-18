@@ -1,7 +1,6 @@
 config.data.php
-var/**/**/*
-!var/lib/
-!var/lib/sessions
-!var/log/
-!var/run/
-!.dir
+bin/php/**/*
+!bin/php/**/
+var/**
+!var/**/
+!**/.dir

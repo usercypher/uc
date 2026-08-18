@@ -5,11 +5,11 @@ class Adminer_Pipe_Index {
 
     public function args($args) {
         list(
-            $this->app, 
+            $this->app,
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $output->content = $this->app->template($this->app->dir('ROOT', 'src/Adminer/res/index.php'));

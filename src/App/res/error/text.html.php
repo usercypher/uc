@@ -9,7 +9,7 @@ foreach (array(
 }
 
 $langMap = $app->getEnv('ERROR_TEMPLATES_LANG', array());
-$lang = $app->mimeNegotiate($app->getEnv('ACCEPT_LANGUAGE', ''), array_keys($langMap));
+$lang = $app->httpNegotiate($app->getEnv('ACCEPT_LANGUAGE', ''), array_keys($langMap));
 
 $translator = $app->makeUnit('Shared_Lib_Translator');
 $translator->set('error', require($app->dir('ROOT', $langMap[$lang])));

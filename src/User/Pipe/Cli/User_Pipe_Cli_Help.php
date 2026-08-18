@@ -1,7 +1,7 @@
 <?php
 
 class User_Pipe_Cli_Help {
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $message = '';

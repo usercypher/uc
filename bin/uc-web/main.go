@@ -76,11 +76,12 @@ type Config struct {
 type Fcgi struct {
 	Network           string            `json:"network"`
 	Address           string            `json:"address"`
-	Bin               string            `json:"bin"`
 	Script            string            `json:"script"`
 	WorkerCount       int               `json:"worker_count"`
 	WorkerConcurrency int               `json:"worker_concurrency"`
-	Env               map[string]string `json:"env"`
+	Bin               string            `json:"bin"`
+	BinArg            []string          `json:"bin_arg"`
+	BinEnv            map[string]string `json:"bin_env"`
 }
 
 type CompiledRuleString struct {
@@ -180,11 +181,12 @@ func main() {
     "php": {
       "network": "tcp",
       "address": "0.0.0.0:${PORT}",
-      "bin": "php-cgi -b 0.0.0.0:${PORT}",
       "script": "${ROOT}/html/index.php",
       "worker_count": 4,
       "worker_concurrency": 1,
-      "env": {
+      "bin": "/php-cgi",
+      "bin_arg": ["-b", "0.0.0.0:${PORT}"]
+      "bin_env": {
         "PHP_FCGI_MAX_REQUESTS": "0",
         "LISTEN": "0.0.0.0:${PORT}",
         "ROOT": "${ROOT}"
@@ -1077,35 +1079,47 @@ func (s *Server) superviseFcgiWorker(fcgi string, idx int) {
 	var err error
 	fcgiWorker := s.fcgiWorkers[fcgi][idx]
 
+	expand := func(v string) string {
+		v = strings.ReplaceAll(v, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
+		v = strings.ReplaceAll(v, "${ROOT}", s.rootDir)
+		return v
+	}
+
 	for {
+		started := time.Now()
+
 		env := os.Environ()
-		for key, value := range s.cfg.Fcgi[fcgi].Env {
-			val := strings.ReplaceAll(value, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
-			val = strings.ReplaceAll(val, "${ROOT}", s.rootDir)
-			env = append(env, fmt.Sprintf("%s=%s", key, val))
+		for key, value := range s.cfg.Fcgi[fcgi].BinEnv {
+			env = append(env, fmt.Sprintf("%s=%s", key, expand(value)))
 		}
 
-		cmdStr := strings.ReplaceAll(s.cfg.Fcgi[fcgi].Bin, "${PORT}", fmt.Sprintf("%d", fcgiWorker.port.Load()))
-		cmdStr = strings.ReplaceAll(cmdStr, "${ROOT}", s.rootDir)
-		parts := strings.Fields(cmdStr)
-
-		cmd := exec.Command(parts[0], parts[1:]...)
-		cmd.Stderr = os.Stderr
-		cmd.Env = env
-
-		started := time.Now()
+		bin := expand(s.cfg.Fcgi[fcgi].Bin)
+		args := make([]string, 0, len(s.cfg.Fcgi[fcgi].BinArg))
+		for _, a := range s.cfg.Fcgi[fcgi].BinArg {
+			args = append(args, expand(a))
+		}
 
 		if s.shuttingDown.Load() {
 			return
 		}
 
-		if err = cmd.Start(); err == nil {
-			fcgiWorker.pid.Store(uint32(cmd.Process.Pid))
-			err = cmd.Wait()
-			fcgiWorker.pid.Store(0)
+		if len(bin) == 0 {
+			err = fmt.Errorf("empty binary path")
+		} else if !strings.Contains(bin, "/") {
+			err = fmt.Errorf("binary path must be absolute, got %q", bin)
+		} else {
+			cmd := exec.Command(bin, args...)
+			cmd.Stderr = os.Stderr
+			cmd.Env = env
 
-			if err != nil {
-				fcgiWorker.port.Store(49152 + (s.fcgiPortCounter.Add(1) % 16384))
+			if err = cmd.Start(); err == nil {
+				fcgiWorker.pid.Store(uint32(cmd.Process.Pid))
+				err = cmd.Wait()
+				fcgiWorker.pid.Store(0)
+
+				if err != nil {
+					fcgiWorker.port.Store(49152 + (s.fcgiPortCounter.Add(1) % 16384))
+				}
 			}
 		}
 

@@ -7,7 +7,7 @@ class Shared_Pipe_OtpExist {
         list($this->app, $this->session) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
 
         $otpToken = $this->session->get('otp_token');

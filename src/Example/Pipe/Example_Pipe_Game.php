@@ -10,7 +10,7 @@ class Example_Pipe_Game {
         ) = $args;
     } 
 
-    public function process($input, $output) {
+    public function call($input, $output) {
         $success = true;
 
         $output->content = $this->app->template($this->app->dir('ROOT', 'src/Game/res/index.html.php'), array(

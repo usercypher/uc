@@ -8,7 +8,7 @@ class Cli_Pipe_Db_Exec {
         list($this->app, $this->db) = $args;
     }
 
-    function process($input, $output) {
+    function call($input, $output) {
         $success = true;
         $message = '';
         
@@ -23,14 +23,14 @@ class Cli_Pipe_Db_Exec {
             'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
         ));
 
-        $output->io('If input is piped, the script will read it and exit automatically. Paste Db script and type EXIT on its own line to finish:' . "\n");
-        $db = $input->io('EXIT');
+        $output->call('If input is piped, the script will read it and exit automatically. Paste Db script and type EXIT on its own line to finish:' . "\n");
+        $db = $input->call('EXIT');
 
-        $output->io('Executing...' . "\n");
+        $output->call('Executing...' . "\n");
 
-        $this->db->execute($db);
+        $result = $this->db->execute($db);
 
-        $message .= 'Done.' . "\n";
+        $message .= 'Done.' . "\n\nOutput:\n" . strval($result);
 
         $output->content = $message;
 

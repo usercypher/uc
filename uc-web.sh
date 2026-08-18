@@ -10,13 +10,19 @@ if [ -f /system/build.prop ]; then
 fi
 
 case "$OS" in
-    Linux)
+    Linux|Android)
         case "$ARCH" in
             x86_64)
-                exec bin/uc-web/dist/uc-web-linux-amd64 uc-web.json
+                exec bin/uc-web/dist/uc-web-linux-amd64 bin/uc-web/uc-web.json
                 ;;
-            aarch64)
-                exec bin/uc-web/dist/uc-web-linux-arm64 uc-web.json
+            i386|i486|i586|i686)
+                exec bin/uc-web/dist/uc-web-linux-386 bin/uc-web/uc-web.json
+                ;;
+            armv8l|armv7l|arm)
+                exec bin/uc-web/dist/uc-web-linux-arm bin/uc-web/uc-web.json
+                ;;
+            arm64|aarch64)
+                exec bin/uc-web/dist/uc-web-linux-arm64 bin/uc-web/uc-web.json
                 ;;
             *)
                 echo "Unsupported architecture: $ARCH"
@@ -27,27 +33,13 @@ case "$OS" in
     Darwin)
         case "$ARCH" in
             x86_64)
-                exec bin/uc-web/dist/uc-web-darwin-amd64 uc-web.json
+                exec bin/uc-web/dist/uc-web-darwin-amd64 bin/uc-web/uc-web.json
                 ;;
             arm64)
-                exec bin/uc-web/dist/uc-web-darwin-arm64 uc-web.json
+                exec bin/uc-web/dist/uc-web-darwin-arm64 bin/uc-web/uc-web.json
                 ;;
             *)
                 echo "Unsupported architecture: $ARCH"
-                exit 1
-                ;;
-        esac
-        ;;
-    Android)
-        case "$ARCH" in
-            armv8l|armv7l|arm)
-                exec bin/uc-web/dist/uc-web-android-arm uc-web.json
-                ;;
-            aarch64)
-                exec bin/uc-web/dist/uc-web-android-arm64 uc-web.json
-                ;;
-            *)
-                echo "Unsupported Android architecture: $ARCH"
                 exit 1
                 ;;
         esac
