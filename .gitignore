@@ -1,6 +1,7 @@
 config.data.php
 bin/php/**/*
 !bin/php/**/
+!bin/php/*
 var/**
 !var/**/
 !**/.dir
