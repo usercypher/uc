@@ -206,7 +206,7 @@ setInterval(()=>{
 
     ws.send(state);
 
-},1000/30);
+},1000/60);
 
 const bind=(id,k)=>{
     const el=document.getElementById(id);

@@ -116,7 +116,7 @@ type FcgiWorker struct {
 type Server struct {
 	cfg              *Config
 	rootDir          string
-	fcgiWorkerIndex  map[string]atomic.Uint32
+	fcgiWorkerIndex  map[string]*atomic.Uint32
 	fcgiWorkerWG     sync.WaitGroup
 	fcgiWorkers      map[string][]*FcgiWorker
 	fcgiPortCounter  atomic.Uint32
@@ -285,9 +285,10 @@ func main() {
 	srv.fcgiPortCounter.Store(49152)
 
 	if cfg.Fcgi != nil {
-		srv.fcgiWorkerIndex = make(map[string]atomic.Uint32, len(cfg.Fcgi))
+		srv.fcgiWorkerIndex = make(map[string]*atomic.Uint32, len(cfg.Fcgi))
 		srv.fcgiWorkers = make(map[string][]*FcgiWorker, len(cfg.Fcgi))
 		for fKey, fVal := range cfg.Fcgi {
+			srv.fcgiWorkerIndex[fKey] = new(atomic.Uint32)
 			srv.fcgiWorkers[fKey] = make([]*FcgiWorker, fVal.WorkerCount)
 			srv.fcgiWorkerWG.Add(fVal.WorkerCount)
 			for i := 0; i < fVal.WorkerCount; i++ {
@@ -717,26 +718,9 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 	}
 
-	var fcgiWorker *FcgiWorker
-
-	for _, worker := range s.fcgiWorkers[fcgi] {
-		select {
-		case worker.semaphore <- struct{}{}:
-			fcgiWorker = worker
-		default:
-			continue
-		}
-
-		if fcgiWorker != nil {
-			break
-		}
-	}
-
-	if fcgiWorker == nil {
-		workerIdx := s.fcgiWorkerIndex[fcgi]
-		fcgiWorker = s.fcgiWorkers[fcgi][int(workerIdx.Add(1))%s.cfg.Fcgi[fcgi].WorkerCount]
-		fcgiWorker.semaphore <- struct{}{}
-	}
+	workerIdx := s.fcgiWorkerIndex[fcgi]
+	fcgiWorker := s.fcgiWorkers[fcgi][int(workerIdx.Add(1))%s.cfg.Fcgi[fcgi].WorkerCount]
+	fcgiWorker.semaphore <- struct{}{}
 
 	defer func() { <-fcgiWorker.semaphore }()
 
@@ -1172,11 +1156,11 @@ func parseConfig(path string) (*Config, error) {
 	cfg.DocumentRoot = filepath.Clean(cfg.DocumentRoot)
 
 	for fKey, fVal := range cfg.Fcgi {
-		if fVal.WorkerCount < 0 {
+		if fVal.WorkerCount < 1 {
 			fVal.WorkerCount = 5
 		}
 
-		if fVal.WorkerConcurrency < 0 {
+		if fVal.WorkerConcurrency < 1 {
 			fVal.WorkerConcurrency = 1
 		}
 

@@ -274,7 +274,7 @@ class Game_Pipe_Ws {
     {
         if (!is_array($clients))
             $clients = [$clients];
-
+/*
         $this->curl->send($this->server, array(
             'method' => 'POST',
             'header' => array(
@@ -283,6 +283,51 @@ class Game_Pipe_Ws {
             ),
             'content' => json_encode($data)
         ));
+*/
 
+        $this->sendWithRetry(parse_url($this->server), $clients, $data);
+    }
+
+    private $socket = null;
+
+    private function sendWithRetry($server, $clients, $data, $maxRetries = 1) {
+        $retries = 0;
+
+        while ($retries <= $maxRetries) {
+            if (!$this->socket || !is_resource($this->socket)) {
+                $this->socket = pfsockopen($server['host'], $server['port'], $errno, $errstr, 30);
+                if (!$this->socket) {
+                    return false;
+                }
+            }
+
+            $request = $this->buildHttpRequest($server, $clients, $data);
+            $bytesWritten = fwrite($this->socket, $request);
+    
+            if ($bytesWritten === false) {
+                @fclose($this->socket);
+                $this->socket = null;
+                if (++$retries > $maxRetries) {
+                    return false;
+                }
+                continue;
+            }
+    
+            return true;
+        }
+    }
+
+    private function buildHttpRequest($server, $clients, $data) {
+        $content = json_encode($data);
+        $path = $server['path'] ?? '/';
+    
+        return "POST $path HTTP/1.1\r\n"
+             . "Host: {$server['host']}:{$server['port']}\r\n"
+             . "Content-Type: application/json\r\n"
+             . "Content-Length: " . strlen($content) . "\r\n"
+             . "X-Uc-Hub-Client: " . implode(',', $clients) . "\r\n"
+             . "X-Uc-Hub-Token: {$this->token}\r\n"
+             . "Connection: keep-alive\r\n\r\n"
+             . $content;
     }
 }
