@@ -1,5 +1,5 @@
 <?php /*
-Version: 7.0.0
+Version: 8.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -194,7 +194,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '7.0.0';
+    var $version = '8.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -215,13 +215,16 @@ class App {
         'ERROR_DISPLAY' => true,
         'ERROR_LOGGING' => false,
 
-        'LOG_HANDLER' => array(),
+        'LOG_HANDLER' => null,
         'LOG_DIR' => '',
         'LOG_DIR_TIMESTAMP' => '',
         'LOG_SIZE_LIMIT_MB' => 5,
         'LOG_CLEANUP_INTERVAL_DAYS' => 1,
         'LOG_RETENTION_DAYS' => 7,
         'LOG_MAX_FILES' => 10,
+
+        'READ_HANDLER' => null,
+        'WRITE_HANDLER' => null,
     );
     var $unitInstCache = array();
 
@@ -274,7 +277,7 @@ class App {
 
     // Error Management
 
-    function handleErrorDefault($errno, $errstr, $errfile, $errline) {
+    function handleError($errno, $errstr, $errfile, $errline) {
         $e = $this->error($errno, $errstr, $errfile, $errline, array('TRACE' => $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array()) + $this->getEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array()));
 
         if (!$e) {
@@ -714,10 +717,7 @@ class App {
         $msg = date(sprintf('[Y-m-d H:i:s.%06d O]', $micro * 1000000), $time) . ' ' . $msg . "\n";
 
         if ($this->env['LOG_HANDLER']) {
-            $handler = $this->env['LOG_HANDLER'];
-            $handler[0]-> {
-                $handler[1]}($msg, $file);
-            return;
+            return $this->env['LOG_HANDLER']->call($msg, $file);
         }
 
         $ext = '';
@@ -803,6 +803,10 @@ class App {
     }
 
     function read($file) {
+        if ($this->env['READ_HANDLER']) {
+            return $this->env['READ_HANDLER']->call($file);
+        }
+
         if ($handle = fopen($file, 'rb')) {
             $content = '';
             while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
@@ -814,6 +818,10 @@ class App {
     }
 
     function write($file, $content, $append = false) {
+        if ($this->env['WRITE_HANDLER']) {
+            return $this->env['WRITE_HANDLER']->call($file, $content, $append);
+        }
+
         if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
             $result = fwrite($handle, (string) $content);
             fclose($handle);

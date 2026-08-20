@@ -9,7 +9,7 @@ function index() {
     $app = new App();
     $app->init();
 
-    set_error_handler(array($app, 'handleErrorDefault'));
+    set_error_handler(array($app, 'handleError'));
 
     $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/');
 
