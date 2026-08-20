@@ -1,5 +1,5 @@
 <?php /*
-Version: 8.0.0
+Version: 9.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -194,7 +194,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '8.0.0';
+    var $version = '9.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -227,6 +227,7 @@ class App {
         'WRITE_HANDLER' => null,
     );
     var $unitInstCache = array();
+    var $unitLoadCache = array('App' => true, 'Input' => true, 'InputHttp' => true, 'InputCli' => true, 'Output' => true, 'OutputHttp' => true, 'OutputCli' => true);
 
     // Application Setup
 
@@ -479,7 +480,26 @@ class App {
 
     // Unit Management
 
-    function autoAddUnit($path, $option) {
+    function syncUnits() {
+        $units = array();
+        $loads = array();
+
+        foreach (get_declared_classes() as $unit) {
+            $units[strtolower($unit)] = true;
+        }
+
+        foreach (get_required_files() as $load) {
+            $loads[$this->dirToUnix($load)] = true;
+        }
+
+        foreach ($this->unit as $unit => $data) {
+            if (!isset($this->unitLoadCache[$unit]) && (isset($units[strtolower($unit)]) || isset($loads[$this->env['DIR_ROOT'] . $this->pathList[$data[APP_UNIT_PATH]] . $data[APP_UNIT_FILE] . '.php']))) {
+                $this->unitLoadCache[$unit] = true;
+            }
+        }
+    }
+
+    function scanUnits($path, $option) {
         if (!isset($option['depth'])) {
             $option['depth'] = 1;
         }
@@ -520,7 +540,7 @@ class App {
                     $subOption = $option;
                     $subOption['depth']++;
                     $subOption['namespace'] .= $item . '\\';
-                    $this->autoAddUnit($path . $item . '/', $subOption);
+                    $this->scanUnits($path . $item . '/', $subOption);
                 } elseif (!$isDir && substr($item, -4) === '.php') {
                     $this->addUnit(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($item, 0, -4), $path);
                 }
@@ -576,8 +596,6 @@ class App {
     }
 
     function loadUnit($unit) {
-        static $unitPathCache = array('App' => true, 'Input' => true, 'Output' => true);
-
         $stack = array($unit);
         $top = 0;
         $seen = array();
@@ -593,7 +611,7 @@ class App {
                 return;
             }
 
-            if (isset($unitPathCache[$unit])) {
+            if (isset($this->unitLoadCache[$unit])) {
                 if (0 > $top) {
                     return;
                 }
@@ -620,7 +638,7 @@ class App {
             unset($seen[$previousUnit]);
 
             require $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
-            $unitPathCache[$unit] = true;
+            $this->unitLoadCache[$unit] = true;
         }
     }
 

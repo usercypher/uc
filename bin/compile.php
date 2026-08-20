@@ -62,7 +62,7 @@ function compile() {
 
     scan_dir($app->dir('ROOT', 'src'), $files);
 
-    require str_replace('\\', '/', dirname(__FILE__)) . '/../src/_auto_add_unit.php';
+    require str_replace('\\', '/', dirname(__FILE__)) . '/../src/_scan_units.php';
 
     $datas = array();
     foreach ($files['data'] as $file) {

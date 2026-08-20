@@ -3,7 +3,7 @@
 $app = $data['app'];
 
 $env = array(
-    'UC' => '8.0.0',
+    'UC' => '9.0.0',
     'APP_ID' => 'uc',
     // Environment Settings
     'DIR_WEB' => $app->dir('ROOT', 'web/'),
