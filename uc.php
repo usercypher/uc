@@ -1,5 +1,5 @@
 <?php /*
-Version: 9.0.0
+Version: 9.0.1
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -32,11 +32,12 @@ function d($var, $limit = 8192) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) {
         header('content-type: text/plain');
     }
+
     ob_start();
     var_dump($var);
     $content = ob_get_contents();
     ob_end_clean();
-    echo($limit > -1 && strlen($content) > $limit ? substr($content, 0, $limit) . "\n... [truncated]" : $content);
+    echo($content !== false && $limit > -1 && strlen($content) > $limit ? substr($content, 0, $limit) . "\n... [truncated]" : $content);
 }
 
 function dd($var = null, $limit = 8192) {
@@ -69,6 +70,7 @@ class InputHttp extends Input {
 
     function init() {
         $contentHeader = array('CONTENT_TYPE' => true, 'CONTENT_LENGTH' => true);
+
         foreach ($_SERVER as $key => $value) {
             if (substr($key, 0, 5) === 'HTTP_') {
                 $this->header[str_replace('_', '-', strtolower(substr($key, 5)))] = $value;
@@ -89,9 +91,11 @@ class InputHttp extends Input {
     function call($content = '', $code = 0) {
         if (!$this->contentRead && ($handle = fopen('php://input', 'rb'))) {
             $lines = '';
+
             while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
                 $lines .= $chunk;
             }
+
             fclose($handle);
             $this->content = $lines;
         }
@@ -111,8 +115,10 @@ class InputCli extends Input {
 
         for ($i = 1; $argc > $i; $i++) {
             $arg = $argv[$i];
+
             if (substr($arg, 0, 2) === '--') {
                 $eq = strpos($arg, '=');
+
                 if ($eq !== false) {
                     $query[] = urlencode(substr($arg, 2, $eq - 2)) . '=' . urlencode(substr($arg, $eq + 1));
                 } else {
@@ -137,6 +143,7 @@ class InputCli extends Input {
         }
 
         $lines = '';
+
         while (($line = fgets(STDIN)) !== false && rtrim($line) !== $content) {
             $lines .= $line;
         }
@@ -164,10 +171,13 @@ class OutputHttp extends Output {
             if (isset($this->header['location']) && (300 > $code || $code > 399)) {
                 $code = 302;
             }
+
             header('HTTP/' . $this->version . ' ' . $code . ' ' . $this->text);
+
             if (!isset($this->header['content-type'])) {
                 $this->header['content-type'] = 'text/html';
             }
+
             foreach ($this->header as $key => $value) {
                 if (is_array($value)) {
                     foreach ($value as $v) {
@@ -194,7 +204,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '9.0.0';
+    var $version = '9.0.1';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -235,11 +245,13 @@ class App {
         $this->env['SAPI'] = php_sapi_name();
         $this->env['DIR_ROOT'] = $this->dirToUnix(dirname(__FILE__)) . '/';
         $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
+
         foreach (array('App', 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
                 $this->addUnit($unit);
             }
         }
+
         $this->setUnit('App', array('cache' => true));
         $this->unitInstCache['App'] = $this;
     }
@@ -291,6 +303,7 @@ class App {
 
         if ($this->env['SAPI'] !== 'cli' && !headers_sent()) {
             header('HTTP/1.1 ' . $e['code']);
+
             foreach ($e['header'] as $key => $value) {
                 if (is_array($value)) {
                     foreach ($value as $v) {
@@ -318,6 +331,7 @@ class App {
 
         $code = 500;
         $parts = explode('|', $errstr, 2);
+
         if (is_numeric($parts[0])) {
             $code = (int) $parts[0];
             $errstr = $parts[1];
@@ -353,7 +367,8 @@ class App {
 
         $content = '';
         $type = $this->httpNegotiate(isset($errcontext['ACCEPT']) ? $errcontext['ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
-        if ($type && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
+
+        if ($type !== '' && isset($this->env['ERROR_TEMPLATES'][$type]) && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
             $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
             $type = 'text/plain';
@@ -371,16 +386,19 @@ class App {
 
     function setRoute($method, $route, $units) {
         $handler = array();
+
         foreach ($units as $unit) {
             $handler[] = $this->unit[$unit][APP_UNIT_LIST];
         }
 
         $node = &$this->routes;
         $routeSegments = explode('/', trim($route, '/') . '/' . APP_ROUTE_HANDLER);
+
         foreach ($routeSegments as $segment) {
             if (!isset($node[$segment])) {
                 $node[$segment] = array();
             }
+
             $node = &$node[$segment];
         }
 
@@ -395,8 +413,8 @@ class App {
     function groupRoute($group, $method, $route, $units, $ignore = array()) {
         $ignore = array_flip($ignore);
         $units = isset($ignore['--all']) ? $units : array_merge(isset($group['prepend']) && !isset($ignore['--prepend']) ? $group['prepend'] : array(), isset($units) ? $units : array(), isset($group['append']) && !isset($ignore['--append']) ? $group['append'] : array());
-
         $filteredUnits = array();
+
         foreach ($units as $unit) {
             if (!isset($ignore[$unit])) {
                 $filteredUnits[] = $unit;
@@ -428,8 +446,9 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if ($key && $key[0] === ':') {
+                if ($key !== '' && $key[0] === ':') {
                     $current = $value;
+
                     if (substr($key, -1) === '*') {
                         $param[substr($key, 1, -1)] = implode('/', array_slice($routeSegments, $index));
                         if (isset($current[APP_ROUTE_HANDLER])) {
@@ -438,6 +457,7 @@ class App {
                     } else {
                         $param[substr($key, 1)] = rawurldecode($routeSegment);
                     }
+
                     $matched = true;
                     break;
                 }
@@ -452,7 +472,7 @@ class App {
             $matched = false;
 
             foreach ($current as $key => $value) {
-                if ($key && $key[0] === ':') {
+                if ($key !== '' && $key[0] === ':') {
                     $current = $value;
                     $matched = true;
                     break;
@@ -471,6 +491,7 @@ class App {
         }
 
         $handler = array();
+
         foreach ($current[$method] as $unit) {
             $handler[] = $this->unitList[$unit];
         }
@@ -523,7 +544,7 @@ class App {
         $relative = implode('/', array_slice(explode('/', $path), -$option['depth']));
 
         if ($handle = opendir($this->env['DIR_ROOT'] . $path)) {
-            while (($item = readdir($handle)) !== false) {
+            while ($item = readdir($handle)) {
                 if ($item === '.' || $item === '..') {
                     continue;
                 }
@@ -545,12 +566,14 @@ class App {
                     $this->addUnit(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($item, 0, -4), $path);
                 }
             }
+
             closedir($handle);
         }
     }
 
     function addUnit($unit, $path = '') {
         $pathListIndex = null;
+
         if (isset($this->path[$path])) {
             $pathListIndex = $this->path[$path];
         } else {
@@ -561,10 +584,12 @@ class App {
 
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
+
         if (isset($this->unit[$unit])) {
             if (($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE])) {
                 user_error('Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
             }
+
             return;
         }
 
@@ -574,9 +599,9 @@ class App {
     }
 
     function setUnit($unit, $option = array()) {
-        $test = $this->unit[$unit];
-
+        $this->unit[$unit];
         $map = array('args' => APP_UNIT_ARGS, 'load' => APP_UNIT_LOAD);
+
         foreach ($map as $key => $value) {
             if (isset($option[$key])) {
                 foreach ($option[$key] as $tmpUnit) {
@@ -621,22 +646,23 @@ class App {
             }
 
             $load = $this->unit[$unit][APP_UNIT_LOAD];
+
             if ($load) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, count($load));
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $top = $top + 2;
+                    $top += 2;
                     $stack[$top] = $this->unitList[$load[$md[$unit][0]]];
                     ++$md[$unit][0];
                     continue;
                 }
+
                 unset($md[$unit]);
             }
 
             unset($seen[$previousUnit]);
-
             require $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
             $this->unitLoadCache[$unit] = true;
         }
@@ -661,6 +687,7 @@ class App {
             }
 
             $cache = !$new && $this->unit[$unit][APP_UNIT_INST_CACHE];
+
             if ($cache && isset($this->unitInstCache[$unit])) {
                 if (0 > $top) {
                     return $this->unitInstCache[$unit];
@@ -672,25 +699,26 @@ class App {
             }
 
             $args = $this->unit[$unit][APP_UNIT_ARGS];
+
             if ($args) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, count($args));
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $top = $top + 2;
+                    $top += 2;
                     $stack[$top] = $this->unitList[$args[$md[$unit][0]]];
                     ++$md[$unit][0];
                     continue;
                 }
+
                 unset($md[$unit]);
             }
 
             unset($seen[$previousUnit]);
-
             $this->loadUnit($unit);
-
             $class = new $unit();
+
             if (isset($resolvedArgs[$unit])) {
                 $class->args($resolvedArgs[$unit]);
                 unset($resolvedArgs[$unit]);
@@ -724,6 +752,7 @@ class App {
         if (strpos($this->env['URL_' . $k], '?') !== false && ($q = strpos($s, '?')) !== false) {
             $s[$q] = '&';
         }
+
         return $this->env['URL_' . $k] . ($param ? strtr($s, $param) : $s);
     }
 
@@ -731,16 +760,15 @@ class App {
         $mt = explode(' ', microtime());
         $micro = (float) $mt[0];
         $time = (int) $mt[1];
-
-        $msg = date(sprintf('[Y-m-d H:i:s.%06d O]', $micro * 1000000), $time) . ' ' . $msg . "\n";
+        $msg = date(sprintf('[Y-m-d H:i:s.%06f O]', $micro), $time) . ' ' . $msg . "\n";
 
         if ($this->env['LOG_HANDLER']) {
             return $this->env['LOG_HANDLER']->call($msg, $file);
         }
 
         $ext = '';
-        $pos = strrpos($file, '.');
-        if ($pos !== false && $pos > 0) {
+
+        if (($pos = strrpos($file, '.')) !== false && $pos > 0) {
             $ext = substr($file, $pos);
             $file = substr($file, 0, $pos);
         }
@@ -748,7 +776,9 @@ class App {
         $logDir = $this->env['DIR_ROOT'] . $this->env['LOG_DIR'];
         $logFile = $logDir . $file . $ext;
 
-        $this->write($logFile, $msg, true);
+        if ($this->write($logFile, $msg, true) === false) {
+            return false;
+        }
 
         if (filesize($logFile) >= $this->env['LOG_SIZE_LIMIT_MB'] * 1048576) {
             $newLogFile = $logDir . '/' . $file . '_' . date('Y-m-d_H-i-s') . $ext;
@@ -762,19 +792,24 @@ class App {
             $prefix = $file . '_';
             $prefixLen = strlen($prefix);
             $logFilesMTime = array();
+
             if ($handle = opendir($logDir)) {
-                while (($item = readdir($handle)) !== false) {
+                while ($item = readdir($handle)) {
                     if ($item === '.' || $item === '..' || substr($item, 0, $prefixLen) !== $prefix) {
                         continue;
                     }
+
                     $lf = $logDir . $item;
                     $lfmtime = filemtime($lf);
+
                     if ($time - $lfmtime > $this->env['LOG_RETENTION_DAYS'] * 86400) {
                         unlink($lf);
                         continue;
                     }
+
                     $logFilesMTime[$lf] = $lfmtime;
                 }
+
                 closedir($handle);
             }
 
@@ -783,6 +818,7 @@ class App {
 
             if (count($logFiles) > $this->env['LOG_MAX_FILES']) {
                 $maxIndex = count($logFiles) - $this->env['LOG_MAX_FILES'];
+
                 for ($i = 0; $maxIndex > $i; $i++) {
                     unlink($logFiles[$i]);
                 }
@@ -790,12 +826,15 @@ class App {
 
             $this->write($timestampFile, $time);
         }
+
+        return true;
     }
 
     function pipe($input, $output, $pipe) {
         foreach ($pipe as $p) {
             $p = $this->makeUnit($p);
             list($input, $output, $success) = $p->call($input, $output);
+
             if (!$success) {
                 break;
             }
@@ -807,16 +846,20 @@ class App {
     function cast($data, $schema, $meta = array()) {
         $valid = array();
         $error = array();
+
         foreach ($schema as $field => $rules) {
             $valid[$field] = isset($data[$field]) ? $data[$field] : null;
+
             foreach ($rules as $rule) {
                 list($valid[$field], $err) = $rule->call($valid[$field]);
+
                 if ($err) {
                     $error[] = array('type' => 'system:message:error', 'data' => array('content' => $err, 'field' => $field) + $meta);
                     break;
                 }
             }
         }
+
         return array($valid, $error);
     }
 
@@ -825,14 +868,23 @@ class App {
             return $this->env['READ_HANDLER']->call($file);
         }
 
+        $result = false;
+
         if ($handle = fopen($file, 'rb')) {
             $content = '';
-            while (($chunk = fread($handle, 8192)) !== false && $chunk !== '') {
-                $content .= $chunk;
+
+            while (($result = fread($handle, 8192)) !== false && $result !== '') {
+                $content .= $result;
             }
+
             fclose($handle);
-            return $content;
+
+            if ($result !== false) {
+                $result = $content;
+            }
         }
+
+        return $result;
     }
 
     function write($file, $content, $append = false) {
@@ -840,11 +892,14 @@ class App {
             return $this->env['WRITE_HANDLER']->call($file, $content, $append);
         }
 
+        $result = false;
+
         if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
             $result = fwrite($handle, (string) $content);
             fclose($handle);
-            return $result;
         }
+
+        return $result;
     }
 
     function template($file, $data = array()) {
@@ -859,20 +914,24 @@ class App {
         if (!is_array($output = require $file)) {
             user_error('Data file must return an array', E_USER_WARNING);
         }
+
         return $output;
     }
 
     function strSlug($s) {
         $s = strtolower($s);
         $slug = '';
+
         for ($i = 0, $ilen = strlen($s); $ilen > $i; $i++) {
             $char = $s[$i];
+
             if (($char >= 'a' && 'z' >= $char) || ($char >= '0' && '9' >= $char)) {
                 $slug .= $char;
             } elseif (($char === ' ' || $char === '-') && substr($slug, -1) !== '-') {
                 $slug .= '-';
             }
         }
+
         return trim($slug, '-');
     }
 
@@ -894,31 +953,39 @@ class App {
 
     function httpNegotiate($accept, $offers) {
         $prefs = array();
+
         foreach (explode(',', $accept) as $type) {
             $parts = explode(';', trim($type));
             $mime = strtolower(trim(array_shift($parts)));
-
             $q = 1.0;
+
             foreach ($parts as $p) {
                 $p = explode('=', trim($p));
+
                 if (isset($p[1]) && strtolower(trim($p[0])) === 'q') {
                     $q = (float) trim($p[1]);
                 }
             }
+
             if ($q > 0) {
                 $q += substr($mime, -2) === '/*' ? 0 : 0.01;
                 $prefs[$mime] = isset($prefs[$mime]) && $prefs[$mime] > $q ? $prefs[$mime] : $q;
             }
         }
+
         arsort($prefs);
+
         foreach (array_keys($prefs) as $p) {
             foreach ($offers as $o) {
                 $o = strtolower($o);
+
                 if ($p === $o || $p === '*' || $p === '*/*' || (substr($p, -2) === '/*' && strpos($o, substr($p, 0, -1)) === 0)) {
                     return $o;
                 }
             }
         }
+
+        return '';
     }
 
     function versionCompare($required, $available) {
