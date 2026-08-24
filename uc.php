@@ -1,5 +1,5 @@
 <?php /*
-Version: 9.0.1
+Version: 9.0.2
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -137,14 +137,14 @@ class InputCli extends Input {
         parse_str($queryStr, $this->query);
     }
 
-    function call($content = '', $code = 0) {
-        if ($content === '') {
+    function call($content = "\0", $code = 0) {
+        if ($content === "\0") {
             return ($line = fgets(STDIN)) !== false ? rtrim($line) : '';
         }
 
         $lines = '';
 
-        while (($line = fgets(STDIN)) !== false && rtrim($line) !== $content) {
+        while (($line = fgets(STDIN)) !== false && (substr($line, 0, (substr($line, -2) === "\r\n" ? -2 : -1))) !== $content) {
             $lines .= $line;
         }
 
@@ -204,7 +204,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '9.0.1';
+    var $version = '9.0.2';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
