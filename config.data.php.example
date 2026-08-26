@@ -3,7 +3,7 @@
 $app = $data['app'];
 
 $env = array(
-    'UC' => '9.0.0',
+    'UC' => '10.0.0',
     'APP_ID' => 'uc',
     // Environment Settings
     'DIR_WEB' => $app->dir('ROOT', 'web/'),
@@ -64,6 +64,12 @@ return array(
 
             'DB' => array(
                 'DEFAULT' => array(
+                    //'DSN' => 'mysql:host=localhost;port=3306;dbname=myapp_db',
+                    //'DSN' => 'pgsql:host=localhost;port=5432;dbname=myapp_db;user=postgres;password=secret',
+                    //'DSN' => 'sqlsrv:Server=localhost;Database=myapp_db',
+                    //'DSN' => 'oci:dbname=xe;charset=utf8',
+                    //'DSN' => 'ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=myapp_db;HOSTNAME=localhost;PORT=50000;PROTOCOL=TCPIP;UID=db2inst1;PWD=secret',
+                    //'DSN' => 'firebird:dbname=/path/to/database.fdb',
                     'DSN' => 'sqlite:' . $app->dir('ROOT', '/var/lib/.sqlite'),
                     'USER' => 'root',
                     'PASS' => '',

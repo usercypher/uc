@@ -8,7 +8,6 @@ class Shared_Lib_Database {
             $dsn = isset($config['dsn']) ? $config['dsn'] : '';
             $user = isset($config['user']) ? $config['user'] : '';
             $pass = isset($config['pass']) ? $config['pass'] : '';
-            $time = isset($config['time']) ? $config['time'] : '+00:00';
             $timeout = isset($config['timeout']) ? (int) $config['timeout'] : 5;
 
             $this->conn[$id] = new PDO($dsn, $user, $pass, array(

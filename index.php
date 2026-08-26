@@ -49,7 +49,7 @@ function index() {
         $input->route = isset($input->query['route']) ? $input->query['route'] : '/';
     }
 
-    $app->setEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array(
+    $app->setEnv('HANDLE_ERROR_CONTEXT', array(
         'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : '',
         'HEADER' => array()
     ));
@@ -66,7 +66,7 @@ function index() {
         $description = '';
         if ($result['error'] === 405) {
             $description = 'Method not allowed: ' . $input->method . ' ' . $input->route . '. allow: ' . $result['header']['allow'];
-            $app->setEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array(
+            $app->setEnv('HANDLE_ERROR_CONTEXT', array(
                 'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : '',
                 'HEADER' => $result['header']
             ));

@@ -1,5 +1,5 @@
 <?php /*
-Version: 9.0.2
+Version: 10.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -204,7 +204,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '9.0.2';
+    var $version = '10.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -237,7 +237,7 @@ class App {
         'WRITE_HANDLER' => null,
     );
     var $unitInstCache = array();
-    var $unitLoadCache = array('App' => true, 'Input' => true, 'InputHttp' => true, 'InputCli' => true, 'Output' => true, 'OutputHttp' => true, 'OutputCli' => true);
+    var $unitLoadCache = array();
 
     // Application Setup
 
@@ -251,6 +251,8 @@ class App {
                 $this->addUnit($unit);
             }
         }
+
+        $this->syncUnits();
 
         $this->setUnit('App', array('cache' => true));
         $this->unitInstCache['App'] = $this;
@@ -291,7 +293,7 @@ class App {
     // Error Management
 
     function handleError($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, array('TRACE' => $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array()) + $this->getEnv('HANDLE_ERROR_DEFAULT_CONTEXT', array()));
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('TRACE' => $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array()) + $this->getEnv('HANDLE_ERROR_CONTEXT', array()));
 
         if (!$e) {
             return true;
