@@ -1,5 +1,5 @@
 <?php /*
-Version: 10.0.0
+Version: 10.0.1
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -204,7 +204,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '10.0.0';
+    var $version = '10.0.1';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -915,6 +915,7 @@ class App {
     function data($file, $data = array()) {
         if (!is_array($output = require $file)) {
             user_error('Data file must return an array', E_USER_WARNING);
+            return array();
         }
 
         return $output;
