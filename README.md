@@ -52,13 +52,13 @@ Copy the default configuration.
 **Linux/macOS**
 
 ```bash
-cp config.data.php.example config.data.php
+cp config.php.example config.php
 ```
 
 **Windows**
 
 ```bat
-copy config.data.php.example config.data.php
+copy config.php.example config.php
 ```
 
 Compile routes and units.
