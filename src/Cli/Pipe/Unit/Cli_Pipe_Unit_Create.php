@@ -27,8 +27,8 @@ class Cli_Pipe_Unit_Create {
 
         $classContent = $this->classContent($className, $classDeps, isset($input->query['pipe']));
 
-        $fullPath = $this->app->dir('ROOT', '' . $classPath);
-        $this->app->write($fullPath, $classContent);
+        $fullPath = $this->app->dir('root', '' . $classPath);
+        $this->app->fileWrite($fullPath, $classContent);
 
         $message .= "\n" . $className . ' created successfully!' . "\n";
         $message .= 'Location: ' . $fullPath . "\n";

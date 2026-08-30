@@ -6,15 +6,17 @@ class Shared_Lib_DatabaseHelper {
     var $key;
     var $db;
     var $id;
+    var $seq;
 
     function setTable($table, $key = 'id') {
         $this->table = $table;
         $this->key = $key;
     }
 
-    function setDb($db, $id = '_') {
+    function setDb($db, $id = '_', $seq = null) {
         $this->db = $db;
         $this->id = $id;
+        $this->seq = $seq;
     }
 
     function addMessage($type, $message, $meta = array()) {
@@ -38,7 +40,7 @@ class Shared_Lib_DatabaseHelper {
     }
 
     function lastInsertId() {
-        return $this->db->lastInsertId($this->id);
+        return $this->db->lastInsertId($this->id, $this->seq);
     }
 
     function execute($query) {
@@ -120,7 +122,7 @@ class Shared_Lib_DatabaseHelper {
             $caseClause = array();
             foreach ($rows as $row) {
                 if (!isset($row[$column])) {
-                    trigger_error('Execute failed: Missing column "' . $column . '" in some rows.', E_USER_WARNING);
+                    $this->addMessage('error', 'Execute failed: Missing column "' . $column . '" in some rows.');
                     return false;
                 }
                 $caseClause[] = 'WHEN ? THEN ?';

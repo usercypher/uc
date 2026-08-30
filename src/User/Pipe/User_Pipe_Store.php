@@ -40,7 +40,7 @@ class User_Pipe_Store {
 
         $this->session->set('flash', $this->userRepo->getMessages());
 
-        $output->header['location'] = $this->app->url('ROUTE', trim($route, '/'));
+        $output->header['location'] = $this->app->url('route', $route);
 
         return array($input, $output, $success);
     }

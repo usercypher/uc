@@ -14,17 +14,15 @@ class Game_PlayerRepo extends Shared_Lib_DatabaseHelper {
             $this->castDb
         ) = $args;
 
-        $db = $this->app->getEnv('DB', array());
-        $name = 'GAME';
+        $name = 'game';
 
         parent::setTable('player');
         parent::setDb(
             $this->database,
             $this->database->connect(array(
-                'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
-                'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
-                'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
-                'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+                'dsn' => $this->app->env['db'][$name]['dsn'],
+                'user' => $this->app->env['db'][$name]['user'],
+                'pass' => $this->app->env['db'][$name]['pass']
             ), $name)
         );
     }

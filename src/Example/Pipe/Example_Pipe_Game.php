@@ -13,7 +13,7 @@ class Example_Pipe_Game {
     public function call($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dir('ROOT', 'src/Game/res/index.html.php'), array(
+        $output->content = $this->app->template($this->app->dir('root', 'src/Game/res/index.html.php'), array(
             'app' => $this->app
         ));
 

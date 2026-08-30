@@ -11,16 +11,13 @@ class Cli_Pipe_Db_Exec {
     function call($input, $output) {
         $success = true;
         $message = '';
-        
-        $name = isset($input->query['name']) ? $input->query['name'] : 'DEFAULT';
 
-        $db = $this->app->getEnv('DB', array());
+        $name = isset($input->query['name']) ? $input->query['name'] : 'default';
 
         $this->db->connect(array(
-            'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
-            'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
-            'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
-            'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+            'dsn' => $this->app->env['db'][$name]['dsn'],
+            'user' => $this->app->env['db'][$name]['user'],
+            'pass' => $this->app->env['db'][$name]['pass']
         ));
 
         $output->call('If input is piped, the script will read it and exit automatically. Paste Db script and type EXIT on its own line to finish:' . "\n");
@@ -28,9 +25,7 @@ class Cli_Pipe_Db_Exec {
 
         $output->call('Executing...' . "\n");
 
-        $result = $this->db->execute($db);
-
-        $message .= 'Done.' . "\n\nOutput:\n" . strval($result);
+        $message .= 'Done. ' . $this->db->execute($db) . "\n";
 
         $output->content = $message;
 

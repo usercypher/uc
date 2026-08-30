@@ -1,4 +1,4 @@
-config.data.php
+config.php
 bin/php/**/*
 !bin/php/**/
 !bin/php/*

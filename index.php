@@ -4,6 +4,7 @@
 //require 'bin/compile.php';  // Generates config and exits script
 
 require 'uc.php';
+require 'config.php';
 
 function index() {
     $app = new App();
@@ -11,27 +12,14 @@ function index() {
 
     set_error_handler(array($app, 'handleError'));
 
-    $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/');
+    config($app, basename(__FILE__));
 
-    $config = $app->data($app->dir('ROOT', 'config.data.php'), array(
-        'app' => $app
-    ));
-
-    $mode = $config['mode'][basename(__FILE__)];
-
-    foreach ($config['ini'][$mode] as $key => $value) {
-        $app->setIni($key, $value);
-    }
-
-    foreach ($config['env'][$mode] as $key => $value) {
-        $app->setEnv($key, $value);
-    }
-
-    if ($app->versionCompare($app->getEnv('UC', $app->version), $app->version) === -1) {
-        $errorContent = 'Error: installed UC version (' . $app->version . ') is older than the required version (' . $app->getEnv('UC', $app->version) . '). Please update UC and try again.' . "\n";
-        if ($app->getEnv('SAPI') === 'cli') {
+    if ($app->versionCompare($app->env['uc'], $app->version) === -1) {
+        $errorContent = 'Error: installed UC version (' . $app->version . ') is older than the required version (' . $app->env['uc'] . '). Please update UC and try again.' . "\n";
+        if ($app->env['sapi'] === 'cli') {
             fwrite(STDERR, $errorContent);
         } else {
+            header('content-type: text/plain');
             echo $errorContent;
         }
 
@@ -40,36 +28,36 @@ function index() {
 
     $app->load('var/lib/app.state.dat');
 
-    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputHttp;
+    $input = $app->env['sapi'] === 'cli' ? new InputCli : new InputHttp;
     $input->init();
 
-    $app->setEnv('ACCEPT_LANGUAGE', isset($input->header['accept-language']) ? $input->header['accept-language'] : 'en');
-    if ($app->getEnv('SAPI') !== 'cli' && !$app->getEnv('ROUTE_REWRITE')) {
-        $app->setEnv('URL_ROUTE', $app->getEnv('URL_ROOT', '/') . $input->route . '?route=/');
-        $input->route = isset($input->query['route']) ? $input->query['route'] : '/';
+    if ($app->env['sapi'] !== 'cli' && !$app->env['route_rewrite']) {
+        $app->env['url']['route'] = $app->env['url']['root'] . $input->route . '?route=';
+        $input->route = isset($input->query['route']) ? $input->query['route'] : '';
     }
 
-    $app->setEnv('HANDLE_ERROR_CONTEXT', array(
-        'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : '',
-        'HEADER' => array()
-    ));
+    $app->env['handle_error_context'] = array(
+        'accept' => isset($input->header['accept']) ? $input->header['accept'] : '',
+        'header' => array()
+    );
 
-    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputHttp;
+    $output = $app->env['sapi'] === 'cli' ? new OutputCli : new OutputHttp;
     $output->init();
     $output->version = $input->version;
 
-    list($input, $output) = $app->pipe($input, $output, $config['global']);
+    list($input, $output) = $app->pipe($input, $output, $app->env['route_handler_global']);
 
     $result = $app->resolveRoute($input->method, $input->route);
 
     if (isset($result['error'])) {
+        list($input, $output) = $app->pipe($input, $output, array_merge($app->env['route_handler_prepend'], $app->env['route_handler_append']));
         $description = '';
         if ($result['error'] === 405) {
             $description = 'Method not allowed: ' . $input->method . ' ' . $input->route . '. allow: ' . $result['header']['allow'];
-            $app->setEnv('HANDLE_ERROR_CONTEXT', array(
-                'ACCEPT' => isset($input->header['accept']) ? $input->header['accept'] : '',
-                'HEADER' => $result['header']
-            ));
+            $app->env['handle_error_context'] = array(
+                'accept' => isset($input->header['accept']) ? $input->header['accept'] : '',
+                'header' => $result['header']
+            );
             $output->header += $result['header'];
         } else {
             $description = 'Route not found: ' . $input->method . ' ' . $input->route;
@@ -77,7 +65,7 @@ function index() {
         user_error($result['error'] . '|' . $description, E_USER_WARNING);
     } else {
         $input->param = $result['param'];
-        list($input, $output) = $app->pipe($input, $output, array_merge($config['prepend'], $result['handler'], $config['append']));
+        list($input, $output) = $app->pipe($input, $output, array_merge($app->env['route_handler_prepend'], $result['handler'], $app->env['route_handler_append']));
     }
 
     $output->call($output->content, (int) $output->code);
@@ -86,7 +74,7 @@ function index() {
     $input->term();
     $output->term();
 
-    if ($app->getEnv('SAPI') === 'cli') {
+    if ($app->env['sapi'] === 'cli') {
         exit($output->code);
     }
 }

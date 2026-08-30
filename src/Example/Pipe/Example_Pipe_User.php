@@ -36,7 +36,7 @@ class Example_Pipe_User {
             't' => $exampleTranslator,
             'languages' => $exampleLanguages,
             'lang' => $exampleLang,
-            'partial_app_script' => $this->app->template($this->app->dir('ROOT', 'src/App/res/partial/script.html.php'), array(
+            'partial_app_script' => $this->app->template($this->app->dir('root', 'src/App/res/partial/script.html.php'), array(
                 'app' => $this->app,
                 'flash' => $flash,
                 't' => $appTranslator
@@ -48,7 +48,7 @@ class Example_Pipe_User {
             'partial_user_delete' => null,
         );
         if ($isAuth) {
-            $data['partial_user_edit_account'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/edit_account.html.php'), array(
+            $data['partial_user_edit_account'] = $this->app->template($this->app->dir('root', 'src/User/res/partial/edit_account.html.php'), array(
                 'app' => $this->app,
                 't' => $userTranslator,
                 'lang' => $userLang,
@@ -59,7 +59,7 @@ class Example_Pipe_User {
                 'user' => $userSession,
             ));
             
-            $data['partial_user_edit_password'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/edit_password.html.php'), array(
+            $data['partial_user_edit_password'] = $this->app->template($this->app->dir('root', 'src/User/res/partial/edit_password.html.php'), array(
                 'app' => $this->app,
                 't' => $userTranslator,
                 'lang' => $userLang,
@@ -69,7 +69,7 @@ class Example_Pipe_User {
                 'user' => $userSession
             ));
             
-            $data['partial_user_delete'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/delete.html.php'), array(
+            $data['partial_user_delete'] = $this->app->template($this->app->dir('root', 'src/User/res/partial/delete.html.php'), array(
                 'app' => $this->app,
                 't' => $userTranslator,
                 'lang' => $userLang,
@@ -79,7 +79,7 @@ class Example_Pipe_User {
                 'user' => $userSession
             ));
         } else {
-            $data['partial_user_session'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/session.html.php'), array(
+            $data['partial_user_session'] = $this->app->template($this->app->dir('root', 'src/User/res/partial/session.html.php'), array(
                 'app' => $this->app,
                 't' => $userTranslator,
                 'lang' => $userLang,
@@ -87,7 +87,7 @@ class Example_Pipe_User {
                 'redirect_alt' => $input->route,
                 'session_token' => $sessionToken,
             ));
-            $data['partial_user_create'] = $this->app->template($this->app->dir('ROOT', 'src/User/res/partial/create.html.php'), array(
+            $data['partial_user_create'] = $this->app->template($this->app->dir('root', 'src/User/res/partial/create.html.php'), array(
                 'app' => $this->app,
                 't' => $userTranslator,
                 'lang' => $userLang,
@@ -98,7 +98,7 @@ class Example_Pipe_User {
             ));
         }
 
-        $output->content = $this->app->template($this->app->dir('ROOT', 'src/Example/res/user.html.php'), $data);
+        $output->content = $this->app->template($this->app->dir('root', 'src/Example/res/user.html.php'), $data);
 
         return array($input, $output, $success);
     }

@@ -23,7 +23,7 @@ class Cli_Pipe_File_FindReplace {
         $search = $input->query['search'];
         $replace = $input->query['replace'];
 
-        $directory = $this->app->getEnv('DIR_ROOT') . (!empty($input->query['dir']) ? $input->query['dir'] : '');
+        $directory = $this->app->dir('root', !empty($input->query['dir']) ? $input->query['dir'] : '');
 
         if (!is_dir($directory)) {
             $message .= "Error: Directory does not exist: $directory" . "\n";

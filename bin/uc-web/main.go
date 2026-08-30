@@ -729,6 +729,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 
 	client, err := Fcgi_DialTimeout(s.cfg.Fcgi[fcgi].Network, fcgiAddr, 2*time.Second)
 	if err != nil {
+		log.Printf("FCGI %s dial error: network=%s addr=%s err=%v", fcgi, s.cfg.Fcgi[fcgi].Network, fcgiAddr, err)
 		s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 		return
 	}
@@ -791,9 +792,11 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	for key, values := range r.Header {
 		if len(values) > 0 {
 			cgiBuf := "HTTP_" + strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
-			env[cgiBuf] = values[0]
+			env[cgiBuf] = strings.Join(values, ",")
 		}
 	}
+
+	env["HTTP_HOST"] = r.Host
 
 	if s.cfg.MaxBodyBytes > 0 {
 		r.Body = http.MaxBytesReader(w, r.Body, s.cfg.MaxBodyBytes)
@@ -805,6 +808,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &mbe) {
 			s.httpErrorFile(w, r, "Request entity too large", http.StatusRequestEntityTooLarge)
 		} else {
+			log.Printf("FCGI %s request error: addr=%s err=%v", fcgi, fcgiAddr, err)
 			s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 		}
 		return
@@ -815,6 +819,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		line, err := ioread.ReadLine()
 		if err != nil {
+			log.Printf("FCGI %s response error: addr=%s err=%v", fcgi, fcgiAddr, err)
 			s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 			return
 		}
@@ -828,6 +833,7 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 
 		i := strings.IndexByte(line, ':')
 		if i <= 0 {
+			log.Printf("FCGI %s response error: addr=%s err=malformed line=%q", fcgi, fcgiAddr, line)
 			s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 			return
 		}
@@ -838,12 +844,14 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(key, "Status") {
 			parts := strings.Fields(value)
 			if len(parts) == 0 {
+				log.Printf("FCGI %s response error: addr=%s err=invalid status=%q", fcgi, fcgiAddr, value)
 				s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 				return
 			}
 
 			code, err := strconv.Atoi(parts[0])
 			if err != nil || code < 100 || code >= 600 {
+				log.Printf("FCGI %s response error: addr=%s err=invalid status=%q", fcgi, fcgiAddr, value)
 				s.httpErrorFile(w, r, "Bad Gateway", http.StatusBadGateway)
 				return
 			}

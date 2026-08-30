@@ -60,7 +60,7 @@ class User_Pipe_Update {
 
         $this->session->set('flash', $this->userRepo->getMessages());
 
-        $output->header['location'] = $this->app->url('ROUTE', trim($route, '/'));
+        $output->header['location'] = $this->app->url('route', $route);
 
         return array($input, $output, $success);
     }

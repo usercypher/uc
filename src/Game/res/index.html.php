@@ -112,12 +112,12 @@ button{
 
 <div id="info">
     <div>Lives: <span id="hp">3</span></div>
-    <a href="<?= $app->url('ROUTE', '') ?>">Home</a>
+    <a href="<?= $app->url('route', '') ?>">Home</a>
 </div>
 
 <div class="canvas-container">
     <canvas id="g" width="400" height="400"></canvas>
-    <div id="server-alert">WebSocket offline. Run ./uc-hub.sh or uc-hub.bat on windows to start websocket, also run './cli.sh db print --name="GAME" | ./cli.sh db exec --name="GAME"' or 'cli.bat db print --name="GAME" | cli.bat db exec --name="GAME"' on windows to prepare db</div>
+    <div id="server-alert">WebSocket offline. Run ./uc-hub.sh or uc-hub.bat on windows to start websocket, also run './cli.sh db print --name="game" | ./cli.sh db exec --name="game"' or 'cli.bat db print --name="game" | cli.bat db exec --name="game"' on windows to prepare db</div>
 </div>
 
 <div id="ctrls">

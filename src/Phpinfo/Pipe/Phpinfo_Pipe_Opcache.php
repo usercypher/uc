@@ -12,7 +12,7 @@ class Phpinfo_Pipe_Opcache {
     public function call($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dir('ROOT', 'src/Phpinfo/res/opcache.html.php'));
+        $output->content = $this->app->template($this->app->dir('root', 'src/Phpinfo/res/opcache.html.php'));
 
         return array($input, $output, $success);
     }

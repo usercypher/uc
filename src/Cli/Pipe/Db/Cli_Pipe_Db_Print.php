@@ -11,7 +11,7 @@ class Cli_Pipe_Db_Print {
         $success = true;
         $message = '';
 
-        $directory = $this->app->getEnv('DIR_ROOT') . 'src/';
+        $directory = $this->app->dir('root', 'src/');
 
         $files = $this->getFilesRecursive($directory);
 
@@ -19,7 +19,7 @@ class Cli_Pipe_Db_Print {
 
         $seen = array();
 
-        $name = isset($input->query['name']) ? $input->query['name'] : 'DEFAULT';
+        $name = isset($input->query['name']) ? $input->query['name'] : 'default';
         $name = $name . '.db';
 
         for ($i = 0; $i < count($files); $i++) {

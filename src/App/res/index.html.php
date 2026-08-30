@@ -17,9 +17,9 @@ foreach (array(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $t->t('framework_title'); ?></title>
     <?php foreach ($languages as $l): ?>
-        <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('ROUTE', 'home/:lang', array(':lang' => $l)); ?>" />
+        <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('route', 'home/:lang', array(':lang' => $l)); ?>" />
     <?php endforeach; ?>
-    <link rel="alternate" hreflang="x-default" href="<?php echo $app->url('ROUTE', ''); ?>" />
+    <link rel="alternate" hreflang="x-default" href="<?php echo $app->url('route', ''); ?>" />
     <style>
         html {font-size: 16px;}
         body {font-family: Arial, sans-serif; margin: 1em;}
@@ -35,15 +35,15 @@ foreach (array(
     <p><?php echo $t->t('welcome_message'); ?></p>
     <ul>
         <li><a href="https://github.com/usercypher/uc"><?php echo $t->t('view_on_github'); ?></a></li>
-        <li><a href="<?php echo $app->url('ROUTE', 'adminer'); ?>"><?php echo $t->t('adminer'); ?></a></li>
-        <li><a href="<?php echo $app->url('ROUTE', 'phpinfo'); ?>"><?php echo $t->t('php_info'); ?></a></li>
-        <li><a href="<?php echo $app->url('ROUTE', 'phpinfo/opcache'); ?>"><?php echo $t->t('php_info_opcache'); ?></a></li>
-        <li><a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_user'); ?></a></li>
-        <li><a href="<?php echo $app->url('ROUTE', 'example/game/', array(':lang' => $lang)); ?>"><?php echo $t->t('example_game'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'adminer'); ?>"><?php echo $t->t('adminer'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'phpinfo'); ?>"><?php echo $t->t('php_info'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'phpinfo/opcache'); ?>"><?php echo $t->t('php_info_opcache'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'example/user/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_user'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'example/game/', array(':lang' => $lang)); ?>"><?php echo $t->t('example_game'); ?></a></li>
     </ul>    
     <p>
         <?php foreach ($languages as $l): ?>
-            <a href="<?php echo $app->url('ROUTE', 'home/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
+            <a href="<?php echo $app->url('route', 'home/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
         <?php endforeach; ?>
     </p>
 </body>

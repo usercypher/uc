@@ -12,7 +12,7 @@ class Adminer_Pipe_Index {
     public function call($input, $output) {
         $success = true;
 
-        $output->content = $this->app->template($this->app->dir('ROOT', 'src/Adminer/res/index.php'));
+        $output->content = $this->app->template($this->app->dir('root', 'src/Adminer/res/index.php'));
 
         return array($input, $output, $success);
     }

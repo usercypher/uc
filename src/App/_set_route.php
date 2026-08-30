@@ -4,7 +4,7 @@
 // ==========
 $group = array(
     'prepend' => array(
-        'App_Pipe_Lang'
+        
     ),
     'append' => array(
         'Shared_Pipe_OutputCompression'

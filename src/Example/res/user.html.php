@@ -25,11 +25,11 @@ foreach (array(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title><?= $t->t('title') ?></title>
-  <script src="<?= $app->url('WEB', 'asset/js/uc.js') ?>"></script>
-  <link rel="stylesheet" href="<?= $app->url('WEB', 'asset/css/uc.css') ?>">
-  <link rel="stylesheet" href="<?= $app->url('WEB', 'asset/css/style.css') ?>">
+  <script src="<?= $app->url('web', 'asset/js/uc.js') ?>"></script>
+  <link rel="stylesheet" href="<?= $app->url('web', 'asset/css/uc.css') ?>">
+  <link rel="stylesheet" href="<?= $app->url('web', 'asset/css/style.css') ?>">
   <?php foreach ($languages as $l): ?>
-    <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>" />
+    <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('route', 'example/user/:lang', array(':lang' => $l)); ?>" />
   <?php endforeach; ?>
 </head>
 <body>
@@ -40,11 +40,11 @@ foreach (array(
 <?php if (!$is_auth): ?>
         
         <ul>
-            <li><a href="<?= $app->url('ROUTE', 'home/:lang', array(':lang' => $lang)) ?>"><?= $t->t('home') ?></a></li>
+            <li><a href="<?= $app->url('route', 'home/:lang', array(':lang' => $lang)) ?>"><?= $t->t('home') ?></a></li>
             <li>
 
             <?php foreach ($languages as $l): ?>
-                <a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
+                <a href="<?php echo $app->url('route', 'example/user/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
             <?php endforeach; ?>
 
             </li>
@@ -78,10 +78,10 @@ foreach (array(
 <?php if ($is_auth): ?>
 
         <ul>
-            <li><a href="<?= $app->url('ROUTE', 'home/:lang', array(':lang' => $lang)) ?>"><?= $t->t('home') ?></a></li>
-            <li><a href="<?= $app->url('ROUTE', 'user/session-unset?redirect=:redirect', array(':redirect' => trim($route, '/'))) ?>"><?= $t->t('logout') ?></a></li>
+            <li><a href="<?= $app->url('route', 'home/:lang', array(':lang' => $lang)) ?>"><?= $t->t('home') ?></a></li>
+            <li><a href="<?= $app->url('route', 'user/session-unset?redirect=:redirect', array(':redirect' => $route)) ?>"><?= $t->t('logout') ?></a></li>
             <?php foreach ($languages as $l): ?>
-                <a href="<?php echo $app->url('ROUTE', 'example/user/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
+                <a href="<?php echo $app->url('route', 'example/user/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
             <?php endforeach; ?>
         </ul>
     </div>

@@ -17,7 +17,7 @@ class App_Pipe_Index {
         $appLang = $input->data['app:lang'];
         $appTranslator = $this->translator->get('app');
 
-        $output->content = $this->app->template($this->app->dir('ROOT', 'src/App/res/index.html.php'), array(
+        $output->content = $this->app->template($this->app->dir('root', 'src/App/res/index.html.php'), array(
             'app' => $this->app,
             't' => $appTranslator,
             'languages' => $appLanguages,

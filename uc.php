@@ -1,5 +1,5 @@
 <?php /*
-Version: 10.0.1
+Version: 11.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -28,20 +28,20 @@ while (ob_get_length() !== false) {
     ob_end_clean();
 }
 
-function d($var, $limit = 8192) {
+function d($var, $detailed = false, $limit = 8192) {
     if (php_sapi_name() !== 'cli' && !headers_sent()) {
         header('content-type: text/plain');
     }
 
     ob_start();
-    var_dump($var);
+    $detailed ? var_dump($var) : print_r($var);
     $content = ob_get_contents();
     ob_end_clean();
     echo($content !== false && $limit > -1 && strlen($content) > $limit ? substr($content, 0, $limit) . "\n... [truncated]" : $content);
 }
 
-function dd($var = null, $limit = 8192) {
-    d($var, $limit);
+function dd($var, $detailed = false, $limit = 8192) {
+    d($var, $detailed, $limit);
     die;
 }
 
@@ -53,9 +53,7 @@ class Input {
     var $version = '1.1';
 
     var $method = '';
-    var $uri = '/';
-    var $route = '/';
-    var $cookie = array();
+    var $route = '';
     var $query = array();
     var $frame = array();
     var $param = array();
@@ -81,10 +79,10 @@ class InputHttp extends Input {
 
         $this->version = isset($_SERVER['SERVER_PROTOCOL']) ? substr($_SERVER['SERVER_PROTOCOL'], 5) : '1.1';
         $this->method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
-        $this->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-        $this->route = ($pos = strpos($this->uri, '?')) !== false ? substr($this->uri, 0, $pos) : $this->uri;
-        $this->cookie = $_COOKIE;
-        $this->query = $_GET;
+        $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $route = ($pos = strpos($uri, '?')) !== false ? substr($uri, 0, $pos) : $uri;
+        $this->route = substr($route, strspn($route, '/'));
+        $this->query = $_COOKIE + $_GET;
         $this->frame = $_FILES + $_POST;
     }
 
@@ -131,8 +129,7 @@ class InputCli extends Input {
 
         $queryStr = implode('&', $query);
 
-        $this->uri = 'cli://' . $argv[0] . $route . ($queryStr ? '?' . $queryStr : '');
-        $this->route = $route;
+        $this->route = substr($route, strspn($route, '/'));
 
         parse_str($queryStr, $this->query);
     }
@@ -204,7 +201,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '10.0.1';
+    var $version = '11.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -213,28 +210,24 @@ class App {
     var $pathList = array();
     var $pathListIndex = 0;
     var $env = array(
-        'SAPI' => '',
+        'sapi' => '',
 
-        'DIR_ROOT' => '',
-        'URL_ROUTE' => '/',
+        'dir' => array('root' => ''),
+        'url' => array('route' => '/'),
 
-        'ERROR_TEMPLATES' => array(),
-        'ERROR_NON_FATAL' => 0,
-        'ERROR_LOG_FILE' => 'error.log',
-        'ERROR_MAX_LENGTH' => 4096,
-        'ERROR_DISPLAY' => true,
-        'ERROR_LOGGING' => false,
+        'error_templates' => array(),
+        'error_non_fatal' => 0,
+        'error_log_file' => 'error.log',
+        'error_max_length' => 4096,
+        'error_display' => true,
+        'error_logging' => false,
 
-        'LOG_HANDLER' => null,
-        'LOG_DIR' => '',
-        'LOG_DIR_TIMESTAMP' => '',
-        'LOG_SIZE_LIMIT_MB' => 5,
-        'LOG_CLEANUP_INTERVAL_DAYS' => 1,
-        'LOG_RETENTION_DAYS' => 7,
-        'LOG_MAX_FILES' => 10,
-
-        'READ_HANDLER' => null,
-        'WRITE_HANDLER' => null,
+        'log_dir' => '',
+        'log_dir_timestamp' => '',
+        'log_size_limit_mb' => 5,
+        'log_cleanup_interval_days' => 1,
+        'log_retention_days' => 7,
+        'log_max_files' => 10,
     );
     var $unitInstCache = array();
     var $unitLoadCache = array();
@@ -242,9 +235,9 @@ class App {
     // Application Setup
 
     function init() {
-        $this->env['SAPI'] = php_sapi_name();
-        $this->env['DIR_ROOT'] = $this->dirToUnix(dirname(__FILE__)) . '/';
-        $this->env['ERROR_NON_FATAL'] = E_NOTICE | E_USER_NOTICE;
+        $this->env['sapi'] = php_sapi_name();
+        $this->env['dir']['root'] = $this->pathToSlash(dirname(__FILE__)) . '/';
+        $this->env['error_non_fatal'] = E_NOTICE | E_USER_NOTICE;
 
         foreach (array('App', 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
@@ -255,45 +248,29 @@ class App {
         $this->syncUnits();
 
         $this->setUnit('App', array('cache' => true));
-        $this->unitInstCache['App'] = $this;
+        $this->unitInstCache['App'] = &$this;
     }
 
     function term() {
         $this->unitInstCache = array();
     }
 
-    function setEnv($key, $value) {
-        $this->env[$key] = $value;
-    }
-
-    function getEnv($key, $default = null) {
-        return isset($this->env[$key]) ? $this->env[$key] : $default;
-    }
-
-    function setIni($key, $value) {
-        if (ini_set($key, $value) === false) {
-            $this->log('Failed to set ini setting: ' . $key, $this->env['ERROR_LOG_FILE']);
-        }
-    }
-
-    function getIni($key) {
-        return ini_get($key);
-    }
-
     // State Management
 
     function save($file) {
-        $this->write($this->env['DIR_ROOT'] . $file, serialize(array($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
+        $this->fileWrite($this->env['dir']['root'] . $file, serialize(array($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex)));
     }
 
     function load($file) {
-        list($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex) = unserialize($this->read($this->env['DIR_ROOT'] . $file));
+        if ($result = $this->fileRead($this->env['dir']['root'] . $file)) {
+            list($this->routes, $this->unit, $this->unitList, $this->unitListIndex, $this->path, $this->pathList, $this->pathListIndex) = unserialize($result);
+        }
     }
 
     // Error Management
 
     function handleError($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, array('TRACE' => $this->env['ERROR_DISPLAY'] ? debug_backtrace() : array()) + $this->getEnv('HANDLE_ERROR_CONTEXT', array()));
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('trace' => $this->env['error_display'] ? debug_backtrace() : array()) + (isset($this->env['handle_error_context']) ? $this->env['handle_error_context'] : array()));
 
         if (!$e) {
             return true;
@@ -303,7 +280,7 @@ class App {
             ob_end_clean();
         }
 
-        if ($this->env['SAPI'] !== 'cli' && !headers_sent()) {
+        if ($this->env['sapi'] !== 'cli' && !headers_sent()) {
             header('HTTP/1.1 ' . $e['code']);
 
             foreach ($e['header'] as $key => $value) {
@@ -317,7 +294,7 @@ class App {
             }
         }
 
-        if ($this->env['SAPI'] === 'cli') {
+        if ($this->env['sapi'] === 'cli') {
             fwrite(STDERR, $e['content']);
         } else {
             echo($e['content']);
@@ -339,45 +316,45 @@ class App {
             $errstr = $parts[1];
         }
 
-        if ($this->env['SAPI'] === 'cli' && $code > 255) {
+        if ($this->env['sapi'] === 'cli' && $code > 255) {
             $code = 1;
         }
 
-        if ($this->env['ERROR_MAX_LENGTH'] > -1 && strlen($errstr) > $this->env['ERROR_MAX_LENGTH']) {
-            $errstr = substr($errstr, 0, $this->env['ERROR_MAX_LENGTH']) . '...';
+        if ($this->env['error_max_length'] > -1 && strlen($errstr) > $this->env['error_max_length']) {
+            $errstr = substr($errstr, 0, $this->env['error_max_length']) . '...';
         }
 
-        $error = '[php ' . $errno . '] [' . $this->env['SAPI'] . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
+        $error = '[php ' . $errno . '] [' . $this->env['sapi'] . ' ' . $code . '] ' . $errstr . ' in ' . $errfile . ':' . $errline;
 
-        if ($this->env['ERROR_LOGGING']) {
-            $this->log($error, $this->env['ERROR_LOG_FILE']);
+        if ($this->env['error_logging']) {
+            $this->log($error, $this->env['error_log_file']);
         }
 
-        if ($errno & $this->env['ERROR_NON_FATAL']) {
+        if ($errno & $this->env['error_non_fatal']) {
             return array();
         }
 
-        if ($this->env['ERROR_DISPLAY']) {
+        if ($this->env['error_display']) {
             $error .= "\n\n";
 
-            foreach ((isset($errcontext['TRACE']) ? $errcontext['TRACE'] : array()) as $i => $frame) {
-                $error .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? count($frame['args']) : 0) . ')' . "\n";
+            foreach ((isset($errcontext['trace']) ? $errcontext['trace'] : array()) as $i => $frame) {
+                $error .= '#' . $i . ' ' . (isset($frame['file']) ? $frame['file'] : '[internal function]') . '(' . (isset($frame['line']) ? $frame['line'] : 'no line') . '): ' . (isset($frame['class']) ? $frame['class'] . (isset($frame['type']) ? $frame['type'] : '') : '') . (isset($frame['function']) ? $frame['function'] : '[unknown function]') . '(...' . (isset($frame['args']) ? sizeof($frame['args']) : 0) . ')' . "\n";
             }
         } else {
             $error = '';
         }
 
         $content = '';
-        $type = $this->httpNegotiate(isset($errcontext['ACCEPT']) ? $errcontext['ACCEPT'] : '', array_keys($this->env['ERROR_TEMPLATES']));
+        $type = $this->httpNegotiate(isset($errcontext['accept']) ? $errcontext['accept'] : '', array_keys($this->env['error_templates']));
 
-        if ($type !== '' && isset($this->env['ERROR_TEMPLATES'][$type]) && file_exists($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type])) {
-            $content = $this->template($this->env['DIR_ROOT'] . $this->env['ERROR_TEMPLATES'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
+        if ($type !== '' && isset($this->env['error_templates'][$type]) && $this->pathExists($this->env['dir']['root'] . $this->env['error_templates'][$type])) {
+            $content = $this->template($this->env['dir']['root'] . $this->env['error_templates'][$type], array('app' => $this, 'code' => $code, 'error' => $error));
         } else {
             $type = 'text/plain';
             $content = $code . '. An unexpected error occurred.' . "\n\n" . $error;
         }
 
-        $header = isset($errcontext['HEADER']) ? $errcontext['HEADER'] : array();
+        $header = isset($errcontext['header']) ? $errcontext['header'] : array();
         $header['content-type'] = $type;
         unset($header['location']);
 
@@ -386,7 +363,7 @@ class App {
 
     // Route Management
 
-    function setRoute($method, $route, $units) {
+    function setRoute($method, $route, $units, $override = false) {
         $handler = array();
 
         foreach ($units as $unit) {
@@ -394,7 +371,8 @@ class App {
         }
 
         $node = &$this->routes;
-        $routeSegments = explode('/', trim($route, '/') . '/' . APP_ROUTE_HANDLER);
+        $routeSegments = explode('/', $route, 128);
+        $routeSegments[] = APP_ROUTE_HANDLER;
 
         foreach ($routeSegments as $segment) {
             if (!isset($node[$segment])) {
@@ -404,7 +382,7 @@ class App {
             $node = &$node[$segment];
         }
 
-        if (isset($node[$method])) {
+        if (!$override && isset($node[$method])) {
             user_error('Duplicate route detected: ' . $route, E_USER_WARNING);
             return;
         }
@@ -431,7 +409,7 @@ class App {
         $param = array();
         $routeSegments = explode('/', $route, 128);
         $foundSegment = false;
-        $last = count($routeSegments) - 1;
+        $last = sizeof($routeSegments) - 1;
 
         foreach ($routeSegments as $index => $routeSegment) {
             if ($routeSegment === '' && ($foundSegment || $last !== $index)) {
@@ -512,11 +490,11 @@ class App {
         }
 
         foreach (get_required_files() as $load) {
-            $loads[$this->dirToUnix($load)] = true;
+            $loads[$this->pathToSlash($load)] = true;
         }
 
         foreach ($this->unit as $unit => $data) {
-            if (!isset($this->unitLoadCache[$unit]) && (isset($units[strtolower($unit)]) || isset($loads[$this->env['DIR_ROOT'] . $this->pathList[$data[APP_UNIT_PATH]] . $data[APP_UNIT_FILE] . '.php']))) {
+            if (!isset($this->unitLoadCache[$unit]) && (isset($units[strtolower($unit)]) || isset($loads[$this->env['dir']['root'] . $this->pathList[$data[APP_UNIT_PATH]] . $data[APP_UNIT_FILE] . '.php']))) {
                 $this->unitLoadCache[$unit] = true;
             }
         }
@@ -545,8 +523,8 @@ class App {
 
         $relative = implode('/', array_slice(explode('/', $path), -$option['depth']));
 
-        if ($handle = opendir($this->env['DIR_ROOT'] . $path)) {
-            while ($item = readdir($handle)) {
+        if ($handle = $this->dopen($this->env['dir']['root'] . $path)) {
+            while ($item = $this->dread($handle)) {
                 if ($item === '.' || $item === '..') {
                     continue;
                 }
@@ -557,7 +535,7 @@ class App {
                     }
                 }
 
-                $isDir = is_dir($this->env['DIR_ROOT'] . $path . $item);
+                $isDir = $this->pathIsDir($this->env['dir']['root'] . $path . $item);
 
                 if ($isDir && ($option['max'] === -1 || $option['max'] >= $option['depth'])) {
                     $subOption = $option;
@@ -569,11 +547,11 @@ class App {
                 }
             }
 
-            closedir($handle);
+            $this->dclose($handle);
         }
     }
 
-    function addUnit($unit, $path = '') {
+    function addUnit($unit, $path = '', $override = false) {
         $pathListIndex = null;
 
         if (isset($this->path[$path])) {
@@ -587,7 +565,7 @@ class App {
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
 
-        if (isset($this->unit[$unit])) {
+        if (!$override && isset($this->unit[$unit])) {
             if (($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE])) {
                 user_error('Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
             }
@@ -651,7 +629,7 @@ class App {
 
             if ($load) {
                 if (!isset($md[$unit])) {
-                    $md[$unit] = array(0, count($load));
+                    $md[$unit] = array(0, sizeof($load));
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
@@ -665,7 +643,7 @@ class App {
             }
 
             unset($seen[$previousUnit]);
-            require $this->env['DIR_ROOT'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
+            require $this->env['dir']['root'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
             $this->unitLoadCache[$unit] = true;
         }
     }
@@ -704,7 +682,7 @@ class App {
 
             if ($args) {
                 if (!isset($md[$unit])) {
-                    $md[$unit] = array(0, count($args));
+                    $md[$unit] = array(0, sizeof($args));
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
@@ -742,20 +720,16 @@ class App {
 
     // Utility
 
-    function dirToUnix($s) {
-        return str_replace('\\', '/', $s);
-    }
-
     function dir($k, $s = '') {
-        return $this->env['DIR_' . $k] . $s;
+        return $this->env['dir'][$k] . $s;
     }
 
     function url($k, $s = '', $param = array()) {
-        if (strpos($this->env['URL_' . $k], '?') !== false && ($q = strpos($s, '?')) !== false) {
+        if (strpos($this->env['url'][$k], '?') !== false && ($q = strpos($s, '?')) !== false) {
             $s[$q] = '&';
         }
 
-        return $this->env['URL_' . $k] . ($param ? strtr($s, $param) : $s);
+        return $this->env['url'][$k] . ($param ? strtr($s, $param) : $s);
     }
 
     function log($msg, $file) {
@@ -764,10 +738,6 @@ class App {
         $time = (int) $mt[1];
         $msg = date(sprintf('[Y-m-d H:i:s.%06f O]', $micro), $time) . ' ' . $msg . "\n";
 
-        if ($this->env['LOG_HANDLER']) {
-            return $this->env['LOG_HANDLER']->call($msg, $file);
-        }
-
         $ext = '';
 
         if (($pos = strrpos($file, '.')) !== false && $pos > 0) {
@@ -775,58 +745,58 @@ class App {
             $file = substr($file, 0, $pos);
         }
 
-        $logDir = $this->env['DIR_ROOT'] . $this->env['LOG_DIR'];
+        $logDir = $this->env['dir']['root'] . $this->env['log_dir'];
         $logFile = $logDir . $file . $ext;
 
-        if ($this->write($logFile, $msg, true) === false) {
+        if ($this->fileWrite($logFile, $msg, true) === false) {
             return false;
         }
 
-        if (filesize($logFile) >= $this->env['LOG_SIZE_LIMIT_MB'] * 1048576) {
+        if ($this->pathSize($logFile) >= $this->env['log_size_limit_mb'] * 1048576) {
             $newLogFile = $logDir . '/' . $file . '_' . date('Y-m-d_H-i-s') . $ext;
-            rename($logFile, $newLogFile);
+            $this->pathMove($logFile, $newLogFile);
         }
 
-        $timestampFile = $this->env['DIR_ROOT'] . $this->env['LOG_DIR_TIMESTAMP'] . $file . '_last-log-cleanup-timestamp.txt';
-        $lastCleanup = file_exists($timestampFile) ? (int) $this->read($timestampFile) : 0;
+        $timestampFile = $this->env['dir']['root'] . $this->env['log_dir_timestamp'] . $file . '_last-log-cleanup-timestamp.txt';
+        $lastCleanup = $this->pathExists($timestampFile) ? (int) $this->fileRead($timestampFile) : 0;
 
-        if ($time - $lastCleanup >= $this->env['LOG_CLEANUP_INTERVAL_DAYS'] * 86400) {
+        if ($time - $lastCleanup >= $this->env['log_cleanup_interval_days'] * 86400) {
             $prefix = $file . '_';
             $prefixLen = strlen($prefix);
             $logFilesMTime = array();
 
-            if ($handle = opendir($logDir)) {
-                while ($item = readdir($handle)) {
+            if ($handle = $this->dopen($logDir)) {
+                while ($item = $this->dread($handle)) {
                     if ($item === '.' || $item === '..' || substr($item, 0, $prefixLen) !== $prefix) {
                         continue;
                     }
 
                     $lf = $logDir . $item;
-                    $lfmtime = filemtime($lf);
+                    $lfmtime = $this->pathMtime($lf);
 
-                    if ($time - $lfmtime > $this->env['LOG_RETENTION_DAYS'] * 86400) {
-                        unlink($lf);
+                    if ($time - $lfmtime > $this->env['log_retention_days'] * 86400) {
+                        $this->pathDel($lf);
                         continue;
                     }
 
                     $logFilesMTime[$lf] = $lfmtime;
                 }
 
-                closedir($handle);
+                $this->dclose($handle);
             }
 
             asort($logFilesMTime);
             $logFiles = array_keys($logFilesMTime);
 
-            if (count($logFiles) > $this->env['LOG_MAX_FILES']) {
-                $maxIndex = count($logFiles) - $this->env['LOG_MAX_FILES'];
+            if (sizeof($logFiles) > $this->env['log_max_files']) {
+                $maxIndex = sizeof($logFiles) - $this->env['log_max_files'];
 
                 for ($i = 0; $maxIndex > $i; $i++) {
-                    unlink($logFiles[$i]);
+                    $this->pathDel($logFiles[$i]);
                 }
             }
 
-            $this->write($timestampFile, $time);
+            $this->fileWrite($timestampFile, $time);
         }
 
         return true;
@@ -865,45 +835,6 @@ class App {
         return array($valid, $error);
     }
 
-    function read($file) {
-        if ($this->env['READ_HANDLER']) {
-            return $this->env['READ_HANDLER']->call($file);
-        }
-
-        $result = false;
-
-        if ($handle = fopen($file, 'rb')) {
-            $content = '';
-
-            while (($result = fread($handle, 8192)) !== false && $result !== '') {
-                $content .= $result;
-            }
-
-            fclose($handle);
-
-            if ($result !== false) {
-                $result = $content;
-            }
-        }
-
-        return $result;
-    }
-
-    function write($file, $content, $append = false) {
-        if ($this->env['WRITE_HANDLER']) {
-            return $this->env['WRITE_HANDLER']->call($file, $content, $append);
-        }
-
-        $result = false;
-
-        if ($handle = fopen($file, $append ? 'ab' : 'wb')) {
-            $result = fwrite($handle, (string) $content);
-            fclose($handle);
-        }
-
-        return $result;
-    }
-
     function template($file, $data = array()) {
         ob_start();
         require $file;
@@ -922,7 +853,7 @@ class App {
     }
 
     function strSlug($s) {
-        $s = strtolower($s);
+        $s = strtolower(trim($s));
         $slug = '';
 
         for ($i = 0, $ilen = strlen($s); $ilen > $i; $i++) {
@@ -935,7 +866,7 @@ class App {
             }
         }
 
-        return trim($slug, '-');
+        return $slug;
     }
 
     function strMatch($pattern, $s) {
@@ -1004,5 +935,136 @@ class App {
         }
 
         return 0;
+    }
+
+    function &dig(&$arr, $default) {
+        $current = &$arr;
+        for ($i = 2, $ilen = func_num_args(); $ilen > $i; $i++) {
+            $segment = func_get_arg($i);
+            if (!isset($current[$segment])) {
+                return $default;
+            }
+            $current = &$current[$segment];
+        }
+        return $current;
+    }
+
+    function fileRead($path) {
+        $result = false;
+
+        if ($handle = $this->fopen($path, 'rb')) {
+            $content = '';
+
+            while (($result = $this->fread($handle, 8192)) !== false && $result !== '') {
+                $content .= $result;
+            }
+
+            $this->fclose($handle);
+
+            if ($result !== false) {
+                $result = $content;
+            }
+        }
+
+        return $result;
+    }
+
+    function fileWrite($path, $content, $append = false) {
+        $result = false;
+
+        if ($handle = $this->fopen($path, $append ? 'ab' : 'wb')) {
+            $result = $this->fwrite($handle, (string) $content);
+            $this->fclose($handle);
+        }
+
+        return $result;
+    }
+
+    function fopen($path, $mode = 'r') {
+        return fopen($path, $mode);
+    }
+
+    function fclose($handle) {
+        return fclose($handle);
+    }
+
+    function feof($handle) {
+        return feof($handle);
+    }
+
+    function fread($handle, $length) {
+        return fread($handle, $length);
+    }
+
+    function fwrite($handle, $data, $length = null) {
+        return $length !== null ? fwrite($handle, $data, $length) : fwrite($handle, $data);
+    }
+
+    function dopen($path) {
+        return opendir($path);
+    }
+
+    function dclose($handle) {
+        return closedir($handle);
+    }
+
+    function dread($handle) {
+        return readdir($handle);
+    }
+
+    function drewind($handle) {
+        return rewinddir($handle);
+    }
+
+    function pathToSlash($s) {
+        return str_replace('\\', '/', $s);
+    }
+
+    function pathDel($path, $dir = false) {
+        return $dir ? rmdir($path) : unlink($path);
+    }
+
+    function pathCopy($source, $destination) {
+        return copy($source, $destination);
+    }
+
+    function pathMove($oldname, $newname) {
+        return rename($oldname, $newname);
+    }
+
+    function pathMkDir($path, $mode = 0777, $recursive = false) {
+        return mkdir($path, $mode, $recursive);
+    }
+
+    function pathIsDir($path) {
+        return is_dir($path);
+    }
+
+    function pathIsFile($path) {
+        return is_file($path);
+    }
+
+    function pathStat($path) {
+        return stat($path);
+    }
+
+    function pathExists($path) {
+        return file_exists($path);
+    }
+
+    function pathSize($path) {
+        return filesize($path);
+    }
+
+    function pathMtime($path) {
+        return filemtime($path);
+    }
+
+    function pathAtime($path) {
+        return fileatime($path);
+    }
+
+    function pathCtime($path) {
+        return filectime($path);
     }
 }

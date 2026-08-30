@@ -1,0 +1,89 @@
+<?php
+
+function config($app, $file) {
+    $mode = array(
+        'compile.php' => 'dev',
+        'index.php' => 'dev',
+    );
+
+    $app->env['uc'] = '11.0.0';
+    $app->env['app_id'] = 'uc';
+    // Environment Settings
+    $app->env['dir']['root'] = $app->pathToSlash(dirname(__FILE__)) . '/';
+    $app->env['dir']['web'] = $app->dir('root', 'web/');
+    $app->env['url']['root'] = '/';
+    $app->env['url']['web'] = '/'; // URL path for web access
+    // Error Settings
+    $app->env['error_templates']['text/plain'] = 'src/App/res/error/text.plain.php';
+    $app->env['error_templates']['text/html'] = 'src/App/res/error/text.html.php';
+    $app->env['error_templates']['application/json'] = 'src/App/res/error/application.json.php';
+    $app->env['error_non_fatal'] = E_NOTICE | E_DEPRECATED | E_USER_NOTICE | E_USER_DEPRECATED; // set non fatal, it only logs (if log error is enabled)
+    $app->env['error_log_file'] = 'error.log'; // Error log file
+    $app->env['error_max_length'] = 4096; // Error string max length
+    $app->env['error_display'] = 1; // Enable (1) or disable (0) detailed error messages
+    $app->env['error_logging'] = 1; // Enable (1) or disable (0) error logging
+    
+    // Logging Configuration
+    $app->env['log_dir'] = 'var/log/';
+    $app->env['log_dir_timestamp'] = 'var/lib/';
+    $app->env['log_size_limit_mb'] = 5;
+    $app->env['log_cleanup_interval_days'] = 1;
+    $app->env['log_retention_days'] = 7;
+    $app->env['log_max_files'] = 10;
+    
+    $app->env['route_handler_global'] = array('Shared_Pipe_ErrorHandler', 'App_Pipe_Init');
+    $app->env['route_handler_prepend'] = array('Shared_Pipe_Lang', 'App_Pipe_Lang');
+    $app->env['route_handler_append'] = array();
+
+    // Timezone
+    ini_set('date.timezone', 'Asia/Manila');
+    
+    // Error Reporting
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    ini_set('error_reporting', E_ALL);
+    ini_set('log_errors', 1);
+    // General Settings
+    ini_set('default_charset', 'UTF-8');
+    // Performance Settings
+    ini_set('memory_limit', '16M');
+    ini_set('max_execution_time', 30);
+
+    call_user_func('config_' . $mode[$file], $app);    
+}
+
+function config_dev($app) {
+    $app->env['route_rewrite'] = 1;
+
+    //$app->env['db']['default']['dsn'] = 'mysql:host=localhost;port=3306;dbname=myapp_db';
+    //$app->env['db']['default']['dsn'] = 'pgsql:host=localhost;port=5432;dbname=myapp_db;user=postgres;password=secret';
+    //$app->env['db']['default']['dsn'] = 'sqlsrv:Server=localhost;Database=myapp_db';
+    //$app->env['db']['default']['dsn'] = 'oci:dbname=xe;charset=utf8';
+    //$app->env['db']['default']['dsn'] = 'ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=myapp_db;HOSTNAME=localhost;PORT=50000;PROTOCOL=TCPIP;UID=db2inst1;PWD=secret';
+    //$app->env['db']['default']['dsn'] = 'firebird:dbname=/path/to/database.fdb';
+    $app->env['db']['default']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.sqlite');
+    $app->env['db']['default']['user'] = 'root';
+    $app->env['db']['default']['pass'] = '';
+
+    $app->env['db']['game']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.game.sqlite');
+    $app->env['db']['game']['user'] = 'root';
+    $app->env['db']['game']['pass'] = '';
+}
+
+function config_prod($app) {
+    $app->env['route_rewrite'] = 1;
+
+    $app->env['error_display'] = 0;
+
+    $app->env['db']['default']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.sqlite');
+    $app->env['db']['default']['user'] = 'root';
+    $app->env['db']['default']['pass'] = '';
+
+    $app->env['db']['game']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.game.sqlite');
+    $app->env['db']['game']['user'] = 'root';
+    $app->env['db']['game']['pass'] = '';
+
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    ini_set('error_reporting', E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+}

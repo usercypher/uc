@@ -14,14 +14,12 @@ class Shared_Pipe_DbBegin {
     function call($input, $output) {
         $success = true;
         // code
-        $db = $app->getEnv('DB', array());
-        $name = isset($input->data['db_begin:name']) ? $input->data['db_begin:name'] : 'DEFAULT';
+        $name = isset($input->data['db_begin:name']) ? $input->data['db_begin:name'] : 'default';
 
         $this->database->connect(array(
-            'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
-            'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
-            'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
-            'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+            'dsn' => $this->app->env['db'][$name]['dsn'],
+            'user' => $this->app->env['db'][$name]['user'],
+            'pass' => $this->app->env['db'][$name]['pass']
         ), $name);
         $this->database->begin($name);
 

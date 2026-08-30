@@ -14,7 +14,7 @@ class App_Pipe_Init {
         $success = true;
 
         $this->session->init(array(
-            'name' => $this->app->getEnv('APP_ID') . ':session'
+            'name' => $this->app->env['app_id'] . ':session'
         ));
 
         return array($input, $output, $success);

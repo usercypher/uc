@@ -51,7 +51,7 @@ $flash = empty($data['flash']) ? null : $data['flash'];
     <script>
         (window.init = window.init || []).push(function () {
             Util.script([
-                "async::<?php echo $app->url('WEB', "asset/js/use/modal.js"); ?>"
+                "async::<?php echo $app->url('web', "asset/js/use/modal.js"); ?>"
             ], {
                 onload: function () {
                     ElX.init(window.document.documentElement);

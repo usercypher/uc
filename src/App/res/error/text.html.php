@@ -8,13 +8,8 @@ foreach (array(
     $$v = $data[$v];
 }
 
-$langMap = $app->getEnv('ERROR_TEMPLATES_LANG', array());
-$lang = $app->httpNegotiate($app->getEnv('ACCEPT_LANGUAGE', ''), array_keys($langMap));
-
 $translator = $app->makeUnit('Shared_Lib_Translator');
-$translator->set('error', require($app->dir('ROOT', $langMap[$lang])));
-
-$t = $translator->get('error');
+$t = $translator->get('app');
 
 $httpMap = array(
     400 => array($t->t('error_400_title'), $t->t('error_400_description')),
@@ -47,7 +42,7 @@ list($title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap
 </head>
 <body>
     <h1><?php echo $title; ?></h1>
-    <p><b><?php echo $code; ?>.</b> <?php echo $description; ?> <a href="<?php echo $app->url('ROUTE', ''); ?>"><?php echo $t->t('go_to_homepage'); ?></a></p>
+    <p><b><?php echo $code; ?>.</b> <?php echo $description; ?> <a href="<?php echo $app->url('route', ''); ?>"><?php echo $t->t('go_to_homepage'); ?></a></p>
     <pre><?php echo $app->htmlEncode($error); ?></pre>
 </body>
 </html>

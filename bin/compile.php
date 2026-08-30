@@ -1,6 +1,7 @@
 <?php
 
 require str_replace('\\', '/', dirname(__FILE__)) . '/../uc.php';
+require str_replace('\\', '/', dirname(__FILE__)) . '/../config.php';
 
 function compile() {
     $app = new App();
@@ -8,48 +9,36 @@ function compile() {
 
     set_error_handler(array($app, 'handleError'));
 
-    $app->setEnv('DIR_ROOT', $app->dirToUnix(dirname(__FILE__)) . '/../');
+    config($app, basename(__FILE__));
 
-    $config = $app->data($app->dir('ROOT', 'config.data.php'), array(
-        'app' => $app
-    ));
+    $appVerResult = $app->versionCompare($app->env['uc'], $app->version);
 
-    $mode = $config['mode'][basename(__FILE__)];
-
-    foreach ($config['ini'][$mode] as $key => $value) {
-        $app->setIni($key, $value);
-    }
-
-    foreach ($config['env'][$mode] as $key => $value) {
-        $app->setEnv($key, $value);
-    }
-
-    $appVerResult = $app->versionCompare($app->getEnv('UC', $app->version), $app->version);
-
-    $errorContent = '';
     if ($appVerResult === -1) {
-        $errorContent = 'Error: installed UC version (' . $app->version . ') is older than the required version (' . $app->getEnv('UC', $app->version) . '). Please update UC and try again.' . "\n";
-    } elseif ($appVerResult === 1) {
-        $errorContent = 'Warning: installed UC version (' . $app->version . ') is newer than the version this build was created for (' . $app->getEnv('UC', $app->version) . '). The build may still work, but compatibility issues are possible.' . "\n";
-    }
-
-    if ($appVerResult != 0) {
-        if ($app->getEnv('SAPI') === 'cli') {
+        $errorContent = 'Error: installed UC version (' . $app->version . ') is older than the required version (' . $app->env['uc'] . '). Please update UC and try again.' . "\n";
+        if ($app->env['sapi'] === 'cli') {
             fwrite(STDERR, $errorContent);
         } else {
+            header('content-type: text/plain');
             echo $errorContent;
         }
 
-        if ($appVerResult === -1) {
-            exit(1);
-        }
+        exit(1);
     }
 
-    $input = $app->getEnv('SAPI') === 'cli' ? new InputCli : new InputHttp;
+    $errors = array();
+    $warnings = array();
+
+    if ($appVerResult === 1) {
+        $warnings[] = 'Warning: installed UC version (' . $app->version . ') is newer than the version this build was created for (' . $app->env['uc'] . '). The build may still work, but compatibility issues are possible.' . "\n";
+    }
+
+    $input = $app->env['sapi'] === 'cli' ? new InputCli : new InputHttp;
     $input->init();
 
-    $output = $app->getEnv('SAPI') === 'cli' ? new OutputCli : new OutputHttp;
+    $output = $app->env['sapi'] === 'cli' ? new OutputCli : new OutputHttp;
     $output->init();
+
+    $output->header['content-type'] = 'text/plain';
 
     $exclude = isset($input->query['exclude']) ? explode(',', $input->query['exclude']) : array();
 
@@ -60,9 +49,9 @@ function compile() {
         'set_route' => array(),
     );
 
-    scan_dir($app->dir('ROOT', 'src'), $files);
+    scan_dir($app->dir('root', 'src'), $files);
 
-    require str_replace('\\', '/', dirname(__FILE__)) . '/../src/_scan_units.php';
+    require $app->dir('root', 'src/_scan_units.php');
 
     $datas = array();
     foreach ($files['data'] as $file) {
@@ -73,7 +62,6 @@ function compile() {
         $datas[$dirbasename] = require $file;
     }
 
-    $errors = array();
     foreach ($datas as $dirbasename => $data) {
         if (isset($data['php'])) {
             $required_php = $data['php'];
@@ -103,10 +91,15 @@ function compile() {
             if ($result === -1) {
                 $errors[] = "Version mismatch: folder '{$dirbasename}' requires '{$matadirbasename}' {$dataversion}, but found {$available}.\n";
             } else if ($result === 1) {
-                $output->content .= "Warning: folder '{$dirbasename}' uses '{$matadirbasename}' version {$available}, which is newer than required version {$dataversion}.\n";
+                $warnings[] = "Warning: folder '{$dirbasename}' uses '{$matadirbasename}' version {$available}, which is newer than required version {$dataversion}.\n";
             }
         }
     }
+
+    foreach ($warnings as $warning) {
+        $output->content .= $warning;
+    }
+
     if ($errors) {
         foreach ($errors as $error) {
             $output->content .= $error;
@@ -131,9 +124,11 @@ function compile() {
         $output->content .= 'File created: ' . $appStateFile . "\n";
     }
 
-    $output->content .= "\nTip: use --exclude=module1,module2 to exclude modules from compilation.\n";
+    $output->content .= "Tip: use " . ($app->env['sapi'] === 'cli' ? "--exclude=module1,module2" : "?exclude=module1,module2") . " to exclude modules from compilation.\n";
 
-    $output->call($output->content, $errors ? 1 : 0);
+    $output->code = $app->env['sapi'] === 'cli' ? ($errors ? 1 : 0) : 200;
+
+    $output->call($output->content, $output->code);
 
     $app->term();
     $input->term();

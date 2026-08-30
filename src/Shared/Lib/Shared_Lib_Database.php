@@ -14,10 +14,6 @@ class Shared_Lib_Database {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
                 PDO::ATTR_TIMEOUT => $timeout,
             ));
-
-            if (isset($config['query'])) {
-                $this->execute($config['query'], $id);
-            }
         }
         return $id;
     }
@@ -46,8 +42,8 @@ class Shared_Lib_Database {
         return $this->conn[$id]->rollBack();
     }
 
-    function lastInsertId($id = '_') {
-        return $this->conn[$id]->lastInsertId();
+    function lastInsertId($id = '_', $seq = null) {
+        return $this->conn[$id]->lastInsertId($seq);
     }
 
     function execute($query, $id = '_') {

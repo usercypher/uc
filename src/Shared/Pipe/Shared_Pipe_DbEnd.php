@@ -14,14 +14,12 @@ class Shared_Pipe_DbEnd {
     function call($input, $output) {
         $success = true;
         // code
-        $db = $app->getEnv('DB', array());
-        $name = isset($input->data['db_end:name']) ? $input->data['db_end:name'] : 'DEFAULT';
+        $name = isset($input->data['db_end:name']) ? $input->data['db_end:name'] : 'default';
 
         $this->database->connect(array(
-            'dsn' => isset($db[$name]['DSN']) ? $db[$name]['DSN'] : null,
-            'user' => isset($db[$name]['USER']) ? $db[$name]['USER'] : null,
-            'pass' => isset($db[$name]['PASS']) ? $db[$name]['PASS'] : null,
-            'query' => isset($db[$name]['QUERY']) ? $db[$name]['QUERY'] : null,
+            'dsn' => $this->app->env['db'][$name]['dsn'],
+            'user' => $this->app->env['db'][$name]['user'],
+            'pass' => $this->app->env['db'][$name]['pass']
         ), $name);
 
         if ($input->data['db_end:commit']) {

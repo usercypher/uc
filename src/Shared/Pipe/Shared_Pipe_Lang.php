@@ -19,7 +19,7 @@ class Shared_Pipe_Lang {
 
         list($input, $output, $lang) = $this->lang($input, $output, $this->languages);
 
-        $this->translator->set($this->key, require($this->app->dir('ROOT', $this->directory . $lang . '.data.php')));
+        $this->translator->set($this->key, require($this->app->dir('root', $this->directory . $lang . '.data.php')));
 
         $input->data[$this->key . ':languages'] = $this->languages;
         $input->data[$this->key . ':lang'] = $lang;
@@ -28,7 +28,7 @@ class Shared_Pipe_Lang {
     }
 
     function lang($input, $output, $languages) {
-        $lang = isset($input->param['lang']) ? $input->param['lang'] : (isset($input->cookie['lang']) ? $input->cookie['lang'] : null);
+        $lang = isset($input->param['lang']) ? $input->param['lang'] : (isset($input->query['lang']) ? $input->query['lang'] : null);
         if (!$lang || !in_array($lang, $languages)) {
             $aLang = isset($input->header['accept-language']) ? $input->header['accept-language'] : $this->default;
             $lang = $this->app->httpNegotiate($aLang, $languages);
