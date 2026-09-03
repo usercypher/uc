@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -5,348 +6,318 @@
 <title>uc.css Kitchen Sink & Documentation</title>
 <link rel="stylesheet" href="uc.css">
 </head>
+<style>
+    .s-bg { background-color: ButtonFace; }
+</style>
 <body>
-
 <div class="window">
 
-  <!-- Production-grade Header & Navigation structure utilizing native framework classes -->
-  <header>
+<header>
     <h1>uc.css</h1>
-    <p>A minimalist, semantic CSS framework. Below is the production kitchen sink and component reference.</p>
-      <a href="#typography">Typography</a> •
-      <a href="#forms">Forms</a> •
-      <a href="#layout">Layout & Sizes</a> •
-      <a href="#reference">Reference</a>
+    <p>
+        A minimalist, semantic CSS framework.
+        This page demonstrates the available elements and classes.
+    </p>
+
+    <nav>
+        <a href="#typography">Typography</a> •
+        <a href="#forms">Forms</a> •
+        <a href="#media">Media</a> •
+        <a href="#layout">Layout</a> •
+        <a href="#reference">Reference</a>
+    </nav>
+</header>
+
+<hr>
+
+<main>
+
+<section id="typography">
+<h2>Typography & Elements</h2>
+
+<h1>&lt;h1&gt;</h1>
+<h2>&lt;h2&gt;</h2>
+<h3>&lt;h3&gt;</h3>
+<h4>&lt;h4&gt;</h4>
+<h5>&lt;h5&gt;</h5>
+<h6>&lt;h6&gt;</h6>
+
+<p class="drop-cap">
+    <strong>&lt;strong&gt;</strong>,
+    <em>&lt;em&gt;</em>,
+    <code>&lt;code&gt;</code>,
+    <kbd>&lt;kbd&gt;</kbd>,
+    <samp>&lt;samp&gt;</samp>,
+    <var>&lt;var&gt;</var>,
+    <abbr title="Abbreviation">&lt;abbr&gt;</abbr>,
+    <q>&lt;q&gt;</q>,
+    <cite>&lt;cite&gt;</cite>,
+    <dfn>&lt;dfn&gt;</dfn>,
+    <sub>&lt;sub&gt;</sub>,
+    <sup>&lt;sup&gt;</sup>.
+</p>
+
+<address>&lt;address&gt;</address>
+
+<blockquote>
+    &lt;blockquote&gt; <cite>&lt;cite&gt;</cite>
+</blockquote>
+
+<pre><code>&lt;pre&gt; &lt;code&gt;</code></pre>
+
+<p>
+    <a href="#">&lt;a&gt;</a>
+    <span class="a">.a</span>
+    <span class="button">.button</span>
+    <span class="input">.input</span>
+</p>
+
+<h3>Lists</h3>
+
+<ul>
+    <li>&lt;ul&gt;</li>
+    <li>Item
+        <ul><li>Nested</li></ul>
+    </li>
+</ul>
+
+<ol>
+    <li>&lt;ol&gt;</li>
+    <li>Item</li>
+</ol>
+
+<dl>
+    <dt>&lt;dt&gt;</dt>
+    <dd>&lt;dd&gt;</dd>
+</dl>
+
+<h3>Table</h3>
+
+<table>
+    <caption>&lt;caption&gt;</caption>
+    <thead>
+        <tr><th>&lt;th&gt;</th><th>&lt;th&gt;</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>&lt;td&gt;</td><td>&lt;td&gt;</td></tr>
+    </tbody>
+</table>
+</section>
+
+<section id="forms">
+<h2>Forms</h2>
+
+<fieldset>
+    <legend>&lt;legend&gt;</legend>
+
+    <label>
+        &lt;input&gt;<br>
+        <input type="text" placeholder="input">
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;textarea&gt;<br>
+        <textarea rows="2">textarea</textarea>
+    </label>
+
+    <br><br>
+
+        <label>
+        &lt;select&gt;<br>
+        <select>
+            <option>&lt;option&gt;</option>
+            <option>&lt;option&gt;</option>
+        </select>
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;select&gt; (optgroup) <br>
+        <select>
+            <optgroup label="&lt;optgroup&gt;">
+                <option>&lt;option&gt;</option>
+                <option>&lt;option&gt;</option>
+            </optgroup>
+        </select>
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;select&gt; (multiple) <br>
+        <select multiple>
+            <option>&lt;option&gt;</option>
+            <option>&lt;option&gt;</option>
+        </select>
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;select&gt; (multiple) (optgroup) <br>
+        <select multiple>
+            <optgroup label="&lt;optgroup&gt;">
+                <option>&lt;option&gt;</option>
+                <option>&lt;option&gt;</option>
+            </optgroup>
+            <optgroup label="&lt;optgroup&gt;">
+                <option>&lt;option&gt;</option>
+                <option>&lt;option&gt;</option>
+            </optgroup>
+        </select>
+    </label>
+
+    <br><br>
+
+    <div>
+        &lt;input type="radio"&gt;<br>
+        <label><input type="radio" name="radio"> Option 1</label>
+        <label><input type="radio" name="radio"> Option 2</label>
+        <label><input type="radio" name="radio"> Option 3</label>
     </div>
-  </header>
 
-  <hr>
+    <br>
 
-  <main>
-    <section id="typography">
-      <h2>Typography & Elements</h2>
-      
-      <h1>&lt;h1&gt;</h1>
-      <h2>&lt;h2&gt;</h2>
-      <h3>&lt;h3&gt;</h3>
-      <h4>&lt;h4&gt;</h4>
-      <h5>&lt;h5&gt;</h5>
-      <h6>&lt;h6&gt;</h6>
+    <div>
+        &lt;input type="checkbox"&gt;<br>
+        <label><input type="checkbox"> Checkbox 1</label>
+        <label><input type="checkbox"> Checkbox 2</label>
+        <label><input type="checkbox"> Checkbox 3</label>
+    </div>
 
-      <p class="drop-cap">
-        .drop-cap
-        <strong>&lt;strong&gt;</strong>,
-        <em>&lt;em&gt;</em>,
-        <code>&lt;code&gt;</code>,
-        <kbd>&lt;kbd&gt;</kbd>,
-        <samp>&lt;samp&gt;</samp>,
-        <var>&lt;var&gt;</var>,
-        <abbr title="Abbreviation">&lt;abbr&gt;</abbr>,
-        <q>&lt;q&gt;</q>,
-        <cite>&lt;cite&gt;</cite>,
-        <dfn>&lt;dfn&gt;</dfn>,
-        <sub>&lt;sub&gt;</sub>,
-        <sup>&lt;sup&gt;</sup>.
-      </p>
+    <br>
 
-      <address>&lt;address&gt;</address>
+    <button>&lt;button&gt;</button>
+    <input class="inline" value=".inline">
+    <button class="inline">.inline</button>
+</fieldset>
+</section>
 
-      <blockquote>
-        &lt;blockquote&gt;
-        <cite>&lt;cite&gt;</cite>
-      </blockquote>
+<section id="media">
+<h2>Media</h2>
 
-      <pre><code>&lt;pre&gt; &lt;code&gt;</code></pre>
+<p>
+    <img class="s2" alt="img"
+         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='silver'/%3E%3C/svg%3E">
+    &lt;img&gt;
+</p>
 
-      <p>
-        <a href="#">&lt;a&gt;</a>
-        <span class="a">.a</span>
-        <span class="button">.button</span>
-        <span class="input">.input</span>
-      </p>
-    </section>
+<p>
+    <svg class="s2" viewBox="0 0 120 60">
+        <rect width="120" height="60"/>
+    </svg>
+    &lt;svg&gt;
+</p>
 
-    <section id="lists">
-      <h2>Lists</h2>
-      <ul>
-        <li>&lt;ul&gt;</li>
-        <li>Item
-          <ul><li>Nested</li></ul>
-        </li>
-      </ul>
+<p>
+    <iframe class="s2" srcdoc="<p>&amp;lt;iframe&amp;gt;</p>"></iframe>
+    &lt;iframe&gt;
+</p>
 
-      <ol>
-        <li>&lt;ol&gt;</li>
-        <li>Item</li>
-      </ol>
+<object class="s2">
+    <p>&lt;object&gt;</p>
+</object>
+</section>
 
-      <dl>
-        <dt>&lt;dt&gt;</dt>
-        <dd>&lt;dd&gt;</dd>
-      </dl>
-    </section>
+<section id="layout">
+<h2>Utilities & Layout</h2>
 
-    <section id="tables">
-      <h2>Table</h2>
-      <table>
-        <caption>&lt;caption&gt;</caption>
-        <thead>
-          <tr><th>&lt;th&gt;</th><th>&lt;th&gt;</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>&lt;td&gt;</td><td>&lt;td&gt;</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section id="forms">
-      <h2>Forms</h2>
-
-      <fieldset>
-        <legend>&lt;legend&gt;</legend>
-
-        <label>
-          &lt;input&gt;<br>
-          <input type="text" placeholder="input">
-        </label>
-
-        <br><br>
-
-        <label>
-          &lt;textarea&gt;<br>
-          <textarea rows="2">textarea</textarea>
-        </label>
-
-        <br><br>
-
-        <label>
-          &lt;select&gt;<br>
-          <select>
-            <option>&lt;option&gt;</option>
-            <option>&lt;option&gt;</option>
-          </select>
-        </label>
-
-        <br><br>
-
-        <label>
-          &lt;select&gt; (optgroup) <br>
-          <select>
-            <optgroup label="&lt;optgroup&gt;">
-              <option>&lt;option&gt;</option>
-              <option>&lt;option&gt;</option>
-            </optgroup>
-          </select>
-        </label>
-
-        <br><br>
-
-        <label>
-          &lt;select&gt; (multiple) <br>
-          <select multiple>
-            <option>&lt;option&gt;</option>
-            <option>&lt;option&gt;</option>
-          </select>
-        </label>
-
-        <br><br>
-
-        <label>
-          &lt;select&gt; (multiple) (optgroup) <br>
-          <select multiple>
-            <optgroup label="&lt;optgroup&gt;">
-              <option>&lt;option&gt;</option>
-              <option>&lt;option&gt;</option>
-            </optgroup>
-            <optgroup label="&lt;optgroup&gt;">
-              <option>&lt;option&gt;</option>
-              <option>&lt;option&gt;</option>
-            </optgroup>
-          </select>
-        </label>
-
-<br><br>
-
-<div>
-  &lt;input type="radio"&gt; <br>
-  <label><input type="radio" name="radio-group"> Option 1</label>
-  <label><input type="radio" name="radio-group"> Option 2</label>
-  <label><input type="radio" name="radio-group"> Option 3</label>
+<h3>.window</h3>
+<div class="window">
+    <p>Centered, constrained container.</p>
 </div>
 
-<br><br>
-
-<div>
-  &lt;input type="checkbox"&gt; <br>
-  <label><input type="checkbox"> Checkbox 1</label>
-  <label><input type="checkbox"> Checkbox 2</label>
-  <label><input type="checkbox"> Checkbox 3</label>
+<h3>.reset</h3>
+<div class="reset">
+    <p>Removes the width constraint.</p>
 </div>
 
-        <br><br>
-            
-        <button>&lt;button&gt;</button>
-        <input class="inline" value=".inline">
-        <button class="inline">.inline</button>
+<h3>.row / .col / .end</h3>
+<div class="row">
+    <div class="col s3">.col</div>
+    <div class="col end s3">.col.end</div>
+</div>
 
-      </fieldset>
-    </section>
+<h3>.center</h3>
+<p class="center s3">.center</p>
 
-    <section id="media">
-      <h2>Media</h2>
+<h3>.overflow</h3>
+<div class="overflow s3">
+    ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ
+</div>
 
-      <p>
-        <img class="s2" alt="img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='silver'/%3E%3C/svg%3E">
-        &lt;img&gt;
-      </p>
+<h3>Accessibility</h3>
+<p class="hidden">.hidden</p>
+<p>
+    <span class="hidden-sr">Hidden from visual display.</span>
+    .hidden-sr
+</p>
 
-      <p>
-        <svg class="s2" viewBox="0 0 120 60">
-          <rect width="120" height="60"/>
-        </svg>
-        &lt;svg&gt;
-      </p>
+<h3>Print</h3>
+<p class="print-hidden">.print-hidden</p>
+<p class="print-only">.print-only</p>
 
-      <iframe class="s2" srcdoc="<!DOCTYPE html><p>&amp;lt;iframe&amp;gt;</p>"></iframe>
+<h3>Sizes</h3>
+<div class="s-bg s1">.s1</div>
+<div class="s-bg s2">.s2</div>
+<div class="s-bg s3">.s3</div>
+<div class="s-bg s4">.s4</div>
+<div class="s-bg s5">.s5</div>
+<div class="s-bg s6">.s6</div>
+<div class="s-bg s7">.s7</div>
+<div class="s-bg s8">.s8</div>
+<div class="s-bg s9">.s9</div>
+<div class="s-bg s10">.s10</div>
+<div class="s-bg s11">.s11</div>
+<div class="s-bg s12">.s12</div>
+</section>
 
-      <object class="s2">
-        <p>&lt;object&gt;</p>
-      </object>
-    </section>
+<hr>
 
-    <section id="layout">
-      <h2>Utilities & Layout</h2>
+<section id="reference">
+<h2>Class Reference</h2>
 
-      <p><strong>.window</strong></p>
-      <div class="window" style="margin-bottom: 1em;">
-        <p>Nested .window container content</p>
-      </div>
+<table>
+    <thead>
+        <tr>
+            <th>Class</th>
+            <th>Purpose</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td><code>.a</code></td><td>Link styling.</td></tr>
+        <tr><td><code>.button</code></td><td>Button styling.</td></tr>
+        <tr><td><code>.input</code></td><td>Input styling.</td></tr>
+        <tr><td><code>.inline</code></td><td>Compact control styling.</td></tr>
+        <tr><td><code>.drop-cap</code></td><td>Large first letter.</td></tr>
+        <tr><td><code>.center</code></td><td>Centers a block.</td></tr>
+        <tr><td><code>.overflow</code></td><td>Automatic overflow.</td></tr>
+        <tr><td><code>.reset</code></td><td>Removes width constraints.</td></tr>
+        <tr><td><code>.hidden</code></td><td>Completely hidden.</td></tr>
+        <tr><td><code>.hidden-sr</code></td><td>Screen-reader-only content.</td></tr>
+        <tr><td><code>.print-hidden</code></td><td>Hidden when printed.</td></tr>
+        <tr><td><code>.print-only</code></td><td>Visible only when printed.</td></tr>
+        <tr><td><code>.row</code></td><td>Float-based row container.</td></tr>
+        <tr><td><code>.col</code></td><td>Float-based column.</td></tr>
+        <tr><td><code>.col.end</code></td><td>Right-aligned column.</td></tr>
+        <tr><td><code>.s0</code>-<code>.s12</code></td><td>5em size increments; <code>.s0</code> is 100%.</td></tr>
+    </tbody>
+</table>
+</section>
 
-      <p><strong>.window.reset / html.reset / body.reset</strong></p>
-      <div class="window reset" style="margin-bottom: 1em;">
-        <p>Reset window, html, and body content</p>
-      </div>
+</main>
 
-      <p><strong>.row / .col / .end</strong></p>
-      <div class="row" style="margin-bottom: 1em;">
-        <div class="col s3">.col</div>
-        <div class="col end s3">.col.end</div>
-      </div>
-
-      <p><strong>.center</strong></p>
-      <p class="center s3">.center content block</p>
-
-      <p><strong>.overflow</strong></p>
-      <div class="overflow s3" style="margin-bottom: 1em;">
-        ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ
-      </div>
-
-      <p><strong>Accessibility</strong></p>
-      <p class="hidden">.hidden</p>
-      <p><span class="hidden-sr">.hidden-sr</span>Screen reader only text above.</p>
-    </section>
-
-    <section id="sizes">
-      <h2>Sizes</h2>
-
-      <p>
-        <div class="s1" style="background: ButtonFace; color: ButtonText;">.s1</div>
-        <div class="s2" style="background: ButtonFace; color: ButtonText;">.s2</div>
-        <div class="s3" style="background: ButtonFace; color: ButtonText;">.s3</div>
-        <div class="s4" style="background: ButtonFace; color: ButtonText;">.s4</div>
-        <div class="s5" style="background: ButtonFace; color: ButtonText;">.s5</div>
-        <div class="s6" style="background: ButtonFace; color: ButtonText;">.s6</div>
-      </p>
-
-      <p>
-        <div class="s7" style="background: ButtonFace; color: ButtonText;">.s7</div>
-        <div class="s8" style="background: ButtonFace; color: ButtonText;">.s8</div>
-        <div class="s9" style="background: ButtonFace; color: ButtonText;">.s9</div>
-        <div class="s10" style="background: ButtonFace; color: ButtonText;">.s10</div>
-        <div class="s11" style="background: ButtonFace; color: ButtonText;">.s11</div>
-        <div class="s12" style="background: ButtonFace; color: ButtonText;">.s12</div>
-      </p>
-    </section>
-
+<footer>
     <hr>
-
-    <section id="reference">
-      <h2>Class Documentation Reference</h2>
-      <div class="overflow">
-        <table>
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Example</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>.a</td>
-              <td><pre><code>&lt;span class="a"&gt;.a&lt;/span&gt;</code></pre></td>
-              <td><span class="a">.a</span></td>
-            </tr>
-            <tr>
-              <td>.button</td>
-              <td><pre><code>&lt;span class="button"&gt;.button&lt;/span&gt;</code></pre></td>
-              <td><span class="button">.button</span></td>
-            </tr>
-            <tr>
-              <td>.input</td>
-              <td><pre><code>&lt;span class="input"&gt;.input&lt;/span&gt;</code></pre></td>
-              <td><span class="input">.input</span></td>
-            </tr>
-            <tr>
-              <td>.drop-cap</td>
-              <td><pre><code>&lt;p class="drop-cap"&gt;Text&lt;/p&gt;</code></pre></td>
-              <td><p class="drop-cap">Text</p></td>
-            </tr>
-            <tr>
-              <td>.hidden</td>
-              <td><pre><code>&lt;span class="hidden"&gt;.hidden&lt;/span&gt;</code></pre></td>
-              <td><span class="hidden">.hidden</span><em>(hidden)</em></td>
-            </tr>
-            <tr>
-              <td>.hidden-sr</td>
-              <td><pre><code>&lt;span class="hidden-sr"&gt;.hidden-sr&lt;/span&gt;</code></pre></td>
-              <td style="position: relative;">
-                <span class="hidden-sr">.hidden-sr</span>
-                <em>(screen reader only)</em>
-              </td>
-            </tr>
-            <tr>
-              <td>.center</td>
-              <td><pre><code>&lt;p class="center"&gt;.center&lt;/p&gt;</code></pre></td>
-              <td><p class="center">.center</p></td>
-            </tr>
-            <tr>
-              <td>.overflow</td>
-              <td><pre><code>&lt;div class="overflow"&gt;...&lt;/div&gt;</code></pre></td>
-              <td><div class="overflow s2">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div></td>
-            </tr>
-            <tr>
-              <td>.row .col/.col .end</td>
-              <td><pre><code>&lt;div class="row"&gt;...&lt;/div&gt;</code></pre></td>
-              <td>
-                <div class="row">
-                  <div class="col s1">.col</div>
-                  <div class="col end s1">.col .end</div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <hr>
-    <p>&copy; 2025 Lloyd Miles M. Bersabe. Licensed under Apache License 2.0.</p>
-  </footer>
+    <p>
+        &copy; 2025 Lloyd Miles M. Bersabe.
+        Licensed under Apache License 2.0.
+    </p>
+</footer>
 
 </div>
-
 </body>
 </html>

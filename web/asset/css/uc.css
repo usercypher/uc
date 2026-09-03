@@ -90,7 +90,9 @@ textarea,
 iframe,
 img,
 object,
-svg {
+svg,
+
+.reset {
     border: 0;
     font: inherit;
     margin: 0;
@@ -112,12 +114,6 @@ body,
     color: WindowText;
     margin: auto;
     max-width: 60em;
-}
-
-.reset {
-    margin: 0;
-    max-width: none;
-    padding: 0;
 }
 
 a,
@@ -155,10 +151,6 @@ kbd,
 samp,
 pre {
     font-family: monospace;
-}
-
-q {
-    quotes: "“" "”" "‘" "’";
 }
 
 small {
@@ -399,6 +391,11 @@ svg {
 .overflow {
     display: block;
     overflow: auto;
+}
+
+.reset {
+    max-width: none;
+    min-width: none;
 }
 
 .row {
