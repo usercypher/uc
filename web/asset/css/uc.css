@@ -392,7 +392,7 @@ svg {
 
 .reset {
     max-width: none;
-    min-width: none;
+    min-width: 0;
 }
 
 .row {
@@ -405,14 +405,17 @@ svg {
     position: relative;
 }
 
-.row .col.end {
+.row .end {
     float: right;
 }
 
 iframe,
 img,
 object,
-svg,
+svg {
+    max-width: 100%;
+}
+
 .s0,
 .s1,
 .s2,
