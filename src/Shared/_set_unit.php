@@ -38,10 +38,3 @@ $app->groupUnit($group, 'Shared_Pipe_ExtractFlash');
 $app->groupUnit($group, 'Shared_Pipe_OtpGenerate');
 $app->groupUnit($group, 'Shared_Pipe_OtpValidate');
 $app->groupUnit($group, 'Shared_Pipe_OtpExist');
-
-$group = array(
-    'args_prepend' => array('App', 'Shared_Lib_Database')
-);
-
-$app->groupUnit($group, 'Shared_Pipe_DbBegin');
-$app->groupUnit($group, 'Shared_Pipe_DbEnd');
