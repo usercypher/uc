@@ -3,10 +3,14 @@
 class Shared_Lib_Translator {
     var $translators;
 
-    function set($key, $translations = array()) {
+    function set($key, $translations = array(), $plural = null) {
         $translator = new Shared_Lib_Translator_Object;
         $translator->translations = $translations;
-        $translator->setDefaultPlural();
+        if ($plural) {
+            $translator->plural = $plural;
+        } else {
+            $translator->setDefaultPlural();
+        }
         $this->translators[$key] = $translator;
     }
 

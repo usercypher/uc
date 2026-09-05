@@ -48,5 +48,5 @@ $app->groupRoute($group, '', 'cli/user/:on-unknown-option*', array(
 ));
 
 $app->groupRoute($group, '', 'cli/user/create/:*', array(
-    'User_Pipe_Init', 'User_Pipe_Cli_Create', 'User_Pipe_Store', 'Shared_Pipe_ExtractFlash'
+    'User_Pipe_Lang', 'User_Pipe_Init', 'User_Pipe_Cli_Create', 'User_Pipe_Store', 'Shared_Pipe_ExtractFlash'
 ));

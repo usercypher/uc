@@ -1,0 +1,82 @@
+## Data Types
+- BLOB
+- INTEGER
+- NUMERIC
+- REAL (for floating point)
+- TEXT
+
+## Table Manipulation
+- ALTER TABLE
+- CREATE TABLE
+- DROP TABLE
+- PRIMARY KEY
+- UNIQUE
+- DEFAULT
+- AUTO_INCREMENT (non-ANSI)
+
+## Query Keywords
+- SELECT
+- FROM
+- WHERE
+- AND
+- OR
+- NOT
+- IN
+- BETWEEN
+- LIKE / ESCAPE (non-ANSI)
+- IS NULL
+- IS NOT NULL
+- DISTINCT
+- ORDER BY
+- ASC
+- DESC
+- LIMIT (non-ANSI)
+- OFFSET (non-ANSI)
+- GROUP BY
+- HAVING
+
+## Join Keywords
+- JOIN
+- INNER JOIN
+- LEFT JOIN
+- CROSS JOIN
+- NATURAL JOIN
+- ON
+
+## Set Operations
+- UNION
+- UNION ALL
+
+## Data Modification
+- INSERT
+- UPDATE
+- DELETE
+
+## Conditional Logic
+- CASE / WHEN / THEN / ELSE / END
+- EXISTS
+- CAST
+- COALESCE
+- AS
+
+## Aggregate Functions
+- COUNT()
+- SUM()
+- AVG()
+- MIN()
+- MAX()
+
+## String Functions
+- LENGTH()
+- UPPER()
+- LOWER()
+- TRIM()
+- POSITION()
+
+## Numeric Functions
+- ABS()
+- ROUND()
+
+## Notes
+- Timestamps: Store as INTEGER for fast queries. Any range query can use integer with mapping for optimal performance.
+- AUTO_INCREMENT: MySQL/SQLite use this keyword; PostgreSQL uses SERIAL or GENERATED (database-specific).
