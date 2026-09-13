@@ -38,3 +38,14 @@ $app->groupUnit($group, 'Shared_Pipe_ExtractFlash');
 $app->groupUnit($group, 'Shared_Pipe_OtpGenerate');
 $app->groupUnit($group, 'Shared_Pipe_OtpValidate');
 $app->groupUnit($group, 'Shared_Pipe_OtpExist');
+
+/**
+ * ------------------------------------------------------------------------
+ * Pipe
+ * ------------------------------------------------------------------------
+ */
+
+$group = array(
+    'args_prepend' => array('App', 'Shared_Lib_Assert')
+);
+$app->groupUnit($group, 'Test_Translator', array('args' => array('Shared_Lib_Translator')));

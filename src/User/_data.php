@@ -7,6 +7,7 @@ return array(
         'sqlite3'
     ),
     'use' => array(
+        'App' => '3.0.0',
         'Shared' => '3.0.0'
     )
 );

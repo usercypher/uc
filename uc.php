@@ -21,7 +21,12 @@ define('APP_UNIT_PATH', 1);
 define('APP_UNIT_FILE', 2);
 define('APP_UNIT_LOAD', 3);
 define('APP_UNIT_ARGS', 4);
-define('APP_UNIT_INST_CACHE', 5);
+define('APP_UNIT_ARGS_TYP', 0);
+define('APP_UNIT_ARGS_VAL', 1);
+define('APP_UNIT_ARGS_TYP_UNIT', 0);
+define('APP_UNIT_ARGS_TYP_DATA', 1);
+define('APP_UNIT_BASE', 5);
+define('APP_UNIT_INST_CACHE', 6);
 define('APP_ROUTE_HANDLER', '!');
 
 while (ob_get_length() !== false) {
@@ -574,19 +579,29 @@ class App {
         }
 
         $unitListIndex = $this->unitListIndex++;
-        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), false);
+        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), $unitListIndex, false);
         $this->unitList[$unitListIndex] = $unit;
     }
 
     function setUnit($unit, $option = array()) {
-        $this->unit[$unit];
-        $map = array('args' => APP_UNIT_ARGS, 'load' => APP_UNIT_LOAD);
+        if (isset($option['base'])) {
+            foreach (array(APP_UNIT_PATH, APP_UNIT_FILE, APP_UNIT_LOAD, APP_UNIT_ARGS, APP_UNIT_BASE, APP_UNIT_INST_CACHE) as $i) {
+                $this->unit[$unit][$i] = $this->unit[$option['base']][$i];
+            }
+        }
 
-        foreach ($map as $key => $value) {
-            if (isset($option[$key])) {
-                foreach ($option[$key] as $tmpUnit) {
-                    $this->unit[$unit][$value][] = $this->unit[$tmpUnit][APP_UNIT_LIST];
+        if (isset($option['args'])) {
+            foreach ($option['args'] as $i => $tmpUnit) {
+                if (is_string($tmpUnit)) {
+                    $tmpUnit = array(APP_UNIT_ARGS_TYP_UNIT, $tmpUnit);
                 }
+                $this->unit[$unit][APP_UNIT_ARGS][$i] = array($tmpUnit[APP_UNIT_ARGS_TYP], $tmpUnit[APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT ? $this->unit[$tmpUnit[APP_UNIT_ARGS_VAL]][APP_UNIT_LIST] : $tmpUnit[APP_UNIT_ARGS_VAL]);
+            }
+        }
+
+        if (isset($option['load'])) {
+            foreach ($option['load'] as $i => $tmpUnit) {
+                $this->unit[$unit][APP_UNIT_LOAD][$i] = $this->unit[$tmpUnit][APP_UNIT_LIST];
             }
         }
 
@@ -616,15 +631,6 @@ class App {
                 return;
             }
 
-            if (isset($this->unitLoadCache[$unit])) {
-                if (0 > $top) {
-                    return;
-                }
-
-                unset($seen[$previousUnit]);
-                continue;
-            }
-
             $load = $this->unit[$unit][APP_UNIT_LOAD];
 
             if ($load) {
@@ -643,7 +649,11 @@ class App {
             }
 
             unset($seen[$previousUnit]);
-            require $this->env['dir']['root'] . $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE] . '.php';
+            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
+            if (!isset($this->unitLoadCache[$base])) {
+                require $this->env['dir']['root'] . $this->pathList[$this->unit[$base][APP_UNIT_PATH]] . $this->unit[$base][APP_UNIT_FILE] . '.php';
+                $this->unitLoadCache[$base] = true;
+            }
             $this->unitLoadCache[$unit] = true;
         }
     }
@@ -686,8 +696,13 @@ class App {
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $top += 2;
-                    $stack[$top] = $this->unitList[$args[$md[$unit][0]]];
+                    if ($args[$md[$unit][0]][APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT) {
+                        $top += 2;
+                        $stack[$top] = $this->unitList[$args[$md[$unit][0]][APP_UNIT_ARGS_VAL]];
+                    } else {
+                        $top += 1;
+                        $resolvedArgs[$unit][] = $args[$md[$unit][0]][APP_UNIT_ARGS_VAL];
+                    }
                     ++$md[$unit][0];
                     continue;
                 }
@@ -697,7 +712,7 @@ class App {
 
             unset($seen[$previousUnit]);
             $this->loadUnit($unit);
-            $class = new $unit();
+            $class = new $this->unitList[$this->unit[$unit][APP_UNIT_BASE]]();
 
             if (isset($resolvedArgs[$unit])) {
                 $class->args($resolvedArgs[$unit]);
@@ -716,6 +731,10 @@ class App {
 
     function resetUnit($unit) {
         $this->unitInstCache[$unit] = null;
+    }
+
+    function argUnitData($arg) {
+        return array(APP_UNIT_ARGS_TYP_DATA, $arg);
     }
 
     // Utility

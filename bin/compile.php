@@ -43,24 +43,18 @@ function compile() {
     $exclude = isset($input->query['exclude']) ? explode(',', $input->query['exclude']) : array();
 
     $files = array(
+        'test' => array(),
         'data' => array(),
         'add_unit' => array(),
         'set_unit' => array(),
         'set_route' => array(),
     );
 
-    scan_dir($app->dir('root', 'src'), $files);
+    compile_scan_dir($app->dir('root', 'src'), $files, $exclude, $app);
 
     require $app->dir('root', 'src/_scan_units.php');
 
-    $datas = array();
-    foreach ($files['data'] as $file) {
-        $dirbasename = basename(dirname($file));
-        if (in_array($dirbasename, $exclude)) {
-            continue;
-        }
-        $datas[$dirbasename] = require $file;
-    }
+    $datas = $files['data'];
 
     foreach ($datas as $dirbasename => $data) {
         if (isset($data['php'])) {
@@ -105,23 +99,19 @@ function compile() {
             $output->content .= $error;
         }
     } else {
-        foreach ($files['add_unit'] as $file) {
-            require $file;
+        foreach (array('add_unit', 'set_unit', 'set_route', 'test') as $files_temp) {
+            foreach ($files[$files_temp] as $file) {
+                compile_require_wrapper($file, $app, $input, $output);
+            }
         }
 
-        foreach ($files['set_unit'] as $file) {
-            require $file;
+        if (1 > $output->code) {
+            $appStateFile = 'var/lib/app.state.dat';
+
+            $app->save($appStateFile);
+
+            $output->content .= 'File created: ' . $appStateFile . "\n";
         }
-
-        foreach ($files['set_route'] as $file) {
-            require $file;
-        }
-
-        $appStateFile = 'var/lib/app.state.dat';
-
-        $app->save($appStateFile);
-
-        $output->content .= 'File created: ' . $appStateFile . "\n";
     }
 
     $output->content .= "Tip: use " . ($app->env['sapi'] === 'cli' ? "--exclude=module1,module2" : "?exclude=module1,module2") . " to exclude modules from compilation.\n";
@@ -137,7 +127,11 @@ function compile() {
     exit($errors ? 1 : 0);
 }
 
-function scan_dir($dir, &$result) {
+function compile_require_wrapper($file, $app, $input, $output) {
+    return require $file;
+}
+
+function compile_scan_dir($dir, &$result, &$exclude, $app) {
     $handle = opendir($dir);
 
     if ($handle === false) {
@@ -152,13 +146,18 @@ function scan_dir($dir, &$result) {
         $path = $dir . '/' . $item;
 
         if (is_dir($path)) {
-            scan_dir($path, $result);
+            compile_scan_dir($path, $result, $exclude, $app);
             continue;
         }
 
         if (is_file($path)) {
-            if (substr($item, -9) === '_data.php') {
-                $result['data'][] = $path;
+            if (in_array(basename(dirname($path)), $exclude)) {
+                continue;
+            }
+            if (substr($item, -9) === '_test.php') {
+                $result['test'][] = $path;
+            } elseif (substr($item, -9) === '_data.php') {
+                $result['data'][basename(dirname($path))] = $app->data($path);
             } elseif (substr($item, -13) === '_add_unit.php') {
                 $result['add_unit'][] = $path;
             } elseif (substr($item, -13) === '_set_unit.php') {

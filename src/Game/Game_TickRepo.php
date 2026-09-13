@@ -11,20 +11,19 @@ class Game_TickRepo extends Shared_Lib_DatabaseHelper {
             $this->app,
             $this->database,
             $this->castStandard,
-            $this->castDb
+            $this->castDb,
+            $name,
+            $table
         ) = $args;
 
-        $name = 'game';
+        $this->database->set($name, array(
+            'dsn' => $this->app->env['db'][$name]['dsn'],
+            'user' => $this->app->env['db'][$name]['user'],
+            'pass' => $this->app->env['db'][$name]['pass']
+        ));
 
-        parent::setTable('tick');
-        parent::setDb(
-            $this->database,
-            $this->database->connect(array(
-                'dsn' => $this->app->env['db'][$name]['dsn'],
-                'user' => $this->app->env['db'][$name]['user'],
-                'pass' => $this->app->env['db'][$name]['pass']
-            ), $name)
-        );
+        parent::setTable($table);
+        parent::setDb($this->database->get($name));
     }
 }
 ?>

@@ -5,7 +5,6 @@ class Shared_Lib_DatabaseHelper {
     var $table;
     var $key;
     var $db;
-    var $id;
     var $seq;
 
     function setTable($table, $key = 'id') {
@@ -13,9 +12,8 @@ class Shared_Lib_DatabaseHelper {
         $this->key = $key;
     }
 
-    function setDb($db, $id = '_', $seq = null) {
+    function setDb($db, $seq = null) {
         $this->db = $db;
-        $this->id = $id;
         $this->seq = $seq;
     }
 
@@ -28,27 +26,27 @@ class Shared_Lib_DatabaseHelper {
     }
 
     function begin() {
-        return $this->db->begin($this->id);
+        return $this->db->begin();
     }
 
     function commit() {
-        return $this->db->commit($this->id);
+        return $this->db->commit();
     }
 
     function rollback() {
-        return $this->db->rollback($this->id);
+        return $this->db->rollback();
     }
 
     function lastInsertId() {
-        return $this->db->lastInsertId($this->id, $this->seq);
+        return $this->db->lastInsertId($this->seq);
     }
 
     function execute($query) {
-        return $this->db->execute($query, $this->id);
+        return $this->db->execute($query);
     }
 
     function stmt($query, $param) {
-        return $this->db->stmt($query, $param, $this->id);
+        return $this->db->stmt($query, $param);
     }
 
     function fetch($stmt) {

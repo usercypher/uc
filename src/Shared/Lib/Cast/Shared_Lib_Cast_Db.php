@@ -12,11 +12,17 @@ class Shared_Lib_Cast_Db {
 
         $this->t = $translator->get('shared');
 
-        $this->db = $database->conn[$database->connect(array(
+        $name = 'default';
+
+        $database->set($name, array(
             'dsn' => $app->env['db']['default']['dsn'],
             'user' => $app->env['db']['default']['user'],
             'pass' => $app->env['db']['default']['pass'],
-        ), 'default')];
+        ));
+
+        $db = $database->get($name);
+
+        $this->db = $db->connect();
     }
 
     function unique($table, $column, $current = null) {

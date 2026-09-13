@@ -3,6 +3,10 @@
 class Shared_Lib_Session {
     var $name, $id;
 
+    function args($args) {
+        $this->init(isset($args[0]) ? $args[0] : array());
+    }
+
     function init($config) {
         if (session_id() == '') {
             $this->name = session_name(isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT');

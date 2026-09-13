@@ -31,7 +31,7 @@ function config($app, $file) {
     $app->env['log_retention_days'] = 7;
     $app->env['log_max_files'] = 10;
     
-    $app->env['route_handler_global'] = array('Shared_Pipe_ErrorHandler', 'App_Pipe_Init');
+    $app->env['route_handler_global'] = array('Shared_Pipe_ErrorHandler');
     $app->env['route_handler_prepend'] = array('Shared_Pipe_Lang', 'App_Pipe_Lang');
     $app->env['route_handler_append'] = array();
 

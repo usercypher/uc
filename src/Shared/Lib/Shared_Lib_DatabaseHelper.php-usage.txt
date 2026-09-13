@@ -9,15 +9,15 @@ function msg($success, $msg) {
 }
 
 $db = new Shared_Lib_Database();
-$model = new Shared_Lib_DatabaseHelper();
-$model->setDb($db, $db->connect([
-    'host' => '127.0.0.1',
-    'port' => '3306',
+$db->set('key', [
+    'dsn' => '127.0.0.1',
     'name' => 'test',
     'user' => 'root',
     'pass' => '',
-    'time' => '+00:00'
-]));
+]);
+
+$model = new Shared_Lib_DatabaseHelper();
+$model->setDb($db->get('key'));
 $model->setTable('table_name', 'id');
 
 // Create table

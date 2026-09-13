@@ -1,59 +1,79 @@
 <?php
 
 class Shared_Lib_Database {
-    var $conn = array();
+    var $objects = array();
 
-    function connect($config = array(), $id = '_') {
-        if (!isset($this->conn[$id])) {
-            $dsn = isset($config['dsn']) ? $config['dsn'] : '';
-            $user = isset($config['user']) ? $config['user'] : '';
-            $pass = isset($config['pass']) ? $config['pass'] : '';
-            $timeout = isset($config['timeout']) ? (int) $config['timeout'] : 5;
+    function set($key, $config = array()) {
+        $object = new Shared_Lib_Database_Obj;
+        $object->config = $config;
+        $this->objects[$key] = $object;
+    }
 
-            $this->conn[$id] = new PDO($dsn, $user, $pass, array(
+    function get($key) {
+        return $this->objects[$key];
+    }
+}
+
+class Shared_Lib_Database_Obj {
+    var $conn, $config = array();
+
+    function connect() {
+        if (!isset($this->conn)) {
+            $dsn = isset($this->config['dsn']) ? $this->config['dsn'] : '';
+            $user = isset($this->config['user']) ? $this->config['user'] : '';
+            $pass = isset($this->config['pass']) ? $this->config['pass'] : '';
+            $timeout = isset($this->config['timeout']) ? (int) $this->config['timeout'] : 5;
+
+            $this->conn = new PDO($dsn, $user, $pass, array(
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
                 PDO::ATTR_TIMEOUT => $timeout,
             ));
         }
-        return $id;
+        return $this->conn;
     }
 
-    function disconnect($id = '_') {
-        if (isset($this->conn[$id])) {
-            unset($this->conn[$id]);
+    function disconnect() {
+        if (isset($this->conn)) {
+            unset($this->conn);
         }
     }
 
-    function hasConnection($id = '_') {
-        return isset($this->conn[$id]);
+    function hasConnection() {
+        return isset($this->conn);
     }
 
     // Database operations
 
-    function begin($id = '_') {
-        return $this->conn[$id]->beginTransaction();
+    function begin() {
+        $this->connect();
+        return $this->conn->beginTransaction();
     }
 
-    function commit($id = '_') {
-        return $this->conn[$id]->commit();
+    function commit() {
+        $this->connect();
+        return $this->conn->commit();
     }
 
-    function rollback($id = '_') {
-        return $this->conn[$id]->rollBack();
+    function rollback() {
+        $this->connect();
+        return $this->conn->rollBack();
     }
 
-    function lastInsertId($id = '_', $seq = null) {
-        return $this->conn[$id]->lastInsertId($seq);
+    function lastInsertId($seq = null) {
+        $this->connect();
+        return $this->conn->lastInsertId($seq);
     }
 
-    function execute($query, $id = '_') {
-        return $this->conn[$id]->exec($query);
+    function execute($query) {
+        $this->connect();
+        return $this->conn->exec($query);
     }
 
-    function stmt($query, $param, $id = '_') {
-        $stmt = $this->conn[$id]->prepare($query);
+    function stmt($query, $param) {
+        $this->connect();
+        $stmt = $this->conn->prepare($query);
         if (!$stmt) {
-            $error = $this->conn[$id]->errorInfo();
+            $error = $this->conn->errorInfo();
             trigger_error('Prepare failed: ' . $error[2], E_USER_WARNING);
             return false;
         }

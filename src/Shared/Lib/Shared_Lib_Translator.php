@@ -1,21 +1,21 @@
 <?php
 
 class Shared_Lib_Translator {
-    var $translators;
+    var $objects;
 
     function set($key, $translations = array(), $plural = null) {
-        $translator = new Shared_Lib_Translator_Object;
-        $translator->translations = $translations;
+        $object = new Shared_Lib_Translator_Object;
+        $object->translations = $translations;
         if ($plural) {
-            $translator->plural = $plural;
+            $object->plural = $plural;
         } else {
-            $translator->setDefaultPlural();
+            $object->setDefaultPlural();
         }
-        $this->translators[$key] = $translator;
+        $this->objects[$key] = $object;
     }
 
     function get($key) {
-        return $this->translators[$key];
+        return $this->objects[$key];
     }
 }
 
