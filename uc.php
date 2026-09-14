@@ -584,6 +584,8 @@ class App {
     }
 
     function unitSet($unit, $option = array()) {
+        $this->unit[$unit];
+
         if (isset($option['base'])) {
             foreach (array(APP_UNIT_PATH, APP_UNIT_FILE, APP_UNIT_LOAD, APP_UNIT_ARGS, APP_UNIT_BASE, APP_UNIT_INST_CACHE) as $i) {
                 $this->unit[$unit][$i] = $this->unit[$option['base']][$i];
