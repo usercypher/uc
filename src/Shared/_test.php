@@ -15,7 +15,7 @@ if ($handle = $app->dopen($dirTest)) {
             continue;
         }
         try {
-            $unit = $app->makeUnit(basename(substr($file, 0, -4)));
+            $unit = $app->unitMake(basename(substr($file, 0, -4)));
             $unit->call();
             $passed++;
             $output->content .= "Test '$module': [pass] " . basename($file) . "\n";

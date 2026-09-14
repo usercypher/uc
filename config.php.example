@@ -6,7 +6,7 @@ function config($app, $file) {
         'index.php' => 'dev',
     );
 
-    $app->env['uc'] = '11.0.0';
+    $app->env['uc'] = '12.0.0';
     $app->env['app_id'] = 'uc';
     // Environment Settings
     $app->env['dir']['root'] = $app->pathToSlash(dirname(__FILE__)) . '/';

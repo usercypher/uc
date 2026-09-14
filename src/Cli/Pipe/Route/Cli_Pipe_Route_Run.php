@@ -44,7 +44,7 @@ class Cli_Pipe_Route_Run {
 
         list($tempInput, $output) = $this->app->pipe($tempInput, $output, $this->app->env['route_handler_global']);
 
-        $result = $this->app->resolveRoute($tempInput->method, $tempInput->route);
+        $result = $this->app->routeResolve($tempInput->method, $tempInput->route);
 
         if (isset($result['error'])) {
             list($_, $output) = $this->app->pipe($tempInput, $output, array_merge($this->app->env['route_handler_prepend'], $this->app->env['route_handler_append']));

@@ -1,5 +1,5 @@
 <?php /*
-Version: 11.0.0
+Version: 12.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -206,7 +206,7 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '11.0.0';
+    var $version = '12.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -246,13 +246,13 @@ class App {
 
         foreach (array('App', 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
-                $this->addUnit($unit);
+                $this->unitAdd($unit);
             }
         }
 
-        $this->syncUnits();
+        $this->unitSync();
 
-        $this->setUnit('App', array('cache' => true));
+        $this->unitSet('App', array('cache' => true));
         $this->unitInstCache['App'] = &$this;
     }
 
@@ -274,7 +274,7 @@ class App {
 
     // Error Management
 
-    function handleError($errno, $errstr, $errfile, $errline) {
+    function errorHandler($errno, $errstr, $errfile, $errline) {
         $e = $this->error($errno, $errstr, $errfile, $errline, array('trace' => $this->env['error_display'] ? debug_backtrace() : array()) + (isset($this->env['handle_error_context']) ? $this->env['handle_error_context'] : array()));
 
         if (!$e) {
@@ -368,7 +368,7 @@ class App {
 
     // Route Management
 
-    function setRoute($method, $route, $units, $override = false) {
+    function routeSet($method, $route, $units, $override = false) {
         $handler = array();
 
         foreach ($units as $unit) {
@@ -395,7 +395,7 @@ class App {
         $node[$method] = $handler;
     }
 
-    function groupRoute($group, $method, $route, $units, $ignore = array()) {
+    function routeGroup($group, $method, $route, $units, $ignore = array()) {
         $ignore = array_flip($ignore);
         $units = isset($ignore['--all']) ? $units : array_merge(isset($group['prepend']) && !isset($ignore['--prepend']) ? $group['prepend'] : array(), isset($units) ? $units : array(), isset($group['append']) && !isset($ignore['--append']) ? $group['append'] : array());
         $filteredUnits = array();
@@ -406,10 +406,10 @@ class App {
             }
         }
 
-        $this->setRoute($method, $route, $filteredUnits);
+        $this->routeSet($method, $route, $filteredUnits);
     }
 
-    function resolveRoute($method, $route) {
+    function routeResolve($method, $route) {
         $current = $this->routes;
         $param = array();
         $routeSegments = explode('/', $route, 128);
@@ -486,7 +486,7 @@ class App {
 
     // Unit Management
 
-    function syncUnits() {
+    function unitSync() {
         $units = array();
         $loads = array();
 
@@ -505,7 +505,7 @@ class App {
         }
     }
 
-    function scanUnits($path, $option) {
+    function unitScan($path, $option) {
         if (!isset($option['depth'])) {
             $option['depth'] = 1;
         }
@@ -546,9 +546,9 @@ class App {
                     $subOption = $option;
                     $subOption['depth']++;
                     $subOption['namespace'] .= $item . '\\';
-                    $this->scanUnits($path . $item . '/', $subOption);
+                    $this->unitScan($path . $item . '/', $subOption);
                 } elseif (!$isDir && substr($item, -4) === '.php') {
-                    $this->addUnit(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($item, 0, -4), $path);
+                    $this->unitAdd(($option['dir_as_namespace'] ? $option['namespace'] : '') . substr($item, 0, -4), $path);
                 }
             }
 
@@ -556,7 +556,7 @@ class App {
         }
     }
 
-    function addUnit($unit, $path = '', $override = false) {
+    function unitAdd($unit, $path = '', $override = false) {
         $pathListIndex = null;
 
         if (isset($this->path[$path])) {
@@ -583,7 +583,7 @@ class App {
         $this->unitList[$unitListIndex] = $unit;
     }
 
-    function setUnit($unit, $option = array()) {
+    function unitSet($unit, $option = array()) {
         if (isset($option['base'])) {
             foreach (array(APP_UNIT_PATH, APP_UNIT_FILE, APP_UNIT_LOAD, APP_UNIT_ARGS, APP_UNIT_BASE, APP_UNIT_INST_CACHE) as $i) {
                 $this->unit[$unit][$i] = $this->unit[$option['base']][$i];
@@ -608,14 +608,14 @@ class App {
         $this->unit[$unit][APP_UNIT_INST_CACHE] = isset($option['cache']) ? $option['cache'] : $this->unit[$unit][APP_UNIT_INST_CACHE];
     }
 
-    function groupUnit($group, $unit, $option = array()) {
+    function unitGroup($group, $unit, $option = array()) {
         $option['args'] = array_merge(isset($group['args_prepend']) ? $group['args_prepend'] : array(), isset($option['args']) ? $option['args'] : array(), isset($group['args_append']) ? $group['args_append'] : array());
         $option['load'] = array_merge(isset($group['load_prepend']) ? $group['load_prepend'] : array(), isset($option['load']) ? $option['load'] : array(), isset($group['load_append']) ? $group['load_append'] : array());
         $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : false);
-        $this->setUnit($unit, $option);
+        $this->unitSet($unit, $option);
     }
 
-    function loadUnit($unit) {
+    function unitLoad($unit) {
         $stack = array($unit);
         $top = 0;
         $seen = array();
@@ -639,8 +639,7 @@ class App {
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $top += 2;
-                    $stack[$top] = $this->unitList[$load[$md[$unit][0]]];
+                    $stack[($top += 2)] = $this->unitList[$load[$md[$unit][0]]];
                     ++$md[$unit][0];
                     continue;
                 }
@@ -658,7 +657,7 @@ class App {
         }
     }
 
-    function &makeUnit($unit, $new = false) {
+    function &unitMake($unit, $new = false) {
         $stack = array($unit);
         $top = 0;
         $seen = array();
@@ -696,11 +695,10 @@ class App {
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
+                    ++$top;
                     if ($args[$md[$unit][0]][APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT) {
-                        $top += 2;
-                        $stack[$top] = $this->unitList[$args[$md[$unit][0]][APP_UNIT_ARGS_VAL]];
+                        $stack[++$top] = $this->unitList[$args[$md[$unit][0]][APP_UNIT_ARGS_VAL]];
                     } else {
-                        $top += 1;
                         $resolvedArgs[$unit][] = $args[$md[$unit][0]][APP_UNIT_ARGS_VAL];
                     }
                     ++$md[$unit][0];
@@ -711,7 +709,7 @@ class App {
             }
 
             unset($seen[$previousUnit]);
-            $this->loadUnit($unit);
+            $this->unitLoad($unit);
             $class = new $this->unitList[$this->unit[$unit][APP_UNIT_BASE]]();
 
             if (isset($resolvedArgs[$unit])) {
@@ -729,11 +727,15 @@ class App {
         return $class;
     }
 
-    function resetUnit($unit) {
+    function unitReset($unit) {
         $this->unitInstCache[$unit] = null;
     }
 
-    function argUnitData($arg) {
+    function unitArgUnit($arg) {
+        return array(APP_UNIT_ARGS_TYP_UNIT, $arg);
+    }
+
+    function unitArgData($arg) {
         return array(APP_UNIT_ARGS_TYP_DATA, $arg);
     }
 
@@ -823,7 +825,7 @@ class App {
 
     function pipe($input, $output, $pipe) {
         foreach ($pipe as $p) {
-            $p = $this->makeUnit($p);
+            $p = $this->unitMake($p);
             list($input, $output, $success) = $p->call($input, $output);
 
             if (!$success) {

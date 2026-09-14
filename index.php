@@ -10,7 +10,7 @@ function index() {
     $app = new App();
     $app->init();
 
-    set_error_handler(array($app, 'handleError'));
+    set_error_handler(array($app, 'errorHandler'));
 
     config($app, basename(__FILE__));
 
@@ -47,7 +47,7 @@ function index() {
 
     list($input, $output) = $app->pipe($input, $output, $app->env['route_handler_global']);
 
-    $result = $app->resolveRoute($input->method, $input->route);
+    $result = $app->routeResolve($input->method, $input->route);
 
     if (isset($result['error'])) {
         list($input, $output) = $app->pipe($input, $output, array_merge($app->env['route_handler_prepend'], $app->env['route_handler_append']));

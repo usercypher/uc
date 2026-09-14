@@ -8,7 +8,7 @@ foreach (array(
     $$v = $data[$v];
 }
 
-$translator = $app->makeUnit('Shared_Lib_Translator');
+$translator = $app->unitMake('Shared_Lib_Translator');
 $t = $translator->get('app');
 
 $content = $code . '. ' . $t->t('error_500_description') . "\n\n" . $error;

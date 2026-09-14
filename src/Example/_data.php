@@ -1,11 +1,11 @@
 <?php
 
 return array(
-    'version' => '3.0.0',
+    'version' => '4.0.0',
     'use' => array(
-        'App' => '3.0.0',
-        'Shared' => '3.0.0',
-        'User' => '3.0.0',
-        'Game' => '3.0.0'
+        'App' => '4.0.0',
+        'Shared' => '4.0.0',
+        'User' => '4.0.0',
+        'Game' => '4.0.0'
     )
 );

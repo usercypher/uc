@@ -10,7 +10,7 @@ $group = array(
 
 );
 
-$app->groupRoute($group, '', 'cli/:on-unknown-route*', array(
+$app->routeGroup($group, '', 'cli/:on-unknown-route*', array(
     'Cli_Pipe_Help'
 ));
 
@@ -23,19 +23,19 @@ $group = array(
 
 );
 
-$app->groupRoute($group, '', 'cli/route/:on-unknown-option*', array(
+$app->routeGroup($group, '', 'cli/route/:on-unknown-option*', array(
     'Cli_Pipe_Route_Help'
 ));
 
-$app->groupRoute($group, '', 'cli/route/print/:*', array(
+$app->routeGroup($group, '', 'cli/route/print/:*', array(
     'Cli_Pipe_Route_Print'
 ));
 
-$app->groupRoute($group, '', 'cli/route/resolve/:*', array(
+$app->routeGroup($group, '', 'cli/route/resolve/:*', array(
     'Cli_Pipe_Route_Resolve'
 ));
 
-$app->groupRoute($group, '', 'cli/route/run/:*', array(
+$app->routeGroup($group, '', 'cli/route/run/:*', array(
     'Cli_Pipe_Route_Run'
 ));
 
@@ -48,12 +48,12 @@ $group = array(
 
 );
 
-$app->groupRoute($group, '', 'cli/unit/:on-unknown-option*', array(
+$app->routeGroup($group, '', 'cli/unit/:on-unknown-option*', array(
     'Cli_Pipe_Unit_Help'
 ));
 
 // route=unit/create/:name
-$app->groupRoute($group, '', 'cli/unit/create/:name/:*', array(
+$app->routeGroup($group, '', 'cli/unit/create/:name/:*', array(
     'Cli_Pipe_Unit_Create'
 ));
 
@@ -66,15 +66,15 @@ $group = array(
 
 );
 
-$app->groupRoute($group, '', 'cli/file/:on-unknown-option*', array(
+$app->routeGroup($group, '', 'cli/file/:on-unknown-option*', array(
     'Cli_Pipe_File_Help'
 ));
 
-$app->groupRoute($group, '', 'cli/file/find/:*', array(
+$app->routeGroup($group, '', 'cli/file/find/:*', array(
     'Cli_Pipe_File_Find'
 ));
 
-$app->groupRoute($group, '', 'cli/file/find-replace/:*', array(
+$app->routeGroup($group, '', 'cli/file/find-replace/:*', array(
     'Cli_Pipe_File_FindReplace'
 ));
 
@@ -87,14 +87,14 @@ $group = array(
 
 );
 
-$app->groupRoute($group, '', 'cli/db/:on-unknown-option*', array(
+$app->routeGroup($group, '', 'cli/db/:on-unknown-option*', array(
     'Cli_Pipe_Db_Help'
 ));
 
-$app->groupRoute($group, '', 'cli/db/print/:*', array(
+$app->routeGroup($group, '', 'cli/db/print/:*', array(
     'Cli_Pipe_Db_Print'
 ));
 
-$app->groupRoute($group, '', 'cli/db/exec/:*', array(
+$app->routeGroup($group, '', 'cli/db/exec/:*', array(
     'Cli_Pipe_Db_Exec'
 ));

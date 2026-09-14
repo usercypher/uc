@@ -10,6 +10,6 @@
  *  - 'ignore' => [...]          // Files/folders to ignore; patterns: ^ (prefix), $ (suffix), * (contains), = or empty (exact)
  *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
  */
-$app->scanUnits('src/', array(
-    'ignore' => array(basename(__FILE__), '*/res/', '$/_set_route.php', '$/_set_unit.php', '$/_add_unit.php', '$/_data.php', '$/_test.php')
+$app->unitScan('src/', array(
+    'ignore' => array(basename(__FILE__), '*/res/', '$/_route_set.php', '$/_unit_set.php', '$/_unit_add.php', '$/_data.php', '$/_test.php')
 ));

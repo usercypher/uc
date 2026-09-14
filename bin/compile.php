@@ -7,7 +7,7 @@ function compile() {
     $app = new App();
     $app->init();
 
-    set_error_handler(array($app, 'handleError'));
+    set_error_handler(array($app, 'errorHandler'));
 
     config($app, basename(__FILE__));
 
@@ -45,14 +45,14 @@ function compile() {
     $files = array(
         'test' => array(),
         'data' => array(),
-        'add_unit' => array(),
-        'set_unit' => array(),
-        'set_route' => array(),
+        'unit_add' => array(),
+        'unit_set' => array(),
+        'route_set' => array(),
     );
 
     compile_scan_dir($app->dir('root', 'src'), $files, $exclude, $app);
 
-    require $app->dir('root', 'src/_scan_units.php');
+    require $app->dir('root', 'src/_unit_scan.php');
 
     $datas = $files['data'];
 
@@ -99,7 +99,7 @@ function compile() {
             $output->content .= $error;
         }
     } else {
-        foreach (array('add_unit', 'set_unit', 'set_route', 'test') as $files_temp) {
+        foreach (array('unit_add', 'unit_set', 'route_set', 'test') as $files_temp) {
             foreach ($files[$files_temp] as $file) {
                 compile_require_wrapper($file, $app, $input, $output);
             }
@@ -158,12 +158,12 @@ function compile_scan_dir($dir, &$result, &$exclude, $app) {
                 $result['test'][] = $path;
             } elseif (substr($item, -9) === '_data.php') {
                 $result['data'][basename(dirname($path))] = $app->data($path);
-            } elseif (substr($item, -13) === '_add_unit.php') {
-                $result['add_unit'][] = $path;
-            } elseif (substr($item, -13) === '_set_unit.php') {
-                $result['set_unit'][] = $path;
-            } elseif (substr($item, -14) === '_set_route.php') {
-                $result['set_route'][] = $path;
+            } elseif (substr($item, -13) === '_unit_add.php') {
+                $result['unit_add'][] = $path;
+            } elseif (substr($item, -13) === '_unit_set.php') {
+                $result['unit_set'][] = $path;
+            } elseif (substr($item, -14) === '_route_set.php') {
+                $result['route_set'][] = $path;
             }
         }
     }

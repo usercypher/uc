@@ -24,7 +24,7 @@ class Cli_Pipe_Route_Resolve {
         $route = $input->query['route'];
         $method = isset($input->query['method']) ? $input->query['method'] : 'GET';
 
-        $result = $this->app->resolveRoute($method, $route);
+        $result = $this->app->routeResolve($method, $route);
 
         if (isset($result['error'])) {
             $message .= 'Route not found: ' . $route . "\n";

@@ -5,27 +5,27 @@
  * Pipe
  * ------------------------------------------------------------------------
  */
-$app->setUnit('App_Pipe_Index', array('args' => array('App', 'Shared_Lib_Translator')));
+$app->unitSet('App_Pipe_Index', array('args' => array('App', 'Shared_Lib_Translator')));
 
-$app->setUnit('App_Pipe_Lang', array(
+$app->unitSet('App_Pipe_Lang', array(
     'base' => 'Shared_Pipe_Lang',
     'args' => array(
         'App',
         'Shared_Lib_Translator',
-        $app->argUnitData('app'),
-        $app->argUnitData('en'),
-        $app->argUnitData(array(
+        $app->unitArgData('app'),
+        $app->unitArgData('en'),
+        $app->unitArgData(array(
             'en', 'es', 'fr', 'de', 'pt'
         )),
-        $app->argUnitData('src/App/res/lang/'),
+        $app->unitArgData('src/App/res/lang/'),
     )
 ));
 
 
-$app->setUnit('App_Lib_Session', array(
+$app->unitSet('App_Lib_Session', array(
     'base' => 'Shared_Lib_Session',
     'args' => array(
-        $app->argUnitData(array(
+        $app->unitArgData(array(
             'name' => $app->env['app_id'] . ':session'
         )),
     )
