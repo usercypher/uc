@@ -8,8 +8,8 @@ class Shared_Pipe_Lang {
     var $directory = 'src/Shared/res/lang/';
 
     function args($args) {
-        $this->app = $args[0] ?? null;
-        $this->translator = $args[1] ?? null;
+        $this->app = $args[0];
+        $this->translator = $args[1];
         $this->key = isset($args[2]) ? $args[2] : $this->key;
         $this->default = isset($args[3]) ? $args[3] : $this->default;
         $this->languages = isset($args[4]) ? $args[4] : $this->languages;

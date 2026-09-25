@@ -11,5 +11,5 @@
  *  - 'dir_as_namespace' => true // Use directory structure as namespace prefix
  */
 $app->unitScan('src/', array(
-    'ignore' => array(basename(__FILE__), '*/res/', '$/_route_set.php', '$/_unit_set.php', '$/_unit_add.php', '$/_data.php', '$/_test.php')
+    'ignore' => array(basename(__FILE__), '*/res/', '*/_', '*/Test/')
 ));

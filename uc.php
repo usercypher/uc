@@ -1,5 +1,5 @@
 <?php /*
-Version: 12.0.0
+Version: 12.1.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -206,7 +206,8 @@ class OutputCli extends Output {
 }
 
 class App {
-    var $version = '12.0.0';
+    var $self = '';
+    var $version = '12.1.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -240,11 +241,13 @@ class App {
     // Application Setup
 
     function init() {
+        $this->self = get_class($this);
+
         $this->env['sapi'] = php_sapi_name();
         $this->env['dir']['root'] = $this->pathToSlash(dirname(__FILE__)) . '/';
         $this->env['error_non_fatal'] = E_NOTICE | E_USER_NOTICE;
 
-        foreach (array('App', 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
+        foreach (array($this->self, 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
                 $this->unitAdd($unit);
             }
@@ -252,8 +255,20 @@ class App {
 
         $this->unitSync();
 
-        $this->unitSet('App', array('cache' => true));
-        $this->unitInstCache['App'] = &$this;
+        $this->unitSet($this->self, array('cache' => true));
+        $this->unitInstCache[$this->self] = &$this;
+    }
+
+    function inst() {
+        $obj = new $this->self;
+
+        foreach (get_object_vars($this) as $k => $v) {
+            $obj->$k = $v;
+        }
+
+        $obj->unitInstCache[$this->self] = &$obj;
+
+        return $obj;
     }
 
     function term() {
@@ -275,7 +290,7 @@ class App {
     // Error Management
 
     function errorHandler($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, array('trace' => $this->env['error_display'] ? debug_backtrace() : array()) + (isset($this->env['handle_error_context']) ? $this->env['handle_error_context'] : array()));
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('trace' => $this->env['error_display'] && function_exists('debug_backtrace') ? debug_backtrace() : array()) + (isset($this->env['handle_error_context']) ? $this->env['handle_error_context'] : array()));
 
         if (!$e) {
             return true;
@@ -308,7 +323,7 @@ class App {
         die($e['code'] > 255 ? 1 : $e['code']);
     }
 
-    function error($errno, $errstr, $errfile, $errline, $errcontext) {
+    function error($errno, $errstr, $errfile, $errline, $errcontext = array()) {
         if (!($errno & error_reporting())) {
             return array();
         }
@@ -505,7 +520,7 @@ class App {
         }
     }
 
-    function unitScan($path, $option) {
+    function unitScan($path, $option = array()) {
         if (!isset($option['depth'])) {
             $option['depth'] = 1;
         }
@@ -755,11 +770,10 @@ class App {
         return $this->env['url'][$k] . ($param ? strtr($s, $param) : $s);
     }
 
-    function log($msg, $file) {
+    function log($msg, $file = 'default.log') {
         $mt = explode(' ', microtime());
-        $micro = (float) $mt[0];
         $time = (int) $mt[1];
-        $msg = date(sprintf('[Y-m-d H:i:s.%06f O]', $micro), $time) . ' ' . $msg . "\n";
+        $msg = date(sprintf('[Y-m-d H:i:s.%s O]', substr($mt[0], 2)), $time) . ' ' . $msg . "\n";
 
         $ext = '';
 

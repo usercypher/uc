@@ -43,14 +43,18 @@ function compile() {
     $exclude = isset($input->query['exclude']) ? explode(',', $input->query['exclude']) : array();
 
     $files = array(
-        'test' => array(),
         'data' => array(),
+        'compile' => array(),
         'unit_add' => array(),
         'unit_set' => array(),
         'route_set' => array(),
     );
 
     compile_scan_dir($app->dir('root', 'src'), $files, $exclude, $app);
+
+    foreach (array('unit_add', 'unit_set', 'route_set', 'compile') as $phase) {
+        usort($files[$phase], 'compile_usort');
+    }
 
     require $app->dir('root', 'src/_unit_scan.php');
 
@@ -98,25 +102,30 @@ function compile() {
         foreach ($errors as $error) {
             $output->content .= $error;
         }
+        $output->code = $app->env['sapi'] === 'cli' ? 1 : 500;
     } else {
-        foreach (array('unit_add', 'unit_set', 'route_set', 'test') as $files_temp) {
-            foreach ($files[$files_temp] as $file) {
-                compile_require_wrapper($file, $app, $input, $output);
+        $ok = 1;
+        foreach (array('unit_add', 'unit_set', 'route_set', 'compile') as $phase) {
+            foreach ($files[$phase] as $file) {
+                $result = compile_require_wrapper($file, $app, $input, $output);
+                if ($result !== 1) {
+                    $ok = $result;
+                }
             }
         }
 
-        if (1 > $output->code) {
+        if ($ok === 1) {
             $appStateFile = 'var/lib/app.state.dat';
 
             $app->save($appStateFile);
 
             $output->content .= 'File created: ' . $appStateFile . "\n";
+        } else {
+            $output->code = $app->env['sapi'] === 'cli' ? 1 : 500;
         }
     }
 
     $output->content .= "Tip: use " . ($app->env['sapi'] === 'cli' ? "--exclude=module1,module2" : "?exclude=module1,module2") . " to exclude modules from compilation.\n";
-
-    $output->code = $app->env['sapi'] === 'cli' ? ($errors ? 1 : 0) : 200;
 
     $output->call($output->content, $output->code);
 
@@ -124,7 +133,7 @@ function compile() {
     $input->term();
     $output->term();
 
-    exit($errors ? 1 : 0);
+    exit($app->env['sapi'] === 'cli' ? $output->code : 0);
 }
 
 function compile_require_wrapper($file, $app, $input, $output) {
@@ -146,29 +155,45 @@ function compile_scan_dir($dir, &$result, &$exclude, $app) {
         $path = $dir . '/' . $item;
 
         if (is_dir($path)) {
-            compile_scan_dir($path, $result, $exclude, $app);
-            continue;
-        }
-
-        if (is_file($path)) {
-            if (in_array(basename(dirname($path)), $exclude)) {
+            if (in_array($item, $exclude)) {
                 continue;
             }
-            if (substr($item, -9) === '_test.php') {
-                $result['test'][] = $path;
-            } elseif (substr($item, -9) === '_data.php') {
-                $result['data'][basename(dirname($path))] = $app->data($path);
-            } elseif (substr($item, -13) === '_unit_add.php') {
-                $result['unit_add'][] = $path;
-            } elseif (substr($item, -13) === '_unit_set.php') {
-                $result['unit_set'][] = $path;
-            } elseif (substr($item, -14) === '_route_set.php') {
-                $result['route_set'][] = $path;
+
+            $subhandle = opendir($path);
+
+            if ($subhandle !== false) {
+                while (($subitem = readdir($subhandle)) !== false) {
+                    if ($subitem === '.' || $subitem === '..') {
+                        continue;
+                    }
+
+                    $subpath = $path . '/' . $subitem;
+
+                    if (is_file($subpath)) {
+                        if (substr($subitem, -9) === '_data.php') {
+                            $result['data'][basename(dirname($subpath))] = $app->data($subpath);
+                        } elseif (substr($subitem, -12) === '_compile.php') {
+                            $result['compile'][] = $subpath;
+                        } elseif (substr($subitem, -13) === '_unit_add.php') {
+                            $result['unit_add'][] = $subpath;
+                        } elseif (substr($subitem, -13) === '_unit_set.php') {
+                            $result['unit_set'][] = $subpath;
+                        } elseif (substr($subitem, -14) === '_route_set.php') {
+                            $result['route_set'][] = $subpath;
+                        }
+                    }
+                }
+                closedir($subhandle);
             }
+            continue;
         }
     }
 
     closedir($handle);
+}
+
+function compile_usort($a, $b) {
+    return strnatcmp(basename($a), basename($b));
 }
 
 compile();
