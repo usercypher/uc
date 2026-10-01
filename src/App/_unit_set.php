@@ -20,13 +20,3 @@ $app->unitSet('App_Pipe_Lang', array(
         $app->unitArgData('src/App/res/lang/'),
     )
 ));
-
-
-$app->unitSet('App_Lib_Session', array(
-    'base' => 'Shared_Lib_Session',
-    'args' => array(
-        $app->unitArgData(array(
-            'name' => $app->env['app_id'] . ':session'
-        )),
-    )
-));

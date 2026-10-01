@@ -1,10 +1,11 @@
 <?php
 
 return array(
-    'version' => '4.0.0',
+    'version' => '4.1.0',
     'ext' => array(
         'curl',
-        'pdo'
+        'pdo',
+        'bcmath'
     ),
     'use' => array(
         

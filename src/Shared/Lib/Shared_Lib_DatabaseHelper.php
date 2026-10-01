@@ -5,16 +5,19 @@ class Shared_Lib_DatabaseHelper {
     var $table;
     var $key;
     var $db;
-    var $seq;
+    var $default;
 
     function setTable($table, $key = 'id') {
         $this->table = $table;
         $this->key = $key;
     }
 
-    function setDb($db, $seq = null) {
+    function setDefault($default) {
+        $this->default = $default;
+    }
+
+    function setDb($db) {
         $this->db = $db;
-        $this->seq = $seq;
     }
 
     function addMessage($type, $message, $meta = array()) {
@@ -37,8 +40,8 @@ class Shared_Lib_DatabaseHelper {
         return $this->db->rollback();
     }
 
-    function lastInsertId() {
-        return $this->db->lastInsertId($this->seq);
+    function lastInsertId($seq = null) {
+        return $this->db->lastInsertId($seq);
     }
 
     function execute($query) {
@@ -57,41 +60,70 @@ class Shared_Lib_DatabaseHelper {
         return $this->db->fetchAll($stmt);
     }
 
-    function create($definition, $return = false) {
-        $query = 'CREATE TABLE ' . $this->table . ' (' . $definition . ')';
-        if ($return) {
-            return $query . ';';
-        }
-        return $this->execute($query) !== false;
-    }
-
-    function drop() {
-        $query = 'DROP TABLE ' . $this->table;
-        return $this->execute($query) !== false;
-    }
-
     function insert($data) {
-        $columns = implode(', ', array_keys($data));
-        $placeholders = str_repeat('?,', count($data) - 1) . '?';
+        $prepend = array();
+
+        if (isset($this->default['insert'])) {
+            foreach ($this->default['insert'] as $k => $v) {
+                if (!isset($data[$k])) {
+                    $prepend[$k] = $v;
+                }
+            }
+        }
+
+        $columns = implode(', ', array_keys(array_merge($prepend, $data)));
+        $placeholders = str_repeat('?,', count(array_merge($prepend, $data)) - 1) . '?';
+
+        $prependResolve = array();
+        foreach($prepend as $k => $v) {
+            $prependResolve[$k] = is_object($v) ? $v->call($k) : $v;
+        }
+
+        $data = array_merge($prependResolve, $data);
 
         $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES (' . $placeholders . ')';
-        return $this->stmt($query, array_values($data)) !== false ? $this->lastInsertId() : false;
+        return $this->stmt($query, array_values($data)) !== false ? $data[$this->key] : null;
     }
 
     function insertBatch($rows) {
-        $columns = implode(', ', array_keys($rows[0]));
-        $placeholders = str_repeat('?,', count($rows[0]) - 1) . '?';
+        $prepend = array();
+        $ids = array();
+
+        if (isset($this->default['insert'])) {
+            foreach ($this->default['insert'] as $k => $v) {
+                if (!isset($rows[0][$k])) {
+                    $prepend[$k] = $v;
+                }
+            }
+        }
+
+        $columns = implode(', ', array_keys(array_merge($prepend, $rows[0])));
+        $placeholders = str_repeat('?,', count(array_merge($prepend, $rows[0])) - 1) . '?';
         $values = array();
         foreach ($rows as $row) {
-            foreach ($row as $value) {
+            $prependResolve = array();
+            foreach($prepend as $k => $v) {
+                $prependResolve[$k] = is_object($v) ? $v->call($k) : $v;
+            }
+            foreach (array_merge($prependResolve, $row) as $k => $value) {
+                if ($this->key === $k) {
+                    $ids[] = $value;
+                }
                 $values[] = $value;
             }
         }
         $query = 'INSERT INTO ' . $this->table . ' (' . $columns . ') VALUES ' . str_repeat('(' . $placeholders . '), ', count($rows) - 1) . '(' . $placeholders . ')';
-        return $this->stmt($query, $values) !== false;
+        return $this->stmt($query, $values) !== false ? $ids : array();
     }
 
     function update($data) {
+        if (isset($this->default['update'])) {
+            foreach ($this->default['update'] as $k => $v) {
+                if (!isset($data[$k])) {
+                    $data[$k] = is_object($v) ? $v->call($k) : $v;
+                }
+            }
+        }
         $id = $data[$this->key];
         unset($data[$this->key]);
         $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
@@ -102,8 +134,16 @@ class Shared_Lib_DatabaseHelper {
 
     function updateBatch($rows) {
         $ids = array();
-        foreach ($rows as $row) {
+
+        foreach ($rows as $i => $row) {
             $ids[] = $row[$this->key];
+            if (isset($this->default['update'])) {
+                foreach ($this->default['update'] as $k => $v) {
+                    if (!isset($row[$k])) {
+                        $rows[$i][$k] = is_object($v) ? $v->call($k) : $v;
+                    }
+                }
+            }
         }
 
         $allColumns = array_keys($rows[0]);
@@ -156,7 +196,7 @@ class Shared_Lib_DatabaseHelper {
     }
 
     function one($conditions = '', $param = array(), $columns = '*') {
-        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' t WHERE ' . $this->key . ' = (SELECT MIN(' . $this->key . ') FROM ' . $this->table . ' ' . $conditions . ')';
+        $query = 'SELECT ' . $columns . ' FROM ' . $this->table . ' ' . $conditions;
         $stmt = $this->stmt($query, $param);
         return $this->fetch($stmt);
     }
@@ -176,7 +216,7 @@ class Shared_Lib_DatabaseHelper {
     }
 
     function exists($conditions, $param = array()) {
-        $query = 'SELECT 1 FROM ' . $this->table . ' t WHERE ' . $this->key . ' = (SELECT MIN(' . $this->key . ') FROM ' . $this->table . ' ' . $conditions . ')';
+        $query = 'SELECT 1 FROM ' . $this->table . ' ' . $conditions;
         $stmt = $this->stmt($query, $param);
         return $this->fetch($stmt) !== false;
     }
@@ -186,6 +226,41 @@ class Shared_Lib_DatabaseHelper {
             return false;
         }
         return array_splice($array, 0, $chunkSize);
+    }
+
+    function defaultId() {
+        return new Shared_Lib_DatabaseHelperDefaultId;
+    }
+
+    function defaultTime() {
+        return new Shared_Lib_DatabaseHelperDefaultTime;
+    }
+}
+
+class Shared_Lib_DatabaseHelperDefaultId {
+    function call($k) {
+        static $base32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+        static $widths = array(4, 4, 2, 4, 4, 2);
+    
+        $mt = str_pad(time(), 12, '0', STR_PAD_LEFT) . substr(microtime(), 2, 3);
+    
+        $id = '';
+        foreach (array((int)substr($mt, 0, 6), (int)substr($mt, 6, 6), (int)substr($mt, 12, 3), mt_rand(0, 1048575), mt_rand(0, 1048575), mt_rand(0, 1023)) as $i => $num) {
+            $encoded = '';
+            while ($num > 0) {
+                $encoded = $base32[$num % 32] . $encoded;
+                $num = floor($num / 32);
+            }
+            $id .= str_pad($encoded, $widths[$i], '0', STR_PAD_LEFT);
+        }
+    
+        return $id;
+    }
+}
+
+class Shared_Lib_DatabaseHelperDefaultTime {
+    function call($k) {
+        return time();
     }
 }
 ?>

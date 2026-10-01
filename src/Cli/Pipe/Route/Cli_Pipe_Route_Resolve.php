@@ -28,6 +28,7 @@ class Cli_Pipe_Route_Resolve {
 
         if (isset($result['error'])) {
             $message .= 'Route not found: ' . $route . "\n";
+            $message .= 'Allowed: ' . $result['header']['allow'] . "\n";
             $output->content = $message;
             $output->code = 1;
             return array($input, $output, $success);

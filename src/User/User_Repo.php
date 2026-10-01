@@ -24,6 +24,12 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
 
         parent::setTable($table);
         parent::setDb($this->database->get($name));
+        parent::setDefault(array(
+            'insert' => array(
+                $this->key => $this->defaultId(),
+                'created_at' => $this->defaultTime(),
+            )
+        ));
     }
 
     public function getSchema($action, $context = array()) {
@@ -33,7 +39,6 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
 
         if (in_array($action, array('update', 'delete'))) {
             $s['id'] = array(
-                $std->toInt(),
                 $std->required(),
                 $db->exists($this->table, 'id')
             );

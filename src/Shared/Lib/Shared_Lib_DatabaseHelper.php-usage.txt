@@ -4,42 +4,82 @@ header('Content-Type: text/plain');
 require('Shared_Lib_Database.php');
 require('Shared_Lib_DatabaseHelper.php');
 
-function msg($success, $msg) {
-    echo ($success ? "[ ok ]" : "[fail]") . " " . $msg . "\n";
+$GLOBALS['test_pass'] = 0;
+$GLOBALS['test_fail'] = 0;
+
+register_shutdown_function('test_shutdown');
+
+function test_shutdown() {
+    echo "\n";
+    echo "Passed: {$GLOBALS['test_pass']}\n";
+    echo "Failed: {$GLOBALS['test_fail']}\n";
 }
+
+function test($label, $actual, $expected) {
+    $pass = ($actual === $expected);
+    if ($pass) { $GLOBALS['test_pass']++; }
+    else       { $GLOBALS['test_fail']++; }
+    echo ($pass ? "[ ok ]" : "[fail]") . " $label\n";
+    ob_start();
+    var_dump($actual);
+    $actual_ob = ob_get_contents();
+    ob_end_clean();
+    ob_start();
+    var_dump($expected);
+    $expected_ob = ob_get_contents();
+    ob_end_clean();
+    if (!$pass) {
+        echo "       got=" . $actual_ob
+           . "  expected=" . $expected_ob . "\n";
+    }
+}
+
+$sqlitefile = __FILE__ . '.sqlite';
 
 $db = new Shared_Lib_Database();
 $db->set('key', [
-    'dsn' => '127.0.0.1',
+    'dsn' => 'sqlite:' . $sqlitefile,
     'name' => 'test',
     'user' => 'root',
     'pass' => '',
 ]);
 
+register_shutdown_function('shared_lib_databasehelper_shutdown');
+
+function shared_lib_databasehelper_shutdown() {
+    global $sqlitefile;
+    if (file_exists($sqlitefile)) {
+        unlink($sqlitefile);
+    }
+}
+
 $model = new Shared_Lib_DatabaseHelper();
 $model->setDb($db->get('key'));
 $model->setTable('table_name', 'id');
+$model->setDefault(array(
+    'insert' => array(
+        $model->key => $model->defaultId(),
+    )
+));
 
 // Create table
-msg($model->create("
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    age INT NOT NULL
-") === true, "validate create()");
-
-// Test addMessage() and getMessages()
-$model->addMessage('success', 'Operation successful');
-$messages = $model->getMessages();
-msg(
-    $messages === [['type' => 'success', 'message' => 'Operation successful', 'meta' => ['table' => 'table_name']]],
-    "validate addMessage() & getMessages()"
-);
+test("validate execute() - create table",
+    $model->execute("
+        CREATE TABLE {$model->table} (
+            id VARCHAR(20) UNIQUE PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            email VARCHAR(100) NOT NULL,
+            age INTEGER NOT NULL
+        );"
+    ) !== false,
+    true);
 
 // Insert single record
 $data = ['name' => 'John Doe', 'email' => 'johndoe@example.com', 'age' => 32];
-$lastInsertId = $model->insert($data);
-msg((int) $lastInsertId === 1, "validate insert()");
+$singleId = $model->insert($data);
+test("validate insert() returns id",
+    is_string($singleId) && $singleId !== '',
+    true);
 
 // Insert batch using chunk helper
 $dataBatch = [
@@ -47,64 +87,110 @@ $dataBatch = [
     ['name' => 'Jane', 'email' => 'jane@example.com', 'age' => 47],
     ['name' => 'Mark', 'email' => 'mark@example.com', 'age' => 31],
     ['name' => 'Sara', 'email' => 'sara@example.com', 'age' => 28],
+    ['name' => 'kyle', 'email' => 'kyle@example.com', 'age' => 18],
+    ['name' => 'cloe', 'email' => 'cloe@example.com', 'age' => 39],
 ];
 $insertBatchCount = 0;
+$insertedIds = array();
 while ($chunk = $model->chunk($dataBatch, 2)) {
     $result = $model->insertBatch($chunk);
-    $insertBatchCount += $result === true ? count($chunk) : 0;
+    $insertBatchCount += $result ? count($chunk) : 0;
+    $insertedIds = array_merge($insertedIds, $result);
 }
-msg($insertBatchCount === 4, "validate insertBatch()");
+test("validate insertBatch() count", $insertBatchCount, 6);
+test("validate insertBatch() returns 6 ids", count($insertedIds), 6);
+test("validate insertBatch() ids unique", count(array_unique($insertedIds)), 6);
+
+// Confirm the batch rows actually landed, by email
+$batchEmails = array();
+foreach ($model->all('WHERE id IN (?, ?, ?, ?, ?, ?)', $insertedIds) as $r) {
+    $batchEmails[] = $r['email'];
+}
+sort($batchEmails);
+test("validate insertBatch() rows persisted",
+    $batchEmails,
+    [
+        'cloe@example.com',
+        'jane@example.com',
+        'john@example.com',
+        'kyle@example.com',
+        'mark@example.com',
+        'sara@example.com',
+    ]);
 
 // Update single record
-$dataToUpdate = ['id' => 1, 'name' => 'John Updated', 'email' => 'johnupdated@example.com', 'age' => 32];
+$dataToUpdate = ['id' => $insertedIds[0], 'name' => 'John Updated', 'email' => 'johnupdated@example.com', 'age' => 32];
 $updateResult = $model->update($dataToUpdate);
-msg($updateResult === true, "validate update()");
+test("validate update()", $updateResult, true);
+
+$row = $model->one('WHERE id = ?', [$insertedIds[0]]);
+test("validate update() changed values",
+    $row['name'] === 'John Updated' && $row['email'] === 'johnupdated@example.com',
+    true);
 
 // Update batch with chunk helper
 $dataBatchUpdate = [
-    ['id' => 1, 'name' => 'John Updated Again', 'email' => 'johnagain@example.com', 'age' => 32],
-    ['id' => 2, 'name' => 'Jane Updated', 'email' => 'janeupdated@example.com', 'age' => 47],
+    ['id' => $insertedIds[0], 'name' => 'John Updated Again', 'email' => 'johnagain@example.com', 'age' => 32],
+    ['id' => $insertedIds[1], 'name' => 'Jane Updated', 'email' => 'janeupdated@example.com', 'age' => 47],
 ];
 $updateBatchResults = 0;
 while ($chunk = $model->chunk($dataBatchUpdate, 1)) {
     $result = $model->updateBatch($chunk);
-    $updateBatchResults += $result === true ? count($chunk) : 0;
+    $updateBatchResults += $result ? count($chunk) : 0;
 }
-msg($updateBatchResults === 2, "validate updateBatch()");
+test("validate updateBatch()", $updateBatchResults, 2);
+
+$row0 = $model->one('WHERE id = ?', [$insertedIds[0]]);
+$row1 = $model->one('WHERE id = ?', [$insertedIds[1]]);
+test("validate updateBatch() row 0 changed",
+    $row0['name'], 'John Updated Again');
+test("validate updateBatch() row 1 changed",
+    $row1['name'], 'Jane Updated');
 
 // Delete single record
-$deleteResult = $model->delete(3);
-msg($deleteResult === true, "validate delete()");
+$deleteResult = $model->delete($insertedIds[2]);
+test("validate delete()", $deleteResult, true);
+test("validate delete() removed row",
+    $model->exists('WHERE id = ?', [$insertedIds[2]]),
+    false);
 
 // Delete batch with chunk helper
-$idsToDelete = [4, 5, 6]; // adjust IDs to exist
+$idsToDelete = [$insertedIds[3], $insertedIds[4], $insertedIds[5]];
 $deleteBatchCount = 0;
 while ($chunk = $model->chunk($idsToDelete, 2)) {
     $result = $model->deleteBatch($chunk);
-    $deleteBatchCount += $result === true ? count($chunk) : 0;
+    $deleteBatchCount += $result ? count($chunk) : 0;
 }
-msg($deleteBatchCount === 3, "validate deleteBatch()");
+test("validate deleteBatch()", $deleteBatchCount, 3);
+test("validate deleteBatch() removed rows",
+    $model->count('WHERE id IN (?, ?, ?)', [$insertedIds[3], $insertedIds[4], $insertedIds[5]]),
+    0);
 
 // all users older than 25
 $users = $model->all('WHERE age > ?', [25]);
-msg(is_array($users) && count($users) === 2, "validate all()");
+test("validate all()", is_array($users) && count($users) === 3, true);
 
 // Query users older than 25
 $usersByQuery = $model->query('SELECT * FROM ' . $model->table . ' WHERE age > ?', [25]);
-msg(is_array($usersByQuery) && count($usersByQuery) === 2, "validate query()");
+test("validate query()", is_array($usersByQuery) && count($usersByQuery) === 3, true);
 
 // Get one user older than 25
 $oneUser = $model->one('WHERE age > ?', [25]);
-msg(is_array($oneUser) && !empty($oneUser), "validate one()");
+test("validate one()", is_array($oneUser) && !empty($oneUser), true);
 
 // Count users older than 25
 $userCount = $model->count('WHERE age > ?', [25]);
-msg(is_numeric($userCount) && $userCount === 2, "validate count()");
+test("validate count()", is_numeric($userCount) && $userCount === 3, true);
 
 // Check if user with email exists
 $exists = $model->exists('WHERE email = ?', ['johndoe@example.com']);
-msg(is_bool($exists), "validate exists()");
+test("validate exists() for present email", $exists, true);
+test("validate exists() for absent email",
+    $model->exists('WHERE email = ?', ['nobody@example.com']),
+    false);
 
-msg($model->drop(), "validate drop()");
+test("validate execute() drop table",
+    $model->execute("DROP TABLE {$model->table};") !== false,
+    true);
 
 ?>

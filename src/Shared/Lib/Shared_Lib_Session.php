@@ -7,10 +7,11 @@ class Shared_Lib_Session {
         $this->init(isset($args[0]) ? $args[0] : array());
     }
 
-    function init($config) {
+    function init($config = array()) {
         if (session_id() == '') {
-            $this->name = session_name(isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT');
-            $this->id = session_id(isset($config['id']) ? $config['id'] : null);
+            $this->name = isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT';
+            session_name($this->name);
+            $this->id = isset($config['id']) ? session_id($config['id']) : session_id();
         }
     }
 
@@ -41,7 +42,7 @@ class Shared_Lib_Session {
         if (session_id() == '') {
             session_start();
         }
-
+       
         $_SESSION[$key] = $value;
     }
 

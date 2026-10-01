@@ -1,5 +1,5 @@
 <?php /*
-Version: 12.1.0
+Version: 13.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -27,6 +27,7 @@ define('APP_UNIT_ARGS_TYP_UNIT', 0);
 define('APP_UNIT_ARGS_TYP_DATA', 1);
 define('APP_UNIT_BASE', 5);
 define('APP_UNIT_INST_CACHE', 6);
+define('APP_UNIT_CONF', 7);
 define('APP_ROUTE_HANDLER', '!');
 
 while (ob_get_length() !== false) {
@@ -168,7 +169,7 @@ class Output {
 }
 
 class OutputHttp extends Output {
-    function call($content = '', $code = 0) {
+    function call($content = '', $code = 200) {
         if (!headers_sent()) {
             if (isset($this->header['location']) && (300 > $code || $code > 399)) {
                 $code = 302;
@@ -207,7 +208,7 @@ class OutputCli extends Output {
 
 class App {
     var $self = '';
-    var $version = '12.1.0';
+    var $version = '13.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -383,7 +384,7 @@ class App {
 
     // Route Management
 
-    function routeSet($method, $route, $units, $override = false) {
+    function routeSet($method, $route, $units) {
         $handler = array();
 
         foreach ($units as $unit) {
@@ -402,7 +403,7 @@ class App {
             $node = &$node[$segment];
         }
 
-        if (!$override && isset($node[$method])) {
+        if (isset($node[$method])) {
             user_error('Duplicate route detected: ' . $route, E_USER_WARNING);
             return;
         }
@@ -571,7 +572,7 @@ class App {
         }
     }
 
-    function unitAdd($unit, $path = '', $override = false) {
+    function unitAdd($unit, $path = '') {
         $pathListIndex = null;
 
         if (isset($this->path[$path])) {
@@ -585,7 +586,7 @@ class App {
         $pos = strrpos($unit, '\\');
         $file = $pos === false ? $unit : substr($unit, $pos + 1);
 
-        if (!$override && isset($this->unit[$unit])) {
+        if (isset($this->unit[$unit])) {
             if (($newFile = $path . $file) !== ($oldFile = $this->pathList[$this->unit[$unit][APP_UNIT_PATH]] . $this->unit[$unit][APP_UNIT_FILE])) {
                 user_error('Duplicate unit detected: ' . $unit . ' from ' . $newFile . '.php and ' . $oldFile . '.php', E_USER_WARNING);
             }
@@ -594,20 +595,35 @@ class App {
         }
 
         $unitListIndex = $this->unitListIndex++;
-        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), $unitListIndex, false);
+        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), $unitListIndex, false, false);
         $this->unitList[$unitListIndex] = $unit;
     }
 
     function unitSet($unit, $option = array()) {
         $this->unit[$unit];
 
-        if (isset($option['base'])) {
-            foreach (array(APP_UNIT_PATH, APP_UNIT_FILE, APP_UNIT_LOAD, APP_UNIT_ARGS, APP_UNIT_BASE, APP_UNIT_INST_CACHE) as $i) {
-                $this->unit[$unit][$i] = $this->unit[$option['base']][$i];
-            }
+        if ($this->unit[$unit][APP_UNIT_CONF]) {
+            user_error('Duplicate unit configuration detected: ' . $unit, E_USER_WARNING);
+            return;
         }
 
-        if (isset($option['args'])) {
+        if (isset($option['base'])) {
+            if ($this->unit[$option['base']][APP_UNIT_LIST] !== $this->unit[$option['base']][APP_UNIT_BASE]) {
+                user_error('Non-root base detected: ' . $option['base'] . ' is a sub unit of ' . $this->unitList[$this->unit[$option['base']][APP_UNIT_BASE]], E_USER_WARNING);
+                return;
+            }
+            if ($unit === $option['base']) {
+                user_error('Self-referential base detected: ' . $unit, E_USER_WARNING);
+                return;
+            }
+            foreach (array(APP_UNIT_PATH, APP_UNIT_FILE, APP_UNIT_LOAD, APP_UNIT_ARGS, APP_UNIT_INST_CACHE) as $i) {
+                $this->unit[$unit][$i] = null;
+            }
+            $this->unit[$unit][APP_UNIT_BASE] = $this->unit[$option['base']][APP_UNIT_BASE];
+        }
+
+        if (isset($option['args']) && $option['args']) {
+            $this->unit[$unit][APP_UNIT_ARGS] = array();
             foreach ($option['args'] as $i => $tmpUnit) {
                 if (is_string($tmpUnit)) {
                     $tmpUnit = array(APP_UNIT_ARGS_TYP_UNIT, $tmpUnit);
@@ -616,13 +632,15 @@ class App {
             }
         }
 
-        if (isset($option['load'])) {
+        if (isset($option['load']) && $option['load']) {
+            $this->unit[$unit][APP_UNIT_LOAD] = array();
             foreach ($option['load'] as $i => $tmpUnit) {
                 $this->unit[$unit][APP_UNIT_LOAD][$i] = $this->unit[$tmpUnit][APP_UNIT_LIST];
             }
         }
 
         $this->unit[$unit][APP_UNIT_INST_CACHE] = isset($option['cache']) ? $option['cache'] : $this->unit[$unit][APP_UNIT_INST_CACHE];
+        $this->unit[$unit][APP_UNIT_CONF] = true;
     }
 
     function unitGroup($group, $unit, $option = array()) {
@@ -648,8 +666,11 @@ class App {
                 return;
             }
 
-            $load = $this->unit[$unit][APP_UNIT_LOAD];
+            $isBase = $this->unit[$unit][APP_UNIT_LIST] === $this->unit[$unit][APP_UNIT_BASE];
+            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
 
+            $load = $this->unit[$unit][APP_UNIT_LOAD];
+            $load = !$isBase && $load === null ? $this->unit[$base][APP_UNIT_LOAD] : $load;
             if ($load) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, sizeof($load));
@@ -665,7 +686,6 @@ class App {
             }
 
             unset($seen[$previousUnit]);
-            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
             if (!isset($this->unitLoadCache[$base])) {
                 require $this->env['dir']['root'] . $this->pathList[$this->unit[$base][APP_UNIT_PATH]] . $this->unit[$base][APP_UNIT_FILE] . '.php';
                 $this->unitLoadCache[$base] = true;
@@ -692,8 +712,11 @@ class App {
                 return $class;
             }
 
-            $cache = !$new && $this->unit[$unit][APP_UNIT_INST_CACHE];
+            $isBase = $this->unit[$unit][APP_UNIT_LIST] === $this->unit[$unit][APP_UNIT_BASE];
+            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
 
+            $cache = $this->unit[$unit][APP_UNIT_INST_CACHE];
+            $cache = !$new && (!$isBase && $cache === null ? $this->unit[$base][APP_UNIT_INST_CACHE] : $cache);
             if ($cache && isset($this->unitInstCache[$unit])) {
                 if (0 > $top) {
                     return $this->unitInstCache[$unit];
@@ -705,7 +728,7 @@ class App {
             }
 
             $args = $this->unit[$unit][APP_UNIT_ARGS];
-
+            $args = !$isBase && $args === null ? $this->unit[$base][APP_UNIT_ARGS] : $args;
             if ($args) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, sizeof($args));
@@ -727,7 +750,7 @@ class App {
 
             unset($seen[$previousUnit]);
             $this->unitLoad($unit);
-            $class = new $this->unitList[$this->unit[$unit][APP_UNIT_BASE]]();
+            $class = new $base();
 
             if (isset($resolvedArgs[$unit])) {
                 $class->args($resolvedArgs[$unit]);
@@ -773,7 +796,7 @@ class App {
     function log($msg, $file = 'default.log') {
         $mt = explode(' ', microtime());
         $time = (int) $mt[1];
-        $msg = date(sprintf('[Y-m-d H:i:s.%s O]', substr($mt[0], 2)), $time) . ' ' . $msg . "\n";
+        $msg = date(sprintf('[Y-m-d H:i:s.%s O]', substr($mt[0], 2, 6)), $time) . ' ' . $msg . "\n";
 
         $ext = '';
 

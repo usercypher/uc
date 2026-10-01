@@ -865,6 +865,10 @@ func (s *Server) httpHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(statusCode)
 
+	if flusher, ok := w.(http.Flusher); ok {
+		flusher.Flush()
+	}
+
 	bufPtr := s.bufferPool.Get().(*[]byte)
 	defer s.bufferPool.Put(bufPtr)
 

@@ -158,13 +158,13 @@ El(
                 //   "string" / number                 → text content
 ) : Element
 */
-var pElement = El("p", null, "Hello, world!");
+var pElement = El("p", "Hello, world!");
 
 /*
 new El(...same with El()) : return { El: args }
 */
 // note: using as child in El would reuse the child node if .replace = true, since it's not define by default it will reuse children 
-var pElObject = new El("p", null, "Hello, world!");
+var pElObject = new El("p", "Hello, world!");
 
 /*
 El.insert(
@@ -173,7 +173,7 @@ El.insert(
     childNode   // element
 ) : null
 */
-El.insert("append", El("#root"), El("div", null, "New content"));
+El.insert("append", El("#root"), El("div", "New content"));
 
 /*
 El.buffer(
@@ -184,7 +184,7 @@ El.buffer(
 ) : null
 */
 // note: changing position will run debounced so to avoid breaking layout
-El.buffer("append", El("#root"), El("div", null, "New content"), 100);
+El.buffer("append", El("#root"), El("div", "New content"), 100);
 
 // remove element
 El.remove(El("#root"));
@@ -216,7 +216,7 @@ urlWrapper(resolve.apiUrl);
 urlWrapper(new Url()).sync(true);
 
 // Output element
-El.insert("inner", resolve.output, El("p", null, "Loading..."));
+El.insert("inner", resolve.output, El("p", "Loading..."));
 
 // Create and send a request
 const newStep = new Step();
@@ -227,7 +227,7 @@ newStep.add(function (self, data) {
     header: { "Accept": "application/json" },
     onload: function (res) {
       if (res.code === 200) {
-        El.insert("inner", data.output, El("pre", null, `${res.content}`));
+        El.insert("inner", data.output, El("pre", `${res.content}`));
       } else if (0 !== data.maxRetry--) {
         El.insert("inner", data.output, El("p", [["style", "color:red;"]], `Error ${res.code}`));
         self.run(data);

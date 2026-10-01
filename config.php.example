@@ -6,8 +6,8 @@ function config($app, $file) {
         'index.php' => 'dev',
     );
 
-    $app->env['uc'] = '12.1.0';
-    $app->env['app_id'] = 'uc';
+    $app->env['uc'] = '13.0.0';
+    $app->env['app_id'] = $app->strSlug(basename(dirname(__FILE__)));
     // Environment Settings
     $app->env['dir']['root'] = $app->pathToSlash(dirname(__FILE__)) . '/';
     $app->env['dir']['web'] = $app->dir('root', 'web/');
@@ -36,7 +36,7 @@ function config($app, $file) {
     $app->env['route_handler_append'] = array();
 
     // Timezone
-    ini_set('date.timezone', 'Asia/Manila');
+    ini_set('date.timezone', 'UTC');
     
     // Error Reporting
     ini_set('display_errors', 1);

@@ -34,7 +34,7 @@ $app->unitSet('User_Pipe_Lang', array(
 ));
 
 $group = array(
-    'args_prepend' => array('App', 'App_Lib_Session')
+    'args_prepend' => array('App', 'Shared_Lib_Session')
 );
 
 $app->unitGroup($group, 'User_Pipe_Store', array('args' => array('User_Repo', 'Shared_Lib_Translator')));

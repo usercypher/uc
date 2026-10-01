@@ -5,8 +5,8 @@
  * Pipe
  * ------------------------------------------------------------------------
  */
-$app->unitSet('Example_Pipe_User', array('args' => array('App', 'App_Lib_Session', 'Shared_Lib_Translator')));
-$app->unitSet('Example_Pipe_Game', array('args' => array('App', 'App_Lib_Session', 'Shared_Lib_Translator')));
+$app->unitSet('Example_Pipe_User', array('args' => array('App', 'Shared_Lib_Session', 'Shared_Lib_Translator')));
+$app->unitSet('Example_Pipe_Game', array('args' => array('App', 'Shared_Lib_Session', 'Shared_Lib_Translator')));
 
 $app->unitSet('Example_Pipe_Lang', array(
     'base' => 'Shared_Pipe_Lang',

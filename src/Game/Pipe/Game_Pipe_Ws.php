@@ -21,16 +21,15 @@ class Game_Pipe_Ws {
         $this->token=$in->header['x-uc-hub-token']??'';
         $body=$in->call();
 
-        // NOTE: code below important as it make client
-        // moves on without waiting for response, makes
-        // your php process work without locking the client
-        $out->header['content-length'] = 0;
-        $out->call('');
-
         if(!$type||!$id){
             $out->code=400;
             return [$in,$out,true];
         }
+
+        // NOTE: fire and forget pattern, it kills tcp is not efecient
+        $out->header['content-length'] = 0;
+        $out->header['connection'] = 'close';
+        $out->call('', 204);
 
         if($type==='open') $this->open($id);
         elseif($type==='message'){

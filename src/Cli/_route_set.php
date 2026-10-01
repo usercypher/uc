@@ -57,6 +57,15 @@ $app->routeGroup($group, '', 'cli/unit/create/:name/:*', array(
     'Cli_Pipe_Unit_Create'
 ));
 
+// route=unit/info/:name
+$app->routeGroup($group, '', 'cli/unit/info/:name/:*', array(
+    'Cli_Pipe_Unit_Info'
+));
+
+$app->routeGroup($group, '', 'cli/unit/list/:*', array(
+    'Cli_Pipe_Unit_List'
+));
+
 /**
  * ------------------------------------------------------------------------
  * file

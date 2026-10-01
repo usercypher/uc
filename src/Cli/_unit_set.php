@@ -12,6 +12,8 @@ $group = array(
 );
 $app->unitGroup($group, 'Cli_Pipe_Help');
 $app->unitGroup($group, 'Cli_Pipe_Unit_Create');
+$app->unitGroup($group, 'Cli_Pipe_Unit_List');
+$app->unitGroup($group, 'Cli_Pipe_Unit_Info');
 $app->unitGroup($group, 'Cli_Pipe_Route_Print');
 $app->unitGroup($group, 'Cli_Pipe_Route_Resolve');
 $app->unitGroup($group, 'Cli_Pipe_Route_Run');

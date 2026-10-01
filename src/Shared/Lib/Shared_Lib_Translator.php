@@ -47,7 +47,7 @@ class Shared_Lib_Translator_Object {
         }
 
         $isArray = is_array($value);
-        if ($isArray && $count !== null) {
+        if ($isArray && $value && $count !== null) {
             $form = $this->plural->rule($count);
             if (!isset($value[$form])) {
                 end($value);
