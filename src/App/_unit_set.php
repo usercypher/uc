@@ -18,5 +18,6 @@ $app->unitSet('App_Pipe_Lang', array(
             'en', 'es', 'fr', 'de', 'pt'
         )),
         $app->unitArgData('src/App/res/lang/'),
-    )
+    ),
+    'cache' => true
 ));

@@ -1,5 +1,5 @@
 <?php /*
-Version: 13.0.0
+Version: 14.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -26,8 +26,8 @@ define('APP_UNIT_ARGS_VAL', 1);
 define('APP_UNIT_ARGS_TYP_UNIT', 0);
 define('APP_UNIT_ARGS_TYP_DATA', 1);
 define('APP_UNIT_BASE', 5);
-define('APP_UNIT_INST_CACHE', 6);
-define('APP_UNIT_CONF', 7);
+define('APP_UNIT_BIND', 6);
+define('APP_UNIT_INST_CACHE', 7);
 define('APP_ROUTE_HANDLER', '!');
 
 while (ob_get_length() !== false) {
@@ -208,7 +208,7 @@ class OutputCli extends Output {
 
 class App {
     var $self = '';
-    var $version = '13.0.0';
+    var $version = '14.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -595,35 +595,14 @@ class App {
         }
 
         $unitListIndex = $this->unitListIndex++;
-        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), $unitListIndex, false, false);
+        $this->unit[$unit] = array($unitListIndex, $pathListIndex, $file, array(), array(), $unitListIndex, $unitListIndex, false);
         $this->unitList[$unitListIndex] = $unit;
     }
 
     function unitSet($unit, $option = array()) {
         $this->unit[$unit];
 
-        if ($this->unit[$unit][APP_UNIT_CONF]) {
-            user_error('Duplicate unit configuration detected: ' . $unit, E_USER_WARNING);
-            return;
-        }
-
-        if (isset($option['base'])) {
-            if ($this->unit[$option['base']][APP_UNIT_LIST] !== $this->unit[$option['base']][APP_UNIT_BASE]) {
-                user_error('Non-root base detected: ' . $option['base'] . ' is a sub unit of ' . $this->unitList[$this->unit[$option['base']][APP_UNIT_BASE]], E_USER_WARNING);
-                return;
-            }
-            if ($unit === $option['base']) {
-                user_error('Self-referential base detected: ' . $unit, E_USER_WARNING);
-                return;
-            }
-            foreach (array(APP_UNIT_PATH, APP_UNIT_FILE, APP_UNIT_LOAD, APP_UNIT_ARGS, APP_UNIT_INST_CACHE) as $i) {
-                $this->unit[$unit][$i] = null;
-            }
-            $this->unit[$unit][APP_UNIT_BASE] = $this->unit[$option['base']][APP_UNIT_BASE];
-        }
-
         if (isset($option['args']) && $option['args']) {
-            $this->unit[$unit][APP_UNIT_ARGS] = array();
             foreach ($option['args'] as $i => $tmpUnit) {
                 if (is_string($tmpUnit)) {
                     $tmpUnit = array(APP_UNIT_ARGS_TYP_UNIT, $tmpUnit);
@@ -633,14 +612,20 @@ class App {
         }
 
         if (isset($option['load']) && $option['load']) {
-            $this->unit[$unit][APP_UNIT_LOAD] = array();
             foreach ($option['load'] as $i => $tmpUnit) {
                 $this->unit[$unit][APP_UNIT_LOAD][$i] = $this->unit[$tmpUnit][APP_UNIT_LIST];
             }
         }
 
+        if (isset($option['base'])) {
+            $this->unit[$unit][APP_UNIT_BASE] = $this->unit[$option['base']][APP_UNIT_LIST];
+        }
+
+        if (isset($option['bind'])) {
+            $this->unit[$unit][APP_UNIT_BIND] = $this->unit[$option['bind']][APP_UNIT_LIST];
+        }
+
         $this->unit[$unit][APP_UNIT_INST_CACHE] = isset($option['cache']) ? $option['cache'] : $this->unit[$unit][APP_UNIT_INST_CACHE];
-        $this->unit[$unit][APP_UNIT_CONF] = true;
     }
 
     function unitGroup($group, $unit, $option = array()) {
@@ -651,7 +636,7 @@ class App {
     }
 
     function unitLoad($unit) {
-        $stack = array($unit);
+        $stack = array($this->unitList[$this->unit[$unit][APP_UNIT_BIND]]);
         $top = 0;
         $seen = array();
         $md = array();
@@ -666,18 +651,14 @@ class App {
                 return;
             }
 
-            $isBase = $this->unit[$unit][APP_UNIT_LIST] === $this->unit[$unit][APP_UNIT_BASE];
-            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
-
             $load = $this->unit[$unit][APP_UNIT_LOAD];
-            $load = !$isBase && $load === null ? $this->unit[$base][APP_UNIT_LOAD] : $load;
             if ($load) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, sizeof($load));
                 }
 
                 if ($md[$unit][1] > $md[$unit][0]) {
-                    $stack[($top += 2)] = $this->unitList[$load[$md[$unit][0]]];
+                    $stack[($top += 2)] = $this->unitList[$this->unit[$this->unitList[$load[$md[$unit][0]]]][APP_UNIT_BIND]];
                     ++$md[$unit][0];
                     continue;
                 }
@@ -685,6 +666,7 @@ class App {
                 unset($md[$unit]);
             }
 
+            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
             unset($seen[$previousUnit]);
             if (!isset($this->unitLoadCache[$base])) {
                 require $this->env['dir']['root'] . $this->pathList[$this->unit[$base][APP_UNIT_PATH]] . $this->unit[$base][APP_UNIT_FILE] . '.php';
@@ -695,7 +677,7 @@ class App {
     }
 
     function &unitMake($unit, $new = false) {
-        $stack = array($unit);
+        $stack = array($this->unitList[$this->unit[$unit][APP_UNIT_BIND]]);
         $top = 0;
         $seen = array();
         $md = array();
@@ -712,11 +694,7 @@ class App {
                 return $class;
             }
 
-            $isBase = $this->unit[$unit][APP_UNIT_LIST] === $this->unit[$unit][APP_UNIT_BASE];
-            $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
-
-            $cache = $this->unit[$unit][APP_UNIT_INST_CACHE];
-            $cache = !$new && (!$isBase && $cache === null ? $this->unit[$base][APP_UNIT_INST_CACHE] : $cache);
+            $cache = !$new && $this->unit[$unit][APP_UNIT_INST_CACHE];
             if ($cache && isset($this->unitInstCache[$unit])) {
                 if (0 > $top) {
                     return $this->unitInstCache[$unit];
@@ -728,7 +706,6 @@ class App {
             }
 
             $args = $this->unit[$unit][APP_UNIT_ARGS];
-            $args = !$isBase && $args === null ? $this->unit[$base][APP_UNIT_ARGS] : $args;
             if ($args) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, sizeof($args));
@@ -737,7 +714,7 @@ class App {
                 if ($md[$unit][1] > $md[$unit][0]) {
                     ++$top;
                     if ($args[$md[$unit][0]][APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT) {
-                        $stack[++$top] = $this->unitList[$args[$md[$unit][0]][APP_UNIT_ARGS_VAL]];
+                        $stack[++$top] = $this->unitList[$this->unit[$this->unitList[$args[$md[$unit][0]][APP_UNIT_ARGS_VAL]]][APP_UNIT_BIND]];
                     } else {
                         $resolvedArgs[$unit][] = $args[$md[$unit][0]][APP_UNIT_ARGS_VAL];
                     }
@@ -750,7 +727,7 @@ class App {
 
             unset($seen[$previousUnit]);
             $this->unitLoad($unit);
-            $class = new $base();
+            $class = new $this->unitList[$this->unit[$unit][APP_UNIT_BASE]]();
 
             if (isset($resolvedArgs[$unit])) {
                 $class->args($resolvedArgs[$unit]);

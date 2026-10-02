@@ -34,39 +34,38 @@ class Cli_Pipe_Unit_Info {
         $file = $this->app->unit[$name][APP_UNIT_FILE];
         $load = $this->app->unit[$name][APP_UNIT_LOAD];
         $args = $this->app->unit[$name][APP_UNIT_ARGS];
-        $base  = $this->app->unit[$name][APP_UNIT_BASE];
+        $base = $this->app->unit[$name][APP_UNIT_BASE];
+        $bind = $this->app->unit[$name][APP_UNIT_BIND];
         $inst_cache  = $this->app->unit[$name][APP_UNIT_INST_CACHE];
-        $conf  = $this->app->unit[$name][APP_UNIT_CONF];
-        if ($load !== null) {
-            $loadTpl = '';
-            foreach ($load as $unit) {
-                $loadTpl .= '    ' . $this->app->unitList[$unit] . "\n";
-            }
+
+        $loadTpl = '';
+        foreach ($load as $i => $unit) {
+            $loadTpl .= "    # $i  " . $this->app->unitList[$unit] . "\n";
         }
-        if ($args !== null) {
-            $argsTpl = '';
-            foreach ($args as $tv) {
-                list($type, $val) = $tv;
-                if ($type === APP_UNIT_ARGS_TYP_UNIT) {
-                    $val = $this->app->unitList[$val];
-                } else {
-                    ob_start();
-                    print_r($val);
-                    $val = ob_get_contents();
-                    ob_end_clean();
-                }
-                $argsTpl .= '    ' . str_replace("\n", "\n    ", trim($val)) . "\n";
+
+        $argsTpl = '';
+        foreach ($args as $i => $tv) {
+            list($type, $val) = $tv;
+            if ($type === APP_UNIT_ARGS_TYP_UNIT) {
+                $val = 'unit:' . $this->app->unitList[$val];
+            } else {
+                ob_start();
+                print_r($val);
+                $val = 'data:' . ob_get_contents();
+                ob_end_clean();
             }
+            $argsTpl .= "    # $i  " . str_replace("\n", "\n    ", trim($val)) . "\n";
         }
+
         $message .= 'UNIT INFO' . "\n";
         $message .= '  unit       : ' . $name . "\n";
-        $message .= '  path       : ' . ($path === null ? $path : $this->app->pathList[$path]) . "\n";
+        $message .= '  path       : ' . $this->app->pathList[$path] . "\n";
         $message .= '  file       : ' . $file . "\n";
         $message .= '  load       : ' . "\n" . $loadTpl;
         $message .= '  args       : ' . "\n" . $argsTpl;
-        $message .= '  base       : ' . ($base === null ? $base : $this->app->unitList[$base]) . "\n";
+        $message .= '  base       : ' . $this->app->unitList[$base] . "\n";
+        $message .= '  bind       : ' . $this->app->unitList[$bind] . "\n";
         $message .= '  inst_cache : ' . $inst_cache . "\n";
-        $message .= '  conf       : ' . $conf . "\n";
 
         $output->content = $message;
 

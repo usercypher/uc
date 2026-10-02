@@ -19,5 +19,6 @@ $app->unitSet('Example_Pipe_Lang', array(
             'en', 'es', 'fr', 'de', 'pt'
         )),
         $app->unitArgData('src/Example/res/lang/'),
-    )
+    ),
+    'cache' => true
 ));

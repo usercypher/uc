@@ -32,7 +32,7 @@ $app->unitGroup($group, 'Shared_Lib_Cast_Db', array('args' => array('App', 'Shar
  */
 
 $app->unitSet('Shared_Pipe_ErrorHandler', array('args' => array('App')));
-$app->unitSet('Shared_Pipe_Lang', array('args' => array('App', 'Shared_Lib_Translator')));
+$app->unitSet('Shared_Pipe_Lang', array('args' => array('App', 'Shared_Lib_Translator'), 'cache' => true));
 
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Session')
