@@ -6,7 +6,7 @@ function config($app, $file) {
         'index.php' => 'dev',
     );
 
-    $app->env['uc'] = '14.0.0';
+    $app->env['uc'] = '15.0.0';
     $app->env['app_id'] = $app->strSlug(basename(dirname(__FILE__)));
     // Environment Settings
     $app->env['dir']['root'] = $app->pathToSlash(dirname(__FILE__)) . '/';
@@ -17,12 +17,12 @@ function config($app, $file) {
     $app->env['error_templates']['text/plain'] = 'src/App/res/error/text.plain.php';
     $app->env['error_templates']['text/html'] = 'src/App/res/error/text.html.php';
     $app->env['error_templates']['application/json'] = 'src/App/res/error/application.json.php';
-    $app->env['error_non_fatal'] = E_NOTICE | E_DEPRECATED | E_USER_NOTICE | E_USER_DEPRECATED; // set non fatal, it only logs (if log error is enabled)
+    $app->env['error_reporting'] = E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_NOTICE & ~E_USER_DEPRECATED;
     $app->env['error_log_file'] = 'error.log'; // Error log file
     $app->env['error_max_length'] = 4096; // Error string max length
     $app->env['error_display'] = 1; // Enable (1) or disable (0) detailed error messages
     $app->env['error_logging'] = 1; // Enable (1) or disable (0) error logging
-    
+
     // Logging Configuration
     $app->env['log_dir'] = 'var/log/';
     $app->env['log_dir_timestamp'] = 'var/lib/';
@@ -31,8 +31,8 @@ function config($app, $file) {
     $app->env['log_retention_days'] = 7;
     $app->env['log_max_files'] = 10;
     
-    $app->env['route_handler_global'] = array('Shared_Pipe_ErrorHandler');
-    $app->env['route_handler_prepend'] = array('Shared_Pipe_Lang', 'App_Pipe_Lang');
+    $app->env['route_handler_global'] = array('App_Pipe_Lang', 'Shared_Pipe_ErrorHandler');
+    $app->env['route_handler_prepend'] = array('Shared_Pipe_Lang');
     $app->env['route_handler_append'] = array();
 
     // Timezone
@@ -41,7 +41,7 @@ function config($app, $file) {
     // Error Reporting
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
-    ini_set('error_reporting', E_ALL);
+    ini_set('error_reporting', $app->env['error_reporting']);
     ini_set('log_errors', 1);
     // General Settings
     ini_set('default_charset', 'UTF-8');
@@ -85,5 +85,4 @@ function config_prod($app) {
 
     ini_set('display_errors', 0);
     ini_set('display_startup_errors', 0);
-    ini_set('error_reporting', E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 }

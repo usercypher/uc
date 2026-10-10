@@ -1,5 +1,5 @@
 <?php /*
-Version: 14.0.0
+Version: 15.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -208,7 +208,7 @@ class OutputCli extends Output {
 
 class App {
     var $self = '';
-    var $version = '14.0.0';
+    var $version = '15.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -223,7 +223,7 @@ class App {
         'url' => array('route' => '/'),
 
         'error_templates' => array(),
-        'error_non_fatal' => 0,
+        'error_reporting' => E_ALL,
         'error_log_file' => 'error.log',
         'error_max_length' => 4096,
         'error_display' => true,
@@ -246,7 +246,7 @@ class App {
 
         $this->env['sapi'] = php_sapi_name();
         $this->env['dir']['root'] = $this->pathToSlash(dirname(__FILE__)) . '/';
-        $this->env['error_non_fatal'] = E_NOTICE | E_USER_NOTICE;
+        $this->env['error_reporting'] = E_ALL & ~E_NOTICE & ~E_USER_NOTICE;
 
         foreach (array($this->self, 'Input', 'InputHttp', 'InputCli', 'Output', 'OutputHttp', 'OutputCli') as $unit) {
             if (!isset($this->unit[$unit])) {
@@ -291,7 +291,7 @@ class App {
     // Error Management
 
     function errorHandler($errno, $errstr, $errfile, $errline) {
-        $e = $this->error($errno, $errstr, $errfile, $errline, array('trace' => $this->env['error_display'] && function_exists('debug_backtrace') ? debug_backtrace() : array()) + (isset($this->env['handle_error_context']) ? $this->env['handle_error_context'] : array()));
+        $e = $this->error($errno, $errstr, $errfile, $errline, array('trace' => $this->env['error_display'] && function_exists('debug_backtrace') ? debug_backtrace() : array(), 'reporting' => error_reporting()) + (isset($this->env['handle_error_context']) ? $this->env['handle_error_context'] : array()));
 
         if (!$e) {
             return true;
@@ -325,10 +325,6 @@ class App {
     }
 
     function error($errno, $errstr, $errfile, $errline, $errcontext = array()) {
-        if (!($errno & error_reporting())) {
-            return array();
-        }
-
         $code = 500;
         $parts = explode('|', $errstr, 2);
 
@@ -351,7 +347,7 @@ class App {
             $this->log($error, $this->env['error_log_file']);
         }
 
-        if ($errno & $this->env['error_non_fatal']) {
+        if (!($errno & $this->env['error_reporting'] & (isset($errcontext['reporting']) ? $errcontext['reporting'] : E_ALL))) {
             return array();
         }
 

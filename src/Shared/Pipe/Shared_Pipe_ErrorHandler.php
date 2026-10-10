@@ -20,17 +20,13 @@ class Shared_Pipe_ErrorHandler {
     }
 
     function error($errno, $errstr, $errfile, $errline) {
-        if (!($errno & error_reporting())) {
-            return true;
-        }
-
-        if ($errno & $this->app->env['error_non_fatal']) {
-            $result = $this->app->error($errno, $errstr, $errfile, $errline, array(
+        if (!($errno & $this->app->env['error_reporting'] & error_reporting())) {
+            $this->app->error($errno, $errstr, $errfile, $errline, array(
                 'trace' => $this->app->env['error_display'] ? debug_backtrace() : array(),
+                'reporting' => error_reporting(),
                 'accept' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
                 'header' => array()
             ));
-
             return true;
         }
 
@@ -44,6 +40,7 @@ class Shared_Pipe_ErrorHandler {
 
         $result = $this->app->error(method_exists($e, 'getSeverity') ? $e->getSeverity() : 1, $e->getMessage(), $e->getFile(), $e->getLine(), array(
             'trace' => $this->app->env['error_display'] ? $e->getTrace() : array(),
+            'reporting' => error_reporting(),
             'accept' => isset($this->input->header['accept']) ? $this->input->header['accept'] : '',
             'header' => $this->output->header
         ));
