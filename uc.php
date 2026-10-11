@@ -1,5 +1,5 @@
 <?php /*
-Version: 15.0.0
+Version: 16.0.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -66,7 +66,7 @@ class Input {
 
     function init() {}
     function term() {}
-    function call($content = '', $code = 0) {}
+    function call($eof = null) {}
 }
 
 class InputHttp extends Input {
@@ -88,11 +88,11 @@ class InputHttp extends Input {
         $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $route = ($pos = strpos($uri, '?')) !== false ? substr($uri, 0, $pos) : $uri;
         $this->route = substr($route, strspn($route, '/'));
-        $this->query = $_COOKIE + $_GET;
+        $this->query = $_GET + $_COOKIE;
         $this->frame = $_FILES + $_POST;
     }
 
-    function call($content = '', $code = 0) {
+    function call($eof = null) {
         if (!$this->contentRead && ($handle = fopen('php://input', 'rb'))) {
             $lines = '';
 
@@ -102,9 +102,8 @@ class InputHttp extends Input {
 
             fclose($handle);
             $this->content = $lines;
+            $this->contentRead = true;
         }
-
-        $this->contentRead = true;
 
         return $this->content;
     }
@@ -140,14 +139,14 @@ class InputCli extends Input {
         parse_str($queryStr, $this->query);
     }
 
-    function call($content = "\0", $code = 0) {
-        if ($content === "\0") {
-            return ($line = fgets(STDIN)) !== false ? rtrim($line) : '';
+    function call($eof = null) {
+        if ($eof === null) {
+            return ($line = fgets(STDIN)) !== false ? $line : '';
         }
 
         $lines = '';
 
-        while (($line = fgets(STDIN)) !== false && (substr($line, 0, (substr($line, -2) === "\r\n" ? -2 : -1))) !== $content) {
+        while (($line = fgets(STDIN)) !== false && substr($line, 0, strcspn($line, "\r\n")) !== $eof) {
             $lines .= $line;
         }
 
@@ -165,13 +164,13 @@ class Output {
 
     function init() {}
     function term() {}
-    function call($content = '', $code = 0) {}
+    function call($content = '', $code = 200) {}
 }
 
 class OutputHttp extends Output {
     function call($content = '', $code = 200) {
         if (!headers_sent()) {
-            if (isset($this->header['location']) && (300 > $code || $code > 399)) {
+            if (isset($this->header['location']) && $code !== 201 && (300 > $code || $code > 399)) {
                 $code = 302;
             }
 
@@ -208,7 +207,7 @@ class OutputCli extends Output {
 
 class App {
     var $self = '';
-    var $version = '15.0.0';
+    var $version = '16.0.0';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -603,6 +602,7 @@ class App {
                 if (is_string($tmpUnit)) {
                     $tmpUnit = array(APP_UNIT_ARGS_TYP_UNIT, $tmpUnit);
                 }
+
                 $this->unit[$unit][APP_UNIT_ARGS][$i] = array($tmpUnit[APP_UNIT_ARGS_TYP], $tmpUnit[APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT ? $this->unit[$tmpUnit[APP_UNIT_ARGS_VAL]][APP_UNIT_LIST] : $tmpUnit[APP_UNIT_ARGS_VAL]);
             }
         }
@@ -648,6 +648,7 @@ class App {
             }
 
             $load = $this->unit[$unit][APP_UNIT_LOAD];
+
             if ($load) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, sizeof($load));
@@ -664,10 +665,12 @@ class App {
 
             $base = $this->unitList[$this->unit[$unit][APP_UNIT_BASE]];
             unset($seen[$previousUnit]);
+
             if (!isset($this->unitLoadCache[$base])) {
                 require $this->env['dir']['root'] . $this->pathList[$this->unit[$base][APP_UNIT_PATH]] . $this->unit[$base][APP_UNIT_FILE] . '.php';
                 $this->unitLoadCache[$base] = true;
             }
+
             $this->unitLoadCache[$unit] = true;
         }
     }
@@ -691,6 +694,7 @@ class App {
             }
 
             $cache = !$new && $this->unit[$unit][APP_UNIT_INST_CACHE];
+
             if ($cache && isset($this->unitInstCache[$unit])) {
                 if (0 > $top) {
                     return $this->unitInstCache[$unit];
@@ -702,6 +706,7 @@ class App {
             }
 
             $args = $this->unit[$unit][APP_UNIT_ARGS];
+
             if ($args) {
                 if (!isset($md[$unit])) {
                     $md[$unit] = array(0, sizeof($args));
@@ -709,11 +714,13 @@ class App {
 
                 if ($md[$unit][1] > $md[$unit][0]) {
                     ++$top;
+
                     if ($args[$md[$unit][0]][APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT) {
                         $stack[++$top] = $this->unitList[$this->unit[$this->unitList[$args[$md[$unit][0]][APP_UNIT_ARGS_VAL]]][APP_UNIT_BIND]];
                     } else {
                         $resolvedArgs[$unit][] = $args[$md[$unit][0]][APP_UNIT_ARGS_VAL];
                     }
+
                     ++$md[$unit][0];
                     continue;
                 }
