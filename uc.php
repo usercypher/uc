@@ -1,5 +1,5 @@
 <?php /*
-Version: 16.0.0
+Version: 16.0.1
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -133,9 +133,7 @@ class InputCli extends Input {
         }
 
         $queryStr = implode('&', $query);
-
         $this->route = substr($route, strspn($route, '/'));
-
         parse_str($queryStr, $this->query);
     }
 
@@ -207,7 +205,7 @@ class OutputCli extends Output {
 
 class App {
     var $self = '';
-    var $version = '16.0.0';
+    var $version = '16.0.1';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -254,7 +252,6 @@ class App {
         }
 
         $this->unitSync();
-
         $this->unitSet($this->self, array('cache' => true));
         $this->unitInstCache[$this->self] = &$this;
     }
@@ -267,7 +264,6 @@ class App {
         }
 
         $obj->unitInstCache[$this->self] = &$obj;
-
         return $obj;
     }
 
@@ -373,7 +369,6 @@ class App {
         $header = isset($errcontext['header']) ? $errcontext['header'] : array();
         $header['content-type'] = $type;
         unset($header['location']);
-
         return array('header' => $header, 'content' => $content, 'code' => $code);
     }
 
@@ -770,7 +765,8 @@ class App {
             $s[$q] = '&';
         }
 
-        return $this->env['url'][$k] . ($param ? strtr($s, $param) : $s);
+        $s = $this->env['url'][$k] . $s;
+        return $param ? strtr($s, $param) : $s;
     }
 
     function log($msg, $file = 'default.log') {
