@@ -1,5 +1,5 @@
 <?php /*
-Version: 16.0.1
+Version: 16.0.2
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -22,9 +22,9 @@ define('APP_UNIT_FILE', 2);
 define('APP_UNIT_LOAD', 3);
 define('APP_UNIT_ARGS', 4);
 define('APP_UNIT_ARGS_TYP', 0);
-define('APP_UNIT_ARGS_VAL', 1);
 define('APP_UNIT_ARGS_TYP_UNIT', 0);
 define('APP_UNIT_ARGS_TYP_DATA', 1);
+define('APP_UNIT_ARGS_VAL', 1);
 define('APP_UNIT_BASE', 5);
 define('APP_UNIT_BIND', 6);
 define('APP_UNIT_INST_CACHE', 7);
@@ -205,7 +205,7 @@ class OutputCli extends Output {
 
 class App {
     var $self = '';
-    var $version = '16.0.1';
+    var $version = '16.0.2';
     var $routes = array();
     var $unit = array();
     var $unitList = array();
@@ -592,19 +592,21 @@ class App {
     function unitSet($unit, $option = array()) {
         $this->unit[$unit];
 
-        if (isset($option['args']) && $option['args']) {
-            foreach ($option['args'] as $i => $tmpUnit) {
+        if (isset($option['args'])) {
+            $this->unit[$unit][APP_UNIT_ARGS] = array();
+            foreach ($option['args'] as $tmpUnit) {
                 if (is_string($tmpUnit)) {
                     $tmpUnit = array(APP_UNIT_ARGS_TYP_UNIT, $tmpUnit);
                 }
 
-                $this->unit[$unit][APP_UNIT_ARGS][$i] = array($tmpUnit[APP_UNIT_ARGS_TYP], $tmpUnit[APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT ? $this->unit[$tmpUnit[APP_UNIT_ARGS_VAL]][APP_UNIT_LIST] : $tmpUnit[APP_UNIT_ARGS_VAL]);
+                $this->unit[$unit][APP_UNIT_ARGS][] = array($tmpUnit[APP_UNIT_ARGS_TYP], $tmpUnit[APP_UNIT_ARGS_TYP] === APP_UNIT_ARGS_TYP_UNIT ? $this->unit[$tmpUnit[APP_UNIT_ARGS_VAL]][APP_UNIT_LIST] : $tmpUnit[APP_UNIT_ARGS_VAL]);
             }
         }
 
-        if (isset($option['load']) && $option['load']) {
-            foreach ($option['load'] as $i => $tmpUnit) {
-                $this->unit[$unit][APP_UNIT_LOAD][$i] = $this->unit[$tmpUnit][APP_UNIT_LIST];
+        if (isset($option['load'])) {
+            $this->unit[$unit][APP_UNIT_LOAD] = array();
+            foreach ($option['load'] as $tmpUnit) {
+                $this->unit[$unit][APP_UNIT_LOAD][] = $this->unit[$tmpUnit][APP_UNIT_LIST];
             }
         }
 
@@ -616,13 +618,15 @@ class App {
             $this->unit[$unit][APP_UNIT_BIND] = $this->unit[$option['bind']][APP_UNIT_LIST];
         }
 
-        $this->unit[$unit][APP_UNIT_INST_CACHE] = isset($option['cache']) ? $option['cache'] : $this->unit[$unit][APP_UNIT_INST_CACHE];
+        if (isset($option['cache'])) {
+            $this->unit[$unit][APP_UNIT_INST_CACHE] = $option['cache'];
+        }
     }
 
     function unitGroup($group, $unit, $option = array()) {
-        $option['args'] = array_merge(isset($group['args_prepend']) ? $group['args_prepend'] : array(), isset($option['args']) ? $option['args'] : array(), isset($group['args_append']) ? $group['args_append'] : array());
-        $option['load'] = array_merge(isset($group['load_prepend']) ? $group['load_prepend'] : array(), isset($option['load']) ? $option['load'] : array(), isset($group['load_append']) ? $group['load_append'] : array());
-        $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : false);
+        $option['args'] = ($ap = isset($group['args_prepend'])) + ($am = isset($option['args'])) + ($aa = isset($group['args_append'])) ? array_merge($ap ? $group['args_prepend'] : array(), $am ? $option['args'] : array(), $aa ? $group['args_append'] : array()) : null;
+        $option['load'] = ($lp = isset($group['load_prepend'])) + ($lm = isset($option['load'])) + ($la = isset($group['load_append'])) ? array_merge($lp ? $group['load_prepend'] : array(), $lm ? $option['load'] : array(), $la ? $group['load_append'] : array()) : null;
+        $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : null);
         $this->unitSet($unit, $option);
     }
 
