@@ -60,7 +60,7 @@ function index() {
             );
             $output->header += $result['header'];
         } else {
-            $description = 'Route not found: ' . $input->method . ' ' . $input->route;
+            $description = 'Route not found: ' . $input->method . ' /' . $input->route;
         }
         user_error($result['error'] . '|' . $description, E_USER_WARNING);
     } else {

@@ -24,20 +24,20 @@ $httpMap = array(
 
 list($title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap[500];
 ?>
-
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title><?php echo $title; ?></title>
     <style>
-        html {font-size: 16px;}
-        body {font-family: Arial, sans-serif; margin: 1em;}
+        html {font-family: sans-serif; line-height: 1.5; padding: 0.5em; word-wrap: break-word;}
+        body {background-color: Window; color: WindowText; margin: auto; max-width: 60em;}
         h1 {font-size: 2.7em; font-weight: 500; margin-top: 1em;}
         p {line-height: 1.6;}
         a {text-decoration: none;}
         a:hover {text-decoration: underline;}
-        pre {white-space: pre; overflow-x: auto; text-align: left;}
+        pre {overflow-x: auto;}
     </style>
 </head>
 <body>

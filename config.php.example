@@ -11,12 +11,13 @@ function config($app, $file) {
     // Environment Settings
     $app->env['dir']['root'] = $app->pathToSlash(dirname(__FILE__)) . '/';
     $app->env['dir']['web'] = $app->dir('root', 'web/');
-    $app->env['url']['root'] = '/';
+    $app->env['url']['route'] = '/';
     $app->env['url']['web'] = '/'; // URL path for web access
     // Error Settings
     $app->env['error_templates']['text/plain'] = 'src/App/res/error/text.plain.php';
     $app->env['error_templates']['text/html'] = 'src/App/res/error/text.html.php';
     $app->env['error_templates']['application/json'] = 'src/App/res/error/application.json.php';
+    $app->env['error_templates']['application/xml'] = 'src/App/res/error/application.xml.php';
     $app->env['error_reporting'] = E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_NOTICE & ~E_USER_DEPRECATED;
     $app->env['error_log_file'] = 'error.log'; // Error log file
     $app->env['error_max_length'] = 4096; // Error string max length

@@ -11,8 +11,23 @@ foreach (array(
 $translator = $app->unitMake('Shared_Lib_Translator');
 $t = $translator->get('app');
 
-$content = $code . '. ' . $t->t('error_500_description') . "\n\n" . $error;
+$httpMap = array(
+    400 => array($t->t('error_400_title'), $t->t('error_400_description')),
+    401 => array($t->t('error_401_title'), $t->t('error_401_description')),
+    403 => array($t->t('error_403_title'), $t->t('error_403_description')),
+    404 => array($t->t('error_404_title'), $t->t('error_404_description')),
+    405 => array($t->t('error_405_title'), $t->t('error_405_description')),
+    414 => array($t->t('error_414_title'), $t->t('error_414_description')),
+    422 => array($t->t('error_422_title'), $t->t('error_422_description')),
+    500 => array($t->t('error_500_title'), $t->t('error_500_description')),
+);
 
-echo json_encode(array('error' => $content));
+list($title, $description) = isset($httpMap[$code]) ? $httpMap[$code] : $httpMap[500];
+
+echo json_encode(array(
+    "title" => $title,
+    "status" => $code,
+    "detail" => $description . "\n\n" . $error
+));
 
 ?>
