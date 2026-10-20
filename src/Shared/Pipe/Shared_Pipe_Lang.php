@@ -1,0 +1,51 @@
+<?php
+
+class Shared_Pipe_Lang {
+    var $app, $translator;
+    var $key = 'shared';
+    var $default = 'en';
+    var $languages = array('en', 'es', 'fr', 'de', 'pt');
+    var $directory = 'src/Shared/res/lang/';
+
+    function args($args) {
+        $this->app = $args[0];
+        $this->translator = $args[1];
+        $this->key = isset($args[2]) ? $args[2] : $this->key;
+        $this->default = isset($args[3]) ? $args[3] : $this->default;
+        $this->languages = isset($args[4]) ? $args[4] : $this->languages;
+        $this->directory = isset($args[5]) ? $args[5] : $this->directory;
+    } 
+
+    function call($input, $output) {
+        $success = true;
+
+        list($input, $output, $lang) = $this->lang($input, $output, $this->languages);
+
+        $this->translator->set($this->key, require($this->app->dir('root', $this->directory . $lang . '.data.php')));
+
+        $input->data[$this->key . ':default'] = $this->default;
+        $input->data[$this->key . ':lang'] = $lang;
+        $input->data[$this->key . ':languages'] = $this->languages;
+        $input->data[$this->key . ':directory'] = $this->directory;
+
+        return array($input, $output, $success);
+    }
+
+    function lang($input, $output, $languages) {
+        $lang = isset($input->param['lang']) ? $input->param['lang'] : null;
+        if (!$lang || !in_array($lang, $languages)) {
+            $lang = isset($input->query['lang']) ? $input->query['lang'] : null;
+            if (!$lang || !in_array($lang, $languages)) {
+                $aLang = isset($input->header['accept-language']) ? $input->header['accept-language'] : $this->default;
+                $lang = $this->app->httpNegotiate($aLang, $languages);
+                if (!$lang || !in_array($lang, $languages)) {
+                    $lang = $this->default;
+                }
+            }
+        }
+        $output->header['set-cookie'][] = strtr('lang=:lang; Path=/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax', array(
+            ':lang' => $lang
+        ));
+        return array($input, $output, $lang);
+    }
+}

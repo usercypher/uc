@@ -1,0 +1,486 @@
+/*
+Version: 0.0.0
+
+Copyright 2025 Lloyd Miles M. Bersabe
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+html,
+body,
+
+a,
+abbr,
+b,
+bdo,
+cite,
+code,
+del,
+dfn,
+em,
+i,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+span,
+strong,
+sub,
+sup,
+u,
+var,
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+
+address,
+blockquote,
+div,
+p,
+pre,
+
+dd,
+dl,
+dt,
+li,
+ol,
+ul,
+
+br,
+hr,
+
+caption,
+col,
+colgroup,
+table,
+tbody,
+td,
+tfoot,
+th,
+thead,
+tr,
+
+button,
+fieldset,
+form,
+input,
+label,
+legend,
+optgroup,
+option,
+select,
+textarea,
+
+iframe,
+img,
+object,
+svg {
+    border: 0;
+    font: inherit;
+    margin: 0;
+    padding: 0;
+    vertical-align: baseline;
+}
+
+.reset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: sans-serif;
+    line-height: 1.5;
+    padding: 0.5em;
+
+    word-wrap: break-word;
+}
+
+body,
+.window {
+    background-color: Window;
+    color: WindowText;
+    margin: auto;
+    max-width: 60em;
+}
+
+a,
+.a {
+    background: transparent;
+    text-decoration: none;
+}
+
+a:hover,
+.a:hover {
+    text-decoration: underline;
+}
+
+abbr {
+    border-bottom: 1px dotted WindowText;
+    text-decoration: none;
+}
+
+b,
+strong {
+    font-weight: 600;
+}
+
+cite,
+dfn,
+em,
+i,
+var,
+address {
+    font-style: italic;
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: monospace;
+}
+
+small {
+    font-size: 0.8em;
+}
+
+sub,
+sup {
+    font-size: 0.75em;
+    position: relative;
+}
+
+sup {
+    top: -0.5em;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.75em;
+}
+
+h1,
+.f1 {
+    font-size: 2.5em;
+}
+
+h2,
+.f2 {
+    font-size: 2em;
+}
+
+h3,
+.f3 {
+    font-size: 1.5em;
+}
+
+h4,
+.f4 {
+    font-size: 1.25em;
+}
+
+h5,
+.f5 {
+    font-size: 1.125em;
+}
+
+h6,
+.f6 {
+    font-size: 1em;
+}
+
+blockquote {
+    padding: 0 2em;
+}
+
+address,
+blockquote,
+p,
+pre,
+dl,
+ol,
+ul {
+    margin-bottom: 1em;
+}
+
+pre {
+    line-height: 1.4;
+    overflow: auto;
+    padding: 0 1em;
+}
+
+dd {
+    margin-bottom: 0.5em;
+    margin-left: 1em;
+}
+
+dt {
+    font-weight: 600;
+}
+
+li {
+    margin-bottom: 0.25em;
+}
+
+ol,
+ul {
+    padding-left: 2em;
+}
+
+hr {
+    border-bottom: 1px solid ButtonFace;
+    margin: 2em 0;
+}
+
+caption {
+    font-weight: 600;
+    padding: 0.5em 0;
+    text-align: left;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-bottom: 1em;
+}
+
+td,
+th {
+    padding: 0.5em 0.75em;
+    text-align: left;
+}
+
+td {
+    border-bottom: 1px solid ButtonFace;
+}
+
+th {
+    border-bottom: 1px solid transparent;
+    font-weight: 600;
+}
+
+button,
+.button,
+input,
+.input,
+option,
+select,
+textarea {
+    font-weight: 400;
+    line-height: 1.2;
+    max-width: 100%;
+    padding: 0.5em 0.75em;
+    vertical-align: middle;
+}
+
+kbd,
+.inline {
+    font-size: 0.9em;
+    padding: 0.1em 0.4em;
+}
+
+kbd,
+button,
+.button,
+input,
+.input,
+select,
+textarea {
+    border: 1px solid ButtonFace;
+}
+
+.a,
+.button {
+    cursor: pointer;
+}
+
+.input {
+    background-color: inherit;
+    color: inherit;
+    cursor: text;
+}
+
+.button:hover,
+.input:hover {
+    text-decoration: none;
+}
+
+kbd,
+th,
+.button {
+    background-color: ButtonFace;
+    color: ButtonText;
+}
+
+fieldset {
+    border: 1px solid ButtonFace;
+    margin-bottom: 1em;
+    padding: 1em;
+}
+
+label {
+    font-weight: 500;
+    line-height: 2;
+}
+
+legend {
+    font-weight: 600;
+    padding: 0 0.5em;
+}
+
+optgroup {
+    font-weight: 500;
+}
+
+option {
+    margin: 0.5em 0;
+}
+
+img,
+svg {
+    height: auto;
+    vertical-align: middle;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.drop-cap:first-letter {
+    float: left;
+    font-size: 3em;
+    font-weight: 600;
+    line-height: 1;
+    margin-right: 0.15em;
+}
+
+.hidden {
+    display: none;
+}
+
+.hidden-sr {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.overflow {
+    display: block;
+    overflow: auto;
+}
+
+.drop-cap,
+.row {
+    overflow: hidden;
+}
+
+.row .col {
+    float: left;
+    min-height: 1px;
+    position: relative;
+}
+
+.row .end {
+    float: right;
+}
+
+iframe,
+img,
+object,
+svg {
+    max-width: 100%;
+}
+
+.w-auto {
+    max-width: none;
+    min-width: 0;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.w1,
+.w2,
+.w3,
+.w4,
+.w5,
+.w6,
+.w7,
+.w8,
+.w9,
+.w10,
+.w11,
+.w12 {
+    max-width: 100%;
+}
+
+.w1 { width: 5em; }
+.w2 { width: 10em; }
+.w3 { width: 15em; }
+.w4 { width: 20em; }
+.w5 { width: 25em; }
+.w6 { width: 30em; }
+.w7 { width: 35em; }
+.w8 { width: 40em; }
+.w9 { width: 45em; }
+.w10 { width: 50em; }
+.w11 { width: 55em; }
+.w12 { width: 60em; }
+
+@media print {
+    .print-reset {
+        border: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .print-new-page {
+        page-break-before: always;
+    }
+
+    .print-hidden {
+        display: none;
+    }
+}
+
+@media screen {
+    .print-only {
+        display: none;
+    }
+}

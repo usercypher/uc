@@ -1,0 +1,50 @@
+<?php
+
+foreach (array(
+    'app',
+    't',
+    'languages',
+    'lang'
+) as $v) {
+    $$v = $data[$v];
+}
+
+?>
+<html lang="<?= $lang ?>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title><?php echo $t->t('framework_title'); ?></title>
+    <?php foreach ($languages as $l): ?>
+        <link rel="alternate" hreflang="<?php echo $l; ?>" href="<?php echo $app->url('route', 'home/:lang', array(':lang' => $l)); ?>" />
+    <?php endforeach; ?>
+    <link rel="alternate" hreflang="x-default" href="<?php echo $app->url('route', ''); ?>" />
+    <style>
+        html {font-family: sans-serif; line-height: 1.5; padding: 0.5em; word-wrap: break-word;}
+        body {background-color: Window; color: WindowText; margin: auto; max-width: 60em;}
+        h1 {font-size: 2.7em; font-weight: 500; margin-top: 1em;}
+        p {line-height: 1.6;}
+        a {text-decoration: none;}
+        a:hover {text-decoration: underline;}
+        pre {overflow-x: auto;}
+    </style>
+</head>
+<body>
+    <h1><?php echo $t->t('framework_title'); ?></h1>
+    <p><?php echo $t->t('welcome_message'); ?></p>
+    <ul>
+        <li><a href="https://github.com/usercypher/uc"><?php echo $t->t('view_on_github'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'adminer'); ?>"><?php echo $t->t('adminer'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'phpinfo'); ?>"><?php echo $t->t('php_info'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'phpinfo/opcache'); ?>"><?php echo $t->t('php_info_opcache'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'example/user/:lang', array(':lang' => $lang)); ?>"><?php echo $t->t('example_user'); ?></a></li>
+        <li><a href="<?php echo $app->url('route', 'example/game/', array(':lang' => $lang)); ?>"><?php echo $t->t('example_game'); ?></a></li>
+    </ul>    
+    <p>
+        <?php foreach ($languages as $l): ?>
+            <a href="<?php echo $app->url('route', 'home/:lang', array(':lang' => $l)); ?>"><?php echo strtoupper($l); ?></a><?php if ($l !== end($languages)): ?> | <?php endif; ?>
+        <?php endforeach; ?>
+    </p>
+</body>
+</html>

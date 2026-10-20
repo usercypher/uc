@@ -1,0 +1,328 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>uc.css Kitchen Sink & Documentation</title>
+<link rel="stylesheet" href="uc.css">
+</head>
+<style>
+    .w-bg { background-color: ButtonFace; }
+</style>
+<body>
+<div class="window">
+
+<header>
+    <h1>uc.css</h1>
+    <p>
+        A minimalist, semantic CSS framework.
+        This page demonstrates the available elements and classes.
+    </p>
+
+    <nav>
+        <a href="#typography">Typography</a> •
+        <a href="#forms">Forms</a> •
+        <a href="#media">Media</a> •
+        <a href="#layout">Layout</a> •
+        <a href="#reference">Reference</a>
+    </nav>
+</header>
+
+<hr>
+
+<main>
+
+<section id="typography">
+<h2>Typography & Elements</h2>
+
+<h1>&lt;h1&gt;</h1>
+<h2>&lt;h2&gt;</h2>
+<h3>&lt;h3&gt;</h3>
+<h4>&lt;h4&gt;</h4>
+<h5>&lt;h5&gt;</h5>
+<h6>&lt;h6&gt;</h6>
+
+<p class="drop-cap">
+    <strong>&lt;strong&gt;</strong>,
+    <em>&lt;em&gt;</em>,
+    <code>&lt;code&gt;</code>,
+    <kbd>&lt;kbd&gt;</kbd>,
+    <samp>&lt;samp&gt;</samp>,
+    <var>&lt;var&gt;</var>,
+    <abbr title="Abbreviation">&lt;abbr&gt;</abbr>,
+    <q>&lt;q&gt;</q>,
+    <cite>&lt;cite&gt;</cite>,
+    <dfn>&lt;dfn&gt;</dfn>,
+    <sub>&lt;sub&gt;</sub>,
+    <sup>&lt;sup&gt;</sup>.
+</p>
+
+<address>&lt;address&gt;</address>
+
+<blockquote>
+    &lt;blockquote&gt; <cite>&lt;cite&gt;</cite>
+</blockquote>
+
+<pre><code>&lt;pre&gt; &lt;code&gt;</code></pre>
+
+<p>
+    <a href="#">&lt;a&gt;</a>
+    <span class="a">.a</span>
+    <span class="button">.button</span>
+    <span class="input">.input</span>
+</p>
+
+<h3>Lists</h3>
+
+<ul>
+    <li>&lt;ul&gt;</li>
+    <li>Item
+        <ul><li>Nested</li></ul>
+    </li>
+</ul>
+
+<ol>
+    <li>&lt;ol&gt;</li>
+    <li>Item</li>
+</ol>
+
+<dl>
+    <dt>&lt;dt&gt;</dt>
+    <dd>&lt;dd&gt;</dd>
+</dl>
+
+<h3>Table</h3>
+
+<table>
+    <caption>&lt;caption&gt;</caption>
+    <thead>
+        <tr><th>&lt;th&gt;</th><th>&lt;th&gt;</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>&lt;td&gt;</td><td>&lt;td&gt;</td></tr>
+    </tbody>
+</table>
+</section>
+
+<section id="forms">
+<h2>Forms</h2>
+
+<fieldset>
+    <legend>&lt;legend&gt;</legend>
+
+    <label>
+        &lt;input&gt;<br>
+        <input type="text" placeholder="input">
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;textarea&gt;<br>
+        <textarea rows="2">textarea</textarea>
+    </label>
+
+    <br><br>
+
+        <label>
+        &lt;select&gt;<br>
+        <select>
+            <option>&lt;option&gt;</option>
+            <option>&lt;option&gt;</option>
+        </select>
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;select&gt; (optgroup) <br>
+        <select>
+            <optgroup label="&lt;optgroup&gt;">
+                <option>&lt;option&gt;</option>
+                <option>&lt;option&gt;</option>
+            </optgroup>
+        </select>
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;select&gt; (multiple) <br>
+        <select multiple>
+            <option>&lt;option&gt;</option>
+            <option>&lt;option&gt;</option>
+        </select>
+    </label>
+
+    <br><br>
+
+    <label>
+        &lt;select&gt; (multiple) (optgroup) <br>
+        <select multiple>
+            <optgroup label="&lt;optgroup&gt;">
+                <option>&lt;option&gt;</option>
+                <option>&lt;option&gt;</option>
+            </optgroup>
+            <optgroup label="&lt;optgroup&gt;">
+                <option>&lt;option&gt;</option>
+                <option>&lt;option&gt;</option>
+            </optgroup>
+        </select>
+    </label>
+
+    <br><br>
+
+    <div>
+        &lt;input type="radio"&gt;<br>
+        <label><input type="radio" name="radio"> Option 1</label>
+        <label><input type="radio" name="radio"> Option 2</label>
+        <label><input type="radio" name="radio"> Option 3</label>
+    </div>
+
+    <br>
+
+    <div>
+        &lt;input type="checkbox"&gt;<br>
+        <label><input type="checkbox"> Checkbox 1</label>
+        <label><input type="checkbox"> Checkbox 2</label>
+        <label><input type="checkbox"> Checkbox 3</label>
+    </div>
+
+    <br>
+
+    <button>&lt;button&gt;</button>
+    <input class="inline" value=".inline">
+    <button class="inline">.inline</button>
+</fieldset>
+</section>
+
+<section id="media">
+<h2>Media</h2>
+
+<p>
+    <img class="s2" alt="img"
+         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='silver'/%3E%3C/svg%3E">
+    &lt;img&gt;
+</p>
+
+<p>
+    <svg class="s2" viewBox="0 0 120 60">
+        <rect width="120" height="60"/>
+    </svg>
+    &lt;svg&gt;
+</p>
+
+<p>
+    <iframe class="s2" srcdoc="<p>&amp;lt;iframe&amp;gt;</p>"></iframe>
+    &lt;iframe&gt;
+</p>
+
+<object class="s2">
+    <p>&lt;object&gt;</p>
+</object>
+</section>
+
+<section id="layout">
+<h2>Utilities & Layout</h2>
+
+<h3>.window</h3>
+<div class="window">
+    <p>Centered, constrained container.</p>
+</div>
+
+<h3>.reset</h3>
+<div class="reset">
+    <p>Removes the width constraint.</p>
+</div>
+
+<h3>.row / .col / .end</h3>
+<div class="row">
+    <div class="col s3">.col</div>
+    <div class="col end s3">.col.end</div>
+</div>
+
+<h3>.center</h3>
+<p class="center s3">.center</p>
+
+<h3>.overflow</h3>
+<div class="overflow s3">
+    ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ
+</div>
+
+<h3>Accessibility</h3>
+<p class="hidden">.hidden</p>
+<p>
+    <span class="hidden-sr">Hidden from visual display.</span>
+    .hidden-sr
+</p>
+
+<h3>Print</h3>
+<p class="print-reset">.print-reset</p>
+<p class="print-new-page">.print-new-page</p>
+<p class="print-hidden">.print-hidden</p>
+<p class="print-only">.print-only</p>
+
+<h3>Width</h3>
+<div class="w-bg w1">.w1</div>
+<div class="w-bg w2">.w2</div>
+<div class="w-bg w3">.w3</div>
+<div class="w-bg w4">.w4</div>
+<div class="w-bg w5">.w5</div>
+<div class="w-bg w6">.w6</div>
+<div class="w-bg w7">.w7</div>
+<div class="w-bg w8">.w8</div>
+<div class="w-bg w9">.w9</div>
+<div class="w-bg w10">.w10</div>
+<div class="w-bg w11">.w11</div>
+<div class="w-bg w12">.w12</div>
+</section>
+
+<hr>
+
+<section id="reference">
+<h2>Class Reference</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Class</th>
+            <th>Purpose</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td><code>.a</code></td><td>Link styling.</td></tr>
+        <tr><td><code>.button</code></td><td>Button styling.</td></tr>
+        <tr><td><code>.input</code></td><td>Input styling.</td></tr>
+        <tr><td><code>.inline</code></td><td>Compact control styling.</td></tr>
+        <tr><td><code>.drop-cap</code></td><td>Large first letter.</td></tr>
+        <tr><td><code>.center</code></td><td>Centers a block.</td></tr>
+        <tr><td><code>.overflow</code></td><td>Automatic overflow.</td></tr>
+        <tr><td><code>.reset</code></td><td>Removes width constraints.</td></tr>
+        <tr><td><code>.hidden</code></td><td>Completely hidden.</td></tr>
+        <tr><td><code>.hidden-sr</code></td><td>Screen-reader-only content.</td></tr>
+        <tr><td><code>.print-reset</code></td><td>Reset when printed.</td></tr>
+        <tr><td><code>.print-new-page</code></td><td>Page break before an element when printed.</td></tr>
+        <tr><td><code>.print-hidden</code></td><td>Hidden when printed.</td></tr>
+        <tr><td><code>.print-only</code></td><td>Visible only when printed.</td></tr>
+        <tr><td><code>.row</code></td><td>Float-based row container.</td></tr>
+        <tr><td><code>.col</code></td><td>Float-based column.</td></tr>
+        <tr><td><code>.col.end</code></td><td>Right-aligned column.</td></tr>
+        <tr><td><code>.w-auto</code></td><td>Width auto</td></tr>
+        <tr><td><code>.w-full</code></td><td>Width 100%</td></tr>
+        <tr><td><code>.w1</code>-<code>.w12</code></td><td>5em size increments</td></tr>
+    </tbody>
+</table>
+</section>
+
+</main>
+
+<footer>
+    <hr>
+    <p>
+        &copy; 2025 Lloyd Miles M. Bersabe.
+        Licensed under Apache License 2.0.
+    </p>
+</footer>
+
+</div>
+</body>
+</html>

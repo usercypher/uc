@@ -1,0 +1,220 @@
+<?php
+
+header('Content-Type: text/plain');
+require('Shared_Lib_Decimal.php');
+
+$GLOBALS['test_pass'] = 0;
+$GLOBALS['test_fail'] = 0;
+
+register_shutdown_function('test_shutdown');
+
+function test_shutdown() {
+    echo "\n";
+    echo "Passed: {$GLOBALS['test_pass']}\n";
+    echo "Failed: {$GLOBALS['test_fail']}\n";
+}
+
+function test($label, $actual, $expected) {
+    $pass = ($actual === $expected);
+    if ($pass) { $GLOBALS['test_pass']++; }
+    else       { $GLOBALS['test_fail']++; }
+    echo ($pass ? "[ ok ]" : "[fail]") . " $label\n";
+    ob_start();
+    var_dump($actual);
+    $actual_ob = ob_get_contents();
+    ob_end_clean();
+    ob_start();
+    var_dump($expected);
+    $expected_ob = ob_get_contents();
+    ob_end_clean();
+    if (!$pass) {
+        echo "       got=" . $actual_ob
+           . "  expected=" . $expected_ob . "\n";
+    }
+}
+
+$d = new Shared_Lib_Decimal();
+
+// ---------------------------------------------------------------
+// ROUND_HALF_UP — the default
+// ---------------------------------------------------------------
+test('half_up 1.005 -> 2',   $d->round('1.005', 2), '1.01');
+test('half_up 1.004 -> 2',   $d->round('1.004', 2), '1.00');
+test('half_up 1.006 -> 2',   $d->round('1.006', 2), '1.01');
+test('half_up 2.5   -> 0',   $d->round('2.5',   0), '3');
+test('half_up -2.5  -> 0',   $d->round('-2.5',  0), '-3');
+test('half_up 1.5   -> 2 (pad)', $d->round('1.5', 2), '1.50');
+test('half_up 10    -> 2 (pad)', $d->round('10',  2), '10.00');
+
+// ---------------------------------------------------------------
+// ROUND_HALF_DOWN
+// ---------------------------------------------------------------
+test('half_down 1.005 -> 2',  $d->round('1.005', 2, 'ROUND_HALF_DOWN'), '1.00');
+test('half_down 1.006 -> 2',  $d->round('1.006', 2, 'ROUND_HALF_DOWN'), '1.01');
+test('half_down 1.004 -> 2',  $d->round('1.004', 2, 'ROUND_HALF_DOWN'), '1.00');
+test('half_down 2.5   -> 0',  $d->round('2.5',   0, 'ROUND_HALF_DOWN'), '2');
+test('half_down -2.5  -> 0',  $d->round('-2.5',  0, 'ROUND_HALF_DOWN'), '-2');
+
+// ---------------------------------------------------------------
+// ROUND_HALF_EVEN (banker's)
+// ---------------------------------------------------------------
+test('half_even 1.005 -> 2',  $d->round('1.005', 2, 'ROUND_HALF_EVEN'), '1.00');
+test('half_even 1.015 -> 2',  $d->round('1.015', 2, 'ROUND_HALF_EVEN'), '1.02');
+test('half_even 2.5   -> 0',  $d->round('2.5',   0, 'ROUND_HALF_EVEN'), '2');
+test('half_even 3.5   -> 0',  $d->round('3.5',   0, 'ROUND_HALF_EVEN'), '4');
+test('half_even -2.5  -> 0',  $d->round('-2.5',  0, 'ROUND_HALF_EVEN'), '-2');
+test('half_even 1.006 -> 2',  $d->round('1.006', 2, 'ROUND_HALF_EVEN'), '1.01');
+test('half_even 1.004 -> 2',  $d->round('1.004', 2, 'ROUND_HALF_EVEN'), '1.00');
+
+// ---------------------------------------------------------------
+// ROUND_HALF_ODD
+// ---------------------------------------------------------------
+test('half_odd 1.005 -> 2',   $d->round('1.005', 2, 'ROUND_HALF_ODD'), '1.01');
+test('half_odd 1.015 -> 2',   $d->round('1.015', 2, 'ROUND_HALF_ODD'), '1.01');
+test('half_odd 2.5   -> 0',   $d->round('2.5',   0, 'ROUND_HALF_ODD'), '3');
+test('half_odd 3.5   -> 0',   $d->round('3.5',   0, 'ROUND_HALF_ODD'), '3');
+
+// ---------------------------------------------------------------
+// ROUND_UP (away from zero)
+// ---------------------------------------------------------------
+test('up 9.1   -> 0',         $d->round('9.1',   0, 'ROUND_UP'), '10');
+test('up 9.0   -> 0',         $d->round('9.0',   0, 'ROUND_UP'), '9');
+test('up -9.1  -> 0',         $d->round('-9.1',  0, 'ROUND_UP'), '-10');
+test('up 1.001 -> 2',         $d->round('1.001', 2, 'ROUND_UP'), '1.01');
+
+// ---------------------------------------------------------------
+// ROUND_DOWN (toward zero / truncate)
+// ---------------------------------------------------------------
+test('down 9.9   -> 0',       $d->round('9.9',   0, 'ROUND_DOWN'), '9');
+test('down 9.0   -> 0',       $d->round('9.0',   0, 'ROUND_DOWN'), '9');
+test('down -9.9  -> 0',       $d->round('-9.9',  0, 'ROUND_DOWN'), '-9');
+test('down 1.999 -> 2',       $d->round('1.999', 2, 'ROUND_DOWN'), '1.99');
+
+// ---------------------------------------------------------------
+// ROUND_CEILING (toward +inf)
+// ---------------------------------------------------------------
+test('ceiling 9.1  -> 0',     $d->round('9.1',   0, 'ROUND_CEILING'), '10');
+test('ceiling -9.1 -> 0',     $d->round('-9.1',  0, 'ROUND_CEILING'), '-9');
+test('ceiling 9.0  -> 0',     $d->round('9.0',   0, 'ROUND_CEILING'), '9');
+
+// ---------------------------------------------------------------
+// ROUND_FLOOR (toward -inf)
+// ---------------------------------------------------------------
+test('floor 9.1  -> 0',       $d->round('9.1',   0, 'ROUND_FLOOR'), '9');
+test('floor -9.1 -> 0',       $d->round('-9.1',  0, 'ROUND_FLOOR'), '-10');
+test('floor 9.0  -> 0',       $d->round('9.0',   0, 'ROUND_FLOOR'), '9');
+
+// ---------------------------------------------------------------
+// Unknown mode
+// ---------------------------------------------------------------
+$result = @$d->round('1.5', 2, 'BOGUS');   // @ suppresses the warning
+test('unknown mode -> null',  $result, null);
+
+// ---------------------------------------------------------------
+// Basic arithmetic
+// ---------------------------------------------------------------
+test('add 1.99 + 2.99',       $d->add('1.99', '2.99', 2), '4.98');
+test('sub 5.00 - 1.99',       $d->sub('5.00', '1.99', 2), '3.01');
+test('mul 10.99 * 3',         $d->mul('10.99', '3', 2),   '32.97');
+test('div 10 / 3 (2dp)',      $d->div('10', '3', 2),      '3.33');
+test('pow 2 ^ 10',            $d->pow('2', '10', 0),      '1024');
+test('sqrt 2 (10dp)',         $d->sqrt('2', 10),          '1.4142135623');
+
+// ---------------------------------------------------------------
+// Comparison
+// ---------------------------------------------------------------
+test('comp 1.00 vs 1.00',     $d->comp('1.00', '1.00', 2),  0);
+test('comp 1.00 vs 1.01',     $d->comp('1.00', '1.01', 2), -1);
+test('comp 1.01 vs 1.00',     $d->comp('1.01', '1.00', 2),  1);
+
+// ---------------------------------------------------------------
+// Comparison — -0 / +0 normalization
+// ---------------------------------------------------------------
+test('comp -0 vs 0',          $d->comp('-0',    '0',    0),  0);
+test('comp -0 vs +0',         $d->comp('-0',    '+0',   0),  0);
+test('comp +0 vs 0',          $d->comp('+0',    '0',    0),  0);
+test('comp 0 vs -0',          $d->comp('0',     '-0',   0),  0);
+test('comp -0.00 vs 0.00',    $d->comp('-0.00', '0.00', 2),  0);
+test('comp -0.000 vs 0',      $d->comp('-0.000','0',    3),  0);
+test('comp 0 vs 0',           $d->comp('0',     '0',    0),  0);
+test('comp -0 vs 0 (scale 2)', $d->comp('-0',   '0',    2),  0);
+
+// Normalized zero vs nonzero should still compare correctly
+test('comp -0 vs 1',          $d->comp('-0',    '1',    0), -1);
+test('comp 1 vs -0',          $d->comp('1',     '-0',   0),  1);
+test('comp -0 vs -1',         $d->comp('-0',    '-1',   0),  1);
+test('comp -1 vs -0',         $d->comp('-1',    '-0',   0), -1);
+
+// Symmetry: comp(a,b) === -comp(b,a)
+test('comp sym -0/5',         $d->comp('-0',    '5',    0), -1);
+test('comp sym 5/-0',         $d->comp('5',     '-0',   0),  1);
+
+// Scale-dependent zero detection:
+// -0.0001 rounds to 0 at scale 3, so it collapses to '0' and compares equal
+test('comp -0.0001 vs 0 (s3)', $d->comp('-0.0001', '0', 3), 0);
+// but at scale 4 the difference is visible
+test('comp -0.0001 vs 0 (s4)', $d->comp('-0.0001', '0', 4), -1);
+
+// ---------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------
+test('abs -1.5 (2dp)',        $d->abs('-1.5', 2), '1.50');
+test('abs 1.5  (2dp)',        $d->abs('1.5',  2), '1.50');
+test('abs 0    (2dp)',        $d->abs('0',    2), '0.00');
+test('min 1.5 vs 2 (2dp)',    $d->min('1.5', '2', 2), '1.50');
+test('min 2 vs 1.5 (2dp)',    $d->min('2', '1.5', 2), '1.50');
+test('max 1.5 vs 2 (2dp)',    $d->max('1.5', '2', 2), '2.00');
+test('max 2 vs 1.5 (2dp)',    $d->max('2', '1.5', 2), '2.00');
+
+// ---------------------------------------------------------------
+// Edge cases
+// ---------------------------------------------------------------
+test('round 0 (2dp)',         $d->round('0', 2), '0.00');
+test('round -0.001 (2dp)',    $d->round('-0.001', 2), '0.00');
+test('round 0.000 (2dp)',     $d->round('0.000', 2), '0.00');
+test('round 99.999 (2dp)',    $d->round('99.999', 2), '100.00');
+test('round 0.005 (2dp)',     $d->round('0.005', 2), '0.01');
+test('round -0.005 (2dp)',    $d->round('-0.005', 2), '-0.01');
+test('round 1.0 (2dp, pad)',  $d->round('1.0', 2), '1.00');
+test('round 1 (2dp, pad)',    $d->round('1', 2), '1.00');
+
+// Bug A: lastDigit must come from raw string, not rounded bcadd
+test('round 1.0049 -> 2',            $d->round('1.0049', 2),                    '1.00');
+test('round 1.0049999 -> 2',         $d->round('1.0049999', 2),                 '1.00');
+test('round 1.0044 -> 2',            $d->round('1.0044', 2),                    '1.00');
+test('round 1.0051 -> 2',            $d->round('1.0051', 2),                    '1.01');
+
+// Bug B: up/ceiling/floor need "any nonzero in tail"
+test('round 1.000 -> 2 ROUND_UP',    $d->round('1.000', 2, 'ROUND_UP'),         '1.00');
+test('round 1.0001 -> 2 ROUND_UP',   $d->round('1.0001', 2, 'ROUND_UP'),        '1.01');
+test('round 1.0009 -> 2 CEILING',    $d->round('1.0009', 2, 'ROUND_CEILING'),   '1.01');
+test('round -1.0009 -> 2 CEILING',   $d->round('-1.0009', 2, 'ROUND_CEILING'),  '-1.00');
+test('round -1.0009 -> 2 FLOOR',     $d->round('-1.0009', 2, 'ROUND_FLOOR'),    '-1.01');
+
+// Half-* true tie vs near-tie
+test('tie even 1.005 -> 2',          $d->round('1.005', 2, 'ROUND_HALF_EVEN'),  '1.00');
+test('tie even 1.015 -> 2',          $d->round('1.015', 2, 'ROUND_HALF_EVEN'),  '1.02');
+test('near 1.0051 -> 2 half_even',   $d->round('1.0051', 2, 'ROUND_HALF_EVEN'), '1.01');
+test('tie half_up 1.005 -> 2',       $d->round('1.005', 2),                     '1.01');
+test('near 1.0051 -> 2 half_up',     $d->round('1.0051', 2),                    '1.01');
+// ---------------------------------------------------------------
+// Real-world money scenarios
+// ---------------------------------------------------------------
+// Split $100 three ways, half-up
+$share = $d->div('100', '3', 6);                    // "33.333333"
+test('split share (6dp)',     $share, '33.333333');
+test('split share (2dp)',     $d->round($share, 2), '33.33');
+
+// Tax: 10.99 * 1.08
+$subtotal = $d->mul('10.99', '1', 6);               // "10.990000"
+$taxed    = $d->mul($subtotal, '1.08', 6);          // "11.869200"
+test('tax calc (2dp)',        $d->round($taxed, 2), '11.87');
+
+// Chain: (10.99 * 3) * 1.08
+$qty      = $d->mul('10.99', '3', 6);               // "32.970000"
+$withTax  = $d->mul($qty, '1.08', 6);               // "35.607600"
+test('chain total (2dp)',     $d->round($withTax, 2), '35.61');
+
+// Float-trap case: round(1.005) via BCMath
+test('float trap 1.005',      $d->round('1.005', 2), '1.01');
+

@@ -1,0 +1,15 @@
+PRAGMA journal_mode = WAL;
+PRAGMA synchronous = NORMAL;
+PRAGMA cache_size = -64000;
+
+CREATE TABLE user (
+    id VARCHAR(20) NOT NULL PRIMARY KEY UNIQUE,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    role VARCHAR(255) NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    created_at INTEGER
+);

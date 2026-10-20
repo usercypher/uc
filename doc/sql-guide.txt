@@ -1,0 +1,239 @@
+PORTABLE SQL REFERENCE
+
+DATA TYPES
+
+  INTEGER
+  NUMERIC(precision, scale)
+  VARCHAR(length)
+
+TABLE MANIPULATION
+
+  ALTER TABLE
+  CREATE TABLE
+  DROP TABLE
+  PRIMARY KEY
+  UNIQUE
+  DEFAULT
+  CONSTRAINT / FOREIGN KEY / REFERENCES
+  CREATE INDEX (non-ansi)
+
+QUERY KEYWORDS
+
+  SELECT
+  FROM
+  WHERE
+  AND
+  OR
+  NOT
+  IN
+  BETWEEN
+  IS NULL
+  IS NOT NULL
+  DISTINCT
+  ORDER BY
+  ASC
+  DESC
+  GROUP BY
+  HAVING
+  LIKE
+
+JOIN KEYWORDS
+
+  JOIN
+  INNER JOIN
+  LEFT JOIN
+  ON
+
+SET OPERATIONS
+
+  UNION
+  UNION ALL
+
+DATA MODIFICATION
+
+  INSERT / VALUES
+  UPDATE / SET
+  DELETE
+
+CONDITIONAL LOGIC
+
+  CASE / WHEN / THEN / ELSE / END
+  EXISTS
+  CAST
+  COALESCE
+  AS
+
+AGGREGATE FUNCTIONS
+
+  COUNT()
+  SUM()
+  AVG()
+  MIN()
+  MAX()
+
+STRING FUNCTIONS
+
+  UPPER()
+  LOWER()
+  TRIM()
+
+NUMERIC FUNCTIONS
+
+  ABS()
+  ROUND()
+
+NOTES
+
+  varchar length: 2000 for max compatibility.
+
+  Timestamps: store as INTEGER (integer as date) for fast
+  queries. Any range query can use integer with mapping for
+  optimal performance.
+
+  ROUND() rounding mode differs by vendor (banker's vs
+  half-up).
+
+  Always add CREATE INDEX on FK columns manually; only MySQL
+  auto-creates it.
+
+  Avoid vendor-specific date functions; do date logic in app
+  code.
+
+
+EXAMPLES
+
+  Schema
+  ------
+
+    CREATE TABLE customers (
+        customer_id INTEGER PRIMARY KEY,
+        email       VARCHAR(200) NOT NULL,
+        status      VARCHAR(20) DEFAULT 'active',
+        CONSTRAINT uq_customers_email UNIQUE (email)
+    );
+
+    CREATE TABLE orders (
+        order_id    INTEGER PRIMARY KEY,
+        customer_id INTEGER,
+        order_date  INTEGER,            -- YYYYMMDD, e.g. 20260901 = Sep 1, 2026
+        total       NUMERIC(10,2),
+        CONSTRAINT fk_orders_customer
+            FOREIGN KEY (customer_id)
+            REFERENCES customers (customer_id)
+    );
+
+    -- Always create an index on the FK column manually (portable practice)
+    CREATE INDEX idx_orders_customer ON orders (customer_id);
+
+    -- ALTER / DROP
+    ALTER TABLE customers ADD COLUMN phone VARCHAR(40);
+    ALTER TABLE customers DROP COLUMN phone;
+    -- DROP TABLE orders;
+    -- DROP TABLE customers;
+
+  INSERT / UPDATE / DELETE
+  ------------------------
+
+    INSERT INTO customers (customer_id, email, status) VALUES
+        (1, 'alice@example.com', 'active'),
+        (2, 'bob@example.com',   'active'),
+        (3, 'carol@example.com', 'inactive');
+
+    INSERT INTO orders (order_id, customer_id, order_date, total) VALUES
+        (100, 1, 20260901, 120.50),
+        (101, 1, 20260915,  80.00),
+        (102, 2, 20261001, 200.00);
+
+    UPDATE customers SET status = 'inactive' WHERE customer_id = 3;
+    DELETE FROM orders WHERE order_id = 102;
+
+  SELECT / WHERE / LOGIC
+  ----------------------
+
+    SELECT DISTINCT c.email
+    FROM customers c
+    WHERE c.status = 'active'
+      AND c.customer_id NOT IN (99)
+      AND c.customer_id BETWEEN 1 AND 1000
+      AND c.email IS NOT NULL
+      AND c.email LIKE '%@example.com'
+    ORDER BY c.email ASC;
+
+    -- IS NULL
+    SELECT * FROM customers
+    WHERE status IS NULL;
+
+    -- OR / NOT
+    SELECT * FROM customers
+    WHERE NOT (status = 'inactive' OR status IS NULL);
+
+  JOINS
+  -----
+
+    SELECT c.email, o.order_id, o.total
+    FROM customers c
+    INNER JOIN orders o ON o.customer_id = c.customer_id;
+
+    SELECT c.email, o.order_id, o.total
+    FROM customers c
+    LEFT JOIN orders o ON o.customer_id = c.customer_id;
+
+  GROUP / HAVING / AGGREGATES
+  ---------------------------
+
+    SELECT customer_id,
+           COUNT(*)   AS order_count,
+           SUM(total) AS total_spent,
+           AVG(total) AS avg_order,
+           MIN(total) AS smallest,
+           MAX(total) AS largest
+    FROM orders
+    GROUP BY customer_id
+    HAVING COUNT(*) > 1
+    ORDER BY total_spent DESC;
+
+  SET OPERATIONS
+  --------------
+
+    SELECT email FROM customers
+    UNION
+    SELECT email FROM customers;      -- deduped
+
+    SELECT email FROM customers
+    UNION ALL
+    SELECT email FROM customers;      -- keeps duplicates
+
+  CONDITIONAL LOGIC
+  -----------------
+
+    SELECT customer_id,
+           CASE
+               WHEN status = 'active'   THEN 'OK'
+               WHEN status = 'inactive' THEN 'Disabled'
+               ELSE 'Unknown'
+           END AS status_label,
+           COALESCE(status, 'unknown') AS status_safe,
+           CAST(customer_id AS INTEGER) AS id_int
+    FROM customers
+    WHERE EXISTS (
+        SELECT 1 FROM orders o WHERE o.customer_id = customers.customer_id
+    );
+
+  FUNCTIONS
+  ---------
+
+    SELECT UPPER(email) AS up,
+           LOWER(email) AS low,
+           TRIM(email)  AS trimmed
+    FROM customers;
+
+    SELECT ABS(-42)          AS abs_val,
+           ROUND(3.14159, 2) AS rounded
+    FROM customers;
+
+  INTEGER DATES
+  -------------
+
+    -- order_date stored as YYYYMMDD (e.g. 20260901 = Sep 1, 2026)
+    SELECT * FROM orders
+    WHERE order_date BETWEEN 20260901 AND 20260930;

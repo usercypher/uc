@@ -1,0 +1,18 @@
+{
+  "server": "0.0.0.0:2080",
+  "server_advertise": "http://localhost:2080",
+  "client_limit": 10000,
+  "client_timeout": 0,
+  "client_worker_count": 64,
+  "client_worker_queue": 4096,
+  "endpoint": "http://127.0.0.1:8080/game/ws",
+  "endpoint_timeout": 90,
+  "endpoint_worker_count": 64,
+  "endpoint_worker_queue": 4096,
+  "read_header_timeout": 5,
+  "read_timeout": 30,
+  "write_timeout": 30,
+  "idle_timeout": 60,
+  "max_header_bytes": 1048576,
+  "max_body_bytes": 1048576
+}

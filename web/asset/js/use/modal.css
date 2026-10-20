@@ -1,0 +1,28 @@
+.uc-modal {
+    background: rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+}
+
+.uc-modal.active {
+    visibility: visible;
+}
+
+.uc-modal-content {
+    background: Window;
+    border: 1px solid ButtonFace;
+    bottom: 0;
+    left: 0;
+    margin: 2em auto;
+    max-height: 100%;
+    max-width: 35em;
+    overflow: auto;
+    position: absolute;
+    right: 0;
+    width: 100%;
+}

@@ -1,0 +1,109 @@
+<?php
+
+/**
+ * ------------------------------------------------------------------------
+ * CLI Pipe
+ * ------------------------------------------------------------------------
+ * Handles dynamic CLI piping through optional route param.
+ */
+$group = array(
+
+);
+
+$app->routeGroup($group, '', 'cli/:on-unknown-route*', array(
+    'Cli_Pipe_Help'
+));
+
+/**
+ * ------------------------------------------------------------------------
+ * route
+ * ------------------------------------------------------------------------
+ */
+$group = array(
+
+);
+
+$app->routeGroup($group, '', 'cli/route/:on-unknown-option*', array(
+    'Cli_Pipe_Route_Help'
+));
+
+$app->routeGroup($group, '', 'cli/route/print/:*', array(
+    'Cli_Pipe_Route_Print'
+));
+
+$app->routeGroup($group, '', 'cli/route/resolve/:*', array(
+    'Cli_Pipe_Route_Resolve'
+));
+
+$app->routeGroup($group, '', 'cli/route/run/:*', array(
+    'Cli_Pipe_Route_Run'
+));
+
+/**
+ * ------------------------------------------------------------------------
+ * unit
+ * ------------------------------------------------------------------------
+ */
+$group = array(
+
+);
+
+$app->routeGroup($group, '', 'cli/unit/:on-unknown-option*', array(
+    'Cli_Pipe_Unit_Help'
+));
+
+// route=unit/create/:name
+$app->routeGroup($group, '', 'cli/unit/create/:name/:*', array(
+    'Cli_Pipe_Unit_Create'
+));
+
+// route=unit/info/:name
+$app->routeGroup($group, '', 'cli/unit/info/:name/:*', array(
+    'Cli_Pipe_Unit_Info'
+));
+
+$app->routeGroup($group, '', 'cli/unit/list/:*', array(
+    'Cli_Pipe_Unit_List'
+));
+
+/**
+ * ------------------------------------------------------------------------
+ * file
+ * ------------------------------------------------------------------------
+ */
+$group = array(
+
+);
+
+$app->routeGroup($group, '', 'cli/file/:on-unknown-option*', array(
+    'Cli_Pipe_File_Help'
+));
+
+$app->routeGroup($group, '', 'cli/file/find/:*', array(
+    'Cli_Pipe_File_Find'
+));
+
+$app->routeGroup($group, '', 'cli/file/find-replace/:*', array(
+    'Cli_Pipe_File_FindReplace'
+));
+
+/**
+ * ------------------------------------------------------------------------
+ * db
+ * ------------------------------------------------------------------------
+ */
+$group = array(
+
+);
+
+$app->routeGroup($group, '', 'cli/db/:on-unknown-option*', array(
+    'Cli_Pipe_Db_Help'
+));
+
+$app->routeGroup($group, '', 'cli/db/print/:*', array(
+    'Cli_Pipe_Db_Print'
+));
+
+$app->routeGroup($group, '', 'cli/db/exec/:*', array(
+    'Cli_Pipe_Db_Exec'
+));
