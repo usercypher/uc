@@ -18,6 +18,7 @@ class Shared_Lib_Cast_Db {
             'dsn' => $app->env['db']['default']['dsn'],
             'user' => $app->env['db']['default']['user'],
             'pass' => $app->env['db']['default']['pass'],
+            'exec' => $app->env['db']['default']['exec']
         ));
 
         $db = $database->get($name);

@@ -13,6 +13,7 @@ $database->set('key', [
     'name' => '',
     'user' => '',
     'pass' => '',
+    'exec' => '',
     'timeout' => '',
 ]);
 

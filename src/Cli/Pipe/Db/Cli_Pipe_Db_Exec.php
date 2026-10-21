@@ -17,7 +17,8 @@ class Cli_Pipe_Db_Exec {
         $this->db->set($name, array(
             'dsn' => $this->app->env['db'][$name]['dsn'],
             'user' => $this->app->env['db'][$name]['user'],
-            'pass' => $this->app->env['db'][$name]['pass']
+            'pass' => $this->app->env['db'][$name]['pass'],
+            'exec' => $this->app->env['db'][$name]['exec']
         ));
 
         $db = $this->db->get($name);

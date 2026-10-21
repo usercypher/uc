@@ -19,7 +19,8 @@ class Game_PlayerRepo extends Shared_Lib_DatabaseHelper {
         $this->database->set($name, array(
             'dsn' => $this->app->env['db'][$name]['dsn'],
             'user' => $this->app->env['db'][$name]['user'],
-            'pass' => $this->app->env['db'][$name]['pass']
+            'pass' => $this->app->env['db'][$name]['pass'],
+            'exec' => $this->app->env['db'][$name]['exec']
         ));
 
         parent::setTable($table);

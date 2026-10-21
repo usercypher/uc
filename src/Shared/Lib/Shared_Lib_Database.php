@@ -22,12 +22,17 @@ class Shared_Lib_Database_Obj {
             $dsn = isset($this->config['dsn']) ? $this->config['dsn'] : '';
             $user = isset($this->config['user']) ? $this->config['user'] : '';
             $pass = isset($this->config['pass']) ? $this->config['pass'] : '';
+            $exec = isset($this->config['exec']) ? $this->config['exec'] : '';
             $timeout = isset($this->config['timeout']) ? (int) $this->config['timeout'] : 5;
 
             $this->conn = new PDO($dsn, $user, $pass, array(
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
                 PDO::ATTR_TIMEOUT => $timeout,
             ));
+
+            if ($exec) {
+                $this->execute($exec);
+            }
         }
         return $this->conn;
     }
