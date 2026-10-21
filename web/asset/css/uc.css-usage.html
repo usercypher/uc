@@ -42,6 +42,7 @@
 <h6>&lt;h6&gt;</h6>
 
 <p class="drop-cap">
+    .drop-cap
     <strong>&lt;strong&gt;</strong>,
     <em>&lt;em&gt;</em>,
     <code>&lt;code&gt;</code>,
@@ -199,24 +200,24 @@
 <h2>Media</h2>
 
 <p>
-    <img class="s2" alt="img"
+    <img class="w2" alt="img"
          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Crect width='120' height='60' fill='silver'/%3E%3C/svg%3E">
     &lt;img&gt;
 </p>
 
 <p>
-    <svg class="s2" viewBox="0 0 120 60">
+    <svg class="w2" viewBox="0 0 120 60">
         <rect width="120" height="60"/>
     </svg>
     &lt;svg&gt;
 </p>
 
 <p>
-    <iframe class="s2" srcdoc="<p>&amp;lt;iframe&amp;gt;</p>"></iframe>
+    <iframe class="w2" srcdoc="<p>&amp;lt;iframe&amp;gt;</p>"></iframe>
     &lt;iframe&gt;
 </p>
 
-<object class="s2">
+<object class="w2">
     <p>&lt;object&gt;</p>
 </object>
 </section>
@@ -231,20 +232,20 @@
 
 <h3>.reset</h3>
 <div class="reset">
-    <p>Removes the width constraint.</p>
+    <p>Reset box model.</p>
 </div>
 
 <h3>.row / .col / .end</h3>
 <div class="row">
-    <div class="col s3">.col</div>
-    <div class="col end s3">.col.end</div>
+    <div class="col w3">.col</div>
+    <div class="col end w3">.col.end</div>
 </div>
 
 <h3>.center</h3>
-<p class="center s3">.center</p>
+<p class="center w3">.center</p>
 
 <h3>.overflow</h3>
-<div class="overflow s3">
+<div class="overflow w3">
     ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ
 </div>
 
@@ -258,8 +259,9 @@
 <h3>Print</h3>
 <p class="print-reset">.print-reset</p>
 <p class="print-new-page">.print-new-page</p>
-<p class="print-hidden">.print-hidden</p>
-<p class="print-only">.print-only</p>
+<p>.print-hidden<span class="print-hidden">(hidden in print)</span></p>
+<p>.print-only<span class="print-only">(hidden in screen)</span></p>
+
 
 <h3>Width</h3>
 <div class="w-bg w1">.w1</div>
@@ -274,6 +276,23 @@
 <div class="w-bg w10">.w10</div>
 <div class="w-bg w11">.w11</div>
 <div class="w-bg w12">.w12</div>
+
+<div class="w-free">.w-free</div>
+<div class="w-full">.w-full</div>
+<p></p>
+
+<h3>Font</h3>
+<div class="f1">.f1</div>
+<div class="f2">.f2</div>
+<div class="f3">.f3</div>
+<div class="f4">.f4</div>
+<div class="f5">.f5</div>
+<div class="f6">.f6</div>
+<p></p>
+<div class="f-serif">.f-serif</div>
+<div class="f-sans">.f-sans</div>
+<div class="f-mono">.f-mono</div>
+
 </section>
 
 <hr>
@@ -296,19 +315,23 @@
         <tr><td><code>.drop-cap</code></td><td>Large first letter.</td></tr>
         <tr><td><code>.center</code></td><td>Centers a block.</td></tr>
         <tr><td><code>.overflow</code></td><td>Automatic overflow.</td></tr>
-        <tr><td><code>.reset</code></td><td>Removes width constraints.</td></tr>
+        <tr><td><code>.reset</code></td><td>Reset box model.</td></tr>
         <tr><td><code>.hidden</code></td><td>Completely hidden.</td></tr>
         <tr><td><code>.hidden-sr</code></td><td>Screen-reader-only content.</td></tr>
-        <tr><td><code>.print-reset</code></td><td>Reset when printed.</td></tr>
+        <tr><td><code>.print-reset</code></td><td>Reset box model when printed.</td></tr>
         <tr><td><code>.print-new-page</code></td><td>Page break before an element when printed.</td></tr>
         <tr><td><code>.print-hidden</code></td><td>Hidden when printed.</td></tr>
         <tr><td><code>.print-only</code></td><td>Visible only when printed.</td></tr>
         <tr><td><code>.row</code></td><td>Float-based row container.</td></tr>
         <tr><td><code>.col</code></td><td>Float-based column.</td></tr>
         <tr><td><code>.col.end</code></td><td>Right-aligned column.</td></tr>
-        <tr><td><code>.w-auto</code></td><td>Width auto</td></tr>
-        <tr><td><code>.w-full</code></td><td>Width 100%</td></tr>
-        <tr><td><code>.w1</code>-<code>.w12</code></td><td>5em size increments</td></tr>
+        <tr><td><code>.w1</code>-<code>.w12</code></td><td>5em size increments.</td></tr>
+        <tr><td><code>.w-free</code></td><td>Removes the width constraint.</td></tr>
+        <tr><td><code>.w-full</code></td><td>Width 100%.</td></tr>
+        <tr><td><code>.f1</code>-<code>.f6</code></td><td>H tag scale font size.</td></tr>
+        <tr><td><code>.f-serif</code></td><td>Font family serif.</td></tr>
+        <tr><td><code>.f-sans</code></td><td>Font family sans-serif.</td></tr>
+        <tr><td><code>.f-mono</code></td><td>Font family monospace.</td></tr>
     </tbody>
 </table>
 </section>

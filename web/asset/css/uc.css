@@ -105,7 +105,6 @@ svg {
 }
 
 html {
-    font-family: sans-serif;
     line-height: 1.5;
     padding: 0.5em;
 
@@ -148,13 +147,6 @@ i,
 var,
 address {
     font-style: italic;
-}
-
-code,
-kbd,
-samp,
-pre {
-    font-family: monospace;
 }
 
 small {
@@ -219,6 +211,7 @@ h6,
 blockquote {
     padding: 0 2em;
 }
+
 
 address,
 blockquote,
@@ -426,13 +419,21 @@ svg {
     max-width: 100%;
 }
 
-.w-auto {
-    max-width: none;
-    min-width: 0;
+.f-serif {
+    font-family: "Times New Roman", serif;
 }
 
-.w-full {
-    width: 100%;
+html,
+.f-sans {
+    font-family: Arial, sans-serif;
+}
+
+code,
+kbd,
+samp,
+pre,
+.f-mono {
+    font-family: "Courier New", monospace;
 }
 
 .w1,
@@ -462,6 +463,15 @@ svg {
 .w10 { width: 50em; }
 .w11 { width: 55em; }
 .w12 { width: 60em; }
+
+.w-free {
+    max-width: none;
+    min-width: 0;
+}
+
+.w-full {
+    width: 100%;
+}
 
 @media print {
     .print-reset {
