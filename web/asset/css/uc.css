@@ -402,13 +402,13 @@ svg {
     overflow: hidden;
 }
 
-.row .col {
+.col {
     float: left;
     min-height: 1px;
     position: relative;
 }
 
-.row .end {
+.end {
     float: right;
 }
 
@@ -480,8 +480,12 @@ pre,
         padding: 0;
     }
 
-    .print-new-page {
+    .print-page-new {
         page-break-before: always;
+    }
+
+    .print-page-keep {
+        page-break-inside: avoid;
     }
 
     .print-hidden {
