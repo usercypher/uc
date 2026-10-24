@@ -65,10 +65,18 @@ function config_dev($app) {
     $app->env['db']['default']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.sqlite');
     $app->env['db']['default']['user'] = 'root';
     $app->env['db']['default']['pass'] = '';
+    $app->env['db']['default']['exec'] = '';
 
     $app->env['db']['game']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.game.sqlite');
     $app->env['db']['game']['user'] = 'root';
     $app->env['db']['game']['pass'] = '';
+    $app->env['db']['game']['exec'] = '
+        PRAGMA journal_mode=MEMORY;
+        PRAGMA synchronous=OFF;
+        PRAGMA temp_store=MEMORY;
+        PRAGMA cache_size=-131072;
+        PRAGMA mmap_size=268435456;
+    ';
 }
 
 function config_prod($app) {
@@ -79,10 +87,18 @@ function config_prod($app) {
     $app->env['db']['default']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.sqlite');
     $app->env['db']['default']['user'] = 'root';
     $app->env['db']['default']['pass'] = '';
+    $app->env['db']['default']['exec'] = '';
 
     $app->env['db']['game']['dsn'] = 'sqlite:' . $app->dir('root', '/var/lib/.game.sqlite');
     $app->env['db']['game']['user'] = 'root';
     $app->env['db']['game']['pass'] = '';
+    $app->env['db']['game']['exec'] = '
+        PRAGMA journal_mode=MEMORY;
+        PRAGMA synchronous=OFF;
+        PRAGMA temp_store=MEMORY;
+        PRAGMA cache_size=-131072;
+        PRAGMA mmap_size=268435456;
+    ';
 
     ini_set('display_errors', 0);
     ini_set('display_startup_errors', 0);
