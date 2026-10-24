@@ -473,6 +473,76 @@ pre,
     width: 100%;
 }
 
+.shape-square,
+.shape-bar-horizontal,
+.shape-bar-vertical {
+    width: 0;
+    height: 0;
+    border: 0.25em solid WindowText;
+}
+
+.shape-bar-horizontal {
+    border-width: 0.25em 0.1em 0.25em 0.1em;
+}
+
+.shape-bar-vertical {
+    border-width: 0.1em 0.25em 0.1em 0.25em;
+}
+
+.shape-arrow-right-up,
+.shape-arrow-right-down,
+.shape-arrow-left-up,
+.shape-arrow-left-down {
+    width: 0;
+    height: 0;
+    border: 0.1875em solid transparent;
+}
+
+.shape-arrow-right-up {
+    border-color: WindowText WindowText transparent transparent;
+}
+
+.shape-arrow-right-down {
+    border-color: transparent WindowText WindowText transparent;
+}
+
+.shape-arrow-left-up {
+    border-color: WindowText transparent transparent WindowText;
+}
+
+.shape-arrow-left-down {
+    border-color: transparent transparent WindowText WindowText;
+}
+
+.shape-arrow-right,
+.shape-arrow-left,
+.shape-arrow-up,
+.shape-arrow-down {
+    border: 0.25em solid transparent;
+    width: 0;
+    height: 0;
+}
+
+.shape-arrow-right {
+    border-left-color: WindowText;
+    border-right-width: 0;
+}
+
+.shape-arrow-left {
+    border-right-color: WindowText;
+    border-left-width: 0;
+}
+
+.shape-arrow-up {
+    border-bottom-color: WindowText;
+    border-top-width: 0;
+}
+
+.shape-arrow-down {
+    border-top-color: WindowText;
+    border-bottom-width: 0;
+}
+
 @media print {
     .print-reset {
         border: 0;
