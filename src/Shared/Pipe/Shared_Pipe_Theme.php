@@ -33,7 +33,7 @@ class Shared_Pipe_Theme {
                 $theme = $this->default;
             }
         }
-        $output->header['set-cookie'][] = strtr('theme=:theme; Path=/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax', array(
+        $output->header['set-cookie'][] = strtr('theme=:theme; Path=/; Max-Age=31536000; SameSite=Lax', array(
             ':theme' => $theme
         ));
         return array($input, $output, $theme);

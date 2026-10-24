@@ -43,7 +43,7 @@ class Shared_Pipe_Lang {
                 }
             }
         }
-        $output->header['set-cookie'][] = strtr('lang=:lang; Path=/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax', array(
+        $output->header['set-cookie'][] = strtr('lang=:lang; Path=/; Max-Age=31536000; SameSite=Lax', array(
             ':lang' => $lang
         ));
         return array($input, $output, $lang);
