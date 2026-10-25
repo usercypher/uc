@@ -137,7 +137,7 @@ abbr {
 
 b,
 strong {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 cite,
@@ -173,7 +173,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.2;
     margin-bottom: 0.75em;
 }
@@ -209,7 +209,7 @@ h6,
 }
 
 blockquote {
-    padding: 0 2em;
+    padding-left: 2em;
 }
 
 
@@ -226,16 +226,16 @@ ul {
 pre {
     line-height: 1.4;
     overflow: auto;
-    padding: 0 1em;
+    padding: 1em;
 }
 
 dd {
     margin-bottom: 0.5em;
-    margin-left: 1em;
+    margin-left: 2em;
 }
 
 dt {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 li {
@@ -253,7 +253,7 @@ hr {
 }
 
 caption {
-    font-weight: 600;
+    font-weight: 700;
     padding: 0.5em 0;
     text-align: left;
 }
@@ -276,7 +276,7 @@ td {
 
 th {
     border-bottom: 1px solid transparent;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 button,
@@ -339,17 +339,16 @@ fieldset {
 }
 
 label {
-    font-weight: 500;
-    line-height: 2;
+    font-weight: 700;
 }
 
 legend {
-    font-weight: 600;
+    font-weight: 700;
     padding: 0 0.5em;
 }
 
 optgroup {
-    font-weight: 500;
+    font-weight: 700;
 }
 
 option {
@@ -371,7 +370,6 @@ svg {
 .drop-cap:first-letter {
     float: left;
     font-size: 3em;
-    font-weight: 600;
     line-height: 1;
     margin-right: 0.15em;
 }
@@ -419,13 +417,13 @@ svg {
     max-width: 100%;
 }
 
-.f-serif {
-    font-family: "Times New Roman", serif;
-}
-
 html,
 .f-sans {
     font-family: Arial, sans-serif;
+}
+
+.f-serif {
+    font-family: "Times New Roman", serif;
 }
 
 code,
@@ -473,20 +471,10 @@ pre,
     width: 100%;
 }
 
-.shape-square,
-.shape-bar-horizontal,
-.shape-bar-vertical {
+.shape-square {
     width: 0;
     height: 0;
     border: 0.25em solid WindowText;
-}
-
-.shape-bar-horizontal {
-    border-width: 0.25em 0.1em 0.25em 0.1em;
-}
-
-.shape-bar-vertical {
-    border-width: 0.1em 0.25em 0.1em 0.25em;
 }
 
 .shape-arrow-right-up,
