@@ -1,22 +1,12 @@
 <?php
 
 class Shared_Lib_Session {
-    var $name, $id;
-
-    function args($args) {
-        $this->init(isset($args[0]) ? $args[0] : array());
-    }
-
-    function init($config = array()) {
-        if (session_id() == '') {
-            $this->name = isset($config['name']) ? $config['name'] : 'PHP_SESSION_DEFAULT';
-            session_name($this->name);
-            $this->id = isset($config['id']) ? session_id($config['id']) : session_id();
-        }
-    }
+    var $config;
 
     function connect() {
         if (session_id() == '') {
+            session_name($this->config['name']);
+            session_id($this->config['id']);
             session_start();
         }
     }
@@ -32,36 +22,30 @@ class Shared_Lib_Session {
     }
 
     function destroy() {
-        if (session_id() != '') {
-            $this->clear();
-            session_destroy();
-        }
+        $this->connect();
+        $this->clear();
+        session_destroy();
     }
 
     function set($key, $value) {
-        if (session_id() == '') {
-            session_start();
-        }
+        $this->connect();
        
         $_SESSION[$key] = $value;
     }
 
     function get($key) {
-        if (session_id() == '') {
-            session_start();
-        }
+        $this->connect();
 
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
 
     function del($key) {
+        $this->connect();
         unset($_SESSION[$key]);
     }
 
     function remove($key) {
-        if (session_id() == '') {
-            session_start();
-        }
+        $this->connect();
 
         $value = null;
 
@@ -74,8 +58,7 @@ class Shared_Lib_Session {
     }
 
     function clear() {
-        if (session_id() != '') {
-            session_unset();
-        }
+        $this->connect();
+        session_unset();
     }
 }

@@ -8,6 +8,6 @@ return array(
     ),
     'use' => array(
         'App' => '4.0.0',
-        'Shared' => '4.0.0'
+        'Shared' => '5.0.0'
     )
 );

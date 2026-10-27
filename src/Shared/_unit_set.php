@@ -13,13 +13,7 @@ $app->unitGroup($group, 'Shared_Lib_Curl');
 $app->unitGroup($group, 'Shared_Lib_Database');
 $app->unitGroup($group, 'Shared_Lib_GoogleApiGmail', array('args' => array('Shared_Lib_Curl')));
 $app->unitGroup($group, 'Shared_Lib_Html');
-$app->unitGroup($group, 'Shared_Lib_Session', array(
-    'args' => array(
-        $app->unitArgData(array(
-            'name' => $app->env['app_id'] . ':session'
-        )),
-    )
-));
+$app->unitGroup($group, 'Shared_Lib_Session');
 $app->unitGroup($group, 'Shared_Lib_Standard');
 $app->unitGroup($group, 'Shared_Lib_Translator');
 $app->unitGroup($group, 'Shared_Lib_Cast_Standard', array('args' => array('Shared_Lib_Translator')));
@@ -38,6 +32,7 @@ $app->unitSet('Shared_Pipe_Theme', array('args' => array('App'), 'cache' => true
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Session')
 );
+$app->unitGroup($group, 'Shared_Pipe_SessionInit');
 $app->unitGroup($group, 'Shared_Pipe_SessionTokenGenerate');
 $app->unitGroup($group, 'Shared_Pipe_SessionTokenValidate');
 $app->unitGroup($group, 'Shared_Pipe_ExtractFlash');
