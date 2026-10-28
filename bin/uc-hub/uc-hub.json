@@ -1,5 +1,4 @@
 {
-  "core": 2,
   "server": "0.0.0.0:2080",
   "server_advertise": "http://localhost:2080",
   "client_limit": 10000,
