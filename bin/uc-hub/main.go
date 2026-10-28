@@ -48,6 +48,7 @@ import (
 )
 
 type Config struct {
+	Core                int    `json:"core"`
 	Server              string `json:"server"`
 	ServerAdvertise     string `json:"server_advertise"`
 	TLSServer           string `json:"tls_server"`
@@ -123,12 +124,11 @@ func (br *byteReader) Close() error {
 }
 
 func main() {
-	runtime.GOMAXPROCS(1)
-
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, "Usage: %s <config-file>\n\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, `Example config file (config.json):
 {
+  "core": 2,
   "server": "0.0.0.0:2080",
   "server_advertise": "192.168.254.1:2080",
   "tls_server": "0.0.0.0:2443",
@@ -186,6 +186,10 @@ Body:
 	cfg, err := parseConfig(os.Args[1])
 	if err != nil {
 		log.Fatalf("Failed to parse config: %v\n", err)
+	}
+
+	if cfg.Core > 0 {
+		runtime.GOMAXPROCS(cfg.Core)
 	}
 
 	if cfg.Server == "" && cfg.TLSServer == "" {
