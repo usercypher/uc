@@ -8,7 +8,7 @@
       "script": "${ROOT}/web/index.php",
       "worker_count": 5,
       "worker_concurrency": 1,
-      "bin": "${ROOT}/bin/php/php-windows-386/php-cgi.exe",
+      "bin": ["${ROOT}/bin/php/php-windows-386/php-cgi.exe"],
       "bin_arg": ["-b", "0.0.0.0:${PORT}", "-c", "${ROOT}/bin/php/php-windows-386.ini"],
       "bin_env": {
         "PHP_FCGI_MAX_REQUESTS": "0"

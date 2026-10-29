@@ -8,7 +8,7 @@
       "script": "${ROOT}/web/index.php",
       "worker_count": 1,
       "worker_concurrency": 5,
-      "bin": "/data/data/com.termux/files/usr/bin/php-fpm",
+      "bin": ["/data/data/com.termux/files/usr/bin/php-fpm"],
       "bin_arg": ["-y", "${ROOT}/bin/php/php-fpm.conf", "-c", "${ROOT}/bin/php/php.ini", "-F"],
       "bin_env": {
         "ROOT": "${ROOT}",
