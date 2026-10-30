@@ -397,9 +397,10 @@ svg {
 
 .row {
     clear: both;
-    overflow: hidden;
+    width: 100%;
 }
 
+.row,
 .col {
     float: left;
     min-height: 1px;
