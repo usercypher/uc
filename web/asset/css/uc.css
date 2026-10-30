@@ -367,7 +367,7 @@ svg {
     margin-right: auto;
 }
 
-.drop-cap:first-letter {
+.drop-cap {
     float: left;
     font-size: 3em;
     line-height: 1;
@@ -395,7 +395,6 @@ svg {
     overflow: auto;
 }
 
-.drop-cap,
 .row {
     overflow: hidden;
 }
