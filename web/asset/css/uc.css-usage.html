@@ -17,7 +17,13 @@
         A minimalist, semantic CSS framework.
         This page demonstrates the available elements and classes.
     </p>
+<style>
+.tool { position: relative; }
+.tool .tip { display: none; position: absolute; z-index: 998;}
+.tool:hover .tip { display: block; background: ButtonFace; padding: 0.5em; color: ButtonText;}
+</style>
 
+</div>
     <nav>
         <a href="#typography">Typography</a> •
         <a href="#forms">Forms</a> •
@@ -237,11 +243,11 @@
 
 <h3>.row / .col / .end</h3>
 <div class="row">
-    <div class="col w3">.col</div>
-    <div class="col end w3">.col.end</div>
+    <div class="col w1 w-bg">.col</div>
+    <div class="col end w1 w-bg">.col.end</div>
 </div>
 
-<h3>.center</h3>
+<h3 class="row">.center</h3>
 <p class="center w3">.center</p>
 
 <h3>.overflow</h3>
