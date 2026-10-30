@@ -397,6 +397,7 @@ svg {
 
 .row {
     clear: both;
+    overflow: hidden;
 }
 
 .col {
