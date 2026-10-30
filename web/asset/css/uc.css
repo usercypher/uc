@@ -396,6 +396,7 @@ svg {
 }
 
 .row {
+    clear: both;
     overflow: hidden;
 }
 
@@ -547,6 +548,12 @@ pre,
 
     .print-hidden {
         display: none;
+    }
+
+    .print-row {
+        clear: both;
+        float: none;
+        width: auto;
     }
 }
 
