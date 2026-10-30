@@ -122,11 +122,6 @@ body,
 a,
 .a {
     background: transparent;
-    text-decoration: none;
-}
-
-a:hover,
-.a:hover {
     text-decoration: underline;
 }
 
@@ -290,6 +285,7 @@ textarea {
     line-height: 1.2;
     max-width: 100%;
     padding: 0.5em 0.75em;
+    text-decoration: none;
     vertical-align: middle;
 }
 
