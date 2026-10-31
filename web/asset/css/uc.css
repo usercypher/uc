@@ -130,20 +130,6 @@ abbr {
     text-decoration: none;
 }
 
-b,
-strong {
-    font-weight: 700;
-}
-
-cite,
-dfn,
-em,
-i,
-var,
-address {
-    font-style: italic;
-}
-
 small {
     font-size: 0.8em;
 }
@@ -168,9 +154,175 @@ h3,
 h4,
 h5,
 h6 {
-    font-weight: 700;
     line-height: 1.2;
     margin-bottom: 0.75em;
+}
+
+cite,
+dfn,
+em,
+i,
+var,
+address {
+    font-style: italic;
+}
+
+pre {
+    line-height: 1.4;
+    overflow: auto;
+}
+
+dd {
+    margin-bottom: 0.5em;
+}
+
+li {
+    margin-bottom: 0.25em;
+}
+
+blockquote,
+dd,
+ol,
+ul {
+    padding-left: 2em;
+}
+
+hr {
+    border-bottom: 1px solid ButtonFace;
+    margin: 2em 0;
+}
+
+caption {
+    padding: 0.5em 0;
+    text-align: left;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+td,
+th {
+    border-bottom: 1px solid ButtonFace;
+    padding: 0.5em 0.75em;
+    text-align: left;
+}
+
+button,
+.button,
+input,
+.input,
+option,
+select,
+textarea {
+    font-weight: 400;
+    line-height: 1.2;
+    max-width: 100%;
+    padding: 0.5em 0.75em;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+kbd,
+button,
+.button,
+input,
+.input,
+select,
+textarea,
+fieldset {
+    border: 1px solid ButtonFace;
+}
+
+kbd,
+th,
+.button {
+    background-color: ButtonFace;
+    color: ButtonText;
+}
+
+.a,
+.button {
+    cursor: pointer;
+}
+
+.input {
+    background-color: inherit;
+    color: inherit;
+    cursor: text;
+}
+
+.button:hover,
+.input:hover {
+    text-decoration: none;
+}
+
+kbd,
+.inline {
+    font-size: 0.9em;
+    padding: 0.1em 0.4em;
+}
+
+address,
+blockquote,
+p,
+pre,
+dl,
+ol,
+ul,
+table,
+fieldset {
+    margin-bottom: 1em;
+}
+
+pre,
+fieldset {
+    padding: 1em;
+}
+
+legend {
+    padding: 0 0.5em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+b,
+strong,
+dt,
+caption,
+th,
+label,
+legend,
+optgroup {
+    font-weight: 700;
+}
+
+option {
+    margin: 0.5em 0;
+}
+
+img,
+svg {
+    height: auto;
+    vertical-align: middle;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.drop-cap {
+    float: left;
+    font-size: 3em;
+    line-height: 1;
+    margin-right: 0.15em;
 }
 
 h1,
@@ -203,171 +355,21 @@ h6,
     font-size: 1em;
 }
 
-blockquote {
-    padding-left: 2em;
+html,
+.f-sans {
+    font-family: Arial, sans-serif;
 }
 
+.f-serif {
+    font-family: "Times New Roman", serif;
+}
 
-address,
-blockquote,
-p,
+code,
+kbd,
+samp,
 pre,
-dl,
-ol,
-ul {
-    margin-bottom: 1em;
-}
-
-pre {
-    line-height: 1.4;
-    overflow: auto;
-    padding: 1em;
-}
-
-dd {
-    margin-bottom: 0.5em;
-    margin-left: 2em;
-}
-
-dt {
-    font-weight: 700;
-}
-
-li {
-    margin-bottom: 0.25em;
-}
-
-ol,
-ul {
-    padding-left: 2em;
-}
-
-hr {
-    border-bottom: 1px solid ButtonFace;
-    margin: 2em 0;
-}
-
-caption {
-    font-weight: 700;
-    padding: 0.5em 0;
-    text-align: left;
-}
-
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    margin-bottom: 1em;
-}
-
-td,
-th {
-    padding: 0.5em 0.75em;
-    text-align: left;
-}
-
-td {
-    border-bottom: 1px solid ButtonFace;
-}
-
-th {
-    border-bottom: 1px solid transparent;
-    font-weight: 700;
-}
-
-button,
-.button,
-input,
-.input,
-option,
-select,
-textarea {
-    font-weight: 400;
-    line-height: 1.2;
-    max-width: 100%;
-    padding: 0.5em 0.75em;
-    text-decoration: none;
-    vertical-align: middle;
-}
-
-kbd,
-.inline {
-    font-size: 0.9em;
-    padding: 0.1em 0.4em;
-}
-
-kbd,
-button,
-.button,
-input,
-.input,
-select,
-textarea {
-    border: 1px solid ButtonFace;
-}
-
-.a,
-.button {
-    cursor: pointer;
-}
-
-.input {
-    background-color: inherit;
-    color: inherit;
-    cursor: text;
-}
-
-.button:hover,
-.input:hover {
-    text-decoration: none;
-}
-
-kbd,
-th,
-.button {
-    background-color: ButtonFace;
-    color: ButtonText;
-}
-
-fieldset {
-    border: 1px solid ButtonFace;
-    margin-bottom: 1em;
-    padding: 1em;
-}
-
-label {
-    font-weight: 700;
-}
-
-legend {
-    font-weight: 700;
-    padding: 0 0.5em;
-}
-
-optgroup {
-    font-weight: 700;
-}
-
-option {
-    margin: 0.5em 0;
-}
-
-img,
-svg {
-    height: auto;
-    vertical-align: middle;
-}
-
-.center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.drop-cap {
-    float: left;
-    font-size: 3em;
-    line-height: 1;
-    margin-right: 0.15em;
+.f-mono {
+    font-family: "Courier New", monospace;
 }
 
 .hidden {
@@ -405,67 +407,6 @@ svg {
 
 .end {
     float: right;
-}
-
-iframe,
-img,
-object,
-svg {
-    max-width: 100%;
-}
-
-html,
-.f-sans {
-    font-family: Arial, sans-serif;
-}
-
-.f-serif {
-    font-family: "Times New Roman", serif;
-}
-
-code,
-kbd,
-samp,
-pre,
-.f-mono {
-    font-family: "Courier New", monospace;
-}
-
-.w1,
-.w2,
-.w3,
-.w4,
-.w5,
-.w6,
-.w7,
-.w8,
-.w9,
-.w10,
-.w11,
-.w12 {
-    max-width: 100%;
-}
-
-.w1 { width: 5em; }
-.w2 { width: 10em; }
-.w3 { width: 15em; }
-.w4 { width: 20em; }
-.w5 { width: 25em; }
-.w6 { width: 30em; }
-.w7 { width: 35em; }
-.w8 { width: 40em; }
-.w9 { width: 45em; }
-.w10 { width: 50em; }
-.w11 { width: 55em; }
-.w12 { width: 60em; }
-
-.w-free {
-    max-width: none;
-    min-width: 0;
-}
-
-.w-full {
-    width: 100%;
 }
 
 .shape-square {
@@ -528,23 +469,64 @@ pre,
     border-bottom-width: 0;
 }
 
-@media print {
-    .print-reset {
-        border: 0;
-        margin: 0;
-        padding: 0;
-    }
+.w1 { width: 5em; }
+.w2 { width: 10em; }
+.w3 { width: 15em; }
+.w4 { width: 20em; }
+.w5 { width: 25em; }
+.w6 { width: 30em; }
+.w7 { width: 35em; }
+.w8 { width: 40em; }
+.w9 { width: 45em; }
+.w10 { width: 50em; }
+.w11 { width: 55em; }
+.w12 { width: 60em; }
 
-    .print-page-new {
-        page-break-before: always;
+iframe,
+img,
+object,
+svg,
+.w1,
+.w2,
+.w3,
+.w4,
+.w5,
+.w6,
+.w7,
+.w8,
+.w9,
+.w10,
+.w11,
+.w12 {
+    max-width: 100%;
+}
+
+.w-free {
+    max-width: none;
+    min-width: 0;
+}
+
+.w-full {
+    width: 100%;
+}
+
+@media print {
+    .print-hidden {
+        display: none;
     }
 
     .print-page-keep {
         page-break-inside: avoid;
     }
 
-    .print-hidden {
-        display: none;
+    .print-page-new {
+        page-break-before: always;
+    }
+
+    .print-reset {
+        border: 0;
+        margin: 0;
+        padding: 0;
     }
 
     .print-row {
