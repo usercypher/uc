@@ -114,11 +114,36 @@ class Shared_Lib_Cast_Standard {
         $o->algo = $algo;
         return $o;
     }
+
     public function equalTo($value, $message = null) {
         $o = new Shared_Lib_Cast_Standard_EqualTo;
         $o->t = $this->t;
         $o->value = $value;
         $o->message = $message;
+        return $o;
+    }
+
+    public function alphanumeric() {
+        $o = new Shared_Lib_Cast_Standard_Alphanumeric;
+        $o->t = $this->t;
+        return $o;
+    }
+
+    public function alpha() {
+        $o = new Shared_Lib_Cast_Standard_Alpha;
+        $o->t = $this->t;
+        return $o;
+    }
+
+    public function numeric() {
+        $o = new Shared_Lib_Cast_Standard_Numeric;
+        $o->t = $this->t;
+        return $o;
+    }
+
+    public function urlLiteral() {
+        $o = new Shared_Lib_Cast_Standard_UrlLiteral;
+        $o->t = $this->t;
         return $o;
     }
 }
@@ -322,6 +347,51 @@ class Shared_Lib_Cast_Standard_EqualTo {
     function call($value) {
         if ($value !== $this->value) {
             return array($value, isset($this->message) ? $this->message : $this->t->t('lib_cast_standard_not_equal'));
+        } 
+        return array($value, null);
+    }
+}
+
+class Shared_Lib_Cast_Standard_Alphanumeric {
+    var $t;
+
+    function call($value) {
+        if (!(strspn($value, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') === strlen($value) && $value !== '')) {
+            return array($value, $this->t->t('lib_cast_standard_alphanumeric'));
+        } 
+        return array($value, null);
+    }
+}
+
+class Shared_Lib_Cast_Standard_Alpha {
+    var $t;
+
+    function call($value) {
+        if (!(strspn($value, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') === strlen($value) && $value !== '')) {
+            return array($value, $this->t->t('lib_cast_standard_alpha'));
+        } 
+        return array($value, null);
+    }
+}
+
+class Shared_Lib_Cast_Standard_Numeric {
+    var $t;
+
+    function call($value) {
+        if (!(strspn($value, '0123456789') === strlen($value) && $value !== '')) {
+            return array($value, $this->t->t('lib_cast_standard_numeric'));
+        } 
+        return array($value, null);
+    }
+}
+
+
+class Shared_Lib_Cast_Standard_UrlLiteral {
+    var $t;
+
+    function call($value) {
+        if (!(strspn($value, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~') === strlen($value) && $value !== '')) {
+            return array($value, $this->t->t('lib_cast_standard_url_literal'));
         } 
         return array($value, null);
     }

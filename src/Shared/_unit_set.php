@@ -25,9 +25,16 @@ $app->unitGroup($group, 'Shared_Lib_Cast_Db', array('args' => array('App', 'Shar
  * ------------------------------------------------------------------------
  */
 
-$app->unitSet('Shared_Pipe_ErrorHandler', array('args' => array('App')));
-$app->unitSet('Shared_Pipe_Lang', array('args' => array('App', 'Shared_Lib_Translator'), 'cache' => true));
-$app->unitSet('Shared_Pipe_Theme', array('args' => array('App'), 'cache' => true));
+$group = array(
+    'args_prepend' => array('App'),
+    'cache' => true,
+);
+
+$app->unitGroup($group, 'Shared_Pipe_ErrorHandler');
+$app->unitGroup($group, 'Shared_Pipe_Lang', array('args' => array('Shared_Lib_Translator')));
+$app->unitGroup($group, 'Shared_Pipe_Header');
+$app->unitGroup($group, 'Shared_Pipe_Redirect');
+$app->unitGroup($group, 'Shared_Pipe_Theme');
 
 $group = array(
     'args_prepend' => array('App', 'Shared_Lib_Session')

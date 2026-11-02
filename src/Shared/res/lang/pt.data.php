@@ -14,4 +14,8 @@ return array(
     'lib_cast_standard_invalid_datetime' => 'Formato de data e hora inválido',
     'lib_cast_standard_range' => 'O valor deve estar entre :min e :max',
     'lib_cast_standard_not_equal' => 'Não é igual.',
+    'lib_cast_standard_alphanumeric' => 'Deve conter apenas letras e números',
+    'lib_cast_standard_alpha' => 'Deve conter apenas letras',
+    'lib_cast_standard_numeric' => 'Deve conter apenas números',
+    'lib_cast_standard_url_literal' => 'Deve conter apenas letras e números e -._~',
 );

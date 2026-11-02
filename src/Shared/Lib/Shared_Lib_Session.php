@@ -7,6 +7,9 @@ class Shared_Lib_Session {
         if (session_id() == '') {
             session_name($this->config['name']);
             session_id($this->config['id']);
+            if (isset($this->config['param']) && $this->config['param']) {
+                session_set_cookie_params($this->config['param']);
+            }
             session_start();
         }
     }

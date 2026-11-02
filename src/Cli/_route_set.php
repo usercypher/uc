@@ -62,6 +62,11 @@ $app->routeGroup($group, '', 'cli/unit/info/:name/:*', array(
     'Cli_Pipe_Unit_Info'
 ));
 
+// route=unit/refs/:name
+$app->routeGroup($group, '', 'cli/unit/refs/:name/:*', array(
+    'Cli_Pipe_Unit_Refs'
+));
+
 $app->routeGroup($group, '', 'cli/unit/list/:*', array(
     'Cli_Pipe_Unit_List'
 ));

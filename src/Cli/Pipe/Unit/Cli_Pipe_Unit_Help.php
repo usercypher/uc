@@ -14,6 +14,7 @@ class Cli_Pipe_Unit_Help {
         $message .= 'Options:' . PHP_EOL;
         $message .= '  create [name]   create pipe using --pipe, --path=[value], and --args=[value]' . PHP_EOL;
         $message .= '  info [name]     display unit information' . PHP_EOL;
+        $message .= '  refs [name]     display unit dependents' . PHP_EOL;
         $message .= '  list            display all units' . PHP_EOL;
         $output->content = $message;
         $output->code = 1;

@@ -10,7 +10,7 @@ class Shared_Pipe_SessionInit {
     function call($input, $output) {
         $success = true;
 
-        $name = (isset($this->app->env['app_id']) ? $this->app->env['app_id'] : 'default') . ':session';
+        $name = $this->app->env['app_id'] . ':session';
 
         $this->session->config = array(
             'name' => $name,
