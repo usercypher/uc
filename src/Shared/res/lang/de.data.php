@@ -17,5 +17,5 @@ return array(
     'lib_cast_standard_alphanumeric' => 'Darf nur Buchstaben und Zahlen enthalten',
     'lib_cast_standard_alpha' => 'Darf nur Buchstaben',
     'lib_cast_standard_numeric' => 'Darf nur Zahlen enthalten',
-    'lib_cast_standard_url_literal' => 'Darf nur Buchstaben und Zahlen enthalten und -._~',
+    'lib_cast_standard_url_unreserved' => 'Darf nur Buchstaben und Zahlen enthalten und -._',
 );

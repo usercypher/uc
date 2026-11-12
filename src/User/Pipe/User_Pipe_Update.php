@@ -2,7 +2,7 @@
 
 class User_Pipe_Update {
     private $app, $session, $translator;
-    private $userRepo;
+    private $userRepo, $userEvent;
 
     public function args($args) {
         list(
@@ -10,6 +10,7 @@ class User_Pipe_Update {
             $this->session, 
             $this->userRepo,
             $this->translator,
+            $this->userEvent,
         ) = $args;
     } 
 
@@ -21,6 +22,7 @@ class User_Pipe_Update {
         $userOld = $input->frame['user_old'];
         $context = $input->frame['context'];
         $userSession = $this->session->get('user');
+        $userSessionOld = $userSession;
         $userRoles = $input->data['user_roles'];
         $t = $this->translator->get('user');
 
@@ -43,6 +45,10 @@ class User_Pipe_Update {
             ))));
         }
 
+        if (!$errorEarly && !$error && empty($user['email']) && !isset($context['update_password'])) {
+            $user['email'] = $user['username'] . '@invalid';
+        }
+
         $error = array_merge($errorEarly, $error);
 
         if ($error) {
@@ -56,9 +62,23 @@ class User_Pipe_Update {
             }
             $this->session->set('user', $userSession);
             $this->userRepo->addMessage('success', $t->t('user_updated_successfully'));
+            if ($this->userEvent) {
+                $input->data['user_event'] = array('user' => $userSession, 'user_old' => $userSessionOld);
+                list($input, $output, $success) = $this->userEvent->call($input, $output);
+            }
         }
 
-        $this->session->set('flash', $this->userRepo->getMessages());
+        $flash = array();
+        foreach (array(
+            $this->userRepo->getMessages(),
+        ) as $messages) {
+            foreach ($messages as $m) {
+                $m['data']['route'] = $input->route;
+                $flash[] = $m;
+            }
+        }
+
+        $this->session->set('flash', $flash);
 
         $output->header['location'] = $this->app->url('route', $route);
 

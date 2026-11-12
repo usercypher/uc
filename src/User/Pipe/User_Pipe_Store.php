@@ -2,7 +2,7 @@
 
 class User_Pipe_Store {
     private $app, $session, $translator;
-    private $userRepo;
+    private $userRepo, $userEvent;
 
     public function args($args) {
         list(
@@ -10,6 +10,7 @@ class User_Pipe_Store {
             $this->session, 
             $this->userRepo,
             $this->translator,
+            $this->userEvent,
         ) = $args;
     } 
 
@@ -29,6 +30,10 @@ class User_Pipe_Store {
             'is_user_role_root' => false
         )));
 
+        if (!$error && empty($user['email'])) {
+            $user['email'] = $user['username'] . '@invalid';
+        }
+
         if ($error) {
             foreach ($error as $e) {
                 $this->userRepo->addMessage('error', $e['data']['content'], $e['data']);
@@ -36,9 +41,23 @@ class User_Pipe_Store {
         } elseif ($this->userRepo->insert($user)) {
             $route = $input->query['redirect_alt'];
             $this->userRepo->addMessage('success', $t->t('user_created_successfully'));
+            if ($this->userEvent) {
+                $input->data['user_event'] = $user;
+                list($input, $output, $success) = $this->userEvent->call($input, $output);
+            }
         }
 
-        $this->session->set('flash', $this->userRepo->getMessages());
+        $flash = array();
+        foreach (array(
+            $this->userRepo->getMessages(),
+        ) as $messages) {
+            foreach ($messages as $m) {
+                $m['data']['route'] = $input->route;
+                $flash[] = $m;
+            }
+        }
+
+        $this->session->set('flash', $flash);
 
         $output->header['location'] = $this->app->url('route', $route);
 

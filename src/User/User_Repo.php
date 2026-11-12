@@ -50,12 +50,12 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
                 'username' => array(
                     $std->toString(),
                     $std->required(),
-                    $std->lengthMin(3),
-                    $std->lengthMax(50),
+                    $std->urlUnreserved(50),
+                    $std->lengthMax(255),
                 ),
                 'email' => array(
                     $std->toString(),
-                    $std->lengthMax(100),
+                    $std->lengthMax(255),
                     $std->emptyToNull()
                 ),
                 'first_name' => array(
@@ -63,7 +63,8 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
                     $std->lengthMax(255)
                 ),
                 'last_name' => array(
-                    $std->toString()
+                    $std->toString(),
+                    $std->lengthMax(255)
                 ),
                 'role' => array(
                     $std->toString(),
@@ -77,7 +78,6 @@ class User_Repo extends Shared_Lib_DatabaseHelper {
                 'password' => array(
                     $std->toString(),
                     $std->required(),
-                    $std->lengthMin(8),
                     $std->lengthMax(72),
                     $std->passwordHash()
                 ),

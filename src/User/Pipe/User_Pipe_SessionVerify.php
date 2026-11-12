@@ -55,7 +55,17 @@ class User_Pipe_SessionVerify {
             $this->session->set("user", $userFound);
         }
 
-        $this->session->set('flash', $this->userRepo->getMessages());
+        $flash = array();
+        foreach (array(
+            $this->userRepo->getMessages(),
+        ) as $messages) {
+            foreach ($messages as $m) {
+                $m['data']['route'] = $input->route;
+                $flash[] = $m;
+            }
+        }
+
+        $this->session->set('flash', $flash);
 
         $output->header['location'] = $this->app->url('route', $route);
 

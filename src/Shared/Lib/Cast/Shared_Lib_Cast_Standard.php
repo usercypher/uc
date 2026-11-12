@@ -141,8 +141,8 @@ class Shared_Lib_Cast_Standard {
         return $o;
     }
 
-    public function urlLiteral() {
-        $o = new Shared_Lib_Cast_Standard_UrlLiteral;
+    public function urlUnreserved() {
+        $o = new Shared_Lib_Cast_Standard_UrlUnreserved;
         $o->t = $this->t;
         return $o;
     }
@@ -386,12 +386,12 @@ class Shared_Lib_Cast_Standard_Numeric {
 }
 
 
-class Shared_Lib_Cast_Standard_UrlLiteral {
+class Shared_Lib_Cast_Standard_UrlUnreserved {
     var $t;
 
     function call($value) {
-        if (!(strspn($value, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~') === strlen($value) && $value !== '')) {
-            return array($value, $this->t->t('lib_cast_standard_url_literal'));
+        if (!(strspn($value, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._') === strlen($value) && $value !== '')) {
+            return array($value, $this->t->t('lib_cast_standard_url_unreserved'));
         } 
         return array($value, null);
     }

@@ -10,7 +10,8 @@ $group = array(
     'load_prepend' => array('Shared_Lib_DatabaseHelper')
 );
 $app->unitGroup($group, 'User_Repo', array(
-    'args' => array($app->unitArgData('default'), $app->unitArgData('user'))
+    'args' => array($app->unitArgData('default'), $app->unitArgData('user')),
+    'cache' => true
 ));
 
 /**
@@ -34,12 +35,20 @@ $app->unitSet('User_Pipe_Lang', array(
 ));
 
 $group = array(
+    'base' => 'Shared_Pipe_Event',
+);
+
+$app->unitGroup($group, 'User_Pipe_StoreEvent');
+$app->unitGroup($group, 'User_Pipe_UpdateEvent');
+$app->unitGroup($group, 'User_Pipe_DeleteEvent');
+
+$group = array(
     'args_prepend' => array('App', 'Shared_Lib_Session')
 );
 
-$app->unitGroup($group, 'User_Pipe_Store', array('args' => array('User_Repo', 'Shared_Lib_Translator')));
-$app->unitGroup($group, 'User_Pipe_Update', array('args' => array('User_Repo', 'Shared_Lib_Translator')));
-$app->unitGroup($group, 'User_Pipe_Delete', array('args' => array('User_Repo', 'Shared_Lib_Translator')));
+$app->unitGroup($group, 'User_Pipe_Store', array('args' => array('User_Repo', 'Shared_Lib_Translator', 'User_Pipe_StoreEvent')));
+$app->unitGroup($group, 'User_Pipe_Update', array('args' => array('User_Repo', 'Shared_Lib_Translator', 'User_Pipe_UpdateEvent')));
+$app->unitGroup($group, 'User_Pipe_Delete', array('args' => array('User_Repo', 'Shared_Lib_Translator', 'User_Pipe_DeleteEvent')));
 $app->unitGroup($group, 'User_Pipe_SessionUnset', array('args' => array()));
 $app->unitGroup($group, 'User_Pipe_SessionVerify', array('args' => array('User_Repo', 'Shared_Lib_Translator')));
 $app->unitGroup($group, 'User_Pipe_IsAuth', array('args' => array()));

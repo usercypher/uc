@@ -1,5 +1,5 @@
 <?php /*
-Version: 17.0.0
+Version: 17.1.0
 
 Copyright 2025 Lloyd Miles M. Bersabe
 
@@ -624,9 +624,14 @@ class App {
     }
 
     function unitGroup($group, $unit, $option = array()) {
-        $option['args'] = ($ap = isset($group['args_prepend'])) + ($am = isset($option['args'])) + ($aa = isset($group['args_append'])) ? array_merge($ap ? $group['args_prepend'] : array(), $am ? $option['args'] : array(), $aa ? $group['args_append'] : array()) : null;
-        $option['load'] = ($lp = isset($group['load_prepend'])) + ($lm = isset($option['load'])) + ($la = isset($group['load_append'])) ? array_merge($lp ? $group['load_prepend'] : array(), $lm ? $option['load'] : array(), $la ? $group['load_append'] : array()) : null;
-        $option['cache'] = isset($option['cache']) ? $option['cache'] : (isset($group['cache']) ? $group['cache'] : null);
+        foreach (array('args', 'load') as $type) {
+            $option[$type] = ($p = isset($group[$type . '_prepend'])) + ($m = isset($option[$type])) + ($a = isset($group[$type . '_append'])) ? array_merge($p ? $group[$type . '_prepend'] : array(), $m ? $option[$type] : array(), $a ? $group[$type . '_append'] : array()) : null;
+        }
+
+        foreach (array('base', 'bind', 'cache') as $type) {
+            $option[$type] = isset($option[$type]) ? $option[$type] : (isset($group[$type]) ? $group[$type] : null);
+        }
+
         $this->unitSet($unit, $option);
     }
 
@@ -861,9 +866,11 @@ class App {
 
         foreach ($schema as $field => $rules) {
             $valid[$field] = isset($data[$field]) ? $data[$field] : null;
+        }
 
+        foreach ($schema as $field => $rules) {
             foreach ($rules as $rule) {
-                list($valid[$field], $err) = $rule->call($valid[$field]);
+                list($valid[$field], $err) = $rule->call($valid[$field], $valid);
 
                 if ($err) {
                     $error[] = array('type' => 'system:message:error', 'data' => array('content' => $err, 'field' => $field) + $meta);
